@@ -171,6 +171,19 @@ void math(py::module& root, py::module& m) {
     boolVector(boolVector2);
     boolVector(boolVector3);
     boolVector(boolVector4);
+
+    /* Constants. Putting them into math like Python does and as doubles, since
+       Python doesn't really differentiate between 32bit and 64bit floats */
+    m.attr("pi") = Constantsd::pi();
+    m.attr("pi_half") = Constantsd::piHalf();
+    m.attr("pi_quarter") = Constantsd::piQuarter();
+    m.attr("tau") = Constantsd::tau();
+    m.attr("e") = Constantsd::e();
+    m.attr("sqrt2") = Constantsd::sqrt2();
+    m.attr("sqrt3") = Constantsd::sqrt3();
+    m.attr("sqrt_half") = Constantsd::sqrtHalf();
+    m.attr("nan") = Constantsd::nan();
+    m.attr("inf") = Constantsd::inf();
 }
 
 }
