@@ -34,6 +34,8 @@ using namespace Magnum;
 namespace py = pybind11;
 
 void math(py::module& root, py::module& m);
+void mathVectorFloat(py::module& root, py::module& m);
+void mathVectorIntegral(py::module& root, py::module& m);
 
 }
 

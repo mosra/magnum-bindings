@@ -1,3 +1,5 @@
+#ifndef magnum_math_h
+#define magnum_math_h
 /*
     This file is part of Magnum.
 
@@ -23,17 +25,20 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <pybind11/pybind11.h>
+#include <sstream>
+#include <Corrade/Utility/Debug.h>
+#include <Magnum/Magnum.h>
 
 #include "magnum/bootstrap.h"
 
-namespace py = pybind11;
+namespace magnum {
 
-PYBIND11_MODULE(_magnum, m) {
-    m.doc() = "Root Magnum module";
-
-    py::module math = m.def_submodule("math");
-    magnum::math(m, math);
-    magnum::mathVectorFloat(m, math);
-    magnum::mathVectorIntegral(m, math);
+template<class T> std::string repr(const T& value) {
+    std::ostringstream out;
+    Debug{&out, Debug::Flag::NoNewlineAtTheEnd} << value;
+    return out.str();
 }
+
+}
+
+#endif

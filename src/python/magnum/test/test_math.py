@@ -102,3 +102,136 @@ class Constants(unittest.TestCase):
     def test(self):
         self.assertAlmostEqual(math.sqrt2**2, 2.0, 6)
         self.assertAlmostEqual(math.sqrt3**2, 3.0)
+
+class Vector(unittest.TestCase):
+    def test_init(self):
+        a = Vector4i()
+        b = Vector3d.zero_init()
+        c = Vector2i(44, -3)
+        self.assertEqual(a, Vector4i(0, 0, 0, 0))
+        self.assertEqual(b, Vector3d(0.0, 0.0, 0.0))
+        self.assertEqual(c, Vector2i(44, -3))
+
+    def test_static_methods(self):
+        self.assertEqual(Vector2.y_scale(5), Vector2(1, 5))
+        self.assertEqual(Vector3d.z_axis(-3), Vector3d(0, 0, -3))
+        self.assertEqual(Vector3i.x_axis(), Vector3i(1, 0, 0))
+
+    def test_length(self):
+        self.assertEqual(Vector3.__len__(), 3)
+        #self.assertEqual(len(Vector3), 3) TODO: Y not?
+        self.assertEqual(len(Vector4i()), 4)
+
+    def test_properties(self):
+        a = Vector2i()
+        a.x = 1
+        a.y = 2
+        self.assertEqual(a.x, 1)
+        self.assertEqual(a.y, 2)
+        self.assertEqual(a, Vector2i(1, 2))
+
+        a = Vector3()
+        a.x = 1.0
+        a.y = 2.0
+        a.z = 3.0
+        self.assertEqual(a.x, 1.0)
+        self.assertEqual(a.y, 2.0)
+        self.assertEqual(a.z, 3.0)
+        self.assertEqual(a, Vector3(1.0, 2.0, 3.0))
+
+        a.xy = (-1.0, -2.0)
+        self.assertEqual(a.xy, Vector2(-1.0, -2.0))
+        self.assertEqual(a, Vector3(-1.0, -2.0, 3.0))
+
+        a = Vector3()
+        a.r = 1.0
+        a.g = 2.0
+        a.b = 3.0
+        self.assertEqual(a.r, 1.0)
+        self.assertEqual(a.g, 2.0)
+        self.assertEqual(a.b, 3.0)
+        self.assertEqual(a, Vector3(1.0, 2.0, 3.0))
+
+        a = Vector4d()
+        a.x = 1.0
+        a.y = 2.0
+        a.z = 3.0
+        a.w = 4.0
+        self.assertEqual(a.x, 1.0)
+        self.assertEqual(a.y, 2.0)
+        self.assertEqual(a.z, 3.0)
+        self.assertEqual(a.w, 4.0)
+        self.assertEqual(a, Vector4d(1.0, 2.0, 3.0, 4.0))
+
+        a = Vector4d()
+        a.r = 1.0
+        a.g = 2.0
+        a.b = 3.0
+        a.a = 4.0
+        self.assertEqual(a.r, 1.0)
+        self.assertEqual(a.g, 2.0)
+        self.assertEqual(a.b, 3.0)
+        self.assertEqual(a.a, 4.0)
+        self.assertEqual(a, Vector4d(1.0, 2.0, 3.0, 4.0))
+
+        a.xy = (-1.0, -2.0)
+        self.assertEqual(a.xy, Vector2d(-1.0, -2.0))
+        self.assertEqual(a, Vector4d(-1.0, -2.0, 3.0, 4.0))
+
+        a.xyz = (0.5, 0.25, 0.125)
+        self.assertEqual(a.xyz, Vector3d(0.5, 0.25, 0.125))
+        self.assertEqual(a, Vector4d(0.5, 0.25, 0.125, 4.0))
+
+    def test_properties_rgb(self):
+        a = Vector3()
+        a.r = 1.0
+        a.g = 2.0
+        a.b = 3.0
+        self.assertEqual(a.r, 1.0)
+        self.assertEqual(a.g, 2.0)
+        self.assertEqual(a.b, 3.0)
+        self.assertEqual(a, Vector3(1.0, 2.0, 3.0))
+
+        a = Vector4d()
+        a.r = 1.0
+        a.g = 2.0
+        a.b = 3.0
+        a.a = 4.0
+        self.assertEqual(a.r, 1.0)
+        self.assertEqual(a.g, 2.0)
+        self.assertEqual(a.b, 3.0)
+        self.assertEqual(a.a, 4.0)
+        self.assertEqual(a, Vector4d(1.0, 2.0, 3.0, 4.0))
+
+        a.rgb = (0.5, 0.25, 0.125)
+        self.assertEqual(a.rgb, Vector3d(0.5, 0.25, 0.125))
+        self.assertEqual(a, Vector4d(0.5, 0.25, 0.125, 4.0))
+
+    def test_set_get(self):
+        a = Vector3(1.0, 3.14, -13.37)
+        self.assertAlmostEqual(a[1], 3.14, 6)
+
+        a[2] = 0.13
+        self.assertEqual(a, Vector3(1.0, 3.14, 0.13))
+
+        b = Vector4i(3, 4, 5, 6)
+        b.b *= 3
+        b.xy += Vector2i(1, -1)
+        self.assertEqual(b, Vector4i(4, 3, 15, 6))
+
+    def test_ops(self):
+        self.assertEqual(math.dot(Vector2(0.5, 3.0), Vector2(2.0, 0.5)), 2.5)
+        self.assertEqual(Deg(math.angle(
+            Vector2(0.5, 3.0).normalized(),
+            Vector2(2.0, 0.5).normalized())), Deg(66.5014333443446))
+        self.assertEqual(Vector3(1.0, 2.0, 0.3).projected(Vector3.y_axis()),
+                         Vector3.y_axis(2.0))
+        self.assertEqual(Vector3(1.0, 2.0, 0.3).projected_onto_normalized(Vector3.y_axis()),
+                         Vector3.y_axis(2.0))
+
+    def test_ops_number_on_the_left(self):
+        self.assertEqual(2.0*Vector2(1.0, -3.0), Vector2(2.0, -6.0))
+        self.assertEqual(6.0/Vector2(2.0, -3.0), Vector2(3.0, -2.0))
+
+    def test_repr(self):
+        self.assertEqual(repr(Vector3(1.0, 3.14, -13.37)), 'Vector(1, 3.14, -13.37)')

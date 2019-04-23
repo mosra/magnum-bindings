@@ -25,7 +25,9 @@
 
 set(magnum_SRCS
     magnum.cpp
-    math.cpp)
+    math.cpp
+    math.vectorfloat.cpp
+    math.vectorintegral.cpp)
 
 pybind11_add_module(magnum ${magnum_SRCS})
 target_include_directories(magnum PRIVATE ${PROJECT_SOURCE_DIR}/src/python)

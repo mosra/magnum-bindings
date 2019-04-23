@@ -31,16 +31,11 @@
 #include <Magnum/Math/BoolVector.h>
 
 #include "magnum/bootstrap.h"
+#include "magnum/math.h"
 
 namespace magnum {
 
 namespace {
-
-template<class T> std::string repr(const T& value) {
-    std::ostringstream out;
-    Debug{&out, Debug::Flag::NoNewlineAtTheEnd} << value;
-    return out.str();
-}
 
 template<class T> void angle(py::class_<T>& c) {
     /*
