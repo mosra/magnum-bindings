@@ -63,11 +63,14 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def(py::self <= py::self, "Component-wise less than or equal comparison")
         .def(py::self >= py::self, "Component-wise greater than or equal comparison")
 
-        /* Set / get */
+        /* Set / get. Need to throw IndexError in order to allow iteration:
+           https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
         .def("__setitem__", [](T& self, std::size_t i, typename T::Type value) {
+            if(i >= T::Size) throw pybind11::index_error{};
             self[i] = value;
         }, "Set a value at given position")
         .def("__getitem__", [](const T& self, std::size_t i) {
+            if(i >= T::Size) throw pybind11::index_error{};
             return self[i];
         }, "Value at given position")
 

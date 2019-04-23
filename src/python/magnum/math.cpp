@@ -125,9 +125,16 @@ template<class T> void boolVector(py::class_<T>& c) {
         .def("none", &T::none, "Whether no bits are set")
         .def("any", &T::any, "Whether any bit is set")
 
-        /* Set / get */
-        .def("__setitem__", &T::set, "Set a bit at given position", py::arg("i"), py::arg("value"))
-        .def("__getitem__", &T::operator[], "Bit at given position")
+        /* Set / get. Need to throw IndexError in order to allow iteration:
+           https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+        .def("__setitem__",[](T& self, std::size_t i, bool value) {
+            if(i >= T::Size) throw pybind11::index_error{};
+            self.set(i, value);
+        }, "Set a bit at given position")
+        .def("__getitem__", [](const T& self, std::size_t i) {
+            if(i >= T::Size) throw pybind11::index_error{};
+            return self[i];
+        }, "Bit at given position")
 
         /* Operators */
         .def(~py::self, "Bitwise inversion")

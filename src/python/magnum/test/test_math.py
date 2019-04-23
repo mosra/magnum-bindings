@@ -91,6 +91,10 @@ class BoolVector(unittest.TestCase):
         a[2] = True
         self.assertEqual(a, BoolVector4(0b1110))
 
+    def test_iterate(self):
+        a = [i for i in BoolVector4(0b1010)]
+        self.assertEqual(a, [False, True, False, True])
+
     def test_ops(self):
         a = BoolVector3(0b101) | BoolVector3(0b010)
         self.assertEqual(a, BoolVector3(0b111))
@@ -218,6 +222,12 @@ class Vector(unittest.TestCase):
         b.b *= 3
         b.xy += Vector2i(1, -1)
         self.assertEqual(b, Vector4i(4, 3, 15, 6))
+
+    def test_iterate(self):
+        a = [i for i in Vector4(1.0, 3.25, 3.5, -1.125)]
+        # assertAlmostEqual doesn't work on lists so i'm using values directly
+        # representable as floats to avoid the need for delta comparison
+        self.assertEqual(a, [1.0, 3.25, 3.5, -1.125])
 
     def test_ops(self):
         self.assertEqual(math.dot(Vector2(0.5, 3.0), Vector2(2.0, 0.5)), 2.5)
