@@ -110,9 +110,14 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
 }
 
 template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {
+    py::implicitly_convertible<const std::tuple<T, T>&, Math::Vector2<T>>();
+
     c
         /* Constructors */
         .def(py::init<T, T>(), "Constructor")
+        .def(py::init([](const std::tuple<T, T>& value) {
+            return Math::Vector2<T>{std::get<0>(value), std::get<1>(value)};
+        }), "Construct from a tuple")
 
         /* Static constructors */
         .def_static("x_axis", &Math::Vector2<T>::xAxis,
@@ -140,9 +145,14 @@ template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {
 }
 
 template<class T> void vector3(py::class_<Math::Vector3<T>>& c) {
+    py::implicitly_convertible<const std::tuple<T, T, T>&, Math::Vector3<T>>();
+
     c
         /* Constructors */
         .def(py::init<T, T, T>(), "Constructor")
+        .def(py::init([](const std::tuple<T, T, T>& value) {
+            return Math::Vector3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
+        }), "Construct from a tuple")
 
         /* Static constructors */
         .def_static("x_axis", &Math::Vector3<T>::xAxis,
@@ -192,9 +202,14 @@ template<class T> void vector3(py::class_<Math::Vector3<T>>& c) {
 }
 
 template<class T> void vector4(py::class_<Math::Vector4<T>>& c) {
+    py::implicitly_convertible<const std::tuple<T, T, T, T>&, Math::Vector4<T>>();
+
     c
         /* Constructors */
         .def(py::init<T, T, T, T>(), "Constructor")
+        .def(py::init([](const std::tuple<T, T, T, T>& value) {
+            return Math::Vector4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
+        }), "Construct from a tuple")
 
         /* Properties */
         .def_property("x",

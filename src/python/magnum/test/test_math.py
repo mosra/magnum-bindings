@@ -112,9 +112,13 @@ class Vector(unittest.TestCase):
         a = Vector4i()
         b = Vector3d.zero_init()
         c = Vector2i(44, -3)
+        d = Vector3((1.0, 0.3, 1.1))
+        e = Vector4d((1.0, 0.3, 1.1, 0.5))
         self.assertEqual(a, Vector4i(0, 0, 0, 0))
         self.assertEqual(b, Vector3d(0.0, 0.0, 0.0))
         self.assertEqual(c, Vector2i(44, -3))
+        self.assertEqual(d, Vector3(1.0, 0.3, 1.1))
+        self.assertEqual(e, Vector4d(1.0, 0.3, 1.1, 0.5))
 
     def test_static_methods(self):
         self.assertEqual(Vector2.y_scale(5), Vector2(1, 5))
@@ -220,7 +224,7 @@ class Vector(unittest.TestCase):
 
         b = Vector4i(3, 4, 5, 6)
         b.b *= 3
-        b.xy += Vector2i(1, -1)
+        b.xy += (1, -1)
         self.assertEqual(b, Vector4i(4, 3, 15, 6))
 
     def test_iterate(self):
