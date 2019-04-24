@@ -166,6 +166,10 @@ void math(py::module& root, py::module& m) {
     angle(deg);
     angle(rad);
 
+    /* Cyclic convertibility, so can't do that in angle() */
+    py::implicitly_convertible<Radd, Degd>();
+    py::implicitly_convertible<Degd, Radd>();
+
     /* BoolVector */
     py::class_<Math::BoolVector<2>> boolVector2{root, "BoolVector2", "Two-component bool vector"};
     py::class_<Math::BoolVector<3>> boolVector3{root, "BoolVector3", "Three-component bool vector"};
