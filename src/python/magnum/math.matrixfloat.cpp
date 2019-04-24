@@ -40,10 +40,14 @@ void mathMatrixFloat(py::module& root) {
     py::class_<Matrix4x3> matrix4x3{root, "Matrix4x3", "4x3 float matrix"};
     py::class_<Matrix4x4> matrix4x4{root, "Matrix4x4", "4x4 float matrix"};
 
+    py::class_<Matrix3, Matrix3x3> matrix3{root, "Matrix3", "2D float transformation matrix"};
+    py::class_<Matrix4, Matrix4x4> matrix4{root, "Matrix4", "3D float transformation matrix"};
+
     matrices<Float>(
         matrix2x2, matrix2x3, matrix2x4,
         matrix3x2, matrix3x3, matrix3x4,
-        matrix4x2, matrix4x3, matrix4x4);
+        matrix4x2, matrix4x3, matrix4x4,
+        matrix3, matrix4);
 }
 
 }

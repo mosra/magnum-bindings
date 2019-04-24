@@ -27,9 +27,8 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
-
-#include "Magnum/Math/Matrix.h"
-#include "Magnum/Math/Vector4.h"
+#include <Magnum/Math/Matrix3.h>
+#include <Magnum/Math/Matrix4.h>
 
 #include "magnum/math.h"
 
@@ -149,7 +148,10 @@ template<class T> void matrices(
 
     py::class_<Math::Matrix4x2<T>>& matrix4x2,
     py::class_<Math::Matrix4x3<T>>& matrix4x3,
-    py::class_<Math::Matrix4x4<T>>& matrix4x4
+    py::class_<Math::Matrix4x4<T>>& matrix4x4,
+
+    py::class_<Math::Matrix3<T>, Math::Matrix3x3<T>>& matrix3,
+    py::class_<Math::Matrix4<T>, Math::Matrix4x4<T>>& matrix4
 ) {
     /* Two-column matrices */
     matrix2x2
@@ -330,6 +332,213 @@ template<class T> void matrices(
     rectangularMatrix(matrix4x3);
     rectangularMatrix(matrix4x4);
     matrix(matrix4x4);
+
+    /* 3x3 transformation matrix */
+    matrix3
+        /* Constructors. The scaling() / rotation() are handled below
+           as they conflict with member functions. */
+        .def_static("translation", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::translation),
+            "2D translation matrix")
+        .def_static("reflection", &Math::Matrix3<T>::reflection,
+            "2D reflection matrix")
+        .def_static("shearing_x", &Math::Matrix3<T>::shearingX,
+            "2D shearing matrix along the X axis", py::arg("amount"))
+        .def_static("shearing_y", &Math::Matrix3<T>::shearingY,
+            "2D shearning matrix along the Y axis", py::arg("amount"))
+        .def_static("projection", &Math::Matrix3<T>::projection,
+            "2D projection matrix", py::arg("size"))
+        .def_static("from", static_cast<Math::Matrix3<T>(*)(const Math::Matrix2x2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::from),
+            "Create a matrix from a rotation/scaling part and a translation part",
+            py::arg("rotation_scaling"), py::arg("translation"))
+        .def_static("zero_init", []() {
+            return Math::Matrix3<T>{Math::ZeroInit};
+        }, "Construct a zero-filled matrix")
+        .def_static("identity_init", [](T value) {
+            return Math::Matrix3<T>{Math::IdentityInit, value};
+        }, "Construct an identity matrix", py::arg("value") = T(1))
+        .def(py::init(), "Default constructor")
+        .def(py::init<T>(), "Construct a matrix with one value for all components")
+        .def(py::init<const Math::Vector3<T>&, const Math::Vector3<T>&, const Math::Vector3<T>&>(),
+            "Construct from column vectors")
+        .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>>& value) {
+            return Math::Matrix3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
+        }), "Construct from a column vector tuple")
+
+        /* Member functions */
+        .def("is_rigid_transformation", &Math::Matrix3<T>::isRigidTransformation,
+            "Check whether the matrix represents a rigid transformation")
+        .def("rotation_scaling", &Math::Matrix3<T>::rotationScaling,
+            "2D rotation and scaling part of the matrix")
+        .def("rotation_shear", &Math::Matrix3<T>::rotationShear,
+            "2D rotation and shear part of the matrix")
+        .def("rotation_normalized", &Math::Matrix3<T>::rotationNormalized,
+            "2D rotation part of the matrix assuming there is no scaling")
+        .def("scaling_squared", &Math::Matrix3<T>::scalingSquared,
+            "Non-uniform scaling part of the matrix, squared")
+        .def("uniform_scaling_squared", &Math::Matrix3<T>::uniformScalingSquared,
+            "Uniform scaling part of the matrix, squared")
+        .def("uniform_scaling", &Math::Matrix3<T>::uniformScaling,
+            "Uniform scaling part of the matrix")
+        .def("inverted_rigid", &Math::Matrix3<T>::invertedRigid,
+             "Inverted rigid transformation matrix")
+        .def("transform_vector", &Math::Matrix3<T>::transformVector,
+            "Transform a 2D vector with the matrix")
+        .def("transform_point", &Math::Matrix3<T>::transformPoint,
+            "Transform a 2D point with the matrix")
+
+        /* Properties */
+        .def_property("right",
+            static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::right),
+            [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.right() = value; },
+            "Right-pointing 2D vector")
+        .def_property("up",
+            static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::up),
+            [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.up() = value; },
+            "Up-pointing 2D vector")
+
+        /* Static/member scaling(). Pybind doesn't support that natively, so
+           we create a scaling(*args, **kwargs) and dispatch ourselves. */
+        .def_static("_sscaling", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::scaling),
+            "2D scaling matrix")
+        .def("_iscaling", static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::scaling),
+            "Non-uniform scaling part of the matrix")
+        .def("scaling", [matrix3](py::args args, py::kwargs kwargs) {
+            if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
+                return matrix3.attr("_iscaling")(*args, **kwargs);
+            } else {
+                return matrix3.attr("_sscaling")(*args, **kwargs);
+            }
+        })
+
+        /* Static/member rotation(). Pybind doesn't support that natively, so
+           we create a rotation(*args, **kwargs) and dispatch ourselves. */
+        .def_static("_srotation", [](Radd angle) {
+            return Math::Matrix3<T>::rotation(Math::Rad<T>(angle));
+        }, "2D rotation matrix")
+        .def("_irotation", static_cast<Math::Matrix2x2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::rotation),
+            "2D rotation part of the matrix")
+        .def("rotation", [matrix3](py::args args, py::kwargs kwargs) {
+            if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
+                return matrix3.attr("_irotation")(*args, **kwargs);
+            } else {
+                return matrix3.attr("_srotation")(*args, **kwargs);
+            }
+        });
+
+    /* 4x4 transformation matrix */
+    matrix4
+        /* Constructors. The scaling() / rotation() are handled below
+           as they conflict with member functions. */
+        .def_static("translation", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::translation),
+            "3D translation matrix")
+        .def_static("rotation_x", [](Radd angle) {
+            return Math::Matrix4<T>::rotationX(Math::Rad<T>(angle));
+        }, "3D rotation matrix around the X axis")
+        .def_static("rotation_y", [](Radd angle) {
+            return Math::Matrix4<T>::rotationY(Math::Rad<T>(angle));
+        }, "3D rotation matrix around the Y axis")
+        .def_static("rotation_z", [](Radd angle) {
+            return Math::Matrix4<T>::rotationZ(Math::Rad<T>(angle));
+        }, "3D rotation matrix around the Z axis")
+        .def_static("reflection", &Math::Matrix4<T>::reflection,
+            "3D reflection matrix")
+        .def_static("shearing_xy", &Math::Matrix4<T>::shearingXY,
+            "3D shearing matrix along the XY plane", py::arg("amountx"), py::arg("amounty"))
+        .def_static("shearing_xz", &Math::Matrix4<T>::shearingXZ,
+            "3D shearning matrix along the XZ plane", py::arg("amountx"), py::arg("amountz"))
+        .def_static("shearing_yz", &Math::Matrix4<T>::shearingYZ,
+            "3D shearing matrix along the YZ plane", py::arg("amounty"), py::arg("amountz"))
+        .def_static("orthographic_projection", &Math::Matrix4<T>::orthographicProjection,
+            "3D orthographic projection matrix", py::arg("size"), py::arg("near"), py::arg("far"))
+        .def_static("perspective_projection",
+            static_cast<Math::Matrix4<T>(*)(const Math::Vector2<T>&, T, T)>(&Math::Matrix4<T>::perspectiveProjection),
+            "3D perspective projection matrix", py::arg("size"), py::arg("near"), py::arg("far"))
+        .def_static("perspective_projection", [](Radd fov, T aspectRatio, T near, T far) {
+            return Math::Matrix4<T>::perspectiveProjection(Math::Rad<T>(fov), aspectRatio, near, far);
+        }, "3D perspective projection matrix", py::arg("fov"), py::arg("aspect_ratio"), py::arg("near"), py::arg("far"))
+        .def_static("look_at", &Math::Matrix4<T>::lookAt,
+            "Matrix oriented towards a specific point", py::arg("eye"), py::arg("target"), py::arg("up"))
+        .def_static("from", static_cast<Math::Matrix4<T>(*)(const Math::Matrix3x3<T>&, const Math::Vector3<T>&)>(&Math::Matrix4<T>::from),
+            "Create a matrix from a rotation/scaling part and a translation part",
+            py::arg("rotation_scaling"), py::arg("translation"))
+        .def_static("zero_init", []() {
+            return Math::Matrix4<T>{Math::ZeroInit};
+        }, "Construct a zero-filled matrix")
+        .def_static("identity_init", [](T value) {
+            return Math::Matrix4<T>{Math::IdentityInit, value};
+        }, "Construct an identity matrix", py::arg("value") = T(1))
+        .def(py::init(), "Default constructor")
+        .def(py::init<T>(), "Construct a matrix with one value for all components")
+        .def(py::init<const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&>(),
+            "Construct from column vectors")
+        .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>>& value) {
+            return Math::Matrix4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
+        }), "Construct from a column vector tuple")
+
+        /* Member functions */
+        .def("is_rigid_transformation", &Math::Matrix4<T>::isRigidTransformation,
+            "Check whether the matrix represents a rigid transformation")
+        .def("rotation_scaling", &Math::Matrix4<T>::rotationScaling,
+            "3D rotation and scaling part of the matrix")
+        .def("rotation_shear", &Math::Matrix4<T>::rotationShear,
+            "3D rotation and shear part of the matrix")
+        .def("rotation_normalized", &Math::Matrix4<T>::rotationNormalized,
+            "3D rotation part of the matrix assuming there is no scaling")
+        .def("scaling_squared", &Math::Matrix4<T>::scalingSquared,
+            "Non-uniform scaling part of the matrix, squared")
+        .def("uniform_scaling_squared", &Math::Matrix4<T>::uniformScalingSquared,
+            "Uniform scaling part of the matrix, squared")
+        .def("uniform_scaling", &Math::Matrix4<T>::uniformScaling,
+            "Uniform scaling part of the matrix")
+        .def("inverted_rigid", &Math::Matrix4<T>::invertedRigid,
+             "Inverted rigid transformation matrix")
+        .def("transform_vector", &Math::Matrix4<T>::transformVector,
+            "Transform a 3D vector with the matrix")
+        .def("transform_point", &Math::Matrix4<T>::transformPoint,
+            "Transform a 3D point with the matrix")
+
+        /* Properties */
+        .def_property("right",
+            static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::right),
+            [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.right() = value; },
+            "Right-pointing 3D vector")
+        .def_property("up",
+            static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::up),
+            [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.up() = value; },
+            "Up-pointing 3D vector")
+        .def_property("backward",
+            static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::backward),
+            [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.backward() = value; },
+            "Backward-pointing 3D vector")
+
+        /* Static/member scaling(). Pybind doesn't support that natively, so
+           we create a scaling(*args, **kwargs) and dispatch ourselves. */
+        .def_static("_sscaling", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::scaling),
+            "3D scaling matrix")
+        .def("_iscaling", static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::scaling),
+            "Non-uniform scaling part of the matrix")
+        .def("scaling", [matrix4](py::args args, py::kwargs kwargs) {
+            if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
+                return matrix4.attr("_iscaling")(*args, **kwargs);
+            } else {
+                return matrix4.attr("_sscaling")(*args, **kwargs);
+            }
+        })
+
+        /* Static/member rotation(). Pybind doesn't support that natively, so
+           we create a rotation(*args, **kwargs) and dispatch ourselves. */
+        .def_static("_srotation", [](Radd angle, const Math::Vector3<T>& axis) {
+            return Math::Matrix4<T>::rotation(Math::Rad<T>(angle), axis);
+        }, "3D rotation matrix around arbitrary axis")
+        .def("_irotation", static_cast<Math::Matrix3x3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::rotation),
+            "3D rotation part of the matrix")
+        .def("rotation", [matrix4](py::args args, py::kwargs kwargs) {
+            if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
+                return matrix4.attr("_irotation")(*args, **kwargs);
+            } else {
+                return matrix4.attr("_srotation")(*args, **kwargs);
+            }
+        });
 }
 
 }

@@ -345,3 +345,106 @@ class Matrix(unittest.TestCase):
         self.assertEqual(repr(a), 'Matrix(1, 4,\n'
                                   '       2, 5,\n'
                                   '       3, 6)')
+
+class Matrix3_(unittest.TestCase):
+    def test_init(self):
+        a = Matrix3()
+        self.assertEqual(a[0], Vector3.x_axis())
+        self.assertEqual(a[1], Vector3.y_axis())
+        self.assertEqual(a[2], Vector3.z_axis())
+
+        b = Matrix3.zero_init()
+        self.assertEqual(b[0], Vector3(0))
+        self.assertEqual(b[1], Vector3(0))
+        self.assertEqual(b[2], Vector3(0))
+
+        c1 = Matrix3.identity_init()
+        self.assertEqual(c1[0], Vector3.x_axis())
+        self.assertEqual(c1[1], Vector3.y_axis())
+        self.assertEqual(c1[2], Vector3.z_axis())
+
+        c3 = Matrix3.identity_init(3.0)
+        self.assertEqual(c3[0], Vector3.x_axis(3.0))
+        self.assertEqual(c3[1], Vector3.y_axis(3.0))
+        self.assertEqual(c3[2], Vector3.z_axis(3.0))
+
+        d = Matrix3(((1.0, 2.0, 3.0),
+                     (4.0, 5.0, 6.0),
+                     (7.0, 8.0, 9.0)))
+        self.assertEqual(d[0], Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(d[1], Vector3(4.0, 5.0, 6.0))
+        self.assertEqual(d[2], Vector3(7.0, 8.0, 9.0))
+
+    def test_static_methods(self):
+        a = Matrix3.translation((0.0, -1.0))
+        self.assertEqual(a[2].xy, Vector2(0.0, -1.0))
+        #self.assertEqual(a.translation, Vector2(0.0, -1.0)) # TODO
+
+        b = Matrix3.rotation(Deg(45.0))
+        self.assertEqual(b.right, Vector2(0.707107, 0.707107))
+        self.assertEqual(b.up, Vector2(-0.707107, 0.707107))
+        self.assertEqual(b.rotation(), Matrix2x2(
+            (0.707107, 0.707107),
+            (-0.707107, 0.707107)))
+
+        c = Matrix3.scaling((1.0, 2.0))
+        self.assertEqual(c.scaling(), Vector2(1.0, 2.0))
+
+    def test_methods(self):
+        self.assertEqual(Matrix3.rotation(Deg(45.0)).inverted(),
+                         Matrix3.rotation(Deg(-45.0)))
+
+class Matrix4_(unittest.TestCase):
+    def test_init(self):
+        a = Matrix4()
+        self.assertEqual(a[0], Vector4(1.0, 0.0, 0.0, 0.0))
+        self.assertEqual(a[1], Vector4(0.0, 1.0, 0.0, 0.0))
+        self.assertEqual(a[2], Vector4(0.0, 0.0, 1.0, 0.0))
+        self.assertEqual(a[3], Vector4(0.0, 0.0, 0.0, 1.0))
+
+        b = Matrix4.zero_init()
+        self.assertEqual(b[0], Vector4(0))
+        self.assertEqual(b[1], Vector4(0))
+        self.assertEqual(b[2], Vector4(0))
+
+        c1 = Matrix4.identity_init()
+        self.assertEqual(c1[0], Vector4(1.0, 0.0, 0.0, 0.0))
+        self.assertEqual(c1[1], Vector4(0.0, 1.0, 0.0, 0.0))
+        self.assertEqual(c1[2], Vector4(0.0, 0.0, 1.0, 0.0))
+        self.assertEqual(c1[3], Vector4(0.0, 0.0, 0.0, 1.0))
+
+        c3 = Matrix4.identity_init(3.0)
+        self.assertEqual(c3[0], Vector4(3.0, 0.0, 0.0, 0.0))
+        self.assertEqual(c3[1], Vector4(0.0, 3.0, 0.0, 0.0))
+        self.assertEqual(c3[2], Vector4(0.0, 0.0, 3.0, 0.0))
+        self.assertEqual(c3[3], Vector4(0.0, 0.0, 0.0, 3.0))
+
+        d = Matrix4(((1.0, 2.0, 3.0, 4.0),
+                     (5.0, 6.0, 7.0, 8.0),
+                     (9.0, 10.0, 11.0, 12.0),
+                     (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(d[0], Vector4(1.0, 2.0, 3.0, 4.0))
+        self.assertEqual(d[1], Vector4(5.0, 6.0, 7.0, 8.0))
+        self.assertEqual(d[2], Vector4(9.0, 10.0, 11.0, 12.0))
+        self.assertEqual(d[3], Vector4(13.0, 14.0, 15.0, 16.0))
+
+    def test_static_methods(self):
+        a = Matrix4.translation((0.0, -1.0, 2.0))
+        self.assertEqual(a[3].xyz, Vector3(0.0, -1.0, 2.0))
+        #self.assertEqual(a.translation, Vector3(0.0, -1.0, 2.0)) # TODO
+
+        b = Matrix4.rotation(Deg(45.0), Vector3.x_axis())
+        self.assertEqual(b.right, Vector3(1.0, 0.0, 0.0))
+        self.assertEqual(b.up, Vector3(0.0, 0.707107, 0.707107))
+        self.assertEqual(b.backward, Vector3(0.0, -0.707107, 0.707107))
+        self.assertEqual(b.rotation(), Matrix3x3(
+            (1.0, 0.0, 0.0),
+            (0.0, 0.707107, 0.707107),
+            (0.0, -0.707107, 0.707107)))
+
+        c = Matrix4.scaling((1.0, 2.0, 3.5))
+        self.assertEqual(c.scaling(), Vector3(1.0, 2.0, 3.5))
+
+    def test_methods(self):
+        self.assertEqual(Matrix4.rotation_x(Deg(45.0)).inverted(),
+                         Matrix4.rotation_x(Deg(-45.0)))
