@@ -43,4 +43,6 @@ __all__ = [
     'Matrix3x2d', 'Matrix3x3d', 'Matrix3x4d',
     'Matrix4x2d', 'Matrix4x3d', 'Matrix4x4d',
     'Matrix3', 'Matrix4', 'Matrix3d', 'Matrix4d',
+
+    'Quaternion', 'Quaterniond'
 ]

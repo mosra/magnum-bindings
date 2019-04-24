@@ -448,3 +448,53 @@ class Matrix4_(unittest.TestCase):
     def test_methods(self):
         self.assertEqual(Matrix4.rotation_x(Deg(45.0)).inverted(),
                          Matrix4.rotation_x(Deg(-45.0)))
+
+class Quaternion_(unittest.TestCase):
+    def test_init(self):
+        a = Quaternion()
+        self.assertEqual(a.vector, Vector3(0.0, 0.0, 0.0))
+        self.assertEqual(a.scalar, 1.0)
+
+        b = Quaternion.identity_init()
+        self.assertEqual(b.vector, Vector3(0.0, 0.0, 0.0))
+        self.assertEqual(b.scalar, 1.0)
+
+        c = Quaternion.zero_init()
+        self.assertEqual(c.vector, Vector3(0.0, 0.0, 0.0))
+        self.assertEqual(c.scalar, 0.0)
+
+        d = Quaternion(Vector3(1.0, 2.0, 3.0), 4.0)
+        self.assertEqual(d.vector, Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(d.scalar, 4.0)
+
+        e = Quaternion(((1.0, 2.0, 3.0), 4.0))
+        self.assertEqual(e.vector, Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(e.scalar, 4.0)
+
+    def test_static_methods(self):
+        a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())
+        self.assertEqual(a, Quaternion((0.382683, 0.0, 0.0), 0.92388))
+        self.assertEqual(a.to_matrix(), Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
+
+    def test_methods(self):
+        a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())
+        self.assertEqual(a.inverted(),
+            Quaternion.rotation(Deg(45.0), -Vector3.x_axis()))
+        self.assertAlmostEqual(float(Deg(a.angle())), float(Deg(45.0)), 4)
+
+    def test_functions(self):
+        a = math.angle(Quaterniond.rotation(Deg(45.0), Vector3d.x_axis()),
+                       Quaterniond.rotation(Deg(75.0), Vector3d.x_axis()))
+        self.assertEqual(Deg(a), Deg(15.0))
+
+    def test_properties(self):
+        a = Quaternion()
+        a.vector = (1.0, 2.0, 3.0)
+        a.scalar = 4.0
+        self.assertEqual(a.vector, Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(a.scalar, 4.0)
+        self.assertEqual(a, Quaternion((1.0, 2.0, 3.0), 4.0))
+
+    def test_repr(self):
+        a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())
+        self.assertEqual(repr(a), 'Quaternion({0.382683, 0, 0}, 0.92388)')

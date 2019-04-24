@@ -29,6 +29,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Angle.h>
 #include <Magnum/Math/BoolVector.h>
+#include <Magnum/Math/Quaternion.h>
 
 #include "magnum/bootstrap.h"
 #include "magnum/math.h"
@@ -153,6 +154,110 @@ template<class T> void boolVector(py::class_<T>& c) {
     c.def_static("__len__", []() { return int(T::Size); }, lenDocstring);
 }
 
+template<class T> void quaternion(py::module& m, py::class_<T>& c) {
+    /*
+        Missing APIs:
+
+        Type
+        construction from different types
+    */
+
+    m
+        .def("dot", static_cast<typename T::Type(*)(const T&, const T&)>(&Math::dot),
+            "Dot product between two quaternions")
+        .def("angle", [](const T& a, const T& b) {
+            return Radd(Math::angle(a, b));
+        }, "Angle between normalized quaternions")
+        .def("lerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerp),
+            "Linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("lerp_shortest_path", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerpShortestPath),
+            "Linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("slerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::slerp),
+            "Spherical linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("slerp_shortest_path", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::slerpShortestPath),
+            "Spherical linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        ;
+
+    c
+        /* Constructors */
+        .def_static("rotation", [](Radd angle, const Math::Vector3<typename T::Type>& axis) {
+            return T::rotation(Math::Rad<typename T::Type>(angle), axis);
+        }, "Rotation quaternion")
+        .def_static("from_matrix", &T::fromMatrix,
+            "Create a quaternion from rotation matrix")
+        .def_static("zero_init", []() {
+            return T{Math::ZeroInit};
+        }, "Construct a zero-initialized quaternion")
+        .def_static("identity_init", []() {
+            return T{Math::IdentityInit};
+        }, "Construct an identity quaternion")
+        .def(py::init(), "Default constructor")
+        .def(py::init<const Math::Vector3<typename T::Type>&, typename T::Type>(),
+            "Construct from a vector and a scalar")
+        .def(py::init([](const std::pair<std::tuple<typename T::Type, typename T::Type, typename T::Type>, typename T::Type>& value) {
+            return T{{std::get<0>(value.first), std::get<1>(value.first), std::get<2>(value.first)}, value.second};
+        }), "Construct from a tuple")
+        .def(py::init<const Math::Vector3<typename T::Type>&>(),
+            "Construct from a vector")
+
+        /* Comparison */
+        .def(py::self == py::self, "Equality comparison")
+        .def(py::self != py::self, "Non-equality comparison")
+
+        /* Operators */
+        .def(-py::self, "Negated quaternion")
+        .def(py::self += py::self, "Add and assign a quaternion")
+        .def(py::self + py::self, "Add a quaternion")
+        .def(py::self -= py::self, "Subtract and assign a quaternion")
+        .def(py::self - py::self, "Subtract a quaternion")
+        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
+        .def(py::self * typename T::Type{}, "Multiply with a scalar")
+        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
+        .def(py::self / typename T::Type{}, "Divide with a scalar")
+        .def(py::self * py::self, "Multiply with a quaternion")
+        .def(typename T::Type{} * py::self, "Multiply a scalar with a quaternion")
+        .def(typename T::Type{} / py::self, "Divide a quaternion with a scalar and invert")
+
+        /* Member functions */
+        .def("is_normalized", &T::isNormalized,
+            "Whether the quaternion is normalized")
+        .def("angle", [](const T& self) {
+            return Radd(self.angle());
+        }, "Rotation angle of a unit quaternion")
+        .def("axis", &T::axis,
+            "Rotation axis of a unit quaternion")
+        .def("to_matrix", &T::toMatrix,
+            "Convert to a rotation matrix")
+        .def("dot", &T::dot,
+            "Dot product of the quaternion")
+        .def("length", &T::length,
+            "Quaternion length")
+        .def("normalized", &T::normalized,
+            "Normalized quaternion (of unit length)")
+        .def("conjugated", &T::conjugated,
+            "Conjugated quaternion")
+        .def("inverted", &T::inverted,
+            "Inverted quaternion")
+        .def("inverted_normalized", &T::invertedNormalized,
+            "Inverted normalized quaternion")
+        .def("transform_vector", &T::transformVector,
+            "Rotate a vector with a quaternion")
+        .def("transform_vector_normalized", &T::transformVectorNormalized,
+            "Rotate a vector with a normalized quaternion")
+
+        /* Properties */
+        .def_property("vector",
+            static_cast<const Math::Vector3<typename T::Type>(T::*)() const>(&T::vector),
+            [](T& self, const Math::Vector3<typename T::Type>& value) { self.vector() = value; },
+            "Vector part")
+        .def_property("scalar",
+            static_cast<typename T::Type(T::*)() const>(&T::scalar),
+            [](T& self, typename T::Type value) { self.scalar() = value; },
+            "Scalar part")
+
+        .def("__repr__", repr<T>, "Object representation");
+}
+
 }
 
 void math(py::module& root, py::module& m) {
@@ -190,6 +295,18 @@ void math(py::module& root, py::module& m) {
     m.attr("sqrt_half") = Constantsd::sqrtHalf();
     m.attr("nan") = Constantsd::nan();
     m.attr("inf") = Constantsd::inf();
+
+    /* These are needed for the quaternion, so register them before */
+    magnum::mathVectorFloat(root, m);
+    magnum::mathVectorIntegral(root, m);
+    magnum::mathMatrixFloat(root);
+    magnum::mathMatrixDouble(root);
+
+    /* Quaternion */
+    py::class_<Quaternion> quaternion_(root, "Quaternion", "Float quaternion");
+    py::class_<Quaterniond> quaterniond(root, "Quaterniond", "Double quaternion");
+    quaternion(m, quaternion_);
+    quaternion(m, quaterniond);
 }
 
 }

@@ -34,8 +34,4 @@ PYBIND11_MODULE(_magnum, m) {
 
     py::module math = m.def_submodule("math");
     magnum::math(m, math);
-    magnum::mathVectorFloat(m, math);
-    magnum::mathVectorIntegral(m, math);
-    magnum::mathMatrixFloat(m);
-    magnum::mathMatrixDouble(m);
 }
