@@ -1,0 +1,39 @@
+# Author: mosra <mosra@centrum.cz>
+pkgname=magnum-bindings
+pkgver=dev
+pkgrel=1
+pkgdesc="C++11/C++14 graphics middleware for games and data visualization — bindings"
+arch=('i686' 'x86_64')
+url="https://magnum.graphics"
+license=('MIT')
+depends=('corrade' 'magnum' 'python')
+makedepends=('cmake' 'ninja' 'pybind11')
+provides=('magnum-bindings-git')
+
+_rootdir=$startdir/../../
+
+build() {
+    mkdir -p "$_rootdir/build"
+    cd "$_rootdir/build"
+
+    # Disable optimization (saves A LOT of compilation time)
+    newcxxflags=$(echo $CXXFLAGS | sed s/-O.//g | sed s/-D_FORTIFY_SOURCE=.//g)
+    export CXXFLAGS="$newcxxflags"
+
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DWITH_PYTHON=ON \
+        -G Ninja
+    ninja
+}
+
+check() {
+    cd "$_rootdir/src/python/magnum"
+    python -m unittest -v
+}
+
+package() {
+    cd "$_rootdir/build/src/python"
+    python setup.py install --root="$pkgdir" --prefix=/usr
+}
