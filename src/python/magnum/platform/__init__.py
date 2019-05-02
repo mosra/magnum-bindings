@@ -23,23 +23,12 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-set(magnum_SRCS
-    magnum.cpp
-    math.cpp
-    math.matrixfloat.cpp
-    math.matrixdouble.cpp
-    math.vectorfloat.cpp
-    math.vectorintegral.cpp)
+"""Platform-specific application and context creation"""
 
-pybind11_add_module(magnum ${magnum_SRCS})
-target_include_directories(magnum PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-target_link_libraries(magnum PRIVATE Magnum::Magnum)
-set_target_properties(magnum PROPERTIES
-    FOLDER "python"
-    OUTPUT_NAME "_magnum"
-    LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-
-file(GENERATE OUTPUT ${output_dir}/magnum/__init__.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
-
-add_subdirectory(platform)
+try:
+    from .glx import WindowlessApplication
+except ImportError: # pragma: no cover
+    try:
+        from .egl import WindowlessApplication
+    except ImportError:
+        pass

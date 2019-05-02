@@ -23,23 +23,30 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-set(magnum_SRCS
-    magnum.cpp
-    math.cpp
-    math.matrixfloat.cpp
-    math.matrixdouble.cpp
-    math.vectorfloat.cpp
-    math.vectorintegral.cpp)
+# *Not* REQUIRED
+find_package(Magnum COMPONENTS
+    WindowlessEglApplication
+    WindowlessGlxApplication)
 
-pybind11_add_module(magnum ${magnum_SRCS})
-target_include_directories(magnum PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-target_link_libraries(magnum PRIVATE Magnum::Magnum)
-set_target_properties(magnum PROPERTIES
-    FOLDER "python"
-    OUTPUT_NAME "_magnum"
-    LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+if(Magnum_WindowlessEglApplication_FOUND)
+    pybind11_add_module(magnum_platform_egl egl.cpp)
+    target_link_libraries(magnum_platform_egl PRIVATE Magnum::WindowlessEglApplication)
+    target_include_directories(magnum_platform_egl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    set_target_properties(magnum_platform_egl PROPERTIES
+        FOLDER "python/platform"
+        OUTPUT_NAME "egl"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+endif()
 
-file(GENERATE OUTPUT ${output_dir}/magnum/__init__.py
+if(Magnum_WindowlessGlxApplication_FOUND)
+    pybind11_add_module(magnum_platform_glx glx.cpp)
+    target_link_libraries(magnum_platform_glx PRIVATE Magnum::WindowlessGlxApplication)
+    target_include_directories(magnum_platform_glx PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    set_target_properties(magnum_platform_glx PROPERTIES
+        FOLDER "python/platform"
+        OUTPUT_NAME "glx"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+endif()
+
+file(GENERATE OUTPUT ${output_dir}/magnum/platform/__init__.py
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
-
-add_subdirectory(platform)

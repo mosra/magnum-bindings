@@ -33,6 +33,8 @@ extension_paths = {
     # Filled in by cmake
     'corrade.containers': '$<TARGET_FILE:corrade_containers>',
     'magnum._magnum': '$<TARGET_FILE:magnum>',
+    'magnum.platform.egl': '$<$<TARGET_EXISTS:magnum_platform_egl>:$<TARGET_FILE:magnum_platform_egl>>',
+    'magnum.platform.glx': '$<$<TARGET_EXISTS:magnum_platform_glx>:$<TARGET_FILE:magnum_platform_glx>>',
 }
 
 class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
@@ -42,7 +44,7 @@ class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
 
 setup(
     name='magnum',
-    packages=['corrade', 'magnum'],
+    packages=['corrade', 'magnum', 'magnum.platform'],
     ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
     cmdclass = {
         'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
