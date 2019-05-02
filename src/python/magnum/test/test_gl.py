@@ -23,34 +23,14 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-import os
-import shutil
+import unittest
 
-from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
+from magnum import gl
 
-extension_paths = {
-    # Filled in by cmake
-    'corrade.containers': '$<TARGET_FILE:corrade_containers>',
-    'magnum._magnum': '$<TARGET_FILE:magnum>',
-    'magnum.gl': '$<$<TARGET_EXISTS:magnum_gl>:$<TARGET_FILE:magnum_gl>>',
-    'magnum.platform.egl': '$<$<TARGET_EXISTS:magnum_platform_egl>:$<TARGET_FILE:magnum_platform_egl>>',
-    'magnum.platform.glx': '$<$<TARGET_EXISTS:magnum_platform_glx>:$<TARGET_FILE:magnum_platform_glx>>',
-}
-
-class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
-    def run(self):
-        for ext in self.extensions:
-            shutil.copyfile(extension_paths[ext.name], self.get_ext_fullpath(ext.name))
-
-setup(
-    name='magnum',
-    packages=['corrade', 'magnum', 'magnum.platform'],
-    ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
-    cmdclass = {
-        'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
-    },
-    zip_safe=True
-)
-
-# kate: hl python
+class Attribute(unittest.TestCase):
+    def test_init(self):
+        a = gl.Attribute(gl.Attribute.Kind.GENERIC, 2, gl.Attribute.Components.TWO, gl.Attribute.DataType.FLOAT)
+        self.assertEqual(a.kind, gl.Attribute.Kind.GENERIC)
+        self.assertEqual(a.location, 2)
+        self.assertEqual(a.components, gl.Attribute.Components.TWO)
+        self.assertEqual(a.data_type, gl.Attribute.DataType.FLOAT)
