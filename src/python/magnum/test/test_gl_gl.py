@@ -44,3 +44,8 @@ class Buffer(GLTestCase):
     def test_set_data(self):
         a = gl.Buffer()
         a.set_data(b'hello', gl.BufferUsage.STATIC_DRAW)
+
+class DefaultFramebuffer(GLTestCase):
+    def test(self):
+        # Using it should not crash, leak or cause double-free issues
+        self.assertTrue(gl.default_framebuffer is not None)

@@ -34,3 +34,8 @@ class Attribute(unittest.TestCase):
         self.assertEqual(a.location, 2)
         self.assertEqual(a.components, gl.Attribute.Components.TWO)
         self.assertEqual(a.data_type, gl.Attribute.DataType.FLOAT)
+
+class FramebufferClear(unittest.TestCase):
+    def test_ops(self):
+        self.assertEqual(gl.FramebufferClear.COLOR|gl.FramebufferClear.COLOR, gl.FramebufferClear.COLOR)
+        self.assertFalse(gl.FramebufferClear.COLOR & ~gl.FramebufferClear.COLOR)

@@ -27,9 +27,12 @@
 #include <Corrade/Containers/ArrayView.h>
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 
 #include "corrade/PyArrayView.h"
+#include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
+#include "magnum/NonDestructible.h"
 
 namespace magnum { namespace {
 
@@ -152,6 +155,34 @@ void gl(py::module& m) {
             self.setData(data, usage);
         }, "Set buffer data", py::arg("data"), py::arg("usage") = GL::BufferUsage::StaticDraw)
         /** @todo more */;
+
+    /* Framebuffers */
+    py::enum_<GL::FramebufferClear> framebufferClear{m, "FramebufferClear", "Mask for framebuffer clearing"};
+    framebufferClear
+        .value("COLOR", GL::FramebufferClear::Color)
+        .value("DEPTH", GL::FramebufferClear::Depth)
+        .value("STENCIL", GL::FramebufferClear::Stencil);
+    corrade::enumOperators(framebufferClear);
+
+    NonDestructible<GL::AbstractFramebuffer> abstractFramebuffer{m,
+        "AbstractFramebuffer", "Base for default and named framebuffers"};
+
+    abstractFramebuffer
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
+            self.clear(mask);
+        });
+
+    NonDestructibleBase<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
+        "DefaultFramebuffer", "Default framebuffer"};
+
+    /* An equivalent to this would be
+        m.attr("default_framebuffer") = &GL::defaultFramebuffer;
+       (have to use a & to make it choose return_value_policy::reference
+       instead of return_value_policy::copy), but this is more explicit ---
+       returning a raw pointer from functions makes pybind wrap it in an
+       unique_ptr, which would cause double-free / memory corruption later */
+    py::setattr(m, "default_framebuffer", py::cast(GL::defaultFramebuffer, py::return_value_policy::reference));
 }
 
 }}
