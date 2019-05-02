@@ -36,5 +36,21 @@ endif()
 add_subdirectory(corrade)
 add_subdirectory(magnum)
 
+# This would be bad enough already, but $<TARGET_EXISTS> doesn't exist until
+# CMake 3.12, so I need to do two passes, first replacing variables using
+# configure_file() and then replacing generator expressions with file(GENERATE)
+foreach(target
+    magnum_gl
+    magnum_shaders
+    magnum_platform_egl
+    magnum_platform_glx
+    magnum_platform_glfw
+    magnum_platform_sdl2)
+    if(TARGET ${target})
+        set(${target}_file $<TARGET_FILE:${target}>)
+    endif()
+endforeach()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)
 file(GENERATE OUTPUT ${output_dir}/setup.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake)
+    INPUT ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)

@@ -33,12 +33,12 @@ extension_paths = {
     # Filled in by cmake
     'corrade.containers': '$<TARGET_FILE:corrade_containers>',
     'magnum._magnum': '$<TARGET_FILE:magnum>',
-    'magnum.gl': '$<$<TARGET_EXISTS:magnum_gl>:$<TARGET_FILE:magnum_gl>>',
-    'magnum.shaders': '$<$<TARGET_EXISTS:magnum_shaders>:$<TARGET_FILE:magnum_shaders>>',
-    'magnum.platform.egl': '$<$<TARGET_EXISTS:magnum_platform_egl>:$<TARGET_FILE:magnum_platform_egl>>',
-    'magnum.platform.glx': '$<$<TARGET_EXISTS:magnum_platform_glx>:$<TARGET_FILE:magnum_platform_glx>>',
-    'magnum.platform.glfw': '$<$<TARGET_EXISTS:magnum_platform_glfw>:$<TARGET_FILE:magnum_platform_glfw>>',
-    'magnum.platform.sdl2': '$<$<TARGET_EXISTS:magnum_platform_sdl2>:$<TARGET_FILE:magnum_platform_sdl2>>',
+    'magnum.gl': '${magnum_gl_file}',
+    'magnum.shaders': '${magnum_shaders_file}',
+    'magnum.platform.egl': '${magnum_platform_egl_file}',
+    'magnum.platform.glx': '${magnum_platform_glx_file}',
+    'magnum.platform.glfw': '${magnum_platform_glfw_file}',
+    'magnum.platform.sdl2': '${magnum_platform_sdl2_file}',
 }
 
 class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
