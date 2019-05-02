@@ -25,6 +25,7 @@
 
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/ArrayView.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
@@ -38,6 +39,11 @@ namespace magnum { namespace {
 
 void gl(py::module& m) {
     py::module::import("corrade.containers");
+
+    /* Abstract shader program */
+    NonDestructible<GL::AbstractShaderProgram>{m,
+        "AbstractShaderProgram", "Base for shader program implementations"};
+    /** @todo more */
 
     /* (Dynamic) attribute */
     py::class_<GL::DynamicAttribute> attribute{m, "Attribute", "Vertex attribute location and type"};
