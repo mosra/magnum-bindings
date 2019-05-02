@@ -37,6 +37,8 @@ extension_paths = {
     'magnum.shaders': '$<$<TARGET_EXISTS:magnum_shaders>:$<TARGET_FILE:magnum_shaders>>',
     'magnum.platform.egl': '$<$<TARGET_EXISTS:magnum_platform_egl>:$<TARGET_FILE:magnum_platform_egl>>',
     'magnum.platform.glx': '$<$<TARGET_EXISTS:magnum_platform_glx>:$<TARGET_FILE:magnum_platform_glx>>',
+    'magnum.platform.glfw': '$<$<TARGET_EXISTS:magnum_platform_glfw>:$<TARGET_FILE:magnum_platform_glfw>>',
+    'magnum.platform.sdl2': '$<$<TARGET_EXISTS:magnum_platform_sdl2>:$<TARGET_FILE:magnum_platform_sdl2>>',
 }
 
 class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):

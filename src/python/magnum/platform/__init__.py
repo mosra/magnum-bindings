@@ -32,3 +32,11 @@ except ImportError: # pragma: no cover
         from .egl import WindowlessApplication
     except ImportError:
         pass
+
+try:
+    from .sdl2 import Application
+except ImportError: # pragma: no cover
+    try:
+        from .glfw import Application
+    except ImportError:
+        pass

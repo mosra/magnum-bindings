@@ -25,8 +25,30 @@
 
 # *Not* REQUIRED
 find_package(Magnum COMPONENTS
+    GlfwApplication
+    Sdl2Application
     WindowlessEglApplication
     WindowlessGlxApplication)
+
+if(Magnum_GlfwApplication_FOUND)
+    pybind11_add_module(magnum_platform_glfw glfw.cpp)
+    target_link_libraries(magnum_platform_glfw PRIVATE Magnum::GlfwApplication)
+    target_include_directories(magnum_platform_glfw PRIVATE ${CMAKE_SOURCE_DIR}/src/python)
+    set_target_properties(magnum_platform_glfw PROPERTIES
+        FOLDER "python/platform"
+        OUTPUT_NAME "glfw"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+endif()
+
+if(Magnum_Sdl2Application_FOUND)
+    pybind11_add_module(magnum_platform_sdl2 sdl2.cpp)
+    target_link_libraries(magnum_platform_sdl2 PRIVATE Magnum::Sdl2Application)
+    target_include_directories(magnum_platform_sdl2 PRIVATE ${CMAKE_SOURCE_DIR}/src/python)
+    set_target_properties(magnum_platform_sdl2 PROPERTIES
+        FOLDER "python/platform"
+        OUTPUT_NAME "sdl2"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+endif()
 
 if(Magnum_WindowlessEglApplication_FOUND)
     pybind11_add_module(magnum_platform_egl egl.cpp)
