@@ -29,6 +29,7 @@
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Mesh.h>
 
 #include "corrade/PyArrayView.h"
 #include "corrade/EnumOperators.h"
@@ -36,6 +37,12 @@
 #include "magnum/NonDestructible.h"
 
 namespace magnum { namespace {
+
+struct PyMesh: GL::Mesh {
+    explicit PyMesh(GL::MeshPrimitive primitive): GL::Mesh(primitive) {}
+
+    std::vector<py::object> buffers;
+};
 
 void gl(py::module& m) {
     py::module::import("corrade.containers");
@@ -189,6 +196,52 @@ void gl(py::module& m) {
        returning a raw pointer from functions makes pybind wrap it in an
        unique_ptr, which would cause double-free / memory corruption later */
     py::setattr(m, "default_framebuffer", py::cast(GL::defaultFramebuffer, py::return_value_policy::reference));
+
+    /* Mesh */
+    py::enum_<GL::MeshPrimitive>{m, "MeshPrimitive", "Mesh primitive type"}
+        .value("POINTS", GL::MeshPrimitive::Points)
+        .value("LINES", GL::MeshPrimitive::Lines)
+        .value("LINE_LOOP", GL::MeshPrimitive::LineLoop)
+        .value("LINE_STRIP", GL::MeshPrimitive::LineStrip)
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        .value("LINES_ADJACENCY", GL::MeshPrimitive::LinesAdjacency)
+        .value("LINE_STRIP_ADJACENCY", GL::MeshPrimitive::LineStripAdjacency)
+        #endif
+        .value("TRIANGLES", GL::MeshPrimitive::Triangles)
+        .value("TRIANGLE_STRIP", GL::MeshPrimitive::TriangleStrip)
+        .value("TRIANGLE_FAN", GL::MeshPrimitive::TriangleFan)
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        .value("TRIANGLES_ADJACENCY", GL::MeshPrimitive::TrianglesAdjacency)
+        .value("TRIANGLE_STRIP_ADJACENCY", GL::MeshPrimitive::TriangleStripAdjacency)
+        .value("PATCHES", GL::MeshPrimitive::Patches)
+        #endif
+        ;
+
+    py::class_<PyMesh>{m, "Mesh", "Mesh"}
+        .def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
+        .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
+        .def_property("primitive", &GL::Mesh::primitive, static_cast<GL::Mesh&(GL::Mesh::*)(GL::MeshPrimitive)>(&GL::Mesh::setPrimitive), "Primitive type")
+        /** @todo generic primitive overload */
+        /* Have to use a lambda because it returns GL::Mesh which is not
+           tracked (unlike PyMesh) */
+        .def_property("count", &GL::Mesh::count, [](PyMesh& self, UnsignedInt count) {
+            self.setCount(count);
+        }, "Vertex/index count")
+
+        /* Using lambdas to avoid method chaining getting into signatures */
+
+        .def("add_vertex_buffer", [](PyMesh& self, GL::Buffer& buffer, GLintptr offset, GLsizei stride, const GL::DynamicAttribute& attribute) {
+            self.addVertexBuffer(buffer, offset, stride, attribute);
+
+            /* Keep a reference to the buffer to avoid it being deleted before
+               the mesh */
+            self.buffers.emplace_back(py::detail::get_object_handle(&buffer, py::detail::get_type_info(typeid(GL::Buffer))), true);
+        }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
+        .def("draw", [](PyMesh& self, GL::AbstractShaderProgram& shader) {
+            self.draw(shader);
+        }, "Draw the mesh")
+        /** @todo more */
+        ;
 }
 
 }}

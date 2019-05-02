@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import sys
 import unittest
 
 # setUpModule gets called before everything else, skipping if GL tests can't
@@ -49,3 +50,27 @@ class DefaultFramebuffer(GLTestCase):
     def test(self):
         # Using it should not crash, leak or cause double-free issues
         self.assertTrue(gl.default_framebuffer is not None)
+
+class Mesh(GLTestCase):
+    def test_init(self):
+        a = gl.Mesh(gl.MeshPrimitive.LINE_LOOP)
+        self.assertNotEqual(a.id, 0)
+        self.assertEqual(a.primitive, gl.MeshPrimitive.LINE_LOOP)
+
+    def test_set_count(self):
+        a = gl.Mesh()
+        a.count = 15
+        self.assertEqual(a.count, 15)
+
+    def test_add_buffer(self):
+        buffer = gl.Buffer()
+        buffer_refcount = sys.getrefcount(buffer)
+
+        # Adding a buffer to the mesh should increase its ref count
+        mesh = gl.Mesh()
+        mesh.add_vertex_buffer(buffer, 0, 8, gl.Attribute(gl.Attribute.Kind.GENERIC, 2, gl.Attribute.Components.TWO, gl.Attribute.DataType.FLOAT))
+        self.assertEqual(sys.getrefcount(buffer), buffer_refcount + 1)
+
+        # Deleting the mesh should decrease it again
+        del mesh
+        self.assertEqual(sys.getrefcount(buffer), buffer_refcount)
