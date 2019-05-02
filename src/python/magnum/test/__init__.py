@@ -29,4 +29,18 @@ import unittest
 
 # TODO: do this differently / more robustly
 sys.path = [os.path.join(os.path.dirname(__file__), '../../../../build/src/python')] + sys.path
+
 from magnum import *
+from magnum import platform
+
+def setUpModule():
+    if not hasattr(platform, 'WindowlessApplication'): # pragma: no cover
+        raise unittest.SkipTest('no WindowlessApplication found')
+
+class GLTestCase(unittest.TestCase):
+    app = None
+
+    @classmethod
+    def setUpClass(cls):
+        if not GLTestCase.app:
+            GLTestCase.app = platform.WindowlessApplication()
