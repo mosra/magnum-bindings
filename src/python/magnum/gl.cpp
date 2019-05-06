@@ -24,13 +24,18 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <Corrade/Containers/ArrayView.h>
 #include <Magnum/GL/Attribute.h>
+#include <Magnum/GL/Buffer.h>
 
+#include "corrade/PyArrayView.h"
 #include "magnum/bootstrap.h"
 
 namespace magnum { namespace {
 
 void gl(py::module& m) {
+    py::module::import("corrade.containers");
+
     /* (Dynamic) attribute */
     py::class_<GL::DynamicAttribute> attribute{m, "Attribute", "Vertex attribute location and type"};
 
@@ -86,6 +91,67 @@ void gl(py::module& m) {
             "Component count")
         .def_property_readonly("data_type", &GL::DynamicAttribute::dataType,
             "Type of passed data");
+
+    /* Buffer */
+    py::enum_<GL::BufferUsage>{m, "BufferUsage", "Buffer usage"}
+        .value("STREAM_DRAW", GL::BufferUsage::StreamDraw)
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("STREAM_READ", GL::BufferUsage::StreamRead)
+        .value("STREAM_COPY", GL::BufferUsage::StreamCopy)
+        #endif
+        .value("STATIC_DRAW", GL::BufferUsage::StaticDraw)
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("STATIC_READ", GL::BufferUsage::StaticRead)
+        .value("STATIC_COPY", GL::BufferUsage::StaticCopy)
+        #endif
+        .value("DYNAMIC_DRAW", GL::BufferUsage::DynamicDraw)
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DYNAMIC_READ", GL::BufferUsage::DynamicRead)
+        .value("DYNAMIC_COPY", GL::BufferUsage::DynamicCopy)
+        #endif
+        ;
+
+    py::class_<GL::Buffer> buffer{m, "Buffer", "Buffer"};
+
+    py::enum_<GL::Buffer::TargetHint>{buffer, "TargetHint", "Buffer target"}
+        .value("ARRAY", GL::Buffer::TargetHint::Array)
+        #ifndef MAGNUM_TARGET_GLES2
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("ATOMIC_COUNTER", GL::Buffer::TargetHint::AtomicCounter)
+        #endif
+        .value("COPY_READ", GL::Buffer::TargetHint::CopyRead)
+        .value("COPY_WRITE", GL::Buffer::TargetHint::CopyWrite)
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("DISPATCH_INDIRECT", GL::Buffer::TargetHint::DispatchIndirect)
+        .value("DRAW_INDIRECT", GL::Buffer::TargetHint::DrawIndirect)
+        #endif
+        #endif
+        .value("ELEMENT_ARRAY", GL::Buffer::TargetHint::ElementArray)
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("PIXEL_PACK", GL::Buffer::TargetHint::PixelPack)
+        .value("PIXEL_UNPACK", GL::Buffer::TargetHint::PixelUnpack)
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("SHADER_STORAGE", GL::Buffer::TargetHint::ShaderStorage)
+        #endif
+        #endif
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        .value("TEXTURE", GL::Buffer::TargetHint::Texture)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("TRANSFORM_FEEDBACK", GL::Buffer::TargetHint::TransformFeedback)
+        .value("UNIFORM", GL::Buffer::TargetHint::Uniform)
+        #endif
+        ;
+
+    buffer
+        .def(py::init<GL::Buffer::TargetHint>(), "Constructor", py::arg("target_hint") = GL::Buffer::TargetHint::Array)
+        .def_property_readonly("id", &GL::Buffer::id, "OpenGL buffer ID")
+        .def_property("target_hint", &GL::Buffer::targetHint, &GL::Buffer::setTargetHint, "Target hint")
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def("set_data", [](GL::Buffer& self, const corrade::PyArrayView<const char>& data, GL::BufferUsage usage) {
+            self.setData(data, usage);
+        }, "Set buffer data", py::arg("data"), py::arg("usage") = GL::BufferUsage::StaticDraw)
+        /** @todo more */;
 }
 
 }}
