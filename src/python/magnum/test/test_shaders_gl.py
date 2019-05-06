@@ -23,35 +23,20 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-import os
-import shutil
+import unittest
 
-from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
+# setUpModule gets called before everything else, skipping if GL tests can't
+# be run
+from . import GLTestCase, setUpModule
 
-extension_paths = {
-    # Filled in by cmake
-    'corrade.containers': '$<TARGET_FILE:corrade_containers>',
-    'magnum._magnum': '$<TARGET_FILE:magnum>',
-    'magnum.gl': '$<$<TARGET_EXISTS:magnum_gl>:$<TARGET_FILE:magnum_gl>>',
-    'magnum.shaders': '$<$<TARGET_EXISTS:magnum_shaders>:$<TARGET_FILE:magnum_shaders>>',
-    'magnum.platform.egl': '$<$<TARGET_EXISTS:magnum_platform_egl>:$<TARGET_FILE:magnum_platform_egl>>',
-    'magnum.platform.glx': '$<$<TARGET_EXISTS:magnum_platform_glx>:$<TARGET_FILE:magnum_platform_glx>>',
-}
+from magnum import *
+from magnum import shaders
 
-class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
-    def run(self):
-        for ext in self.extensions:
-            shutil.copyfile(extension_paths[ext.name], self.get_ext_fullpath(ext.name))
+class VertexColor(GLTestCase):
+    def test_init(self):
+        a = shaders.VertexColor2D()
+        b = shaders.VertexColor3D()
 
-setup(
-    name='magnum',
-    packages=['corrade', 'magnum', 'magnum.platform'],
-    ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
-    cmdclass = {
-        'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
-    },
-    zip_safe=True
-)
-
-# kate: hl python
+    def test_uniforms(self):
+        a = shaders.VertexColor2D()
+        a.transformation_projection_matrix = Matrix3.translation(Vector2.x_axis())

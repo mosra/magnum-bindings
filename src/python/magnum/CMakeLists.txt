@@ -24,7 +24,7 @@
 #
 
 # *Not* REQUIRED
-find_package(Magnum COMPONENTS GL)
+find_package(Magnum COMPONENTS GL Shaders)
 
 set(magnum_SRCS
     magnum.cpp
@@ -52,6 +52,19 @@ if(Magnum_GL_FOUND)
     set_target_properties(magnum_gl PROPERTIES
         FOLDER "python"
         OUTPUT_NAME "gl"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+endif()
+
+if(Magnum_Shaders_FOUND)
+    set(magnum_shaders_SRCS
+        shaders.cpp)
+
+    pybind11_add_module(magnum_shaders ${magnum_shaders_SRCS})
+    target_include_directories(magnum_shaders PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(magnum_shaders PRIVATE Magnum::Shaders)
+    set_target_properties(magnum_shaders PROPERTIES
+        FOLDER "python"
+        OUTPUT_NAME "shaders"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
 endif()
 
