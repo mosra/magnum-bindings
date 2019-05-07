@@ -1,5 +1,3 @@
-#ifndef magnum_bootstrap_h
-#define magnum_bootstrap_h
 /*
     This file is part of Magnum.
 
@@ -25,20 +23,27 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-namespace pybind11 { class module; }
-namespace Magnum {}
+#include "magnum/math.matrix.h"
 
 namespace magnum {
 
-using namespace Magnum;
-namespace py = pybind11;
+void mathMatrixFloat(py::module& root) {
+    py::class_<Matrix2x2> matrix2x2{root, "Matrix2x2", "2x2 float matrix"};
+    py::class_<Matrix2x3> matrix2x3{root, "Matrix2x3", "2x3 float matrix"};
+    py::class_<Matrix2x4> matrix2x4{root, "Matrix2x4", "2x4 float matrix"};
 
-void math(py::module& root, py::module& m);
-void mathVectorFloat(py::module& root, py::module& m);
-void mathVectorIntegral(py::module& root, py::module& m);
-void mathMatrixFloat(py::module& root);
-void mathMatrixDouble(py::module& root);
+    py::class_<Matrix3x2> matrix3x2{root, "Matrix3x2", "3x2 float matrix"};
+    py::class_<Matrix3x3> matrix3x3{root, "Matrix3x3", "3x3 float matrix"};
+    py::class_<Matrix3x4> matrix3x4{root, "Matrix3x4", "3x4 float matrix"};
 
+    py::class_<Matrix4x2> matrix4x2{root, "Matrix4x2", "4x2 float matrix"};
+    py::class_<Matrix4x3> matrix4x3{root, "Matrix4x3", "4x3 float matrix"};
+    py::class_<Matrix4x4> matrix4x4{root, "Matrix4x4", "4x4 float matrix"};
+
+    matrices<Float>(
+        matrix2x2, matrix2x3, matrix2x4,
+        matrix3x2, matrix3x3, matrix3x4,
+        matrix4x2, matrix4x3, matrix4x4);
 }
 
-#endif
+}

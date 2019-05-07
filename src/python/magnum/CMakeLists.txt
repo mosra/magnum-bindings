@@ -26,6 +26,8 @@
 set(magnum_SRCS
     magnum.cpp
     math.cpp
+    math.matrixfloat.cpp
+    math.matrixdouble.cpp
     math.vectorfloat.cpp
     math.vectorintegral.cpp)
 

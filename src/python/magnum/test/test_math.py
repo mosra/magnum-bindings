@@ -249,3 +249,99 @@ class Vector(unittest.TestCase):
 
     def test_repr(self):
         self.assertEqual(repr(Vector3(1.0, 3.14, -13.37)), 'Vector(1, 3.14, -13.37)')
+
+class Matrix(unittest.TestCase):
+    def test_init(self):
+        a = Matrix3x2()
+        self.assertEqual(a[0], Vector2(0))
+        self.assertEqual(a[1], Vector2(0))
+        self.assertEqual(a[2], Vector2(0))
+
+        b = Matrix4x4.zero_init()
+        self.assertEqual(b[0], Vector4(0))
+        self.assertEqual(b[1], Vector4(0))
+        self.assertEqual(b[2], Vector4(0))
+        self.assertEqual(b[3], Vector4(0))
+
+        c1 = Matrix3x3.identity_init()
+        self.assertEqual(c1[0], Vector3.x_axis())
+        self.assertEqual(c1[1], Vector3.y_axis())
+        self.assertEqual(c1[2], Vector3.z_axis())
+
+        c3 = Matrix3x3.identity_init(3.0)
+        self.assertEqual(c3[0], Vector3.x_axis(3.0))
+        self.assertEqual(c3[1], Vector3.y_axis(3.0))
+        self.assertEqual(c3[2], Vector3.z_axis(3.0))
+
+        d = Matrix2x3(Vector3(1.0, 2.0, 3.0),
+                      Vector3(4.0, 5.0, 6.0))
+        self.assertEqual(d[0], Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(d[1], Vector3(4.0, 5.0, 6.0))
+
+        e = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+        self.assertEqual(e[0], Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(e[1], Vector3(4.0, 5.0, 6.0))
+
+        f = Matrix3x2(((1.0, 2.0),
+                       (3.0, 4.0),
+                       (5.0, 6.0)))
+        self.assertEqual(f[0], Vector2(1.0, 2.0))
+        self.assertEqual(f[1], Vector2(3.0, 4.0))
+        self.assertEqual(f[2], Vector2(5.0, 6.0))
+
+    def test_length(self):
+        self.assertEqual(Matrix3x4.__len__(), 3)
+        #self.assertEqual(len(Matrix4x3), 4) TODO: Y not?
+        self.assertEqual(len(Matrix4x3()), 4)
+
+    def test_set_get(self):
+        a = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+        self.assertEqual(a[1][2], 6.0)
+
+        a[1] = (4.5, 5.5, 6.5)
+        self.assertEqual(a[1], Vector3(4.5, 5.5, 6.5))
+
+        a[0, 1] = 2.5
+        self.assertEqual(a[0], Vector3(1.0, 2.5, 3.0)) # yes, 2.5
+
+    @unittest.expectedFailure
+    def test_set_two_brackets(self):
+        a = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+        a[0][1] = 2.5
+        self.assertEqual(a[0], Vector3(1.0, 2.5, 3.0))
+
+    def test_iterate(self):
+        a = Matrix3x2((1.0, 2.0),
+                      (3.0, 4.0),
+                      (5.0, 6.0))
+        self.assertEqual([i.sum() for i in a], [3.0, 7.0, 11.0])
+
+    def test_ops(self):
+        a = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+        b = Matrix3x2((1.0, 2.0),
+                      (3.0, 4.0),
+                      (5.0, 6.0))
+        c = Matrix3x3((9.0, 12.0, 15.0),
+                      (19.0, 26.0, 33.0),
+                      (29.0, 40.0, 51.0))
+        self.assertEqual(a @ b, c)
+
+    def test_ops_number_on_the_left(self):
+        a = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+
+        self.assertEqual(2.0*a, Matrix2x3((2.0, 4.0, 6.0),
+                                          (8.0, 10.0, 12.0)))
+        self.assertEqual(6.0/a, Matrix2x3((6.0, 3.0, 2.0),
+                                          (1.5, 1.2, 1.0)))
+
+    def test_repr(self):
+        a = Matrix2x3((1.0, 2.0, 3.0),
+                      (4.0, 5.0, 6.0))
+        self.assertEqual(repr(a), 'Matrix(1, 4,\n'
+                                  '       2, 5,\n'
+                                  '       3, 6)')

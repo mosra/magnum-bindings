@@ -36,4 +36,6 @@ PYBIND11_MODULE(_magnum, m) {
     magnum::math(m, math);
     magnum::mathVectorFloat(m, math);
     magnum::mathVectorIntegral(m, math);
+    magnum::mathMatrixFloat(m);
+    magnum::mathMatrixDouble(m);
 }
