@@ -29,6 +29,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Angle.h>
 #include <Magnum/Math/BoolVector.h>
+#include <Magnum/Math/Functions.h>
 #include <Magnum/Math/Quaternion.h>
 
 #include "magnum/bootstrap.h"
@@ -295,6 +296,18 @@ void math(py::module& root, py::module& m) {
     m.attr("sqrt_half") = Constantsd::sqrtHalf();
     m.attr("nan") = Constantsd::nan();
     m.attr("inf") = Constantsd::inf();
+
+    /* Functions */
+    m
+        .def("sin", [](Radd angle) { return Math::sin(angle); }, "Sine")
+        .def("cos", [](Radd angle) { return Math::cos(angle); }, "Cosine")
+        .def("sincos", [](Radd angle) {
+            return Math::sincos(angle);
+        }, "Sine and cosine")
+        .def("tan", [](Radd angle) { return Math::tan(angle); }, "Tangent")
+        .def("asin", [](Double angle) { return Math::asin(angle); }, "Arc sine")
+        .def("acos", [](Double angle) { return Math::acos(angle); }, "Arc cosine")
+        .def("atan", [](Double angle) { return Math::atan(angle); }, "Arc tangent");
 
     /* These are needed for the quaternion, so register them before */
     magnum::mathVectorFloat(root, m);

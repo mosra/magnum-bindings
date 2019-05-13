@@ -107,6 +107,15 @@ class Constants(unittest.TestCase):
         self.assertAlmostEqual(math.sqrt2**2, 2.0, 6)
         self.assertAlmostEqual(math.sqrt3**2, 3.0)
 
+class Functions(unittest.TestCase):
+    def test(self):
+        self.assertAlmostEqual(math.sin(Deg(45.0)), 0.7071067811865475)
+        self.assertAlmostEqual(Deg(math.asin(0.7071067811865475)), Deg(45.0))
+
+        sincos = math.sincos(Deg(90.0))
+        self.assertAlmostEqual(sincos[0], 1.0)
+        self.assertAlmostEqual(sincos[1], 0.0)
+
 class Vector(unittest.TestCase):
     def test_init(self):
         a = Vector4i()
