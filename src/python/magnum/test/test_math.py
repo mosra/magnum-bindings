@@ -371,12 +371,133 @@ class Matrix(unittest.TestCase):
         self.assertEqual(e[0], Vector3(1.0, 2.0, 3.0))
         self.assertEqual(e[1], Vector3(4.0, 5.0, 6.0))
 
-        f = Matrix3x2(((1.0, 2.0),
+    def test_init_tuple_of_vectors(self):
+        a = Matrix2x2((Vector2(1.0, 2.0),
+                       Vector2(3.0, 4.0)))
+        self.assertEqual(a, Matrix2x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0)))
+
+        a = Matrix2x3((Vector3(1.0, 2.0, 3.0),
+                       Vector3(4.0, 5.0, 6.0)))
+        self.assertEqual(a, Matrix2x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0)))
+
+        a = Matrix2x4((Vector4(1.0, 2.0, 3.0, 4.0),
+                       Vector4(5.0, 6.0, 7.0, 8.0)))
+        self.assertEqual(a, Matrix2x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0)))
+
+        a = Matrix3x2((Vector2(1.0, 2.0),
+                       Vector2(3.0, 4.0),
+                       Vector2(5.0, 6.0)))
+        self.assertEqual(a, Matrix3x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0),
+                                      Vector2(5.0, 6.0)))
+
+        a = Matrix3x3((Vector3(1.0, 2.0, 3.0),
+                       Vector3(4.0, 5.0, 6.0),
+                       Vector3(7.0, 8.0, 9.0)))
+        self.assertEqual(a, Matrix3x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0),
+                                      Vector3(7.0, 8.0, 9.0)))
+
+        a = Matrix3x4((Vector4(1.0, 2.0, 3.0, 4.0),
+                       Vector4(5.0, 6.0, 7.0, 8.0),
+                       Vector4(9.0, 10.0, 11.0, 12.0)))
+        self.assertEqual(a, Matrix3x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0),
+                                      Vector4(9.0, 10.0, 11.0, 12.0)))
+
+        a = Matrix4x2((Vector2(1.0, 2.0),
+                       Vector2(3.0, 4.0),
+                       Vector2(5.0, 6.0),
+                       Vector2(7.0, 8.0)))
+        self.assertEqual(a, Matrix4x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0),
+                                      Vector2(5.0, 6.0),
+                                      Vector2(7.0, 8.0)))
+
+        a = Matrix4x3((Vector3(1.0, 2.0, 3.0),
+                       Vector3(4.0, 5.0, 6.0),
+                       Vector3(7.0, 8.0, 9.0),
+                       Vector3(10.0, 11.0, 12.0)))
+        self.assertEqual(a, Matrix4x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0),
+                                      Vector3(7.0, 8.0, 9.0),
+                                      Vector3(10.0, 11.0, 12.0)))
+
+        a = Matrix4x4((Vector4(1.0, 2.0, 3.0, 4.0),
+                       Vector4(5.0, 6.0, 7.0, 8.0),
+                       Vector4(9.0, 10.0, 11.0, 12.0),
+                       Vector4(13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(a, Matrix4x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0),
+                                      Vector4(9.0, 10.0, 11.0, 12.0),
+                                      Vector4(13.0, 14.0, 15.0, 16.0)))
+
+    def test_init_tuple_of_tuples(self):
+        a = Matrix2x2(((1.0, 2.0),
+                       (3.0, 4.0)))
+        self.assertEqual(a, Matrix2x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0)))
+
+        a = Matrix2x3(((1.0, 2.0, 3.0),
+                       (4.0, 5.0, 6.0)))
+        self.assertEqual(a, Matrix2x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0)))
+
+        a = Matrix2x4(((1.0, 2.0, 3.0, 4.0),
+                       (5.0, 6.0, 7.0, 8.0)))
+        self.assertEqual(a, Matrix2x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0)))
+
+        a = Matrix3x2(((1.0, 2.0),
                        (3.0, 4.0),
                        (5.0, 6.0)))
-        self.assertEqual(f[0], Vector2(1.0, 2.0))
-        self.assertEqual(f[1], Vector2(3.0, 4.0))
-        self.assertEqual(f[2], Vector2(5.0, 6.0))
+        self.assertEqual(a, Matrix3x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0),
+                                      Vector2(5.0, 6.0)))
+
+        a = Matrix3x3(((1.0, 2.0, 3.0),
+                       (4.0, 5.0, 6.0),
+                       (7.0, 8.0, 9.0)))
+        self.assertEqual(a, Matrix3x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0),
+                                      Vector3(7.0, 8.0, 9.0)))
+
+        a = Matrix3x4(((1.0, 2.0, 3.0, 4.0),
+                       (5.0, 6.0, 7.0, 8.0),
+                       (9.0, 10.0, 11.0, 12.0)))
+        self.assertEqual(a, Matrix3x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0),
+                                      Vector4(9.0, 10.0, 11.0, 12.0)))
+
+        a = Matrix4x2(((1.0, 2.0),
+                       (3.0, 4.0),
+                       (5.0, 6.0),
+                       (7.0, 8.0)))
+        self.assertEqual(a, Matrix4x2(Vector2(1.0, 2.0),
+                                      Vector2(3.0, 4.0),
+                                      Vector2(5.0, 6.0),
+                                      Vector2(7.0, 8.0)))
+
+        a = Matrix4x3(((1.0, 2.0, 3.0),
+                       (4.0, 5.0, 6.0),
+                       (7.0, 8.0, 9.0),
+                       (10.0, 11.0, 12.0)))
+        self.assertEqual(a, Matrix4x3(Vector3(1.0, 2.0, 3.0),
+                                      Vector3(4.0, 5.0, 6.0),
+                                      Vector3(7.0, 8.0, 9.0),
+                                      Vector3(10.0, 11.0, 12.0)))
+
+        a = Matrix4x4(((1.0, 2.0, 3.0, 4.0),
+                       (5.0, 6.0, 7.0, 8.0),
+                       (9.0, 10.0, 11.0, 12.0),
+                       (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(a, Matrix4x4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                      Vector4(5.0, 6.0, 7.0, 8.0),
+                                      Vector4(9.0, 10.0, 11.0, 12.0),
+                                      Vector4(13.0, 14.0, 15.0, 16.0)))
 
     def test_convert(self):
         a = Matrix2x3d(Matrix2x3((1.0, 2.0, 3.0),
@@ -462,12 +583,28 @@ class Matrix3_(unittest.TestCase):
         self.assertEqual(c3[1], Vector3.y_axis(3.0))
         self.assertEqual(c3[2], Vector3.z_axis(3.0))
 
-        d = Matrix3(((1.0, 2.0, 3.0),
-                     (4.0, 5.0, 6.0),
-                     (7.0, 8.0, 9.0)))
+        d = Matrix3((1.0, 2.0, 3.0),
+                    (4.0, 5.0, 6.0),
+                    (7.0, 8.0, 9.0))
         self.assertEqual(d[0], Vector3(1.0, 2.0, 3.0))
         self.assertEqual(d[1], Vector3(4.0, 5.0, 6.0))
         self.assertEqual(d[2], Vector3(7.0, 8.0, 9.0))
+
+        # Tuple of vectors
+        e = Matrix3((Vector3(1.0, 2.0, 3.0),
+                     Vector3(4.0, 5.0, 6.0),
+                     Vector3(7.0, 8.0, 9.0)))
+        self.assertEqual(e, Matrix3(Vector3(1.0, 2.0, 3.0),
+                                    Vector3(4.0, 5.0, 6.0),
+                                    Vector3(7.0, 8.0, 9.0)))
+
+        # Tuple of tuples
+        e = Matrix3(((1.0, 2.0, 3.0),
+                     (4.0, 5.0, 6.0),
+                     (7.0, 8.0, 9.0)))
+        self.assertEqual(e, Matrix3(Vector3(1.0, 2.0, 3.0),
+                                    Vector3(4.0, 5.0, 6.0),
+                                    Vector3(7.0, 8.0, 9.0)))
 
     def test_convert(self):
         a = Matrix3(Matrix3d((1.0, 2.0, 3.0),
@@ -527,14 +664,34 @@ class Matrix4_(unittest.TestCase):
         self.assertEqual(c3[2], Vector4(0.0, 0.0, 3.0, 0.0))
         self.assertEqual(c3[3], Vector4(0.0, 0.0, 0.0, 3.0))
 
-        d = Matrix4(((1.0, 2.0, 3.0, 4.0),
-                     (5.0, 6.0, 7.0, 8.0),
-                     (9.0, 10.0, 11.0, 12.0),
-                     (13.0, 14.0, 15.0, 16.0)))
+        d = Matrix4((1.0, 2.0, 3.0, 4.0),
+                    (5.0, 6.0, 7.0, 8.0),
+                    (9.0, 10.0, 11.0, 12.0),
+                    (13.0, 14.0, 15.0, 16.0))
         self.assertEqual(d[0], Vector4(1.0, 2.0, 3.0, 4.0))
         self.assertEqual(d[1], Vector4(5.0, 6.0, 7.0, 8.0))
         self.assertEqual(d[2], Vector4(9.0, 10.0, 11.0, 12.0))
         self.assertEqual(d[3], Vector4(13.0, 14.0, 15.0, 16.0))
+
+        # Tuple of vectors
+        e = Matrix4((Vector4(1.0, 2.0, 3.0, 4.0),
+                     Vector4(5.0, 6.0, 7.0, 8.0),
+                     Vector4(9.0, 10.0, 11.0, 12.0),
+                     Vector4(13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(e, Matrix4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                    Vector4(5.0, 6.0, 7.0, 8.0),
+                                    Vector4(9.0, 10.0, 11.0, 12.0),
+                                    Vector4(13.0, 14.0, 15.0, 16.0)))
+
+        # Tuple of tuples
+        e = Matrix4(((1.0, 2.0, 3.0, 4.0),
+                     (5.0, 6.0, 7.0, 8.0),
+                     (9.0, 10.0, 11.0, 12.0),
+                     (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(e, Matrix4(Vector4(1.0, 2.0, 3.0, 4.0),
+                                    Vector4(5.0, 6.0, 7.0, 8.0),
+                                    Vector4(9.0, 10.0, 11.0, 12.0),
+                                    Vector4(13.0, 14.0, 15.0, 16.0)))
 
     def test_convert(self):
         a = Matrix4d(Matrix4((1.0, 2.0, 3.0, 4.0),

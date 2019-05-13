@@ -181,6 +181,13 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector2<T>, Math::Vector2<T>>& value) {
             return Math::Matrix2x2<T>{std::get<0>(value), std::get<1>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T>,
+                                          std::tuple<T, T>>& value) {
+            return Math::Matrix2x2<T>{
+                Math::Vector2<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix2x2<T>& self, const Math::Matrix3x2<T>& other) -> Math::Matrix3x2<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -193,6 +200,13 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>>& value) {
             return Math::Matrix2x3<T>{std::get<0>(value), std::get<1>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>>& value) {
+            return Math::Matrix2x3<T>{
+                Math::Vector3<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix2x3<T>& self, const Math::Matrix2x2<T>& other) -> Math::Matrix2x3<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -211,6 +225,13 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>>& value) {
             return Math::Matrix2x4<T>{std::get<0>(value), std::get<1>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>>& value) {
+            return Math::Matrix2x4<T>{
+                Math::Vector4<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value)), std::get<3>(std::get<0>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value)), std::get<3>(std::get<1>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix2x4<T>& self, const Math::Matrix2x2<T>& other) -> Math::Matrix2x4<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -239,6 +260,15 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector2<T>, Math::Vector2<T>, Math::Vector2<T>>& value) {
             return Math::Matrix3x2<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T>,
+                                          std::tuple<T, T>,
+                                          std::tuple<T, T>>& value) {
+            return Math::Matrix3x2<T>{
+                Math::Vector2<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix3x2<T>& self, const Math::Matrix2x3<T>& other) -> Math::Matrix2x2<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -257,6 +287,15 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>>& value) {
             return Math::Matrix3x3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>>& value) {
+            return Math::Matrix3x3<T>{
+                Math::Vector3<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix3x3<T>& self, const Math::Matrix2x3<T>& other) -> Math::Matrix2x3<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -269,6 +308,15 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>>& value) {
             return Math::Matrix3x4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>>& value) {
+            return Math::Matrix3x4<T>{
+                Math::Vector4<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value)), std::get<3>(std::get<0>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value)), std::get<3>(std::get<1>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value)), std::get<3>(std::get<2>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix3x4<T>& self, const Math::Matrix2x3<T>& other) -> Math::Matrix2x4<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -297,6 +345,17 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector2<T>, Math::Vector2<T>, Math::Vector2<T>, Math::Vector2<T>>& value) {
             return Math::Matrix4x2<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T>,
+                                          std::tuple<T, T>,
+                                          std::tuple<T, T>,
+                                          std::tuple<T, T>>& value) {
+            return Math::Matrix4x2<T>{
+                Math::Vector2<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value))},
+                Math::Vector2<T>{std::get<0>(std::get<3>(value)), std::get<1>(std::get<3>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix4x2<T>& self, const Math::Matrix2x4<T>& other) -> Math::Matrix2x2<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -315,6 +374,17 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>>& value) {
             return Math::Matrix4x3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>>& value) {
+            return Math::Matrix4x3<T>{
+                Math::Vector3<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<3>(value)), std::get<1>(std::get<3>(value)), std::get<2>(std::get<3>(value))}
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix4x3<T>& self, const Math::Matrix2x4<T>& other) -> Math::Matrix2x3<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -333,6 +403,17 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>>& value) {
             return Math::Matrix4x4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>>& value) {
+            return Math::Matrix4x4<T>{
+                Math::Vector4<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value)), std::get<3>(std::get<0>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value)), std::get<3>(std::get<1>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value)), std::get<3>(std::get<2>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<3>(value)), std::get<1>(std::get<3>(value)), std::get<2>(std::get<3>(value)), std::get<3>(std::get<3>(value))},
+            };
+        }), "Construct from a column tuple")
         .def("__matmul__", [](const Math::Matrix4x4<T>& self, const Math::Matrix2x4<T>& other) -> Math::Matrix2x4<T> {
             return self*other;
         }, "Multiply a matrix")
@@ -380,6 +461,15 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>>& value) {
             return Math::Matrix3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>,
+                                          std::tuple<T, T, T>>& value) {
+            return Math::Matrix3<T>{
+                Math::Vector3<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value))},
+                Math::Vector3<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value))}
+            };
+        }), "Construct from a column tuple")
 
         /* Member functions */
         .def("is_rigid_transformation", &Math::Matrix3<T>::isRigidTransformation,
@@ -495,6 +585,17 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>>& value) {
             return Math::Matrix4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
         }), "Construct from a column vector tuple")
+        .def(py::init([](const std::tuple<std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>,
+                                          std::tuple<T, T, T, T>>& value) {
+            return Math::Matrix4<T>{
+                Math::Vector4<T>{std::get<0>(std::get<0>(value)), std::get<1>(std::get<0>(value)), std::get<2>(std::get<0>(value)), std::get<3>(std::get<0>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<1>(value)), std::get<1>(std::get<1>(value)), std::get<2>(std::get<1>(value)), std::get<3>(std::get<1>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<2>(value)), std::get<1>(std::get<2>(value)), std::get<2>(std::get<2>(value)), std::get<3>(std::get<2>(value))},
+                Math::Vector4<T>{std::get<0>(std::get<3>(value)), std::get<1>(std::get<3>(value)), std::get<2>(std::get<3>(value)), std::get<3>(std::get<3>(value))},
+            };
+        }), "Construct from a column tuple")
 
         /* Member functions */
         .def("is_rigid_transformation", &Math::Matrix4<T>::isRigidTransformation,
