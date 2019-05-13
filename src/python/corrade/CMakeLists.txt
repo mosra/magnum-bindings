@@ -23,18 +23,18 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-find_package(pybind11 CONFIG REQUIRED)
+set(corrade_containers_SRCS
+    containers.cpp)
 
-# UGH FFS
-get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(CMAKE_GENERATOR_IS_MULTI_CONFIG)
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-else()
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+pybind11_add_module(corrade_containers ${corrade_containers_SRCS})
+target_include_directories(corrade_containers PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+target_link_libraries(corrade_containers PRIVATE
+    Corrade::Containers
+    Corrade::Utility)
+set_target_properties(corrade_containers PROPERTIES
+    FOLDER "python/corrade"
+    OUTPUT_NAME "containers"
+    LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
 
-add_subdirectory(corrade)
-add_subdirectory(magnum)
-
-file(GENERATE OUTPUT ${output_dir}/setup.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake)
+file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)

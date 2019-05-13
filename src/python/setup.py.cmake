@@ -31,6 +31,7 @@ from setuptools.command.build_ext import build_ext
 
 extension_paths = {
     # Filled in by cmake
+    'corrade.containers': '$<TARGET_FILE:corrade_containers>',
     'magnum._magnum': '$<TARGET_FILE:magnum>',
 }
 
@@ -41,7 +42,7 @@ class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
 
 setup(
     name='magnum',
-    packages=['magnum'],
+    packages=['corrade', 'magnum'],
     ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
     cmdclass = {
         'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated

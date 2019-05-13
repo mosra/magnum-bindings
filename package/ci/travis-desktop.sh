@@ -57,5 +57,8 @@ cd src/python
 python3 setup.py install --root="$TRAVIS_BUILD_DIR/install" --prefix=/usr
 
 # Run tests
-cd ../../../src/python/magnum
+cd ../../../src/python/corrade
+coverage run -m unittest -v
+
+cd ../magnum
 coverage run -m unittest -v

@@ -23,18 +23,9 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-find_package(pybind11 CONFIG REQUIRED)
+import os
+import sys
 
-# UGH FFS
-get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(CMAKE_GENERATOR_IS_MULTI_CONFIG)
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-else()
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+# TODO: do this differently / more robustly
+sys.path = [os.path.join(os.path.dirname(__file__), '../../../../build/src/python')] + sys.path
 
-add_subdirectory(corrade)
-add_subdirectory(magnum)
-
-file(GENERATE OUTPUT ${output_dir}/setup.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake)

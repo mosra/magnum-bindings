@@ -29,6 +29,9 @@ build() {
 }
 
 check() {
+    cd "$_rootdir/src/python/corrade"
+    python -m unittest -v
+
     cd "$_rootdir/src/python/magnum"
     python -m unittest -v
 }
