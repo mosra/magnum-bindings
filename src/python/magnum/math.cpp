@@ -28,6 +28,7 @@
 #include <pybind11/operators.h>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Angle.h>
+#include <Magnum/Math/BoolVector.h>
 
 #include "magnum/bootstrap.h"
 
@@ -107,6 +108,49 @@ template<class T> void angle(py::class_<T>& c) {
         .def("__repr__", repr<T>, "Object representation");
 }
 
+template<class T> void boolVector(py::class_<T>& c) {
+    c
+        /* Constructors */
+        .def_static("zero_init", []() {
+            return T{Math::ZeroInit};
+        }, "Construct a zero-filled boolean vector")
+        .def(py::init(), "Default constructor")
+        .def(py::init<bool>(), "Construct a boolean vector with one value for all fields")
+        .def(py::init<UnsignedByte>(), "Construct a boolean vector from segment values")
+
+        /* Explicit conversion to bool */
+        .def("__bool__", &T::operator bool, "Boolean conversion")
+
+        /* Comparison */
+        .def(py::self == py::self, "Equality comparison")
+        .def(py::self != py::self, "Non-equality comparison")
+
+        /* Member functions */
+        .def("all", &T::all, "Whether all bits are set")
+        .def("none", &T::none, "Whether no bits are set")
+        .def("any", &T::any, "Whether any bit is set")
+
+        /* Set / get */
+        .def("__setitem__", &T::set, "Set a bit at given position", py::arg("i"), py::arg("value"))
+        .def("__getitem__", &T::operator[], "Bit at given position")
+
+        /* Operators */
+        .def(~py::self, "Bitwise inversion")
+        .def(py::self &= py::self, "Bitwise AND and assign")
+        .def(py::self & py::self, "Bitwise AND")
+        .def(py::self |= py::self, "Bitwise OR and assign")
+        .def(py::self | py::self, "Bitwise OR")
+        .def(py::self ^= py::self, "Bitwise XOR and assign")
+        .def(py::self ^ py::self, "Bitwise XOR")
+
+        .def("__repr__", repr<T>, "Object representation");
+
+    /* Vector length */
+    char lenDocstring[] = "Vector size. Returns _.";
+    lenDocstring[sizeof(lenDocstring) - 3] = '0' + T::Size;
+    c.def_static("__len__", []() { return int(T::Size); }, lenDocstring);
+}
+
 }
 
 void math(py::module& root, py::module& m) {
@@ -119,6 +163,14 @@ void math(py::module& root, py::module& m) {
     rad.def(py::init<Degd>(), "Conversion from degrees");
     angle(deg);
     angle(rad);
+
+    /* BoolVector */
+    py::class_<Math::BoolVector<2>> boolVector2{root, "BoolVector2", "Two-component bool vector"};
+    py::class_<Math::BoolVector<3>> boolVector3{root, "BoolVector3", "Three-component bool vector"};
+    py::class_<Math::BoolVector<4>> boolVector4{root, "BoolVector4", "Four-component bool vector"};
+    boolVector(boolVector2);
+    boolVector(boolVector3);
+    boolVector(boolVector4);
 }
 
 }

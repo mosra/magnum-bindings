@@ -67,3 +67,33 @@ class Angle(unittest.TestCase):
 
     def test_repr(self):
         self.assertEqual(repr(Deg(45.3)), 'Deg(45.3)')
+
+class BoolVector(unittest.TestCase):
+    def test_init(self):
+        a = BoolVector2()
+        b = BoolVector2.zero_init()
+        c = BoolVector2(0b11)
+        self.assertFalse(a.any())
+        self.assertTrue(c.all())
+        self.assertEqual(a, BoolVector2(0b00))
+        self.assertEqual(b, BoolVector2(0b00))
+        self.assertEqual(c, BoolVector2(0b11))
+
+    def test_length(self):
+        self.assertEqual(BoolVector3.__len__(), 3)
+        #self.assertEqual(len(BoolVector3), 3) TODO: Y not?
+        self.assertEqual(len(BoolVector4()), 4)
+
+    def test_set_get(self):
+        a = BoolVector4(0b1010)
+        self.assertEqual(a[1], 1)
+
+        a[2] = True
+        self.assertEqual(a, BoolVector4(0b1110))
+
+    def test_ops(self):
+        a = BoolVector3(0b101) | BoolVector3(0b010)
+        self.assertEqual(a, BoolVector3(0b111))
+
+    def test_repr(self):
+        self.assertEqual(repr(BoolVector4(0b0101)), 'BoolVector(0b0101)')

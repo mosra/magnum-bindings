@@ -28,5 +28,7 @@
 from ._magnum import *
 
 __all__ = [
-    'Deg', 'Rad'
+    'Deg', 'Rad',
+
+    'BoolVector2', 'BoolVector3', 'BoolVector4',
 ]
