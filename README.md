@@ -14,8 +14,8 @@ UNDER CONSTRUCTION
 ==================
 
 Contents of this repository and documentation is under construction. You can
-find work-in-progress docs at https://doc.magnum.graphics/doc/magnum.py/ but
-there isn't much to look at yet.
+find work-in-progress docs at https://doc.magnum.graphics/python/ but there
+isn't much to look at yet.
 
 CONTACT & SUPPORT
 =================
