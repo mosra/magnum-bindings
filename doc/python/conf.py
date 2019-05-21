@@ -15,10 +15,11 @@ import magnum.platform.glx
 import magnum.platform.glfw
 import magnum.platform.sdl2
 import magnum.shaders
+import magnum.scenegraph
 
 # So the doc see everything
 # TODO: use just +=, m.css should reorder this on its own
-magnum.__all__ = ['math', 'gl', 'platform', 'shaders'] + magnum.__all__
+magnum.__all__ = ['math', 'gl', 'platform', 'shaders', 'scenegraph'] + magnum.__all__
 
 # TODO ugh... can this be expressed directly in pybind?
 magnum.gl.__annotations__ = {}
@@ -48,6 +49,7 @@ INPUT_DOCS = [
     'magnum.gl.rst',
     'magnum.math.rst',
     'magnum.platform.rst',
+    'magnum.scenegraph.rst',
     'magnum.shaders.rst'
 ]
 

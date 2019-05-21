@@ -41,6 +41,7 @@ add_subdirectory(magnum)
 # configure_file() and then replacing generator expressions with file(GENERATE)
 foreach(target
     magnum_gl
+    magnum_scenegraph
     magnum_shaders
     magnum_platform_egl
     magnum_platform_glx

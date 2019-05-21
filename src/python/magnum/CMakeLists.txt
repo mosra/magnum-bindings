@@ -24,7 +24,7 @@
 #
 
 # *Not* REQUIRED
-find_package(Magnum COMPONENTS GL Shaders)
+find_package(Magnum COMPONENTS GL Shaders SceneGraph)
 
 set(magnum_SRCS
     magnum.cpp
@@ -52,6 +52,19 @@ if(Magnum_GL_FOUND)
     set_target_properties(magnum_gl PROPERTIES
         FOLDER "python"
         OUTPUT_NAME "gl"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+endif()
+
+if(Magnum_SceneGraph_FOUND)
+    set(magnum_scenegraph_SRCS
+        scenegraph.cpp)
+
+    pybind11_add_module(magnum_scenegraph ${magnum_scenegraph_SRCS})
+    target_include_directories(magnum_scenegraph PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
+    set_target_properties(magnum_scenegraph PROPERTIES
+        FOLDER "python"
+        OUTPUT_NAME "scenegraph"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
 endif()
 
