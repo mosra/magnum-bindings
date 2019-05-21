@@ -44,8 +44,9 @@ cd ../..
 # Build the thing
 mkdir build && cd build
 cmake .. \
+    -DCMAKE_CXX_FLAGS="--coverage" \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH=$HOME/pybind11 \
     -DPYBIND11_PYTHON_VERSION=3.6 \
     -DWITH_PYTHON=ON \
@@ -56,9 +57,9 @@ ninja
 cd src/python
 python3 setup.py install --root="$TRAVIS_BUILD_DIR/install" --prefix=/usr
 
-# Run tests
+# Run tests & gather coverage
 cd ../../../src/python/corrade
-coverage run -m unittest -v
+coverage run -m unittest -v && cp .coverage ../.coverage.corrade
 
 cd ../magnum
-coverage run -m unittest -v
+coverage run -m unittest -v && cp .coverage ../.coverage.magnum

@@ -4,6 +4,7 @@ addons:
     - g++-4.8
     - libgl1-mesa-dev
     - ninja-build
+    - lcov
 
 matrix:
   include:
@@ -14,6 +15,7 @@ matrix:
     compiler: gcc
     env:
     - JOBID=linux-gl
+    - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
   - language: cpp
     os: osx
     compiler: clang
@@ -51,10 +53,18 @@ install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ ! -e "$HOME/pybind11/bin" ]; then $TRAVIS_BUILD_DIR/package/ci/setup-pybind11.sh; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install pybind11; fi
 
+# lcov on macOS
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov; fi
+
 script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then ./package/ci/travis-desktop.sh; fi
 # Travis somehow is not able to gather all output, try to force it using this
 - sync
 
 after_success:
-- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then cd src/python && codecov; fi
+# Keep in sync with package/archlinux/PKGBUILD-coverage, please
+- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --directory . --capture --output-file coverage.info > /dev/null; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" --output-file coverage.info; fi
+
+- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then cd src/python && coverage combine && codecov -X gcov; fi
+#- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then bash <(curl -s https://codecov.io/bash) -f coverage.info; fi
