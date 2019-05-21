@@ -28,7 +28,7 @@ import sys
 import unittest
 
 # TODO: do this differently / more robustly
-sys.path = [os.path.join(os.path.dirname(__file__), '../../../../build/src/python')] + sys.path
+sys.path = [os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY_DIR', '../../../../build'), 'src/python')] + sys.path
 
 from magnum import *
 from magnum import platform
