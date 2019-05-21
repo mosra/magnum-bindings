@@ -1,0 +1,13 @@
+diff --git a/tools/pybind11Tools.cmake b/tools/pybind11Tools.cmake
+index 52a70c2..1e9d033 100644
+--- a/tools/pybind11Tools.cmake
++++ b/tools/pybind11Tools.cmake
+@@ -130,7 +130,7 @@ function(pybind11_add_module target_name)
+ 
+   add_library(${target_name} ${lib_type} ${exclude_from_all} ${ARG_UNPARSED_ARGUMENTS})
+ 
+-  target_include_directories(${target_name}
++  target_include_directories(${target_name} SYSTEM
+     PRIVATE ${PYBIND11_INCLUDE_DIR}  # from project CMakeLists.txt
+     PRIVATE ${pybind11_INCLUDE_DIR}  # from pybind11Config
+     PRIVATE ${PYTHON_INCLUDE_DIRS})
