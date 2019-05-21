@@ -15,12 +15,50 @@ matrix:
     compiler: gcc
     env:
     - JOBID=linux-gl
+    - TARGET=desktop
     - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
+  - language:  python
+    python: 3.6
+    os: linux
+    dist: xenial
+    compiler: gcc
+    env:
+    - JOBID=linux-gles2
+    - TARGET=desktop-gles
+    - TARGET_GLES2=ON
+    - CMAKE_CXX_FLAGS="--coverage"
+    - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
+    addons:
+      apt:
+        packages:
+        - g++-4.8
+        - ninja-build
+        - lcov
+        - libgles2-mesa-dev
+  - language:  python
+    python: 3.6
+    os: linux
+    dist: xenial
+    compiler: gcc
+    env:
+    - JOBID=linux-gles3
+    - TARGET=desktop-gles
+    - TARGET_GLES2=OFF
+    - CMAKE_CXX_FLAGS="--coverage"
+    - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
+    addons:
+      apt:
+        packages:
+        - g++-4.8
+        - ninja-build
+        - lcov
+        - libgles2-mesa-dev
   - language: cpp
     os: osx
     compiler: clang
     env:
     - JOBID=macos-gl
+    - TARGET=desktop
 
 notifications:
   webhooks:
@@ -32,6 +70,7 @@ notifications:
 
 cache:
   directories:
+  - $HOME/swiftshader
   - $HOME/cmake
   - $HOME/pybind11
 
@@ -53,11 +92,16 @@ install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ ! -e "$HOME/pybind11/bin" ]; then $TRAVIS_BUILD_DIR/package/ci/setup-pybind11.sh; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install pybind11; fi
 
+# SwiftShader on Linux (cached). Taken from Chromium snapshot 587878
+# (swiftshader-bin Arch package).
+- if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TARGET" == "desktop-gles" ] && [ ! -e "$HOME/swiftshader/libEGL.so" ]; then cd $HOME ; wget https://ci.magnum.graphics/swiftshader-chromium-587878.tar.gz && mkdir -p swiftshader && cd swiftshader && tar -xzf ../swiftshader-chromium-587878.tar.gz && cd $TRAVIS_BUILD_DIR ; fi
+
 # lcov on macOS
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov; fi
 
 script:
-- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then ./package/ci/travis-desktop.sh; fi
+- if [ "$TARGET" == "desktop" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/travis-desktop.sh; fi
+- if [ "$TARGET" == "desktop-gles" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/travis-desktop-gles.sh; fi
 # Travis somehow is not able to gather all output, try to force it using this
 - sync
 
