@@ -30,6 +30,7 @@ import unittest
 # be run
 from . import GLTestCase, setUpModule
 
+from magnum import *
 from magnum import gl
 
 class Buffer(GLTestCase):
@@ -53,9 +54,30 @@ class DefaultFramebuffer(GLTestCase):
 
 class Mesh(GLTestCase):
     def test_init(self):
-        a = gl.Mesh(gl.MeshPrimitive.LINE_LOOP)
+        a = gl.Mesh()
+        b = gl.Mesh(gl.MeshPrimitive.LINE_LOOP)
+        c = gl.Mesh(MeshPrimitive.LINES)
         self.assertNotEqual(a.id, 0)
-        self.assertEqual(a.primitive, gl.MeshPrimitive.LINE_LOOP)
+        self.assertNotEqual(b.id, 0)
+        self.assertNotEqual(c.id, 0)
+        self.assertEqual(a.primitive, gl.MeshPrimitive.TRIANGLES)
+        self.assertEqual(b.primitive, gl.MeshPrimitive.LINE_LOOP)
+        self.assertEqual(c.primitive, gl.MeshPrimitive.LINES)
+
+    def test_set_primitive(self):
+        a = gl.Mesh()
+
+        a.primitive = gl.MeshPrimitive.TRIANGLE_STRIP
+        self.assertEqual(a.primitive, gl.MeshPrimitive.TRIANGLE_STRIP)
+
+        a.primitive = MeshPrimitive.POINTS
+        self.assertEqual(a.primitive, gl.MeshPrimitive.POINTS)
+
+    def test_set_primitive_invalid(self):
+        a = gl.Mesh()
+
+        with self.assertRaisesRegex(TypeError, "expected MeshPrimitive or gl.MeshPrimitive, got <class 'str'>"):
+            a.primitive = "ahaha"
 
     def test_set_count(self):
         a = gl.Mesh()

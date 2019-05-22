@@ -24,13 +24,36 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <Magnum/Mesh.h>
 
 #include "magnum/bootstrap.h"
 
 namespace py = pybind11;
 
+namespace magnum { namespace {
+
+void magnum(py::module& m) {
+    py::enum_<MeshPrimitive>{m, "MeshPrimitive", "Mesh primitive type"}
+        .value("POINTS", MeshPrimitive::Points)
+        .value("LINES", MeshPrimitive::Lines)
+        .value("LINE_LOOP", MeshPrimitive::LineLoop)
+        .value("LINE_STRIP", MeshPrimitive::LineStrip)
+        .value("TRIANGLES", MeshPrimitive::Triangles)
+        .value("TRIANGLE_STRIP", MeshPrimitive::TriangleStrip)
+        .value("TRIANGLE_FAN", MeshPrimitive::TriangleFan);
+
+    py::enum_<MeshIndexType>{m, "MeshIndexType", "Mesh index type"}
+        .value("UNSIGNED_BYTE", MeshIndexType::UnsignedByte)
+        .value("UNSIGNED_SHORT", MeshIndexType::UnsignedShort)
+        .value("UNSIGNED_INT", MeshIndexType::UnsignedInt);
+}
+
+}}
+
 PYBIND11_MODULE(_magnum, m) {
     m.doc() = "Root Magnum module";
+
+    magnum::magnum(m);
 
     py::module math = m.def_submodule("math");
     magnum::math(m, math);

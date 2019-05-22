@@ -25,6 +25,7 @@
 
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/ArrayView.h>
+#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
@@ -40,6 +41,7 @@ namespace magnum { namespace {
 
 struct PyMesh: GL::Mesh {
     explicit PyMesh(GL::MeshPrimitive primitive): GL::Mesh(primitive) {}
+    explicit PyMesh(MeshPrimitive primitive): GL::Mesh(primitive) {}
 
     std::vector<py::object> buffers;
 };
@@ -219,9 +221,16 @@ void gl(py::module& m) {
 
     py::class_<PyMesh>{m, "Mesh", "Mesh"}
         .def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
+        .def(py::init<MeshPrimitive>(), "Constructor")
         .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
-        .def_property("primitive", &GL::Mesh::primitive, static_cast<GL::Mesh&(GL::Mesh::*)(GL::MeshPrimitive)>(&GL::Mesh::setPrimitive), "Primitive type")
-        /** @todo generic primitive overload */
+        .def_property("primitive", &GL::Mesh::primitive,
+            [](PyMesh& self, py::object primitive) {
+                if(py::isinstance<MeshPrimitive>(primitive))
+                    self.setPrimitive(py::cast<MeshPrimitive>(primitive));
+                else if(py::isinstance<GL::MeshPrimitive>(primitive))
+                    self.setPrimitive(py::cast<GL::MeshPrimitive>(primitive));
+                else throw py::type_error{Utility::formatString("expected MeshPrimitive or gl.MeshPrimitive, got {}", std::string(py::str{primitive.get_type()}))};
+            }, "Primitive type")
         /* Have to use a lambda because it returns GL::Mesh which is not
            tracked (unlike PyMesh) */
         .def_property("count", &GL::Mesh::count, [](PyMesh& self, UnsignedInt count) {
