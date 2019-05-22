@@ -23,39 +23,12 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-import os
-import shutil
+import unittest
 
-from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
+from magnum import *
+from magnum import trade
 
-extension_paths = {
-    # Filled in by cmake
-    'corrade.containers': '$<TARGET_FILE:corrade_containers>',
-    'magnum._magnum': '$<TARGET_FILE:magnum>',
-    'magnum.gl': '${magnum_gl_file}',
-    'magnum.scenegraph': '${magnum_scenegraph_file}',
-    'magnum.shaders': '${magnum_shaders_file}',
-    'magnum.platform.egl': '${magnum_platform_egl_file}',
-    'magnum.platform.glx': '${magnum_platform_glx_file}',
-    'magnum.platform.glfw': '${magnum_platform_glfw_file}',
-    'magnum.platform.sdl2': '${magnum_platform_sdl2_file}',
-    'magnum.trade': '${magnum_trade_file}',
-}
-
-class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
-    def run(self):
-        for ext in self.extensions:
-            shutil.copyfile(extension_paths[ext.name], self.get_ext_fullpath(ext.name))
-
-setup(
-    name='magnum',
-    packages=['corrade', 'magnum', 'magnum.platform'],
-    ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
-    cmdclass = {
-        'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
-    },
-    zip_safe=True
-)
-
-# kate: hl python
+class MeshData(unittest.TestCase):
+    def test_init(self):
+        # Well this doesn't do much but well
+        a = trade.MeshData2D

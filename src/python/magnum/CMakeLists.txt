@@ -24,7 +24,7 @@
 #
 
 # *Not* REQUIRED
-find_package(Magnum COMPONENTS GL Shaders SceneGraph)
+find_package(Magnum COMPONENTS GL Shaders SceneGraph Trade)
 
 set(magnum_SRCS
     magnum.cpp
@@ -78,6 +78,19 @@ if(Magnum_Shaders_FOUND)
     set_target_properties(magnum_shaders PROPERTIES
         FOLDER "python"
         OUTPUT_NAME "shaders"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+endif()
+
+if(Magnum_Trade_FOUND)
+    set(magnum_trade_SRCS
+        trade.cpp)
+
+    pybind11_add_module(magnum_trade ${magnum_trade_SRCS})
+    target_include_directories(magnum_trade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(magnum_trade PRIVATE Magnum::Trade)
+    set_target_properties(magnum_trade PROPERTIES
+        FOLDER "python"
+        OUTPUT_NAME "trade"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
 endif()
 
