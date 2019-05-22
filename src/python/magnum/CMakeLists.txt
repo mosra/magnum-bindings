@@ -24,7 +24,7 @@
 #
 
 # *Not* REQUIRED
-find_package(Magnum COMPONENTS GL Shaders SceneGraph Trade)
+find_package(Magnum COMPONENTS GL Shaders SceneGraph Primitives Trade)
 
 set(magnum_SRCS
     magnum.cpp
@@ -52,6 +52,19 @@ if(Magnum_GL_FOUND)
     set_target_properties(magnum_gl PROPERTIES
         FOLDER "python"
         OUTPUT_NAME "gl"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+endif()
+
+if(Magnum_Primitives_FOUND)
+    set(magnum_primitives_SRCS
+        primitives.cpp)
+
+    pybind11_add_module(magnum_primitives ${magnum_primitives_SRCS})
+    target_include_directories(magnum_primitives PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(magnum_primitives PRIVATE Magnum::Primitives)
+    set_target_properties(magnum_primitives PROPERTIES
+        FOLDER "python"
+        OUTPUT_NAME "primitives"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
 endif()
 
