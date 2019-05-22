@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import sys
 import unittest
 
@@ -71,6 +72,12 @@ class ArrayView(unittest.TestCase):
         b[4] = '!'
         self.assertEqual(b[4], '!')
         self.assertEqual(bytes(b), b'hell!')
+
+    def test_init_array(self):
+        a = array.array('f', [1.0, 4.5, 7.9])
+        b = containers.ArrayView(a)
+        self.assertIs(b.obj, a)
+        self.assertEqual(len(b), 3*4)
 
     def test_init_buffer_unexpected_dimensions(self):
         a = memoryview(b'123456').cast('b', shape=[2, 3])

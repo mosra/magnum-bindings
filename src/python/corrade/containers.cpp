@@ -24,6 +24,7 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h> /* so ArrayView is convertible from python array */
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Utility/FormatStl.h>
 
@@ -70,15 +71,13 @@ template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
         .def(py::init([](py::buffer buffer) {
             py::buffer_info info = buffer.request(!std::is_const<T>::value);
 
-            // TODO: test for items that are not 1 byte size
-
             if(info.ndim != 1)
                 throw py::buffer_error{Utility::formatString("expected one dimension but got {}", info.ndim)};
-            if(info.strides[0] != 1)
-                throw py::buffer_error{Utility::formatString("expected stride of 1 but got {}", info.strides[0])};
+            if(info.strides[0] != info.itemsize)
+                throw py::buffer_error{Utility::formatString("expected stride of {} but got {}", info.itemsize, info.strides[0])};
 
             // TODO: need to take buffer.obj, not buffer!
-            return PyArrayView<T>{{static_cast<T*>(info.ptr), std::size_t(info.shape[0])}, buffer};
+            return PyArrayView<T>{{static_cast<T*>(info.ptr), std::size_t(info.shape[0]*info.itemsize)}, buffer};
         }), "Construct from a buffer")
         .def_buffer([](const PyArrayView<T>& self) -> py::buffer_info {
             return py::buffer_info{

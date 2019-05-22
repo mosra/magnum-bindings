@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import sys
 import unittest
 
@@ -46,6 +47,10 @@ class Buffer(GLTestCase):
     def test_set_data(self):
         a = gl.Buffer()
         a.set_data(b'hello', gl.BufferUsage.STATIC_DRAW)
+
+    def test_set_data_array(self):
+        a = gl.Buffer()
+        a.set_data(array.array('f', [0.5, 1.2]))
 
 class DefaultFramebuffer(GLTestCase):
     def test(self):
