@@ -259,6 +259,81 @@ class Vector(unittest.TestCase):
     def test_repr(self):
         self.assertEqual(repr(Vector3(1.0, 3.14, -13.37)), 'Vector(1, 3.14, -13.37)')
 
+class Color3_(unittest.TestCase):
+    def test_init(self):
+        a1 = Color3()
+        a2 = Color3.zero_init()
+        self.assertEqual(a1, Color3(0.0, 0.0, 0.0))
+        self.assertEqual(a2, Color3(0.0, 0.0, 0.0))
+
+        b = Color3(0.5)
+        self.assertEqual(b, Color3(0.5, 0.5, 0.5))
+
+        c1 = Color3(0.5, 0.75, 1.0)
+        c2 = Color3((0.5, 0.75, 1.0))
+        c3 = Color3(Vector3(0.5, 0.75, 1.0))
+        self.assertEqual(c1, Color3(0.5, 0.75, 1.0))
+        self.assertEqual(c2, Color3(0.5, 0.75, 1.0))
+        self.assertEqual(c3, Color3(0.5, 0.75, 1.0))
+
+    def test_hsv(self):
+        a = Color3.from_hsv(Deg(230.0), 0.749, 0.427)
+        self.assertEqual(a, Color3(0.107177, 0.160481, 0.427))
+
+        self.assertEqual(a.hue(), Deg(230.0))
+        self.assertAlmostEqual(a.saturation(), 0.749)
+        self.assertAlmostEqual(a.value(), 0.427)
+
+        self.assertEqual(a.to_hsv()[0], Deg(230.0))
+        self.assertAlmostEqual(a.to_hsv()[1], 0.749)
+        self.assertAlmostEqual(a.to_hsv()[2], 0.427)
+
+class Color4_(unittest.TestCase):
+    def test_init(self):
+        a1 = Color4()
+        a2 = Color4.zero_init()
+        self.assertEqual(a1, Color4(0.0, 0.0, 0.0, 0.0))
+        self.assertEqual(a2, Color4(0.0, 0.0, 0.0, 0.0))
+
+        b = Color4(0.5)
+        self.assertEqual(b, Color4(0.5, 0.5, 0.5, 1.0))
+
+        c = Color4(0.5, 0.75)
+        self.assertEqual(c, Color4(0.5, 0.5, 0.5, 0.75))
+
+        d1 = Color4(0.5, 0.75, 0.875)
+        d2 = Color4((0.5, 0.75, 0.875))
+        d3 = Color4(Vector3(0.5, 0.75, 0.875))
+        self.assertEqual(d1, Color4(0.5, 0.75, 0.875, 1.0))
+        self.assertEqual(d2, Color4(0.5, 0.75, 0.875, 1.0))
+        self.assertEqual(d3, Color4(0.5, 0.75, 0.875, 1.0))
+
+        e1 = Color4(0.5, 0.75, 0.875, 0.9)
+        e2 = Color4((0.5, 0.75, 0.875), 0.9)
+        e3 = Color4((0.5, 0.75, 0.875, 0.9))
+        e4 = Color4(Vector3(0.5, 0.75, 0.875), 0.9)
+        e5 = Color4(Vector4(0.5, 0.75, 0.875, 0.9))
+        self.assertEqual(e1, Color4(0.5, 0.75, 0.875, 0.9))
+        self.assertEqual(e2, Color4(0.5, 0.75, 0.875, 0.9))
+        self.assertEqual(e3, Color4(0.5, 0.75, 0.875, 0.9))
+        self.assertEqual(e4, Color4(0.5, 0.75, 0.875, 0.9))
+        self.assertEqual(e5, Color4(0.5, 0.75, 0.875, 0.9))
+
+    def test_hsv(self):
+        a = Color4.from_hsv(Deg(230.0), 0.749, 0.427, 0.95)
+        self.assertEqual(a, Color4(0.107177, 0.160481, 0.427, 0.95))
+
+        self.assertEqual(a.hue(), Deg(230.0))
+        self.assertAlmostEqual(a.saturation(), 0.749)
+        self.assertAlmostEqual(a.value(), 0.427)
+
+        self.assertEqual(a.to_hsv()[0], Deg(230.0))
+        self.assertAlmostEqual(a.to_hsv()[1], 0.749)
+        self.assertAlmostEqual(a.to_hsv()[2], 0.427)
+
+        b = Color4.from_hsv(Deg(230.0), 0.749, 0.427)
+        self.assertEqual(b, Color4(0.107177, 0.160481, 0.427, 1.0))
+
 class Matrix(unittest.TestCase):
     def test_init(self):
         a = Matrix3x2()

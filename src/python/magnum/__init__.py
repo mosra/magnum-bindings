@@ -41,6 +41,7 @@ __all__ = [
     'Vector2d', 'Vector3d', 'Vector4d',
     'Vector2i', 'Vector3i', 'Vector4i',
     'Vector2ui', 'Vector3ui', 'Vector4ui',
+    'Color3', 'Color4',
 
     'Matrix2x2', 'Matrix2x3', 'Matrix2x4',
     'Matrix3x2', 'Matrix3x3', 'Matrix3x4',

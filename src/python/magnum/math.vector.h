@@ -26,6 +26,7 @@
 */
 
 #include <pybind11/operators.h>
+#include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
 
 #include "magnum/math.h"
@@ -258,6 +259,76 @@ template<class T> void vector4(py::class_<Math::Vector4<T>>& c) {
             static_cast<const Math::Vector2<T>(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::xy),
             [](Math::Vector4<T>& self, const Math::Vector2<T>& value) { self.xy() = value; },
             "XY part of the vector");
+}
+
+template<class T, class Base> void color(py::class_<T, Base>& c) {
+    c
+        .def_static("zero_init", []() {
+            return T{Math::ZeroInit};
+        }, "Construct a zero color")
+        .def(py::init(), "Default constructor");
+}
+
+template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) {
+    py::implicitly_convertible<const std::tuple<T, T, T>&, Math::Color3<T>>();
+
+    c
+        /* Constructors */
+        .def(py::init<T, T, T>(), "Constructor")
+        .def(py::init<T>(), "Construct with one value for all components")
+        .def(py::init<Math::Vector3<T>>(), "Construct from a vector")
+        .def(py::init([](const std::tuple<T, T, T>& value) {
+            return Math::Color3<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
+        }), "Construct from a tuple")
+
+        .def_static("from_hsv", [](Degd hue, typename Math::Color3<T>::FloatingPointType saturation, typename Math::Color3<T>::FloatingPointType value) {
+            return Math::Color3<T>::fromHsv({Math::Deg<T>(hue), saturation, value});
+        }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"))
+
+        /* Accessors */
+        .def("to_hsv", [](Math::Color3<T>& self) {
+            auto hsv = self.toHsv();
+            return std::make_tuple(Degd(hsv.hue), hsv.saturation, hsv.value);
+        }, "Convert to HSV representation")
+        .def("hue", [](Math::Color3<T>& self) {
+            return Degd(self.hue());
+        }, "Hue")
+        .def("saturation", &Math::Color3<T>::saturation, "Saturation")
+        .def("value", &Math::Color3<T>::value, "Value");
+}
+
+template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) {
+    py::implicitly_convertible<const std::tuple<T, T, T>&, Math::Color4<T>>();
+    py::implicitly_convertible<const std::tuple<T, T, T, T>&, Math::Color4<T>>();
+    py::implicitly_convertible<const Math::Color3<T>&, Math::Color4<T>>();
+
+    c
+        /* Constructors */
+        .def(py::init<T, T, T, T>(), "Constructor", py::arg("r"), py::arg("g"), py::arg("b"), py::arg("a") = Math::Implementation::fullChannel<T>())
+        .def(py::init<T, T>(), "Construct with one value for all components", py::arg("rgb"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def(py::init<Math::Color3<T>, T>(), "Construct from a vector", py::arg("rgb"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def(py::init<Math::Vector4<T>>(), "Construct from a vector")
+        .def(py::init([](const std::tuple<T, T, T>& value) {
+            return Math::Color4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
+        }), "Construct from a RGB tuple")
+        .def(py::init([](const std::tuple<T, T, T, T>& value) {
+            return Math::Color4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value), std::get<3>(value)};
+        }), "Construct from a RGBA tuple")
+
+        .def_static("from_hsv", [](Degd hue, typename Math::Color4<T>::FloatingPointType saturation, typename Math::Color4<T>::FloatingPointType value, T alpha) {
+            return Math::Color4<T>::fromHsv({Math::Deg<T>(hue), saturation, value}, alpha);
+        }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
+
+        /* Accessors */
+        .def("to_hsv", [](Math::Color4<T>& self) {
+            auto hsv = self.toHsv();
+            return std::make_tuple(Degd(hsv.hue), hsv.saturation, hsv.value);
+        }, "Convert to HSV representation")
+        .def("hue", [](Math::Color4<T>& self) {
+            return Degd(self.hue());
+        }, "Hue")
+        .def("saturation", &Math::Color4<T>::saturation, "Saturation")
+        .def("value", &Math::Color4<T>::value, "Value");
 }
 
 }

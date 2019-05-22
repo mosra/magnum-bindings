@@ -85,6 +85,14 @@ void mathVectorFloat(py::module& root, py::module& m) {
     py::class_<Vector4d> vector4d{root, "Vector4d", "Four-component double vector"};
     vectorsFloat<Float>(m, vector2, vector3, vector4);
     vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
+
+    py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space"};
+    color(color3_);
+    color3(color3_);
+
+    py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
+    color(color4_);
+    color4(color4_);
 }
 
 }
