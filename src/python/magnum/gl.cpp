@@ -36,15 +36,9 @@
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 #include "magnum/NonDestructible.h"
+#include "magnum/PyMesh.h"
 
 namespace magnum { namespace {
-
-struct PyMesh: GL::Mesh {
-    explicit PyMesh(GL::MeshPrimitive primitive): GL::Mesh(primitive) {}
-    explicit PyMesh(MeshPrimitive primitive): GL::Mesh(primitive) {}
-
-    std::vector<py::object> buffers;
-};
 
 void gl(py::module& m) {
     py::module::import("corrade.containers");

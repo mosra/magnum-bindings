@@ -34,6 +34,7 @@ extension_paths = {
     'corrade.containers': '$<TARGET_FILE:corrade_containers>',
     'magnum._magnum': '$<TARGET_FILE:magnum>',
     'magnum.gl': '${magnum_gl_file}',
+    'magnum.meshtools': '${magnum_meshtools_file}',
     'magnum.primitives': '${magnum_primitives_file}',
     'magnum.scenegraph': '${magnum_scenegraph_file}',
     'magnum.shaders': '${magnum_shaders_file}',

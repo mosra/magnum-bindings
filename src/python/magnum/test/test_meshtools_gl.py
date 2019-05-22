@@ -23,38 +23,22 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-find_package(pybind11 CONFIG REQUIRED)
+import unittest
 
-# UGH FFS
-get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(CMAKE_GENERATOR_IS_MULTI_CONFIG)
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-else()
-    set(output_dir ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+# setUpModule gets called before everything else, skipping if GL tests can't
+# be run
+from . import GLTestCase, setUpModule
 
-add_subdirectory(corrade)
-add_subdirectory(magnum)
+from magnum import *
+from magnum import gl, meshtools, primitives
 
-# This would be bad enough already, but $<TARGET_EXISTS> doesn't exist until
-# CMake 3.12, so I need to do two passes, first replacing variables using
-# configure_file() and then replacing generator expressions with file(GENERATE)
-foreach(target
-    magnum_gl
-    magnum_meshtools
-    magnum_primitives
-    magnum_scenegraph
-    magnum_shaders
-    magnum_platform_egl
-    magnum_platform_glx
-    magnum_platform_glfw
-    magnum_platform_sdl2
-    magnum_trade)
-    if(TARGET ${target})
-        set(${target}_file $<TARGET_FILE:${target}>)
-    endif()
-endforeach()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake
-               ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)
-file(GENERATE OUTPUT ${output_dir}/setup.py
-    INPUT ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)
+class Compile(GLTestCase):
+    def test_2d(self):
+        a = meshtools.compile(primitives.square_wireframe())
+        self.assertEqual(a.primitive, gl.MeshPrimitive.LINE_LOOP)
+        self.assertEqual(a.count, 4)
+
+    def test_3d(self):
+        a = meshtools.compile(primitives.cube_solid())
+        self.assertEqual(a.primitive, gl.MeshPrimitive.TRIANGLES)
+        self.assertEqual(a.count, 36)

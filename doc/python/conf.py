@@ -9,6 +9,7 @@ import corrade.containers
 
 import magnum
 import magnum.gl
+import magnum.meshtools
 import magnum.platform
 import magnum.platform.egl
 import magnum.platform.glx
@@ -21,7 +22,7 @@ import magnum.trade
 
 # So the doc see everything
 # TODO: use just +=, m.css should reorder this on its own
-magnum.__all__ = ['math', 'gl', 'platform', 'primitives', 'shaders', 'scenegraph', 'trade'] + magnum.__all__
+magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'trade'] + magnum.__all__
 
 # TODO ugh... can this be expressed directly in pybind?
 magnum.gl.__annotations__ = {}
