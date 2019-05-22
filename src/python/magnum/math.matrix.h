@@ -41,6 +41,34 @@ template<class T> struct VectorTraits<2, T> { typedef Math::Vector2<T> Type; };
 template<class T> struct VectorTraits<3, T> { typedef Math::Vector3<T> Type; };
 template<class T> struct VectorTraits<4, T> { typedef Math::Vector4<T> Type; };
 
+/* Called for both Matrix3x3 and Matrix3 in order to return a proper type, so
+   has to be separate */
+template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args...>& c) {
+    c
+        /* Operators */
+        .def(-py::self, "Negated matrix")
+        .def(py::self += py::self, "Add and assign a matrix")
+        .def(py::self + py::self, "Add a matrix")
+        .def(py::self -= py::self, "Subtract and assign a matrix")
+        .def(py::self - py::self, "Subtract a matrix")
+        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
+        .def(py::self * typename T::Type{}, "Multiply with a scalar")
+        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
+        .def(py::self / typename T::Type{}, "Divide with a scalar")
+        .def("__mul__", [](const T& self, const typename VectorTraits<T::Cols, typename T::Type>::Type& vector) -> typename VectorTraits<T::Rows, typename T::Type>::Type {
+            return self*vector;
+        }, "Multiply a vector")
+        .def(typename T::Type{} * py::self, "Multiply a scalar with a matrix")
+        .def(typename T::Type{} / py::self, "Divide a matrix with a scalar and invert")
+
+        /* Member functions that don't return a size-dependent type */
+        .def("flipped_cols", &T::flippedCols, "Matrix with flipped cols")
+        .def("flipped_rows", &T::flippedRows, "Matrix with flipped rows")
+        .def("diagonal", [](const T& self) -> typename VectorTraits<T::DiagonalSize, typename T::Type>::Type {
+            return self.diagonal();
+        }, "Values on diagonal");
+}
+
 template<class T> void rectangularMatrix(py::class_<T>& c) {
     /*
         Missing APIs:
@@ -91,35 +119,26 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
             return self[i.first][i.second];
         }, "Value at given col/row")
 
-        /* Operators */
-        .def(-py::self, "Negated matrix")
-        .def(py::self += py::self, "Add and assign a matrix")
-        .def(py::self + py::self, "Add a matrix")
-        .def(py::self -= py::self, "Subtract and assign a matrix")
-        .def(py::self - py::self, "Subtract a matrix")
-        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
-        .def(py::self * typename T::Type{}, "Multiply with a scalar")
-        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
-        .def(py::self / typename T::Type{}, "Divide with a scalar")
-        .def("__mul__", [](const T& self, const typename VectorTraits<T::Cols, typename T::Type>::Type& vector) -> typename VectorTraits<T::Rows, typename T::Type>::Type {
-            return self*vector;
-        }, "Multiply a vector")
-        .def(typename T::Type{} * py::self, "Multiply a scalar with a matrix")
-        .def(typename T::Type{} / py::self, "Divide a matrix with a scalar and invert")
-
-        /* Member functions that don't return a size-dependent type */
-        .def("flipped_cols", &T::flippedCols, "Matrix with flipped cols")
-        .def("flipped_rows", &T::flippedRows, "Matrix with flipped rows")
-        .def("diagonal", [](const T& self) -> typename VectorTraits<T::DiagonalSize, typename T::Type>::Type {
-            return self.diagonal();
-        }, "Values on diagonal")
-
         .def("__repr__", repr<T>, "Object representation");
 
     /* Matrix column count */
     char lenDocstring[] = "Matrix column count. Returns _.";
     lenDocstring[sizeof(lenDocstring) - 3] = '0' + T::Cols;
     c.def_static("__len__", []() { return int(T::Cols); }, lenDocstring);
+}
+
+/* Called for both Matrix3x3 and Matrix3 in order to return a proper type, so
+   has to be separate */
+template<class T, class ...Args> void everyMatrix(py::class_<T, Args...>& c) {
+    c
+        .def("inverted", &T::inverted, "Inverted matrix")
+        .def("inverted_orthogonal", &T::invertedOrthogonal, "Inverted orthogonal matrix")
+        .def("__matmul__", [](const T& self, const T& other) -> T {
+            return self*other;
+        }, "Multiply a matrix")
+        .def("transposed", [](const T& self) -> T {
+            return self.transposed();
+        }, "Transposed matrix");
 }
 
 template<class T> void matrix(py::class_<T>& c) {
@@ -132,9 +151,7 @@ template<class T> void matrix(py::class_<T>& c) {
         /* Member functions for square matrices only */
         .def("is_orthogonal", &T::isOrthogonal, "Whether the matrix is orthogonal")
         .def("trace", &T::trace, "Trace of the matrix")
-        .def("determinant", &T::determinant, "Determinant")
-        .def("inverted", &T::inverted, "Inverted matrix")
-        .def("inverted_orthogonal", &T::invertedOrthogonal, "Inverted orthogonal matrix");
+        .def("determinant", &T::determinant, "Determinant");
 }
 
 template<class T> void matrices(
@@ -160,18 +177,12 @@ template<class T> void matrices(
         .def(py::init([](const std::tuple<Math::Vector2<T>, Math::Vector2<T>>& value) {
             return Math::Matrix2x2<T>{std::get<0>(value), std::get<1>(value)};
         }), "Construct from a column vector tuple")
-        .def("__matmul__", [](const Math::Matrix2x2<T>& self, const Math::Matrix2x2<T>& other) -> Math::Matrix2x2<T> {
-            return self*other;
-        }, "Multiply a matrix")
         .def("__matmul__", [](const Math::Matrix2x2<T>& self, const Math::Matrix3x2<T>& other) -> Math::Matrix3x2<T> {
             return self*other;
         }, "Multiply a matrix")
         .def("__matmul__", [](const Math::Matrix2x2<T>& self, const Math::Matrix4x2<T>& other) -> Math::Matrix4x2<T> {
             return self*other;
-        }, "Multiply a matrix")
-        .def("transposed", [](const Math::Matrix2x2<T>& self) -> Math::Matrix2x2<T> {
-            return self.transposed();
-        }, "Transposed matrix");
+        }, "Multiply a matrix");
     matrix2x3
         .def(py::init<const Math::Vector3<T>&, const Math::Vector3<T>&>(),
             "Construct from column vectors")
@@ -208,9 +219,13 @@ template<class T> void matrices(
         .def("transposed", [](const Math::Matrix2x4<T>& self) -> Math::Matrix4x2<T> {
             return self.transposed();
         }, "Transposed matrix");
+    everyRectangularMatrix(matrix2x2);
+    everyRectangularMatrix(matrix2x3);
+    everyRectangularMatrix(matrix2x4);
     rectangularMatrix(matrix2x2);
     rectangularMatrix(matrix2x3);
     rectangularMatrix(matrix2x4);
+    everyMatrix(matrix2x2);
     matrix(matrix2x2);
 
     /* Three-column matrices */
@@ -241,15 +256,9 @@ template<class T> void matrices(
         .def("__matmul__", [](const Math::Matrix3x3<T>& self, const Math::Matrix2x3<T>& other) -> Math::Matrix2x3<T> {
             return self*other;
         }, "Multiply a matrix")
-        .def("__matmul__", [](const Math::Matrix3x3<T>& self, const Math::Matrix3x3<T>& other) -> Math::Matrix3x3<T> {
-            return self*other;
-        }, "Multiply a matrix")
         .def("__matmul__", [](const Math::Matrix3x3<T>& self, const Math::Matrix4x3<T>& other) -> Math::Matrix4x3<T> {
             return self*other;
-        }, "Multiply a matrix")
-        .def("transposed", [](const Math::Matrix3x3<T>& self) -> Math::Matrix3x3<T> {
-            return self.transposed();
-        }, "Transposed matrix");
+        }, "Multiply a matrix");
     matrix3x4
         .def(py::init<const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&>(),
             "Construct from column vectors")
@@ -268,9 +277,13 @@ template<class T> void matrices(
         .def("transposed", [](const Math::Matrix3x4<T>& self) -> Math::Matrix4x3<T> {
             return self.transposed();
         }, "Transposed matrix");
+    everyRectangularMatrix(matrix3x2);
+    everyRectangularMatrix(matrix3x3);
+    everyRectangularMatrix(matrix3x4);
     rectangularMatrix(matrix3x2);
     rectangularMatrix(matrix3x3);
     rectangularMatrix(matrix3x4);
+    everyMatrix(matrix3x3);
     matrix(matrix3x3);
 
     /* Four-column matrices */
@@ -321,19 +334,19 @@ template<class T> void matrices(
         }, "Multiply a matrix")
         .def("__matmul__", [](const Math::Matrix4x4<T>& self, const Math::Matrix3x4<T>& other) -> Math::Matrix3x4<T> {
             return self*other;
-        }, "Multiply a matrix")
-        .def("__matmul__", [](const Math::Matrix4x4<T>& self, const Math::Matrix4x4<T>& other) -> Math::Matrix4x4<T> {
-            return self*other;
-        }, "Multiply a matrix")
-        .def("transposed", [](const Math::Matrix4x4<T>& self) -> Math::Matrix4x4<T> {
-            return self.transposed();
-        }, "Transposed matrix");
+        }, "Multiply a matrix");
+    everyRectangularMatrix(matrix4x2);
+    everyRectangularMatrix(matrix4x3);
+    everyRectangularMatrix(matrix4x4);
     rectangularMatrix(matrix4x2);
     rectangularMatrix(matrix4x3);
     rectangularMatrix(matrix4x4);
+    everyMatrix(matrix4x4);
     matrix(matrix4x4);
 
     /* 3x3 transformation matrix */
+    py::implicitly_convertible<Math::Matrix3x3<T>, Math::Matrix3<T>>();
+
     matrix3
         /* Constructors. The scaling() / rotation() are handled below
            as they conflict with member functions. */
@@ -424,8 +437,12 @@ template<class T> void matrices(
                 return matrix3.attr("_srotation")(*args, **kwargs);
             }
         });
+    everyRectangularMatrix(matrix3);
+    everyMatrix(matrix3);
 
     /* 4x4 transformation matrix */
+    py::implicitly_convertible<Math::Matrix4x4<T>, Math::Matrix4<T>>();
+
     matrix4
         /* Constructors. The scaling() / rotation() are handled below
            as they conflict with member functions. */
@@ -539,6 +556,8 @@ template<class T> void matrices(
                 return matrix4.attr("_srotation")(*args, **kwargs);
             }
         });
+    everyRectangularMatrix(matrix4);
+    everyMatrix(matrix4);
 }
 
 }

@@ -478,6 +478,12 @@ class Matrix3_(unittest.TestCase):
         self.assertEqual(Matrix3.rotation(Deg(45.0)).inverted(),
                          Matrix3.rotation(Deg(-45.0)))
 
+    def test_methods_return_type(self):
+        self.assertIsInstance(Matrix3()@Matrix3(), Matrix3)
+        self.assertIsInstance(Matrix3()+Matrix3(), Matrix3)
+        self.assertIsInstance(Matrix3().transposed(), Matrix3)
+        self.assertIsInstance(Matrix3().inverted(), Matrix3)
+
 class Matrix4_(unittest.TestCase):
     def test_init(self):
         a = Matrix4()
@@ -532,6 +538,12 @@ class Matrix4_(unittest.TestCase):
     def test_methods(self):
         self.assertEqual(Matrix4.rotation_x(Deg(45.0)).inverted(),
                          Matrix4.rotation_x(Deg(-45.0)))
+
+    def test_methods_return_type(self):
+        self.assertIsInstance(Matrix4()@Matrix4(), Matrix4)
+        self.assertIsInstance(Matrix4()+Matrix4(), Matrix4)
+        self.assertIsInstance(Matrix4().transposed(), Matrix4)
+        self.assertIsInstance(Matrix4().inverted(), Matrix4)
 
 class Quaternion_(unittest.TestCase):
     def test_init(self):

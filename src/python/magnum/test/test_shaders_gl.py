@@ -39,7 +39,9 @@ class VertexColor(GLTestCase):
 
     def test_uniforms(self):
         a = shaders.VertexColor2D()
-        a.transformation_projection_matrix = Matrix3.translation(Vector2.x_axis())
+        a.transformation_projection_matrix = (
+            Matrix3.translation(Vector2.x_axis())@
+            Matrix3.rotation(Deg(35.0)))
 
 class Phong(GLTestCase):
     def test_init(self):
