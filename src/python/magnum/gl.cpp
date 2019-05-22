@@ -31,6 +31,7 @@
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Renderer.h>
 
 #include "corrade/PyArrayView.h"
 #include "corrade/EnumOperators.h"
@@ -245,6 +246,58 @@ void gl(py::module& m) {
         }, "Draw the mesh")
         /** @todo more */
         ;
+
+    /* Renderer */
+    {
+        py::class_<GL::Renderer> renderer{m, "Renderer", "Global renderer configuration"};
+
+        py::enum_<GL::Renderer::Feature>{renderer, "Feature", "Feature"}
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("BLEND_ADVANCED_COHERENT", GL::Renderer::Feature::BlendAdvancedCoherent)
+            #endif
+            .value("BLENDING", GL::Renderer::Feature::Blending)
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("DEBUG_OUTPUT", GL::Renderer::Feature::DebugOutput)
+            .value("DEBUG_OUTPUT_SYNCHRONOUS", GL::Renderer::Feature::DebugOutputSynchronous)
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .value("DEPTH_CLAMP", GL::Renderer::Feature::DepthClamp)
+            #endif
+            .value("DEPTH_TEST", GL::Renderer::Feature::DepthTest)
+            .value("DITHERING", GL::Renderer::Feature::Dithering)
+            .value("FACE_CULLING", GL::Renderer::Feature::FaceCulling)
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("FRAMEBUFFER_SRGB", GL::Renderer::Feature::FramebufferSrgb)
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .value("LOGIC_OPERATION", GL::Renderer::Feature::LogicOperation)
+            .value("MULTISAMPLING", GL::Renderer::Feature::Multisampling)
+            #endif
+            .value("POLYGON_OFFSET_FILL", GL::Renderer::Feature::PolygonOffsetFill)
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("POLYGON_OFFSET_LINE", GL::Renderer::Feature::PolygonOffsetLine)
+            .value("POLYGON_OFFSET_POINT", GL::Renderer::Feature::PolygonOffsetPoint)
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .value("PROGRAM_POINT_SIZE", GL::Renderer::Feature::ProgramPointSize)
+            #endif
+            #ifndef MAGNUM_TARGET_GLES2
+            .value("RASTERIZER_DISCARD", GL::Renderer::Feature::RasterizerDiscard)
+            #endif
+            #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+            .value("SAMPLE_SHADING", GL::Renderer::Feature::SampleShading)
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .value("SEAMLESS_CUBE_MAP_TEXTURE", GL::Renderer::Feature::SeamlessCubeMapTexture)
+            #endif
+            .value("SCISSOR_TEST", GL::Renderer::Feature::ScissorTest)
+            .value("STENCIL_TEST", GL::Renderer::Feature::StencilTest);
+
+        renderer
+            .def_static("enable", GL::Renderer::enable, "Enable a feature")
+            .def_static("disable", GL::Renderer::disable, "Disable a feature")
+            .def_static("set_feature", GL::Renderer::setFeature, "Enable or disable a feature");
+    }
 }
 
 }}

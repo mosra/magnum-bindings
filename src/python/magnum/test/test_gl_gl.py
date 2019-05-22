@@ -101,3 +101,9 @@ class Mesh(GLTestCase):
         # Deleting the mesh should decrease it again
         del mesh
         self.assertEqual(sys.getrefcount(buffer), buffer_refcount)
+
+class Renderer(GLTestCase):
+    def test_feature(self):
+        gl.Renderer.enable(gl.Renderer.Feature.DEPTH_TEST)
+        gl.Renderer.disable(gl.Renderer.Feature.FACE_CULLING)
+        gl.Renderer.set_feature(gl.Renderer.Feature.STENCIL_TEST, True)
