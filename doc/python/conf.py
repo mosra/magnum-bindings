@@ -32,6 +32,10 @@ magnum.shaders.VertexColor3D.__annotations__ = {}
 magnum.shaders.VertexColor3D.__annotations__['POSITION'] = magnum.gl.Attribute
 magnum.shaders.VertexColor3D.__annotations__['COLOR3'] = magnum.gl.Attribute
 magnum.shaders.VertexColor3D.__annotations__['COLOR4'] = magnum.gl.Attribute
+magnum.shaders.Phong.__annotations__ = {}
+magnum.shaders.Phong.__annotations__['POSITION'] = magnum.gl.Attribute
+magnum.shaders.Phong.__annotations__['TEXTURE_COORDINATES'] = magnum.gl.Attribute
+magnum.shaders.Phong.__annotations__['NORMAL'] = magnum.gl.Attribute
 
 PROJECT_TITLE = 'Magnum'
 PROJECT_SUBTITLE = 'Python docs'

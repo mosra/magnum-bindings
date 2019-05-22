@@ -40,3 +40,25 @@ class VertexColor(GLTestCase):
     def test_uniforms(self):
         a = shaders.VertexColor2D()
         a.transformation_projection_matrix = Matrix3.translation(Vector2.x_axis())
+
+class Phong(GLTestCase):
+    def test_init(self):
+        a = shaders.Phong()
+        self.assertEqual(a.flags, shaders.Phong.Flags.NONE)
+        self.assertEqual(a.light_count, 1)
+
+        b = shaders.Phong(shaders.Phong.Flags.DIFFUSE_TEXTURE|shaders.Phong.Flags.ALPHA_MASK)
+        self.assertEqual(b.flags, shaders.Phong.Flags.DIFFUSE_TEXTURE|shaders.Phong.Flags.ALPHA_MASK)
+        self.assertEqual(b.light_count, 1)
+
+        c = shaders.Phong(shaders.Phong.Flags.NONE, 3)
+        self.assertEqual(c.flags, shaders.Phong.Flags.NONE)
+        self.assertEqual(c.light_count, 3)
+
+    def test_uniforms(self):
+        a = shaders.Phong()
+        a.diffuse_color = (0.5, 1.0, 0.9)
+        a.transformation_matrix = Matrix4.translation(Vector3.x_axis())
+        a.projection_matrix = Matrix4.zero_init()
+        a.light_positions = [(0.5, 1.0, 0.3)]
+        a.light_colors = [Color4()]
