@@ -25,6 +25,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 
 namespace magnum { namespace platform {
@@ -62,11 +63,42 @@ template<class T, class Trampoline> void application(py::class_<T, Trampoline>& 
         .def("swap_buffers", &T::swapBuffers, "Swap buffers")
         /** @todo setMinimalLoopPeriod, needs a getter */
         .def("redraw", &T::redraw, "Redraw immediately")
+        .def("window_size", &T::windowSize, "Window size")
+        .def("framebuffer_size", &T::framebufferSize, "Framebuffer size")
 
         /* Event handlers */
         .def("draw_event", &T::drawEvent, "Draw event")
+        .def("mouse_press_event", &T::mousePressEvent, "Mouse press event")
+        .def("mouse_release_event", &T::mouseReleaseEvent, "Mouse release event")
+        .def("mouse_move_event", &T::mouseMoveEvent, "Mouse move event")
         /** @todo more */
         ;
+}
+
+template<class T> void mouseEvent(py::class_<T>& c) {
+    py::enum_<typename T::Button>{c, "Button", "Mouse button"}
+        .value("LEFT", T::Button::Left)
+        .value("MIDDLE", T::Button::Middle)
+        .value("RIGHT", T::Button::Right);
+
+    c
+        .def_property_readonly("button", &T::button, "Button")
+        .def_property_readonly("position", &T::position, "Position");
+}
+
+template<class T> void mouseMoveEvent(py::class_<T>& c) {
+    py::enum_<typename T::Button> buttons{c, "Buttons", "Set of mouse buttons"};
+    buttons
+        .value("LEFT", T::Button::Left)
+        .value("MIDDLE", T::Button::Middle)
+        .value("RIGHT", T::Button::Right);
+    corrade::enumOperators(buttons);
+
+    c
+        .def_property_readonly("position", &T::position, "Position")
+        .def_property_readonly("buttons", [](T& self) {
+            return typename T::Button(typename std::underlying_type<typename T::Button>::type(self.buttons()));
+        }, "Mouse buttons");
 }
 
 }}

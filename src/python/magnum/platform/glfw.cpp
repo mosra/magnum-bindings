@@ -38,6 +38,9 @@ void glfw(py::module& m) {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
         void drawEvent() override = 0;
+        void mousePressEvent(MouseEvent&) override {}
+        void mouseReleaseEvent(MouseEvent&) override {}
+        void mouseMoveEvent(MouseMoveEvent&) override {}
     };
 
     struct PyApplication: PublicizedApplication {
@@ -51,12 +54,53 @@ void glfw(py::module& m) {
                 drawEvent
             );
         }
+
+        void mousePressEvent(MouseEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_press_event",
+                mousePressEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
+        void mouseReleaseEvent(MouseEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_release_event",
+                mouseReleaseEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
+        void mouseMoveEvent(MouseMoveEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_move_event",
+                mouseMoveEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
     };
 
     py::class_<PublicizedApplication, PyApplication> glfwApplication{m, "Application", "GLFW application"};
     /** @todo def_property_writeonly for swap_interval */
 
+    py::class_<PyApplication::MouseEvent> mouseEvent_{glfwApplication, "MouseEvent", "Mouse event"};
+    py::class_<PyApplication::MouseMoveEvent> mouseMoveEvent_{glfwApplication, "MouseMoveEvent", "Mouse move event"};
+
     application(glfwApplication);
+    mouseEvent(mouseEvent_);
+    mouseMoveEvent(mouseMoveEvent_);
 }
 
 }}}

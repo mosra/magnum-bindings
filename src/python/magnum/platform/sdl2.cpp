@@ -38,6 +38,9 @@ void sdl2(py::module& m) {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
         void drawEvent() override = 0;
+        void mousePressEvent(MouseEvent&) override {}
+        void mouseReleaseEvent(MouseEvent&) override {}
+        void mouseMoveEvent(MouseMoveEvent&) override {}
     };
 
     struct PyApplication: PublicizedApplication {
@@ -51,6 +54,46 @@ void sdl2(py::module& m) {
                 drawEvent
             );
         }
+
+        /* PYBIND11_OVERLOAD_NAME() calls object_api::operator() with implicit
+           template param, which is return_value_policy::automatic_reference.
+           That later gets changed to return_value_policy::copy in
+           type_caster_base::cast() and there's no way to override that  */
+        void mousePressEvent(MouseEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_press_event",
+                mousePressEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
+        void mouseReleaseEvent(MouseEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_release_event",
+                mouseReleaseEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
+        void mouseMoveEvent(MouseMoveEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_move_event",
+                mouseMoveEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
     };
 
     py::class_<PublicizedApplication, PyApplication> sdl2application{m, "Application", "SDL2 application"};
@@ -60,7 +103,12 @@ void sdl2(py::module& m) {
                 self.setSwapInterval(interval);
             }, "Swap interval");
 
+    py::class_<PublicizedApplication::MouseEvent> mouseEvent_{sdl2application, "MouseEvent", "Mouse event"};
+    py::class_<PublicizedApplication::MouseMoveEvent> mouseMoveEvent_{sdl2application, "MouseMoveEvent", "Mouse move event"};
+
     application(sdl2application);
+    mouseEvent(mouseEvent_);
+    mouseMoveEvent(mouseMoveEvent_);
 }
 
 }}}
