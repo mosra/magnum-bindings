@@ -93,6 +93,18 @@ void mathVectorFloat(py::module& root, py::module& m) {
     py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
     color(color4_);
     color4(color4_);
+
+    /* Register the integer types as well, only after that register type
+       conversions because they need all the types */
+    mathVectorIntegral(root, m);
+
+    convertible(vector2);
+    convertible(vector3);
+    convertible(vector4);
+    convertible(vector2d);
+    convertible(vector3d);
+    convertible(vector4d);
+    /* Colors are float-only at the moment, thus no conversions */
 }
 
 }

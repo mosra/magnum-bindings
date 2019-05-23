@@ -48,6 +48,21 @@ void mathMatrixDouble(py::module& root) {
         matrix3x2d, matrix3x3d, matrix3x4d,
         matrix4x2d, matrix4x3d, matrix4x4d,
         matrix3d, matrix4d);
+
+    /* At this point we should have both float and double types registered,
+       so register type conversions */
+    convertible<Matrix2x2>(matrix2x2d);
+    convertible<Matrix2x3>(matrix2x3d);
+    convertible<Matrix2x4>(matrix2x4d);
+    convertible<Matrix3x2>(matrix3x2d);
+    convertible<Matrix3x3>(matrix3x3d);
+    convertible<Matrix3x4>(matrix3x4d);
+    convertible<Matrix4x2>(matrix4x2d);
+    convertible<Matrix4x3>(matrix4x3d);
+    convertible<Matrix4x4>(matrix4x4d);
+
+    convertible<Matrix3>(matrix3d);
+    convertible<Matrix4>(matrix4d);
 }
 
 }

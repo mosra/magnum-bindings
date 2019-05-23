@@ -78,6 +78,15 @@ void mathVectorIntegral(py::module& root, py::module& m) {
     py::class_<Vector4ui> vector4ui{root, "Vector4ui", "Four-component unsigned integral vector"};
     vectorsIntegral<Int>(m, vector2i, vector3i, vector4i);
     vectorsIntegral<UnsignedInt>(m, vector2ui, vector3ui, vector4ui);
+
+    /* At this point we should have both float and integral types registered,
+       so register type conversions */
+    convertible(vector2i);
+    convertible(vector3i);
+    convertible(vector4i);
+    convertible(vector2ui);
+    convertible(vector3ui);
+    convertible(vector4ui);
 }
 
 }

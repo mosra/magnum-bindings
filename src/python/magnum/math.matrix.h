@@ -154,6 +154,10 @@ template<class T> void matrix(py::class_<T>& c) {
         .def("determinant", &T::determinant, "Determinant");
 }
 
+template<class U, class T, class ...Args> void convertible(py::class_<T, Args...>& c) {
+    c.def(py::init<U>(), "Construct from different underlying type");
+}
+
 template<class T> void matrices(
     py::class_<Math::Matrix2x2<T>>& matrix2x2,
     py::class_<Math::Matrix2x3<T>>& matrix2x3,

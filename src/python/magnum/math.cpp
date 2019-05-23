@@ -155,6 +155,10 @@ template<class T> void boolVector(py::class_<T>& c) {
     c.def_static("__len__", []() { return int(T::Size); }, lenDocstring);
 }
 
+template<class U, class T, class ...Args> void convertible(py::class_<T, Args...>& c) {
+    c.def(py::init<U>(), "Construct from different underlying type");
+}
+
 template<class T> void quaternion(py::module& m, py::class_<T>& c) {
     /*
         Missing APIs:
@@ -311,15 +315,15 @@ void math(py::module& root, py::module& m) {
 
     /* These are needed for the quaternion, so register them before */
     magnum::mathVectorFloat(root, m);
-    magnum::mathVectorIntegral(root, m);
     magnum::mathMatrixFloat(root);
-    magnum::mathMatrixDouble(root);
 
     /* Quaternion */
     py::class_<Quaternion> quaternion_(root, "Quaternion", "Float quaternion");
     py::class_<Quaterniond> quaterniond(root, "Quaterniond", "Double quaternion");
     quaternion(m, quaternion_);
     quaternion(m, quaterniond);
+    convertible<Quaterniond>(quaternion_);
+    convertible<Quaternion>(quaterniond);
 }
 
 }

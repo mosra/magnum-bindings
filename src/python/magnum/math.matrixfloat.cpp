@@ -48,6 +48,23 @@ void mathMatrixFloat(py::module& root) {
         matrix3x2, matrix3x3, matrix3x4,
         matrix4x2, matrix4x3, matrix4x4,
         matrix3, matrix4);
+
+    /* Register the double types as well, only after that register type
+       conversions because they need all the types */
+    mathMatrixDouble(root);
+
+    convertible<Matrix2x2d>(matrix2x2);
+    convertible<Matrix2x3d>(matrix2x3);
+    convertible<Matrix2x4d>(matrix2x4);
+    convertible<Matrix3x2d>(matrix3x2);
+    convertible<Matrix3x3d>(matrix3x3);
+    convertible<Matrix3x4d>(matrix3x4);
+    convertible<Matrix4x2d>(matrix4x2);
+    convertible<Matrix4x3d>(matrix4x3);
+    convertible<Matrix4x4d>(matrix4x4);
+
+    convertible<Matrix3d>(matrix3);
+    convertible<Matrix4d>(matrix4);
 }
 
 }

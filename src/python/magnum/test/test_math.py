@@ -129,6 +129,10 @@ class Vector(unittest.TestCase):
         self.assertEqual(d, Vector3(1.0, 0.3, 1.1))
         self.assertEqual(e, Vector4d(1.0, 0.3, 1.1, 0.5))
 
+    def test_convert(self):
+        a = Vector2i(Vector2(4.3, 3.1))
+        self.assertEqual(a, Vector2i(4, 3))
+
     def test_static_methods(self):
         self.assertEqual(Vector2.y_scale(5), Vector2(1, 5))
         self.assertEqual(Vector3d.z_axis(-3), Vector3d(0, 0, -3))
@@ -374,6 +378,12 @@ class Matrix(unittest.TestCase):
         self.assertEqual(f[1], Vector2(3.0, 4.0))
         self.assertEqual(f[2], Vector2(5.0, 6.0))
 
+    def test_convert(self):
+        a = Matrix2x3d(Matrix2x3((1.0, 2.0, 3.0),
+                                 (4.0, 5.0, 6.0)))
+        self.assertEqual(a, Matrix2x3d((1.0, 2.0, 3.0),
+                                       (4.0, 5.0, 6.0)))
+
     def test_length(self):
         self.assertEqual(Matrix3x4.__len__(), 3)
         #self.assertEqual(len(Matrix4x3), 4) TODO: Y not?
@@ -459,6 +469,14 @@ class Matrix3_(unittest.TestCase):
         self.assertEqual(d[1], Vector3(4.0, 5.0, 6.0))
         self.assertEqual(d[2], Vector3(7.0, 8.0, 9.0))
 
+    def test_convert(self):
+        a = Matrix3(Matrix3d((1.0, 2.0, 3.0),
+                             (4.0, 5.0, 6.0),
+                             (7.0, 8.0, 9.0)))
+        self.assertEqual(a, Matrix3((1.0, 2.0, 3.0),
+                                    (4.0, 5.0, 6.0),
+                                    (7.0, 8.0, 9.0)))
+
     def test_static_methods(self):
         a = Matrix3.translation((0.0, -1.0))
         self.assertEqual(a[2].xy, Vector2(0.0, -1.0))
@@ -518,6 +536,16 @@ class Matrix4_(unittest.TestCase):
         self.assertEqual(d[2], Vector4(9.0, 10.0, 11.0, 12.0))
         self.assertEqual(d[3], Vector4(13.0, 14.0, 15.0, 16.0))
 
+    def test_convert(self):
+        a = Matrix4d(Matrix4((1.0, 2.0, 3.0, 4.0),
+                             (5.0, 6.0, 7.0, 8.0),
+                             (9.0, 10.0, 11.0, 12.0),
+                             (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(a, Matrix4d((1.0, 2.0, 3.0, 4.0),
+                                     (5.0, 6.0, 7.0, 8.0),
+                                     (9.0, 10.0, 11.0, 12.0),
+                                     (13.0, 14.0, 15.0, 16.0)))
+
     def test_static_methods(self):
         a = Matrix4.translation((0.0, -1.0, 2.0))
         self.assertEqual(a[3].xyz, Vector3(0.0, -1.0, 2.0))
@@ -566,6 +594,10 @@ class Quaternion_(unittest.TestCase):
         e = Quaternion(((1.0, 2.0, 3.0), 4.0))
         self.assertEqual(e.vector, Vector3(1.0, 2.0, 3.0))
         self.assertEqual(e.scalar, 4.0)
+
+    def test_convert(self):
+        a = Quaterniond(Quaternion((1.0, 2.0, 3.0), 4.0))
+        self.assertEqual(a, Quaterniond((1.0, 2.0, 3.0), 4.0))
 
     def test_static_methods(self):
         a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())

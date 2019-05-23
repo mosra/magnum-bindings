@@ -261,6 +261,19 @@ template<class T> void vector4(py::class_<Math::Vector4<T>>& c) {
             "XY part of the vector");
 }
 
+template<class U, template<class> class Type, class T, class ...Args> void convertibleImplementation(py::class_<Type<T>, Args...>& c, std::false_type) {
+    c.def(py::init<Type<U>>(), "Construct from different underlying type");
+}
+
+template<class U, template<class> class Type, class T, class ...Args> void convertibleImplementation(py::class_<Type<T>, Args...>&, std::true_type) {}
+
+template<template<class> class Type, class T, class ...Args> void convertible(py::class_<Type<T>, Args...>& c) {
+    convertibleImplementation<UnsignedInt>(c, std::is_same<T, UnsignedInt>{});
+    convertibleImplementation<Int>(c, std::is_same<T, Int>{});
+    convertibleImplementation<Float>(c, std::is_same<T, Float>{});
+    convertibleImplementation<Double>(c, std::is_same<T, Double>{});
+}
+
 template<class T, class Base> void color(py::class_<T, Base>& c) {
     c
         .def_static("zero_init", []() {
