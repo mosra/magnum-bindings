@@ -47,7 +47,9 @@ INPUT_MODULES = [corrade, magnum]
 INPUT_PAGES = [
     'pages/index.rst',
     'pages/building.rst',
-    'pages/api-conventions.rst'
+    'pages/api-conventions.rst',
+
+    '../../../magnum-examples/doc/python/examples.rst'
 ]
 INPUT_DOCS = [
     'corrade.containers.rst',
@@ -70,6 +72,7 @@ PLUGINS = [
     'm.dox',
     'm.gh',
     'm.htmlsanity',
+    'm.images',
     'm.link',
     'm.math',
     'm.sphinx'

@@ -45,7 +45,8 @@ details.
 See the :link-ref:`building docs <building.html>` for an installation guide,
 :link-ref:`API convention documentation <api-conventions.html>` and
 :link-ref:`documentation of each module <modules.html>` for more information
-about the actual usage.
+about the actual usage. There are also :link-ref:`examples <examples.html>` to
+give you an idea about how the API feels.
 
 `Contact & support`_
 ====================
