@@ -101,10 +101,9 @@ PAGE_HEADER = """
 
     Welcome to the exciting new Python-flavored future of Magnum! Have fun, but
     please note this functionality is *heavily experimental* at the moment.
-    Most APIs are missing, documentation is very sparse and
-    :gh:`everything is still evolving <mosra/magnum-bindings#1>`.
-    **Use at your own risk.** Search and name cross-linking is not working yet,
-    sorry about that.
+    Most APIs are missing, documentation is very sparse and everything is still
+    evolving. **Use at your own risk.** Search and name cross-linking is not
+    working yet, sorry about that.
 """
 
 FINE_PRINT = """

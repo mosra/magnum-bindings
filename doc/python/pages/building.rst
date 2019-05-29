@@ -59,12 +59,6 @@ the source tree.
     cd package/archlinux
     makepkg -fp PKGBUILD
 
-.. block-warning:: Subject to change
-
-    The bindings are not in ``master`` yet (:gh:`mosra/magnum-bindings#1`), use
-    :sh:`git checkout python` or pass ``--branch python`` to :sh:`git clone` at
-    the moment.
-
 The PKGBUILD also contains a :sh:`check()` function which will run all unit
 tests before packaging. That might sometimes fail or take too long, pass
 ``--nocheck`` to ``makepkg`` to skip that.
@@ -85,12 +79,6 @@ snapshot as a compressed archive or use the command line:
 .. code:: sh
 
     git clone git://github.com/mosra/magnum-bindings.git
-
-.. block-warning:: Subject to change
-
-    The bindings are not in ``master`` yet (:gh:`mosra/magnum-bindings#1`), use
-    :sh:`git checkout python` or pass ``--branch python`` to :sh:`git clone` at
-    the moment.
 
 Assuming a Unix-based OS, the first step is to build the native libraries. The
 bindings will be generated for all Corrade and Magnum libraries that are found,
@@ -162,5 +150,6 @@ following commands, the resulting HTML overview is located in
 
 In ``package/ci/`` there is a ``travis.yml`` file that compiles and tests the
 bindings on Linux GCC 4.8 + CMake 3.1 and on macOS. Online at
-https://travis-ci.org/mosra/magnum-bindings, code coverage is reported to
+https://travis-ci.org/mosra/magnum-bindings. Code coverage for both the C++
+bindings code and Python side is reported to
 https://codecov.io/gh/mosra/magnum-bindings.
