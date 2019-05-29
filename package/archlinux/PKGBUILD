@@ -34,6 +34,9 @@ check() {
 
     cd "$_rootdir/src/python/magnum"
     python -m unittest -v
+
+    cd "$_rootdir/doc/python"
+    PYTHONPATH="$_rootdir/build/src/python" python -m doctest -v *.rst
 }
 
 package() {

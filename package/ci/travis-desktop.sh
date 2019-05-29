@@ -63,3 +63,7 @@ coverage run -m unittest -v && cp .coverage ../.coverage.corrade
 
 cd ../magnum
 coverage run -m unittest -v && cp .coverage ../.coverage.magnum
+
+# Test docstring validity
+cd ../../../doc/python
+PYTHONPATH="$TRAVIS_BUILD_DIR/build/src/python" python3 -m doctest -v *.rst
