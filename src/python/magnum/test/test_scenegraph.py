@@ -116,25 +116,6 @@ class Object(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "expected Scene, Object or None, got <class 'str'>"):
             a.parent = "noo"
 
-    def test_transformation(self):
-        scene = Scene3D()
-
-        a = Object3D(scene)
-        a.rotate_local(Deg(35.0), Vector3.x_axis())
-        self.assertEqual(a.transformation, Matrix4.rotation_x(Deg(35.0)))
-        self.assertEqual(a.absolute_transformation(), Matrix4.rotation_x(Deg(35.0)))
-
-        b = Object3D(a)
-        b.translate((3.0, 4.0, 5.0))
-        self.assertEqual(b.transformation, Matrix4.translation((3.0, 4.0, 5.0)))
-        self.assertEqual(b.absolute_transformation(),
-            Matrix4.rotation_x(Deg(35.0))@
-            Matrix4.translation((3.0, 4.0, 5.0)))
-
-        c = Object3D(scene)
-        self.assertEqual(c.transformation, Matrix4.identity_init())
-        self.assertEqual(c.absolute_transformation(), Matrix4.identity_init())
-
     def test_drawable(self):
         object = Object3D()
         object_refcount = sys.getrefcount(object)

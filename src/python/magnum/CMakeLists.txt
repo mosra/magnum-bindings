@@ -83,7 +83,8 @@ endif()
 
 if(Magnum_SceneGraph_FOUND)
     set(magnum_scenegraph_SRCS
-        scenegraph.cpp)
+        scenegraph.cpp
+        scenegraph.matrix.cpp)
 
     pybind11_add_module(magnum_scenegraph ${magnum_scenegraph_SRCS})
     target_include_directories(magnum_scenegraph PRIVATE
