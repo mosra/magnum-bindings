@@ -40,6 +40,11 @@ check() {
 }
 
 package() {
+    # Helper headers
+    cd "$_rootdir/build"
+    DESTDIR="$pkgdir/" ninja install
+
+    # Native and python packages
     cd "$_rootdir/build/src/python"
     python setup.py install --root="$pkgdir" --prefix=/usr
 }

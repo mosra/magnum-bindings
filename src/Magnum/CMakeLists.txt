@@ -23,10 +23,8 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
+find_package(Magnum COMPONENTS SceneGraph)
 
-add_subdirectory(Magnum)
-
-if(WITH_PYTHON)
-    add_subdirectory(python)
+if(Magnum_SceneGraph_FOUND)
+    add_subdirectory(SceneGraph)
 endif()

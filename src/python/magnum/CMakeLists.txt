@@ -86,7 +86,9 @@ if(Magnum_SceneGraph_FOUND)
         scenegraph.cpp)
 
     pybind11_add_module(magnum_scenegraph ${magnum_scenegraph_SRCS})
-    target_include_directories(magnum_scenegraph PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_include_directories(magnum_scenegraph PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/src/python)
     target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
     set_target_properties(magnum_scenegraph PROPERTIES
         FOLDER "python"

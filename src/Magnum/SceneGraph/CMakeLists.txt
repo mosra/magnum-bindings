@@ -23,10 +23,8 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
-
-add_subdirectory(Magnum)
-
 if(WITH_PYTHON)
-    add_subdirectory(python)
+    add_custom_target(MagnumSceneGraphPython SOURCES Python.h)
+    set_target_properties(MagnumSceneGraphPython PROPERTIES FOLDER "Magnum/SceneGraph")
+    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/SceneGraph)
 endif()
