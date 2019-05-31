@@ -26,21 +26,92 @@
 */
 
 #include <pybind11/operators.h>
+#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
+
+#include "corrade/PybindExtras.h"
 
 #include "magnum/math.h"
 
 namespace magnum {
 
+template<class> bool isTypeCompatible(const std::string&);
+template<> inline bool isTypeCompatible<Float>(const std::string& format) {
+    return format == "f" || format == "d";
+}
+template<> inline bool isTypeCompatible<Double>(const std::string& format) {
+    return format == "f" || format == "d";
+}
+template<> inline bool isTypeCompatible<Int>(const std::string& format) {
+    return format == "i" || format == "l";
+}
+template<> inline bool isTypeCompatible<UnsignedInt>(const std::string& format) {
+    return format == "I" || format == "L";
+}
+
+template<class U, class T> void initFromBuffer(T& out, const py::buffer_info& info) {
+    for(std::size_t i = 0; i != T::Size; ++i)
+        out[i] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(info.ptr) + i*info.strides[0]));
+}
+
+/* Floating-point init */
+template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::true_type, std::true_type) {
+    if(info.format == "f") initFromBuffer<Float>(out, info);
+    else if(info.format == "d") initFromBuffer<Double>(out, info);
+    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+/* Signed integeral init */
+template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::false_type, std::true_type) {
+    if(info.format == "i") initFromBuffer<Int>(out, info);
+    else if(info.format == "l") initFromBuffer<Long>(out, info);
+    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+/* Unsigned integeral init */
+template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::false_type, std::false_type) {
+    if(info.format == "I") initFromBuffer<UnsignedInt>(out, info);
+    else if(info.format == "L") initFromBuffer<UnsignedLong>(out, info);
+    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
 /* Things that have to be defined for both VectorN and Color so they construct
    / return a proper type */
 template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
+    /* Implicitly convertible from a buffer (which is a numpy array as well).
+       Without this implicit conversion from numpy arrays sometimes doesn't
+       work. */
+    py::implicitly_convertible<py::buffer, T>();
+
     c
+        /* Constructors */
         .def_static("zero_init", []() {
             return T{Math::ZeroInit};
         }, "Construct a zero vector")
         .def(py::init(), "Default constructor")
+
+        /* Buffer protocol. If not present, implicit conversion from numpy
+           arrays of non-default types somehow doesn't work. On the other hand
+           only the constructor is needed (and thus also no py::buffer_protocol()
+           specified for the class), converting vectors to numpy arrays is
+           doable using the simple iteration iterface. */
+        .def(py::init([](py::buffer buffer) {
+            py::buffer_info info = buffer.request();
+
+            if(info.ndim != 1)
+                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", info.ndim)};
+
+            if(info.shape[0] != T::Size)
+                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, info.shape[0])};
+
+            if(!isTypeCompatible<typename T::Type>(info.format))
+                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", info.format, py::format_descriptor<typename T::Type>::format())};
+
+            T out{Math::NoInit};
+            initFromBuffer(out, info, std::is_floating_point<typename T::Type>{}, std::is_signed<typename T::Type>{});
+            return out;
+        }), "Construct from a buffer")
 
         /* Operators */
         .def(-py::self, "Negated vector")

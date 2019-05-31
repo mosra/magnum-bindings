@@ -27,8 +27,11 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
+
+#include "corrade/PybindExtras.h"
 
 #include "magnum/math.h"
 
@@ -41,10 +44,42 @@ template<class T> struct VectorTraits<2, T> { typedef Math::Vector2<T> Type; };
 template<class T> struct VectorTraits<3, T> { typedef Math::Vector3<T> Type; };
 template<class T> struct VectorTraits<4, T> { typedef Math::Vector4<T> Type; };
 
-/* Called for both Matrix3x3 and Matrix3 in order to return a proper type, so
-   has to be separate */
+template<class U, class T> void initFromBuffer(T& out, const py::buffer_info& info) {
+    for(std::size_t i = 0; i != T::Cols; ++i)
+        for(std::size_t j = 0; j != T::Rows; ++j)
+            out[i][j] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(info.ptr) + i*info.strides[1] + j*info.strides[0]));
+}
+
+/* Called for both Matrix3x3 and Matrix3 in order to return a proper type /
+   construct correctly from a numpy array, so has to be separate */
 template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args...>& c) {
+    /* Matrix is implicitly convertible from a buffer, but not from tuples
+       because there it isn't clear if it's column-major or row-major. */
+    py::implicitly_convertible<py::buffer, T>();
+
     c
+        /* Buffer protocol, needed in order to make numpy treat the matric
+           correctly as column-major. Has to be defined *before* the from-tuple
+           constructor so it gets precedence for types that implement the
+           buffer protocol. */
+        .def(py::init([](py::buffer buffer) {
+            py::buffer_info info = buffer.request();
+
+            if(info.ndim != 2)
+                throw py::buffer_error{Utility::formatString("expected 2 dimensions but got {}", info.ndim)};
+
+            if(info.shape[0] != T::Rows ||info.shape[1] != T::Cols)
+                throw py::buffer_error{Utility::formatString("expected {}x{} elements but got {}x{}", T::Cols, T::Rows, info.shape[1], info.shape[0])};
+
+            T out{Math::NoInit};
+
+            if(info.format == "f") initFromBuffer<Float>(out, info);
+            else if(info.format == "d") initFromBuffer<Double>(out, info);
+            else throw py::buffer_error{Utility::formatString("expected format f or d but got {}", info.format)};
+
+            return out;
+        }), "Construct from a buffer")
+
         /* Operators */
         .def(-py::self, "Negated matrix")
         .def(py::self += py::self, "Add and assign a matrix")
@@ -93,6 +128,21 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         }, "Construct a zero-filled matrix")
         .def(py::init(), "Default constructor")
         .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
+
+        /* Buffer protocol, needed in order to make numpy treat the matric
+           correctly as column-major. The constructor is defined in
+           everyRectangularMatrix(). */
+        .def_buffer([](const T& self) -> py::buffer_info {
+            // TODO: ownership?
+            return py::buffer_info{
+                const_cast<typename T::Type*>(self.data()),
+                sizeof(typename T::Type),
+                py::format_descriptor<typename T::Type>::format(),
+                2,
+                {T::Rows, T::Cols},
+                {sizeof(typename T::Type), sizeof(typename T::Type)*T::Rows}
+            };
+        })
 
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")
@@ -174,7 +224,16 @@ template<class T> void matrices(
     py::class_<Math::Matrix3<T>, Math::Matrix3x3<T>>& matrix3,
     py::class_<Math::Matrix4<T>, Math::Matrix4x4<T>>& matrix4
 ) {
-    /* Two-column matrices */
+    /* Two-column matrices. Buffer constructors need to be *before* tuple
+       constructors so numpy buffer protocol gets extracted correctly. */
+    everyRectangularMatrix(matrix2x2);
+    everyRectangularMatrix(matrix2x3);
+    everyRectangularMatrix(matrix2x4);
+    rectangularMatrix(matrix2x2);
+    rectangularMatrix(matrix2x3);
+    rectangularMatrix(matrix2x4);
+    everyMatrix(matrix2x2);
+    matrix(matrix2x2);
     matrix2x2
         .def(py::init<const Math::Vector2<T>&, const Math::Vector2<T>&>(),
             "Construct from column vectors")
@@ -244,16 +303,17 @@ template<class T> void matrices(
         .def("transposed", [](const Math::Matrix2x4<T>& self) -> Math::Matrix4x2<T> {
             return self.transposed();
         }, "Transposed matrix");
-    everyRectangularMatrix(matrix2x2);
-    everyRectangularMatrix(matrix2x3);
-    everyRectangularMatrix(matrix2x4);
-    rectangularMatrix(matrix2x2);
-    rectangularMatrix(matrix2x3);
-    rectangularMatrix(matrix2x4);
-    everyMatrix(matrix2x2);
-    matrix(matrix2x2);
 
-    /* Three-column matrices */
+    /* Three-column matrices. Buffer constructors need to be *before* tuple
+       constructors so numpy buffer protocol gets extracted correctly. */
+    everyRectangularMatrix(matrix3x2);
+    everyRectangularMatrix(matrix3x3);
+    everyRectangularMatrix(matrix3x4);
+    rectangularMatrix(matrix3x2);
+    rectangularMatrix(matrix3x3);
+    rectangularMatrix(matrix3x4);
+    everyMatrix(matrix3x3);
+    matrix(matrix3x3);
     matrix3x2
         .def(py::init<const Math::Vector2<T>&, const Math::Vector2<T>&, const Math::Vector2<T>&>(),
             "Construct from column vectors")
@@ -329,16 +389,17 @@ template<class T> void matrices(
         .def("transposed", [](const Math::Matrix3x4<T>& self) -> Math::Matrix4x3<T> {
             return self.transposed();
         }, "Transposed matrix");
-    everyRectangularMatrix(matrix3x2);
-    everyRectangularMatrix(matrix3x3);
-    everyRectangularMatrix(matrix3x4);
-    rectangularMatrix(matrix3x2);
-    rectangularMatrix(matrix3x3);
-    rectangularMatrix(matrix3x4);
-    everyMatrix(matrix3x3);
-    matrix(matrix3x3);
 
-    /* Four-column matrices */
+    /* Four-column matrices. Buffer constructors need to be *before* tuple
+       constructors so numpy buffer protocol gets extracted correctly. */
+    everyRectangularMatrix(matrix4x2);
+    everyRectangularMatrix(matrix4x3);
+    everyRectangularMatrix(matrix4x4);
+    rectangularMatrix(matrix4x2);
+    rectangularMatrix(matrix4x3);
+    rectangularMatrix(matrix4x4);
+    everyMatrix(matrix4x4);
+    matrix(matrix4x4);
     matrix4x2
         .def(py::init<const Math::Vector2<T>&, const Math::Vector2<T>&, const Math::Vector2<T>&, const Math::Vector2<T>&>(),
             "Construct from column vectors")
@@ -420,18 +481,13 @@ template<class T> void matrices(
         .def("__matmul__", [](const Math::Matrix4x4<T>& self, const Math::Matrix3x4<T>& other) -> Math::Matrix3x4<T> {
             return self*other;
         }, "Multiply a matrix");
-    everyRectangularMatrix(matrix4x2);
-    everyRectangularMatrix(matrix4x3);
-    everyRectangularMatrix(matrix4x4);
-    rectangularMatrix(matrix4x2);
-    rectangularMatrix(matrix4x3);
-    rectangularMatrix(matrix4x4);
-    everyMatrix(matrix4x4);
-    matrix(matrix4x4);
 
-    /* 3x3 transformation matrix */
+
+    /* 3x3 transformation matrix. Buffer constructors need to be *before* tuple
+       constructors so numpy buffer protocol gets extracted correctly. */
     py::implicitly_convertible<Math::Matrix3x3<T>, Math::Matrix3<T>>();
-
+    everyRectangularMatrix(matrix3);
+    everyMatrix(matrix3);
     matrix3
         /* Constructors. The scaling() / rotation() are handled below
            as they conflict with member functions. */
@@ -531,12 +587,12 @@ template<class T> void matrices(
                 return matrix3.attr("_srotation")(*args, **kwargs);
             }
         });
-    everyRectangularMatrix(matrix3);
-    everyMatrix(matrix3);
 
-    /* 4x4 transformation matrix */
+    /* 4x4 transformation matrix. Buffer constructors need to be *before* tuple
+       constructors so numpy buffer protocol gets extracted correctly. */
     py::implicitly_convertible<Math::Matrix4x4<T>, Math::Matrix4<T>>();
-
+    everyRectangularMatrix(matrix4);
+    everyMatrix(matrix4);
     matrix4
         /* Constructors. The scaling() / rotation() are handled below
            as they conflict with member functions. */
@@ -661,8 +717,6 @@ template<class T> void matrices(
                 return matrix4.attr("_srotation")(*args, **kwargs);
             }
         });
-    everyRectangularMatrix(matrix4);
-    everyMatrix(matrix4);
 }
 
 }

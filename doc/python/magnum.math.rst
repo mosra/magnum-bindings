@@ -111,6 +111,70 @@
     On the other hand, matrix and vector types are exposed in both the float
     and double variants.
 
+    `Implicit conversions; NumPy compatibility`_
+    ============================================
+
+    All vector classes are implicitly convertible from a tuple of correct size
+    and type as well as any type implementing the buffer protocol, and these
+    can be also converted back to lists using list comprehensions. This makes
+    them fully compatible with `numpy.array`, so the following expressions are
+    completely valid:
+
+    ..
+        >>> import numpy as np
+
+    .. code:: pycon
+
+        >>> Matrix4.translation(np.array([1.5, 0.7, 3.3]))
+        Matrix(1, 0, 0, 1.5,
+               0, 1, 0, 0.7,
+               0, 0, 1, 3.3,
+               0, 0, 0, 1)
+
+    .. code:: pycon
+
+        >>> m = Matrix4.scaling((0.5, 0.5, 1.0))
+        >>> np.array(m.diagonal())
+        array([0.5, 0.5, 1. , 1. ])
+
+    For matrices it's a bit more complicated, since Magnum is using
+    column-major layout while numpy defaults to row-major (but can do
+    column-major as well). Matrices thus implement the buffer protocol for both
+    directions of the conversion to give numpy proper metadata and while they
+    are implicitly convertible from/to types implementing a buffer protocol,
+    they *are not* implicitly convertible from/to plain tuples like vectors
+    are.
+
+    To simplify the implementation, Magnum matrices are convertible only from
+    32-bit and 64-bit floating-point types (:py:`'f'` and :py:`'d'` numpy
+    ``dtype``). In the other direction, unless overriden using ``dtype`` or
+    ``order``, the created numpy array matches Magnum data type and layout:
+
+    .. code:: pycon
+
+        >>> a = Matrix3(np.array(
+        ...     [[1.0, 2.0, 3.0],
+        ...      [4.0, 5.0, 6.0],
+        ...      [7.0, 8.0, 9.0]]))
+        >>> a[0] # first column
+        Vector(1, 4, 7)
+
+    .. code:: pycon
+
+        >>> b = np.array(Matrix3.rotation(Deg(45.0)))
+        >>> b.strides[0] # column-major storage
+        4
+        >>> b[0] # first column, 32-bit floats
+        array([ 0.70710677, -0.70710677,  0.        ], dtype=float32)
+
+    .. code:: pycon
+
+        >>> c = np.array(Matrix3.rotation(Deg(45.0)), order='C', dtype='d')
+        >>> c.strides[0] # row-major storage (overriden)
+        24
+        >>> c[0] # first column, 64-bit floats (overriden)
+        array([ 0.70710677, -0.70710677,  0.        ])
+
     `Major differences to the C++ API`_
     ===================================
 
