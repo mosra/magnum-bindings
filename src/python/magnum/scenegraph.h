@@ -81,18 +81,22 @@ template<UnsignedInt dimensions, class T, class Transformation> void object(py::
         .def("reset_transformation", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self) {
             self.resetTransformation();
         }, "Reset the transformation")
-        .def("transform", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const typename Transformation::DataType& transformation) {
-            self.transform(transformation);
-        }, "Transform the object")
-        .def("transform_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const typename Transformation::DataType& transformation) {
-            self.transformLocal(transformation);
-        }, "Transform the object as a local transformation")
         .def("translate", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<dimensions, typename Transformation::DataType::Type>& vector) {
             self.translate(vector);
         }, "Translate the object")
         .def("translate_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<dimensions, typename Transformation::DataType::Type>& vector) {
             self.translateLocal(vector);
         }, "Translate the object as a local transformation");
+}
+
+template<class Transformation> void objectTransform(py::class_<SceneGraph::Object<Transformation>, SceneGraph::PyObject<SceneGraph::Object<Transformation>>, SceneGraph::AbstractObject<Transformation::Dimensions, typename Transformation::Type>,  SceneGraph::PyObjectHolder<SceneGraph::Object<Transformation>>>& c) {
+    c
+        .def("transform", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const typename Transformation::DataType& transformation) {
+            self.transform(transformation);
+        }, "Transform the object")
+        .def("transform_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const typename Transformation::DataType& transformation) {
+            self.transformLocal(transformation);
+        }, "Transform the object as a local transformation");
 }
 
 template<UnsignedInt dimensions, class T, class Transformation> void object2D(py::class_<SceneGraph::Object<Transformation>, SceneGraph::PyObject<SceneGraph::Object<Transformation>>, SceneGraph::AbstractObject<dimensions, T>,  SceneGraph::PyObjectHolder<SceneGraph::Object<Transformation>>>& c) {
@@ -140,16 +144,21 @@ template<UnsignedInt dimensions, class T, class Transformation> void objectScale
         }, "Scale the object")
         .def("scale_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<dimensions, typename Transformation::DataType::Type>& vector) {
             self.scaleLocal(vector);
-        }, "Scale the object as a local transformation")
-        .def("reflect", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<dimensions, typename Transformation::DataType::Type>& vector) {
+        }, "Scale the object as a local transformation");
+}
+
+template<class Transformation> void objectReflect(py::class_<SceneGraph::Object<Transformation>, SceneGraph::PyObject<SceneGraph::Object<Transformation>>, SceneGraph::AbstractObject<Transformation::Dimensions, typename Transformation::Type>, SceneGraph::PyObjectHolder<SceneGraph::Object<Transformation>>>& c) {
+    c
+        .def("reflect", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<Transformation::Dimensions, typename Transformation::Type>& vector) {
             self.reflect(vector);
         }, "Reflect the object")
-        .def("reflect_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<dimensions, typename Transformation::DataType::Type>& vector) {
+        .def("reflect_local", [](SceneGraph::PyObject<SceneGraph::Object<Transformation>>& self, const VectorTypeFor<Transformation::Dimensions, typename Transformation::Type>& vector) {
             self.reflectLocal(vector);
         }, "Reflect the object as a local transformation");
 }
 
 void scenegraphMatrix(py::module& m);
+void scenegraphTrs(py::module& m);
 
 }
 

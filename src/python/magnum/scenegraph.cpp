@@ -168,4 +168,5 @@ PYBIND11_MODULE(scenegraph, m) {
 
     magnum::scenegraph(m);
     magnum::scenegraphMatrix(m);
+    magnum::scenegraphTrs(m);
 }

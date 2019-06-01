@@ -42,13 +42,17 @@ void scenegraphMatrix(py::module& m) {
 
     py::class_<SceneGraph::Object<SceneGraph::MatrixTransformation2D>, SceneGraph::PyObject<SceneGraph::Object<SceneGraph::MatrixTransformation2D>>, SceneGraph::AbstractObject2D, SceneGraph::PyObjectHolder<SceneGraph::Object<SceneGraph::MatrixTransformation2D>>> object2D_{matrix, "Object2D", "Two-dimensional object with matrix-based transformation implementation"};
     object(object2D_);
+    objectTransform(object2D_);
     object2D(object2D_);
     objectScale(object2D_);
+    objectReflect(object2D_);
 
     py::class_<SceneGraph::Object<SceneGraph::MatrixTransformation3D>, SceneGraph::PyObject<SceneGraph::Object<SceneGraph::MatrixTransformation3D>>, SceneGraph::AbstractObject3D, SceneGraph::PyObjectHolder<SceneGraph::Object<SceneGraph::MatrixTransformation3D>>> object3D_{matrix, "Object3D", "Three-dimensional object with matrix-based transformation implementation"};
     object(object3D_);
+    objectTransform(object3D_);
     object3D(object3D_);
     objectScale(object3D_);
+    objectReflect(object3D_);
 }
 
 }
