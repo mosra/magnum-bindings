@@ -58,6 +58,7 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
             "Aspect ratio")
         .def("cross", static_cast<T(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(Math::cross),
             "2D cross product");
+    everyVector(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
     vectorFloat<Math::Vector2<T>>(m, vector2_);
     vector2<T>(vector2_);
@@ -65,10 +66,12 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
     vector3_
         .def("cross", static_cast<Math::Vector3<T>(*)(const Math::Vector3<T>&, const Math::Vector3<T>&)>(Math::cross),
             "Cross product");
+    everyVector(vector3_);
     vector<Math::Vector3<T>>(m, vector3_);
     vectorFloat<Math::Vector3<T>>(m, vector3_);
     vector3<T>(vector3_);
 
+    everyVector(vector4_);
     vector<Math::Vector4<T>>(m, vector4_);
     vectorFloat<Math::Vector4<T>>(m, vector4_);
     vector4<T>(vector4_);
@@ -87,10 +90,12 @@ void mathVectorFloat(py::module& root, py::module& m) {
     vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
 
     py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space"};
+    everyVector(color3_);
     color(color3_);
     color3(color3_);
 
     py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
+    everyVector(color4_);
     color(color4_);
     color4(color4_);
 

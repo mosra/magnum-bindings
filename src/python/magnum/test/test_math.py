@@ -292,6 +292,11 @@ class Color3_(unittest.TestCase):
         self.assertAlmostEqual(a.to_hsv()[1], 0.749)
         self.assertAlmostEqual(a.to_hsv()[2], 0.427)
 
+    def test_methods_return_type(self):
+        self.assertIsInstance(Color3()*1.5, Color3)
+        self.assertIsInstance(Color3()+Color3(), Color3)
+        self.assertIsInstance(Color3.zero_init(), Color3)
+
 class Color4_(unittest.TestCase):
     def test_init(self):
         a1 = Color4()
@@ -337,6 +342,13 @@ class Color4_(unittest.TestCase):
 
         b = Color4.from_hsv(Deg(230.0), 0.749, 0.427)
         self.assertEqual(b, Color4(0.107177, 0.160481, 0.427, 1.0))
+
+    def test_methods_return_type(self):
+        self.assertIsInstance(Color4()*1.5, Color4)
+        self.assertIsInstance(Color4()+Color4(), Color4)
+        self.assertIsInstance(Color4.zero_init(), Color4)
+        self.assertIsInstance(Color4().rgb, Color3)
+        self.assertIsInstance(Color4().xyz, Color3)
 
 class Matrix(unittest.TestCase):
     def test_init(self):

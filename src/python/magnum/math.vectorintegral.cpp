@@ -54,14 +54,17 @@ template<class T> void vectorIntegral(py::class_<T>& c) {
 }
 
 template<class T> void vectorsIntegral(py::module& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
+    everyVector(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
     vectorIntegral<Math::Vector2<T>>(vector2_);
     vector2<T>(vector2_);
 
+    everyVector(vector3_);
     vector<Math::Vector3<T>>(m, vector3_);
     vectorIntegral<Math::Vector3<T>>(vector3_);
     vector3<T>(vector3_);
 
+    everyVector(vector4_);
     vector<Math::Vector4<T>>(m, vector4_);
     vectorIntegral<Math::Vector4<T>>(vector4_);
     vector4<T>(vector4_);

@@ -33,6 +33,33 @@
 
 namespace magnum {
 
+/* Things that have to be defined for both VectorN and Color so they construct
+   / return a proper type */
+template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
+    c
+        .def_static("zero_init", []() {
+            return T{Math::ZeroInit};
+        }, "Construct a zero vector")
+        .def(py::init(), "Default constructor")
+
+        /* Operators */
+        .def(-py::self, "Negated vector")
+        .def(py::self += py::self, "Add and assign a vector")
+        .def(py::self + py::self, "Add a vector")
+        .def(py::self -= py::self, "Subtract and assign a vector")
+        .def(py::self - py::self, "Subtract a vector")
+        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
+        .def(py::self * typename T::Type{}, "Multiply with a scalar")
+        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
+        .def(py::self / typename T::Type{}, "Divide with a scalar")
+        .def(py::self *= py::self, "Multiply a vector component-wise and assign")
+        .def(py::self * py::self, "Multiply a vector component-wise")
+        .def(py::self /= py::self, "Divide a vector component-wise and assign")
+        .def(py::self / py::self, "Divide a vector component-wise")
+        .def(typename T::Type{} * py::self, "Multiply a scalar with a vector")
+        .def(typename T::Type{} / py::self, "Divide a vector with a scalar and invert");
+}
+
 /* Things common for vectors of all sizes and types */
 template<class T> void vector(py::module& m, py::class_<T>& c) {
     /*
@@ -50,10 +77,6 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
 
     c
         /* Constructors */
-        .def_static("zero_init", []() {
-            return T{Math::ZeroInit};
-        }, "Construct a zero vector")
-        .def(py::init(), "Default constructor")
         .def(py::init<typename T::Type>(), "Construct a vector with one value for all components")
 
         /* Comparison */
@@ -74,23 +97,6 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
             if(i >= T::Size) throw pybind11::index_error{};
             return self[i];
         }, "Value at given position")
-
-        /* Operators */
-        .def(-py::self, "Negated vector")
-        .def(py::self += py::self, "Add and assign a vector")
-        .def(py::self + py::self, "Add a vector")
-        .def(py::self -= py::self, "Subtract and assign a vector")
-        .def(py::self - py::self, "Subtract a vector")
-        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
-        .def(py::self * typename T::Type{}, "Multiply with a scalar")
-        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
-        .def(py::self / typename T::Type{}, "Divide with a scalar")
-        .def(py::self *= py::self, "Multiply a vector component-wise and assign")
-        .def(py::self * py::self, "Multiply a vector component-wise")
-        .def(py::self /= py::self, "Divide a vector component-wise and assign")
-        .def(py::self / py::self, "Divide a vector component-wise")
-        .def(typename T::Type{} * py::self, "Multiply a scalar with a vector")
-        .def(typename T::Type{} / py::self, "Divide a vector with a scalar and invert")
 
         /* Member functions common for floating-point and integer types */
         .def("is_zero", &T::isZero, "Whether the vector is zero")
@@ -341,7 +347,17 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
             return Degd(self.hue());
         }, "Hue")
         .def("saturation", &Math::Color4<T>::saturation, "Saturation")
-        .def("value", &Math::Color4<T>::value, "Value");
+        .def("value", &Math::Color4<T>::value, "Value")
+
+        /* Properties */
+        .def_property("xyz",
+            static_cast<const Math::Color3<T>(Math::Color4<T>::*)() const>(&Math::Color4<T>::xyz),
+            [](Math::Color4<T>& self, const Math::Color3<T>& value) { self.xyz() = value; },
+            "XYZ part of the vector")
+        .def_property("rgb",
+            static_cast<const Math::Color3<T>(Math::Color4<T>::*)() const>(&Math::Color4<T>::rgb),
+            [](Math::Color4<T>& self, const Math::Color3<T>& value) { self.rgb() = value; },
+            "RGB part of the vector");
 }
 
 }
