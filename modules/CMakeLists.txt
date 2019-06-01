@@ -23,27 +23,8 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.1)
+set(MagnumBindings_MODULES
+    FindMagnumBindings.cmake
+    MagnumBindingsConfig.cmake)
 
-# Configuration fails on < 3.4 if only C++ is enabled (CheckFunctionExists
-# macro called from FindX11)
-if(NOT CMAKE_VERSION VERSION_LESS 3.4.0)
-    set(LANG CXX)
-endif()
-project(MagnumBindings ${LANG})
-
-# Use folders for nice tree in Visual Studio and XCode
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/modules/" ${CMAKE_MODULE_PATH})
-find_package(Magnum REQUIRED)
-
-include(CMakeDependentOption)
-
-# Libraries to build
-option(WITH_PYTHON "Build Python bindings" OFF)
-
-set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR share/cmake/MagnumBindings)
-
-add_subdirectory(modules)
-add_subdirectory(src)
+install(FILES ${MagnumBindings_MODULES} DESTINATION ${MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR})
