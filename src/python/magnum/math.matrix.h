@@ -558,6 +558,10 @@ template<class T> void matrices(
             static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::up),
             [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.up() = value; },
             "Up-pointing 2D vector")
+        .def_property("_translation", // TODO
+            static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::translation),
+            [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.translation() = value; },
+            "2D translation part of the matrix")
 
         /* Static/member scaling(). Pybind doesn't support that natively, so
            we create a scaling(*args, **kwargs) and dispatch ourselves. */
@@ -688,6 +692,10 @@ template<class T> void matrices(
             static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::backward),
             [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.backward() = value; },
             "Backward-pointing 3D vector")
+        .def_property("_translation", // TODO
+            static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::translation),
+            [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.translation() = value; },
+            "3D translation part of the matrix")
 
         /* Static/member scaling(). Pybind doesn't support that natively, so
            we create a scaling(*args, **kwargs) and dispatch ourselves. */

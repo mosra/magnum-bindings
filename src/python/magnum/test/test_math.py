@@ -649,15 +649,15 @@ class Matrix3_(unittest.TestCase):
         self.assertEqual(c.scaling(), Vector2(1.0, 2.0))
 
     def test_properties(self):
-        a = Matrix3.rotation(Deg(45.0))
+        a = Matrix3.translation(Vector2.y_axis(-5.0))@Matrix3.rotation(Deg(45.0))
         self.assertEqual(a.right, Vector2(0.707107, 0.707107))
         self.assertEqual(a.up, Vector2(-0.707107, 0.707107))
-        # TODO: a.translation
+        self.assertEqual(a._translation, Vector2.y_axis(-5.0)) # TODO
 
         a.right = Vector2.x_axis(2.0)
         a.up = -Vector2.y_axis()
+        a._translation = Vector2(0.0) # TODO
         self.assertEqual(a, Matrix3.from_diagonal((2.0, -1.0, 1.0)))
-        # TODO: a.translation
 
     def test_methods(self):
         self.assertEqual(Matrix3.rotation(Deg(45.0)).transposed(),
@@ -750,17 +750,17 @@ class Matrix4_(unittest.TestCase):
         self.assertEqual(c.scaling(), Vector3(1.0, 2.0, 3.5))
 
     def test_properties(self):
-        a = Matrix4.rotation_z(Deg(45.0))
+        a = Matrix4.translation(Vector3.y_axis(-5.0))@Matrix4.rotation_z(Deg(45.0))
         self.assertEqual(a.right, Vector3(0.707107, 0.707107, 0.0))
         self.assertEqual(a.up, Vector3(-0.707107, 0.707107, 0.0))
         self.assertEqual(a.backward, Vector3(0.0, 0.0, 1.0))
-        # TODO: a.translation
+        self.assertEqual(a._translation, Vector3.y_axis(-5.0)) # TODO
 
         a.right = Vector3.x_axis(3.0)
         a.up = -Vector3.y_axis()
         a.backward = Vector3.z_axis(2.0)
+        a._translation = Vector3(0.0) # TODO
         self.assertEqual(a, Matrix4.from_diagonal((3.0, -1.0, 2.0, 1.0)))
-        # TODO: a.translation
 
     def test_methods(self):
         self.assertEqual(Matrix4.rotation_y(Deg(45.0)).transposed(),
