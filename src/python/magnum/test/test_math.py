@@ -666,6 +666,8 @@ class Matrix3_(unittest.TestCase):
                          Matrix3.scaling(Vector2(1/3.0)))
 
     def test_methods_return_type(self):
+        self.assertIsInstance(Matrix3.zero_init(), Matrix3)
+        self.assertIsInstance(Matrix3.from_diagonal((3.0, 1.0, 1.0)), Matrix3)
         self.assertIsInstance(Matrix3()@Matrix3(), Matrix3)
         self.assertIsInstance(Matrix3()+Matrix3(), Matrix3)
         self.assertIsInstance(Matrix3().transposed(), Matrix3)
@@ -769,6 +771,8 @@ class Matrix4_(unittest.TestCase):
                          Matrix4.scaling(Vector3(1/3.0)))
 
     def test_methods_return_type(self):
+        self.assertIsInstance(Matrix4.identity_init(), Matrix4)
+        self.assertIsInstance(Matrix4.from_diagonal((3.0, 1.5, 1.0, 1.0)), Matrix4)
         self.assertIsInstance(Matrix4()@Matrix4(), Matrix4)
         self.assertIsInstance(Matrix4()+Matrix4(), Matrix4)
         self.assertIsInstance(Matrix4().transposed(), Matrix4)

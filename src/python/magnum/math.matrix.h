@@ -58,6 +58,15 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
     py::implicitly_convertible<py::buffer, T>();
 
     c
+        .def_static("from_diagonal", [](const typename VectorTraits<T::DiagonalSize, typename T::Type>::Type& vector) {
+            return T::fromDiagonal(vector);
+        }, "Construct a diagonal matrix")
+        .def_static("zero_init", []() {
+            return T{Math::ZeroInit};
+        }, "Construct a zero-filled matrix")
+        .def(py::init(), "Default constructor")
+        .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
+
         /* Buffer protocol, needed in order to make numpy treat the matric
            correctly as column-major. Has to be defined *before* the from-tuple
            constructor so it gets precedence for types that implement the
@@ -119,16 +128,6 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
     */
 
     c
-        /* Constructors */
-        .def_static("from_diagonal", [](const typename VectorTraits<T::DiagonalSize, typename T::Type>::Type& vector) {
-            return T::fromDiagonal(vector);
-        }, "Construct a diagonal matrix")
-        .def_static("zero_init", []() {
-            return T{Math::ZeroInit};
-        }, "Construct a zero-filled matrix")
-        .def(py::init(), "Default constructor")
-        .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
-
         /* Buffer protocol, needed in order to make numpy treat the matric
            correctly as column-major. The constructor is defined in
            everyRectangularMatrix(). */
@@ -181,6 +180,12 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
    has to be separate */
 template<class T, class ...Args> void everyMatrix(py::class_<T, Args...>& c) {
     c
+        /* Constructors */
+        .def_static("identity_init", [](typename T::Type value) {
+            return T{Math::IdentityInit, value};
+        }, "Construct an identity matrix", py::arg("value") = typename T::Type(1))
+
+        /* Methods */
         .def("inverted", &T::inverted, "Inverted matrix")
         .def("inverted_orthogonal", &T::invertedOrthogonal, "Inverted orthogonal matrix")
         .def("__matmul__", [](const T& self, const T& other) -> T {
@@ -193,11 +198,6 @@ template<class T, class ...Args> void everyMatrix(py::class_<T, Args...>& c) {
 
 template<class T> void matrix(py::class_<T>& c) {
     c
-        /* Constructors */
-        .def_static("identity_init", [](typename T::Type value) {
-            return T{Math::IdentityInit, value};
-        }, "Construct an identity matrix", py::arg("value") = typename T::Type(1))
-
         /* Member functions for square matrices only */
         .def("is_orthogonal", &T::isOrthogonal, "Whether the matrix is orthogonal")
         .def("trace", &T::trace, "Trace of the matrix")
@@ -504,14 +504,6 @@ template<class T> void matrices(
         .def_static("from", static_cast<Math::Matrix3<T>(*)(const Math::Matrix2x2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::from),
             "Create a matrix from a rotation/scaling part and a translation part",
             py::arg("rotation_scaling"), py::arg("translation"))
-        .def_static("zero_init", []() {
-            return Math::Matrix3<T>{Math::ZeroInit};
-        }, "Construct a zero-filled matrix")
-        .def_static("identity_init", [](T value) {
-            return Math::Matrix3<T>{Math::IdentityInit, value};
-        }, "Construct an identity matrix", py::arg("value") = T(1))
-        .def(py::init(), "Default constructor")
-        .def(py::init<T>(), "Construct a matrix with one value for all components")
         .def(py::init<const Math::Vector3<T>&, const Math::Vector3<T>&, const Math::Vector3<T>&>(),
             "Construct from column vectors")
         .def(py::init([](const std::tuple<Math::Vector3<T>, Math::Vector3<T>, Math::Vector3<T>>& value) {
@@ -632,14 +624,6 @@ template<class T> void matrices(
         .def_static("from", static_cast<Math::Matrix4<T>(*)(const Math::Matrix3x3<T>&, const Math::Vector3<T>&)>(&Math::Matrix4<T>::from),
             "Create a matrix from a rotation/scaling part and a translation part",
             py::arg("rotation_scaling"), py::arg("translation"))
-        .def_static("zero_init", []() {
-            return Math::Matrix4<T>{Math::ZeroInit};
-        }, "Construct a zero-filled matrix")
-        .def_static("identity_init", [](T value) {
-            return Math::Matrix4<T>{Math::IdentityInit, value};
-        }, "Construct an identity matrix", py::arg("value") = T(1))
-        .def(py::init(), "Default constructor")
-        .def(py::init<T>(), "Construct a matrix with one value for all components")
         .def(py::init<const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&>(),
             "Construct from column vectors")
         .def(py::init([](const std::tuple<Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>, Math::Vector4<T>>& value) {
