@@ -61,7 +61,7 @@ template<UnsignedInt dimensions> void vertexColor(NonDestructibleBase<Shaders::V
 }
 
 void shaders(py::module& m) {
-    m.import("magnum.gl");
+    py::module::import("magnum.gl");
 
     /* 2D/3D vertex color shader */
     {

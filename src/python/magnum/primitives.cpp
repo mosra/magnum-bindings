@@ -34,7 +34,7 @@
 namespace magnum { namespace {
 
 void primitives(py::module& m) {
-    m.import("magnum.trade");
+    py::module::import("magnum.trade");
 
     py::enum_<Primitives::SquareTextureCoords>{m, "SquareTextureCoords", "Whether to generate square texture coordinates"}
         .value("DONT_GENERATE", Primitives::SquareTextureCoords::DontGenerate)

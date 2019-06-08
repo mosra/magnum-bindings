@@ -35,8 +35,8 @@
 namespace magnum { namespace {
 
 void meshtools(py::module& m) {
-    m.import("magnum.gl");
-    m.import("magnum.trade");
+    py::module::import("magnum.gl");
+    py::module::import("magnum.trade");
 
     m
         .def("compile", [](const Trade::MeshData2D& data) {
