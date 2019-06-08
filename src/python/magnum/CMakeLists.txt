@@ -40,7 +40,7 @@ target_link_libraries(magnum PRIVATE Magnum::Magnum)
 set_target_properties(magnum PROPERTIES
     FOLDER "python"
     OUTPUT_NAME "_magnum"
-    LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 
 if(Magnum_GL_FOUND)
     set(magnum_gl_SRCS

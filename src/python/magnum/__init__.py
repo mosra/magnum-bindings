@@ -25,13 +25,13 @@
 
 """Root Magnum module"""
 
-from ._magnum import *
+from _magnum import *
 
 # This feels extremely hackish, but without that it wouldn't be possible to
 # do `import magnum.math`, which is weird (`from magnum import math` works,
 # tho, for whatever reason)
 import sys
-sys.modules['magnum.math'] = _magnum.math
+sys.modules['magnum.math'] = math
 
 __all__ = [
     'Deg', 'Rad',

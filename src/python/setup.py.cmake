@@ -32,7 +32,7 @@ from setuptools.command.build_ext import build_ext
 extension_paths = {
     # Filled in by cmake
     'corrade.containers': '$<TARGET_FILE:corrade_containers>',
-    'magnum._magnum': '$<TARGET_FILE:magnum>',
+    '_magnum': '$<TARGET_FILE:magnum>',
     'magnum.gl': '${magnum_gl_file}',
     'magnum.meshtools': '${magnum_meshtools_file}',
     'magnum.primitives': '${magnum_primitives_file}',
