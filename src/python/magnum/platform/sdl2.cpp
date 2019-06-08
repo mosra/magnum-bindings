@@ -34,6 +34,8 @@ namespace magnum { namespace platform { namespace {
 int argc = 0;
 
 void sdl2(py::module& m) {
+    m.doc() = "SDL2-based platform integration";
+
     struct PublicizedApplication: Platform::Application {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
@@ -114,7 +116,5 @@ void sdl2(py::module& m) {
 }}}
 
 PYBIND11_MODULE(sdl2, m) {
-    m.doc() = "SDL2-based platform integration";
-
     magnum::platform::sdl2(m);
 }

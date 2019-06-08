@@ -42,6 +42,8 @@
 namespace magnum { namespace {
 
 void gl(py::module& m) {
+    m.doc() = "OpenGL wrapping layer";
+
     py::module::import("corrade.containers");
 
     /* Abstract shader program */
@@ -303,7 +305,5 @@ void gl(py::module& m) {
 }}
 
 PYBIND11_MODULE(gl, m) {
-    m.doc() = "OpenGL wrapping layer";
-
     magnum::gl(m);
 }

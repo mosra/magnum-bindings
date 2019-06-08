@@ -34,6 +34,8 @@ namespace magnum { namespace platform { namespace {
 int argc = 0;
 
 void glfw(py::module& m) {
+    m.doc() = "GLFW-based platform integration";
+
     struct PublicizedApplication: Platform::Application {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
@@ -106,7 +108,5 @@ void glfw(py::module& m) {
 }}}
 
 PYBIND11_MODULE(glfw, m) {
-    m.doc() = "GLFW-based platform integration";
-
     magnum::platform::glfw(m);
 }

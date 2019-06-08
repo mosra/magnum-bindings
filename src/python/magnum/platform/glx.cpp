@@ -34,6 +34,8 @@ namespace magnum { namespace platform { namespace {
 int argc = 0;
 
 void glx(py::module& m) {
+    m.doc() = "GLX-based platform integration";
+
     struct PyWindowlessApplication: Platform::WindowlessApplication {
         explicit PyWindowlessApplication(const Configuration& configuration = Configuration{}): Platform::WindowlessApplication{Arguments{argc, nullptr}, configuration} {}
 
@@ -54,7 +56,5 @@ void glx(py::module& m) {
 }}}
 
 PYBIND11_MODULE(glx, m) {
-    m.doc() = "GLX-based platform integration";
-
     magnum::platform::glx(m);
 }

@@ -38,6 +38,8 @@ template<class T> void meshData(py::class_<T>& c) {
 }
 
 void trade(py::module& m) {
+    m.doc() = "Data format exchange";
+
     py::class_<Trade::MeshData2D> meshData2D{m, "MeshData2D", "Two-dimensional mesh data"};
     py::class_<Trade::MeshData3D> meshData3D{m, "MeshData3D", "Three-dimensional mesh data"};
     meshData(meshData2D);
@@ -47,7 +49,5 @@ void trade(py::module& m) {
 }}
 
 PYBIND11_MODULE(trade, m) {
-    m.doc() = "Data format exchange";
-
     magnum::trade(m);
 }

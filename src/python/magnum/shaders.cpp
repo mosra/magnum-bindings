@@ -61,6 +61,8 @@ template<UnsignedInt dimensions> void vertexColor(NonDestructibleBase<Shaders::V
 }
 
 void shaders(py::module& m) {
+    m.doc() = "Builtin shaders";
+
     py::module::import("magnum.gl");
 
     /* 2D/3D vertex color shader */
@@ -152,7 +154,5 @@ void shaders(py::module& m) {
 }}
 
 PYBIND11_MODULE(shaders, m) {
-    m.doc() = "Builtin shaders";
-
     magnum::shaders(m);
 }

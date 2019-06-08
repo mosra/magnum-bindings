@@ -402,6 +402,8 @@ template<class T> void mutableStridedArrayView3D(py::class_<PyStridedArrayView<3
 }
 
 void containers(py::module& m) {
+    m.doc() = "Corrade containers module";
+
     py::class_<PyArrayView<const char>> arrayView_{m,
         "ArrayView", "Array view", py::buffer_protocol{}};
     arrayView(arrayView_);
@@ -446,6 +448,5 @@ void containers(py::module& m) {
 }}
 
 PYBIND11_MODULE(containers, m) {
-    m.doc() = "Corrade containers module";
     corrade::containers(m);
 }

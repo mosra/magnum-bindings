@@ -34,6 +34,8 @@ namespace magnum { namespace platform { namespace {
 int argc = 0;
 
 void egl(py::module& m) {
+    m.doc() = "EGL-based platform integration";
+
     struct PyWindowlessApplication: Platform::WindowlessApplication {
         explicit PyWindowlessApplication(const Configuration& configuration = Configuration{}): Platform::WindowlessApplication{Arguments{argc, nullptr}, configuration} {}
 
@@ -54,7 +56,5 @@ void egl(py::module& m) {
 }}}
 
 PYBIND11_MODULE(egl, m) {
-    m.doc() = "EGL-based platform integration";
-
     magnum::platform::egl(m);
 }

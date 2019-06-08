@@ -35,6 +35,8 @@
 namespace magnum { namespace {
 
 void meshtools(py::module& m) {
+    m.doc() = "Mesh tools";
+
     py::module::import("magnum.gl");
     py::module::import("magnum.trade");
 
@@ -50,7 +52,5 @@ void meshtools(py::module& m) {
 }}
 
 PYBIND11_MODULE(meshtools, m) {
-    m.doc() = "Mesh tools";
-
     magnum::meshtools(m);
 }

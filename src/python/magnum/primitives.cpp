@@ -34,6 +34,8 @@
 namespace magnum { namespace {
 
 void primitives(py::module& m) {
+    m.doc() = "Primitive library";
+
     py::module::import("magnum.trade");
 
     py::enum_<Primitives::SquareTextureCoords>{m, "SquareTextureCoords", "Whether to generate square texture coordinates"}
@@ -52,7 +54,5 @@ void primitives(py::module& m) {
 }}
 
 PYBIND11_MODULE(primitives, m) {
-    m.doc() = "Primitive library";
-
     magnum::primitives(m);
 }

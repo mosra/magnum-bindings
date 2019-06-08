@@ -121,6 +121,8 @@ template<UnsignedInt dimensions, class T> void camera(py::class_<SceneGraph::Cam
 }
 
 void scenegraph(py::module& m) {
+    m.doc() = "Scene graph library";
+
     /* Abstract objects. Returned from feature.object, so need to be registered
        as well. */
     {
@@ -159,14 +161,14 @@ void scenegraph(py::module& m) {
         camera(camera2D);
         camera(camera3D);
     }
+
+    /* Concrete transformation implementations */
+    magnum::scenegraphMatrix(m);
+    magnum::scenegraphTrs(m);
 }
 
 }}
 
 PYBIND11_MODULE(scenegraph, m) {
-    m.doc() = "Scene graph library";
-
     magnum::scenegraph(m);
-    magnum::scenegraphMatrix(m);
-    magnum::scenegraphTrs(m);
 }
