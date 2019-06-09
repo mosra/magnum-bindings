@@ -24,3 +24,23 @@
 #
 
 """Root Corrade module"""
+
+import sys
+
+# In case Corrade is built statically, the whole core project is put into
+# _corrade. If corrade is built dynamically, there's no core library at the
+# moment.
+try:
+    from _corrade import *
+
+    # The following feels extremely hackish, but without that it wouldn't be
+    # possible to do `import corrade.containers`, which is weird
+    # (`from corrade import containers` works, tho, for whatever reason)
+    for i in ['containers']:
+        if i in globals(): sys.modules['corrade.' + i] = globals()[i]
+except ImportError:
+    pass
+
+# Prevent all submodules being pulled in when saying `from corrade import *` --
+# this is consistent with behavior in magnum
+__all__ = []

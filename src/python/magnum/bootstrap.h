@@ -39,6 +39,21 @@ void mathVectorIntegral(py::module& root, py::module& m);
 void mathMatrixFloat(py::module& root);
 void mathMatrixDouble(py::module& root);
 
+void gl(py::module& m);
+void meshtools(py::module& m);
+void primitives(py::module& m);
+void scenegraph(py::module& m);
+void shaders(py::module& m);
+void trade(py::module& m);
+
+namespace platform {
+    void glfw(py::module& m);
+    void sdl2(py::module& m);
+
+    void egl(py::module& m);
+    void glx(py::module& m);
+}
+
 }
 
 #endif

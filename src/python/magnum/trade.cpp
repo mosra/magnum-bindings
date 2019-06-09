@@ -29,12 +29,16 @@
 
 #include "magnum/bootstrap.h"
 
-namespace magnum { namespace {
+namespace magnum {
+
+namespace {
 
 template<class T> void meshData(py::class_<T>& c) {
     c
         .def_property_readonly("primitive", &T::primitive, "Primitive")
         .def("is_indexed", &T::isIndexed, "Whether the mesh is indexed");
+}
+
 }
 
 void trade(py::module& m) {
@@ -46,8 +50,10 @@ void trade(py::module& m) {
     meshData(meshData3D);
 }
 
-}}
+}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(trade, m) {
     magnum::trade(m);
 }
+#endif

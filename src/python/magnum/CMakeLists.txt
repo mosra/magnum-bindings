@@ -24,7 +24,18 @@
 #
 
 # *Not* REQUIRED
-find_package(Magnum COMPONENTS GL Shaders SceneGraph MeshTools Primitives Trade)
+find_package(Magnum COMPONENTS
+    GL
+    MeshTools
+    Primitives
+    SceneGraph
+    Shaders
+    Trade
+
+    GlfwApplication
+    Sdl2Application
+    WindowlessEglApplication
+    WindowlessGlxApplication)
 
 set(magnum_SRCS
     magnum.cpp
@@ -34,95 +45,162 @@ set(magnum_SRCS
     math.vectorfloat.cpp
     math.vectorintegral.cpp)
 
+# Extra libraries to link to. Populated only in case of MAGNUM_BUILD_STATIC.
+set(magnum_LIBS )
+
+set(magnum_gl_SRCS
+    gl.cpp)
+
+set(magnum_meshtools_SRCS
+    meshtools.cpp)
+
+set(magnum_primitives_SRCS
+    primitives.cpp)
+
+set(magnum_scenegraph_SRCS
+    scenegraph.cpp
+    scenegraph.matrix.cpp
+    scenegraph.trs.cpp)
+
+set(magnum_shaders_SRCS
+    shaders.cpp)
+
+set(magnum_trade_SRCS
+    trade.cpp)
+
+# If Magnum is not built as static, compile the sub-libraries as separate
+# modules
+if(NOT MAGNUM_BUILD_STATIC)
+    if(Magnum_GL_FOUND)
+        pybind11_add_module(magnum_gl ${magnum_gl_SRCS})
+        target_include_directories(magnum_gl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_gl PRIVATE Magnum::GL)
+        set_target_properties(magnum_gl PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "gl"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_MeshTools_FOUND)
+        pybind11_add_module(magnum_meshtools ${magnum_meshtools_SRCS})
+        target_include_directories(magnum_meshtools PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_meshtools PRIVATE Magnum::MeshTools)
+        set_target_properties(magnum_meshtools PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "meshtools"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_Primitives_FOUND)
+        pybind11_add_module(magnum_primitives ${magnum_primitives_SRCS})
+        target_include_directories(magnum_primitives PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_primitives PRIVATE Magnum::Primitives)
+        set_target_properties(magnum_primitives PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "primitives"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_SceneGraph_FOUND)
+        pybind11_add_module(magnum_scenegraph ${magnum_scenegraph_SRCS})
+        target_include_directories(magnum_scenegraph PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
+        set_target_properties(magnum_scenegraph PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "scenegraph"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_Shaders_FOUND)
+        pybind11_add_module(magnum_shaders ${magnum_shaders_SRCS})
+        target_include_directories(magnum_shaders PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_shaders PRIVATE Magnum::Shaders)
+        set_target_properties(magnum_shaders PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "shaders"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_Trade_FOUND)
+        pybind11_add_module(magnum_trade ${magnum_trade_SRCS})
+        target_include_directories(magnum_trade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_trade PRIVATE Magnum::Trade)
+        set_target_properties(magnum_trade PROPERTIES
+            FOLDER "python"
+            OUTPUT_NAME "trade"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+# Otherwise put it all into the core library so it's easier to install (which
+# is the point of static builds). It also nicely avoids problems with
+# multiply-defined global data.
+else()
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/staticconfigure.h.cmake
+                   ${CMAKE_CURRENT_BINARY_DIR}/staticconfigure.h)
+
+    if(Magnum_GL_FOUND)
+        list(APPEND magnum_SRCS ${magnum_gl_SRCS})
+        list(APPEND magnum_LIBS Magnum::GL)
+    endif()
+
+    if(Magnum_MeshTools_FOUND)
+        list(APPEND magnum_SRCS ${magnum_meshtools_SRCS})
+        list(APPEND magnum_LIBS Magnum::MeshTools)
+    endif()
+
+    if(Magnum_Primitives_FOUND)
+        list(APPEND magnum_SRCS ${magnum_primitives_SRCS})
+        list(APPEND magnum_LIBS Magnum::Primitives)
+    endif()
+
+    if(Magnum_SceneGraph_FOUND)
+        list(APPEND magnum_SRCS ${magnum_scenegraph_SRCS})
+        list(APPEND magnum_LIBS Magnum::SceneGraph)
+    endif()
+
+    if(Magnum_Shaders_FOUND)
+        list(APPEND magnum_SRCS ${magnum_shaders_SRCS})
+        list(APPEND magnum_LIBS Magnum::Shaders)
+    endif()
+
+    if(Magnum_Trade_FOUND)
+        list(APPEND magnum_SRCS ${magnum_trade_SRCS})
+        list(APPEND magnum_LIBS Magnum::Trade)
+    endif()
+
+    if(Magnum_GlfwApplication_FOUND)
+        list(APPEND magnum_SRCS platform/glfw.cpp)
+        list(APPEND magnum_LIBS Magnum::GlfwApplication)
+    endif()
+
+    if(Magnum_Sdl2Application_FOUND)
+        list(APPEND magnum_SRCS platform/sdl2.cpp)
+        list(APPEND magnum_LIBS Magnum::Sdl2Application)
+    endif()
+
+    if(Magnum_WindowlessEglApplication_FOUND)
+        list(APPEND magnum_SRCS platform/egl.cpp)
+        list(APPEND magnum_LIBS Magnum::WindowlessEglApplication)
+    endif()
+
+    if(Magnum_WindowlessGlxApplication_FOUND)
+        list(APPEND magnum_SRCS platform/glx.cpp)
+        list(APPEND magnum_LIBS Magnum::WindowlessGlxApplication)
+    endif()
+endif()
+
 pybind11_add_module(magnum ${magnum_SRCS})
-target_include_directories(magnum PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-target_link_libraries(magnum PRIVATE Magnum::Magnum)
+target_include_directories(magnum PRIVATE
+    ${PROJECT_SOURCE_DIR}/src # SceneGraph/Python.h for static build
+    ${PROJECT_SOURCE_DIR}/src/python
+    ${PROJECT_BINARY_DIR}/src/python) # for static build
+target_link_libraries(magnum PRIVATE Magnum::Magnum ${magnum_LIBS})
 set_target_properties(magnum PROPERTIES
     FOLDER "python"
     OUTPUT_NAME "_magnum"
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})
-
-if(Magnum_GL_FOUND)
-    set(magnum_gl_SRCS
-        gl.cpp)
-
-    pybind11_add_module(magnum_gl ${magnum_gl_SRCS})
-    target_include_directories(magnum_gl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_gl PRIVATE Magnum::GL)
-    set_target_properties(magnum_gl PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "gl"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
-
-if(Magnum_MeshTools_FOUND)
-    set(magnum_meshtools_SRCS
-        meshtools.cpp)
-
-    pybind11_add_module(magnum_meshtools ${magnum_meshtools_SRCS})
-    target_include_directories(magnum_meshtools PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_meshtools PRIVATE Magnum::MeshTools)
-    set_target_properties(magnum_meshtools PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "meshtools"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
-
-if(Magnum_Primitives_FOUND)
-    set(magnum_primitives_SRCS
-        primitives.cpp)
-
-    pybind11_add_module(magnum_primitives ${magnum_primitives_SRCS})
-    target_include_directories(magnum_primitives PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_primitives PRIVATE Magnum::Primitives)
-    set_target_properties(magnum_primitives PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "primitives"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
-
-if(Magnum_SceneGraph_FOUND)
-    set(magnum_scenegraph_SRCS
-        scenegraph.cpp
-        scenegraph.matrix.cpp
-        scenegraph.trs.cpp)
-
-    pybind11_add_module(magnum_scenegraph ${magnum_scenegraph_SRCS})
-    target_include_directories(magnum_scenegraph PRIVATE
-        ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
-    set_target_properties(magnum_scenegraph PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "scenegraph"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
-
-if(Magnum_Shaders_FOUND)
-    set(magnum_shaders_SRCS
-        shaders.cpp)
-
-    pybind11_add_module(magnum_shaders ${magnum_shaders_SRCS})
-    target_include_directories(magnum_shaders PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_shaders PRIVATE Magnum::Shaders)
-    set_target_properties(magnum_shaders PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "shaders"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
-
-if(Magnum_Trade_FOUND)
-    set(magnum_trade_SRCS
-        trade.cpp)
-
-    pybind11_add_module(magnum_trade ${magnum_trade_SRCS})
-    target_include_directories(magnum_trade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(magnum_trade PRIVATE Magnum::Trade)
-    set_target_properties(magnum_trade PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "trade"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
-endif()
 
 file(GENERATE OUTPUT ${output_dir}/magnum/__init__.py
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)

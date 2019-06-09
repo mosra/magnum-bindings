@@ -33,6 +33,8 @@ namespace corrade {
 using namespace Corrade;
 namespace py = pybind11;
 
+void containers(py::module& m);
+
 }
 
 #endif

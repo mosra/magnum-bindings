@@ -29,9 +29,11 @@
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"
 
-namespace magnum { namespace platform { namespace {
+namespace magnum { namespace platform {
 
-int argc = 0;
+namespace {
+    int argc = 0;
+}
 
 void glfw(py::module& m) {
     m.doc() = "GLFW-based platform integration";
@@ -105,8 +107,10 @@ void glfw(py::module& m) {
     mouseMoveEvent(mouseMoveEvent_);
 }
 
-}}}
+}}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(glfw, m) {
     magnum::platform::glfw(m);
 }
+#endif

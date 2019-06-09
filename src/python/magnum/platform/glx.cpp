@@ -29,9 +29,11 @@
 #include "magnum/bootstrap.h"
 #include "magnum/platform/windowlessapplication.h"
 
-namespace magnum { namespace platform { namespace {
+namespace magnum { namespace platform {
 
-int argc = 0;
+namespace {
+    int argc = 0;
+}
 
 void glx(py::module& m) {
     m.doc() = "GLX-based platform integration";
@@ -53,8 +55,10 @@ void glx(py::module& m) {
     windowlessapplication(windowlessGlxApplication);
 }
 
-}}}
+}}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(glx, m) {
     magnum::platform::glx(m);
 }
+#endif

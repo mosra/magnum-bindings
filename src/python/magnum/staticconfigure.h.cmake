@@ -23,40 +23,17 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <pybind11/pybind11.h>
-#include <Magnum/GL/Mesh.h>
-#include <Magnum/MeshTools/Compile.h>
-#include <Magnum/Trade/MeshData2D.h>
-#include <Magnum/Trade/MeshData3D.h>
+/* Named magnum/staticconfigure.h to avoid it colliding with Magnum/configure.h
+   on case-insensitive filesystems */
 
-#include "magnum/bootstrap.h"
-#include "magnum/PyMesh.h"
+#cmakedefine Magnum_GL_FOUND
+#cmakedefine Magnum_MeshTools_FOUND
+#cmakedefine Magnum_Primitives_FOUND
+#cmakedefine Magnum_SceneGraph_FOUND
+#cmakedefine Magnum_Shaders_FOUND
+#cmakedefine Magnum_Trade_FOUND
 
-namespace magnum {
-
-void meshtools(py::module& m) {
-    m.doc() = "Mesh tools";
-
-    #ifndef MAGNUM_BUILD_STATIC
-    /* These are a part of the same module in the static build, no need to
-       import (also can't import because there it's _magnum.*) */
-    py::module::import("magnum.gl");
-    py::module::import("magnum.trade");
-    #endif
-
-    m
-        .def("compile", [](const Trade::MeshData2D& data) {
-            return PyMesh{MeshTools::compile(data)};
-        }, "Compile 2D mesh data")
-        .def("compile", [](const Trade::MeshData3D& data) {
-            return PyMesh{MeshTools::compile(data)};
-        }, "Compile 3D mesh data");
-}
-
-}
-
-#ifndef MAGNUM_BUILD_STATIC
-PYBIND11_MODULE(meshtools, m) {
-    magnum::meshtools(m);
-}
-#endif
+#cmakedefine Magnum_GlfwApplication_FOUND
+#cmakedefine Magnum_Sdl2Application_FOUND
+#cmakedefine Magnum_WindowlessEglApplication_FOUND
+#cmakedefine Magnum_WindowlessGlxApplication_FOUND

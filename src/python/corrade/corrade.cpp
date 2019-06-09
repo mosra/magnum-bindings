@@ -24,39 +24,17 @@
 */
 
 #include <pybind11/pybind11.h>
-#include <Magnum/GL/Mesh.h>
-#include <Magnum/MeshTools/Compile.h>
-#include <Magnum/Trade/MeshData2D.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Corrade/configure.h>
 
-#include "magnum/bootstrap.h"
-#include "magnum/PyMesh.h"
+#include "corrade/bootstrap.h"
 
-namespace magnum {
-
-void meshtools(py::module& m) {
-    m.doc() = "Mesh tools";
-
-    #ifndef MAGNUM_BUILD_STATIC
-    /* These are a part of the same module in the static build, no need to
-       import (also can't import because there it's _magnum.*) */
-    py::module::import("magnum.gl");
-    py::module::import("magnum.trade");
-    #endif
-
-    m
-        .def("compile", [](const Trade::MeshData2D& data) {
-            return PyMesh{MeshTools::compile(data)};
-        }, "Compile 2D mesh data")
-        .def("compile", [](const Trade::MeshData3D& data) {
-            return PyMesh{MeshTools::compile(data)};
-        }, "Compile 3D mesh data");
-}
-
-}
-
-#ifndef MAGNUM_BUILD_STATIC
-PYBIND11_MODULE(meshtools, m) {
-    magnum::meshtools(m);
-}
+#ifndef CORRADE_BUILD_STATIC
+#error this file should be compiled only in the static build
 #endif
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(_corrade, m) {
+    py::module containers = m.def_submodule("containers");
+    corrade::containers(containers);
+}

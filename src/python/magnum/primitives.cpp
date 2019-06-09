@@ -31,12 +31,16 @@
 
 #include "magnum/bootstrap.h"
 
-namespace magnum { namespace {
+namespace magnum {
 
 void primitives(py::module& m) {
     m.doc() = "Primitive library";
 
+    #ifndef MAGNUM_BUILD_STATIC
+    /* These are a part of the same module in the static build, no need to
+       import (also can't import because there it's _magnum.*) */
     py::module::import("magnum.trade");
+    #endif
 
     py::enum_<Primitives::SquareTextureCoords>{m, "SquareTextureCoords", "Whether to generate square texture coordinates"}
         .value("DONT_GENERATE", Primitives::SquareTextureCoords::DontGenerate)
@@ -51,8 +55,10 @@ void primitives(py::module& m) {
         .def("square_wireframe", Primitives::squareWireframe, "Wireframe 2D square");
 }
 
-}}
+}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(primitives, m) {
     magnum::primitives(m);
 }
+#endif

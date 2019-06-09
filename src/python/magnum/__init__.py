@@ -33,6 +33,34 @@ from _magnum import *
 import sys
 sys.modules['magnum.math'] = math
 
+# In case Magnum is built statically, the whole core project is put into
+# _magnum. Then we need to do the same as above but for all modules.
+for i in ['gl', 'meshtools', 'platform', 'primitives', 'scenegraph', 'shaders', 'trade']:
+    if i in globals(): sys.modules['magnum.' + i] = globals()[i]
+
+# Platform has subpackages
+if 'platform' in globals():
+    for i in ['glfw', 'sdl2', 'egl', 'glx']:
+        if hasattr(platform, i): sys.modules['magnum.platform.' + i] = getattr(platform, i)
+
+    # Bring one application implementation directly into the platform module.
+    # The same logic is duplicated in platform/__init__.py.
+    if hasattr(platform, 'sdl2'):
+        platform.Application = platform.sdl2.Application
+    elif hasattr(platform, 'glfw'):
+        platform.Application = platform.glfw.Application
+
+    # Same for windowless apps
+    if hasattr(platform, 'glx'):
+        platform.WindowlessApplication = platform.glx.WindowlessApplication
+    elif hasattr(platform, 'egl'):
+        platform.WindowlessApplication = platform.egl.WindowlessApplication
+
+# Scenegraph has subpackages
+if 'scenegraph' in globals():
+    for i in ['matrix', 'trs']:
+        sys.modules['magnum.scenegraph.' + i] = getattr(scenegraph, i)
+
 __all__ = [
     'Deg', 'Rad',
 

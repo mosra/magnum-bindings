@@ -131,6 +131,13 @@ containing location of all built libraries for use with Python setuptools:
     cd build/src/python/magnum
     python setup.py install # or python3, sudo might be needed
 
+`Static build`_
+---------------
+
+In case Corrade or Magnum is built with :dox:`CORRADE_BUILD_STATIC` /
+:dox:`MAGNUM_BUILD_STATIC`, the corresponding bindings are compiled into a
+single dynamic module instead of one module per Corrade/Magnum library.
+
 `Running unit tests`_
 ---------------------
 

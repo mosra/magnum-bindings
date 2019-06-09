@@ -30,8 +30,11 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 
 extension_paths = {
-    # Filled in by cmake
-    'corrade.containers': '$<TARGET_FILE:corrade_containers>',
+    # Filled in by cmake. This works for both static and dynamic builds -- in
+    # case a library is built statically, only the underscored name will be
+    # present.
+    '_corrade': '${corrade_file}',
+    'corrade.containers': '${corrade_containers_file}',
     '_magnum': '$<TARGET_FILE:magnum>',
     'magnum.gl': '${magnum_gl_file}',
     'magnum.meshtools': '${magnum_meshtools_file}',
@@ -45,6 +48,14 @@ extension_paths = {
     'magnum.trade': '${magnum_trade_file}',
 }
 
+packages = ['corrade', 'magnum']
+
+# On dynamic builds, platform is a package with an __init__.py and submodules.
+# On static builds, it's a submodule of magnum with everything present
+# statically.
+if '${MAGNUM_BUILD_STATIC}' != 'ON':
+    packages += ['magnum.platform']
+
 class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
     def run(self):
         for ext in self.extensions:
@@ -52,7 +63,7 @@ class TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated(build_ext):
 
 setup(
     name='magnum',
-    packages=['corrade', 'magnum', 'magnum.platform'],
+    packages=packages,
     ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
     cmdclass = {
         'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated

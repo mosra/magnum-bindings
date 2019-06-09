@@ -29,9 +29,11 @@
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"
 
-namespace magnum { namespace platform { namespace {
+namespace magnum { namespace platform {
 
-int argc = 0;
+namespace {
+    int argc = 0;
+}
 
 void sdl2(py::module& m) {
     m.doc() = "SDL2-based platform integration";
@@ -113,8 +115,10 @@ void sdl2(py::module& m) {
     mouseMoveEvent(mouseMoveEvent_);
 }
 
-}}}
+}}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(sdl2, m) {
     magnum::platform::sdl2(m);
 }
+#endif

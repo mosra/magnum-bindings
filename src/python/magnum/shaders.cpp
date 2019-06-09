@@ -33,7 +33,9 @@
 #include "magnum/bootstrap.h"
 #include "magnum/NonDestructible.h"
 
-namespace magnum { namespace {
+namespace magnum {
+
+namespace {
 
 template<UnsignedInt dimensions> void vertexColor(NonDestructibleBase<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
@@ -60,10 +62,16 @@ template<UnsignedInt dimensions> void vertexColor(NonDestructibleBase<Shaders::V
             "Transformation and projection matrix");
 }
 
+}
+
 void shaders(py::module& m) {
     m.doc() = "Builtin shaders";
 
+    #ifndef MAGNUM_BUILD_STATIC
+    /* These are a part of the same module in the static build, no need to
+       import (also can't import because there it's _magnum.*) */
     py::module::import("magnum.gl");
+    #endif
 
     /* 2D/3D vertex color shader */
     {
@@ -151,8 +159,10 @@ void shaders(py::module& m) {
     }
 }
 
-}}
+}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(shaders, m) {
     magnum::shaders(m);
 }
+#endif

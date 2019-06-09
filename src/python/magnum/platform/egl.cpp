@@ -29,9 +29,11 @@
 #include "magnum/bootstrap.h"
 #include "magnum/platform/windowlessapplication.h"
 
-namespace magnum { namespace platform { namespace {
+namespace magnum { namespace platform {
 
-int argc = 0;
+namespace {
+    int argc = 0;
+}
 
 void egl(py::module& m) {
     m.doc() = "EGL-based platform integration";
@@ -53,8 +55,10 @@ void egl(py::module& m) {
     windowlessapplication(windowlessEglApplication);
 }
 
-}}}
+}}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(egl, m) {
     magnum::platform::egl(m);
 }
+#endif

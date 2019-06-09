@@ -32,7 +32,9 @@
 #include "corrade/PyArrayView.h"
 #include "corrade/PybindExtras.h"
 
-namespace corrade { namespace {
+namespace corrade {
+
+namespace {
 
 struct Slice {
     std::size_t start;
@@ -401,6 +403,8 @@ template<class T> void mutableStridedArrayView3D(py::class_<PyStridedArrayView<3
         }, "Set a value at given position");
 }
 
+}
+
 void containers(py::module& m) {
     m.doc() = "Corrade containers module";
 
@@ -445,8 +449,10 @@ void containers(py::module& m) {
     mutableStridedArrayView3D(mutableStridedArrayView3D_);
 }
 
-}}
+}
 
+#ifndef CORRADE_BUILD_STATIC
 PYBIND11_MODULE(containers, m) {
     corrade::containers(m);
 }
+#endif

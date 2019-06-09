@@ -39,7 +39,7 @@
 #include "magnum/NonDestructible.h"
 #include "magnum/PyMesh.h"
 
-namespace magnum { namespace {
+namespace magnum {
 
 void gl(py::module& m) {
     m.doc() = "OpenGL wrapping layer";
@@ -302,8 +302,10 @@ void gl(py::module& m) {
     }
 }
 
-}}
+}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(gl, m) {
     magnum::gl(m);
 }
+#endif

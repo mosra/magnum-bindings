@@ -26,15 +26,35 @@
 set(corrade_containers_SRCS
     containers.cpp)
 
-pybind11_add_module(corrade_containers ${corrade_containers_SRCS})
-target_include_directories(corrade_containers PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
-target_link_libraries(corrade_containers PRIVATE
-    Corrade::Containers
-    Corrade::Utility)
-set_target_properties(corrade_containers PROPERTIES
-    FOLDER "python/corrade"
-    OUTPUT_NAME "containers"
-    LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
+# If Corrade is not built as static, compile the sub-libraries as separate
+# modules
+if(NOT CORRADE_BUILD_STATIC)
+    pybind11_add_module(corrade_containers ${corrade_containers_SRCS})
+    target_include_directories(corrade_containers PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(corrade_containers PRIVATE
+        Corrade::Containers
+        Corrade::Utility)
+    set_target_properties(corrade_containers PROPERTIES
+        FOLDER "python/corrade"
+        OUTPUT_NAME "containers"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
+
+# Otherwise put it all into one library so it's easier to install (which is the
+# point of static builds). It also nicely avoids problems with multiply-defined
+# global data.
+else()
+    set(corrade_SRCS
+        corrade.cpp
+        ${corrade_containers_SRCS})
+
+    pybind11_add_module(corrade ${corrade_SRCS})
+    target_include_directories(corrade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
+    set_target_properties(corrade PROPERTIES
+        FOLDER "python"
+        OUTPUT_NAME "_corrade"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+endif()
 
 file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)

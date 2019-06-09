@@ -30,7 +30,9 @@
 
 #include "magnum/scenegraph.h"
 
-namespace magnum { namespace {
+namespace magnum {
+
+namespace {
 
 template<UnsignedInt dimensions, class T> struct PyDrawable: SceneGraph::PyFeature<SceneGraph::Drawable<dimensions, T>> {
     explicit PyDrawable(SceneGraph::AbstractObject<dimensions, T>& object, SceneGraph::DrawableGroup<dimensions, T>* drawables): SceneGraph::PyFeature<SceneGraph::Drawable<dimensions, T>>{object, drawables} {}
@@ -120,6 +122,8 @@ template<UnsignedInt dimensions, class T> void camera(py::class_<SceneGraph::Cam
             "Draw");
 }
 
+}
+
 void scenegraph(py::module& m) {
     m.doc() = "Scene graph library";
 
@@ -167,8 +171,10 @@ void scenegraph(py::module& m) {
     magnum::scenegraphTrs(m);
 }
 
-}}
+}
 
+#ifndef MAGNUM_BUILD_STATIC
 PYBIND11_MODULE(scenegraph, m) {
     magnum::scenegraph(m);
 }
+#endif
