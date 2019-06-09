@@ -69,6 +69,33 @@ Once built, install the package using ``pacman``:
 
     sudo pacman -U magnum-bindings-*.pkg.tar.xz
 
+`Homebrew formulas for macOS`_
+------------------------------
+
+macOS `Homebrew <https://brew.sh>`_ formulas building the latest Git revision
+are in the `package/homebrew` directory. Either use the `*.rb` files directly
+or use the tap at https://github.com/mosra/homebrew-magnum. Right now, there's
+no stable release of Python bindings yet, so you need to install the latest Git
+revision of all Magnum projects instead:
+
+.. code:: sh
+
+    brew install --HEAD mosra/magnum/corrade
+    brew install --HEAD mosra/magnum/magnum
+    brew install --HEAD mosra/magnum/magnum-bindings
+
+When installing from the `*.rb` files you need to install the
+:dox:`Corrade <building-corrade-packages-brew>` and
+:dox:`Magnum <building-packages-brew>` Homebrew packages first. If you want to
+pass additional flags to CMake or ``setup.py`` or enable / disable additional
+features, edit the ``*.rb`` file.
+
+There are also Homebrew packages for
+:dox:`Magnum Plugins <building-plugins-packages-brew>`
+:dox:`Magnum Integration <building-integration-packages-brew>`,
+:dox:`Magnum Extras <building-extras-packages-brew>` and
+:dox:`Magnum Examples <building-examples-packages-brew>`.
+
 `Manual build`_
 ===============
 
