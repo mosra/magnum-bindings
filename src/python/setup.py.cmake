@@ -65,7 +65,13 @@ setup(
     name='magnum',
     packages=packages,
     ext_modules=[Extension(name, sources=[]) for name, path in extension_paths.items() if path],
-    cmdclass = {
+    package_dir={
+        # Explicitly supply package_dir so importing this file from another
+        # setup.py (i.e., when this is a bundled dependency of another project)
+        # does the right thing
+        '.': os.path.dirname(__file__)
+    },
+    cmdclass={
         'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
     },
     zip_safe=True
