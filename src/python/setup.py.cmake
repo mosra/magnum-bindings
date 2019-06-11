@@ -68,8 +68,11 @@ setup(
     package_dir={
         # Explicitly supply package_dir so importing this file from another
         # setup.py (i.e., when this is a bundled dependency of another project)
-        # does the right thing
-        '.': os.path.dirname(__file__)
+        # does the right thing. Can't use '': because that doesn't work when
+        # executing setup.py directly, can't use '.': because that doesn't work
+        # when executing setup.py from another setup, so need to list all
+        # packages explicitly.
+        i: os.path.join(os.path.dirname(__file__), i.replace('.', '/')) for i in packages
     },
     cmdclass={
         'build_ext': TheExtensionIsAlreadyBuiltWhyThisHasToBeSoDamnComplicated
