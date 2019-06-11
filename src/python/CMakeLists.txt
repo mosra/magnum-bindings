@@ -23,7 +23,13 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-find_package(pybind11 CONFIG REQUIRED)
+# Thanks, CMake, for making the recommended way of installing pacakges so
+# useless that it's impossible to call find_package() consistently independent
+# of whether it's installed system-wide or added through add_subdirectory().
+# This is absolutely awful.
+if(NOT COMMAND pybind11_add_module)
+    find_package(pybind11 CONFIG REQUIRED)
+endif()
 
 # UGH FFS
 get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
