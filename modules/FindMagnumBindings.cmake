@@ -28,7 +28,7 @@
 #
 # Additionally these variables are defined for internal usage:
 #
-#  MAGNUMBINDINGS_*_INCLUDE_DIR - Component include dir (w/o dependencies)
+#  MAGNUMBINDINGS_INCLUDE_DIR   - Magnum bindings include dir (w/o dependencies)
 #
 
 #
@@ -57,6 +57,11 @@
 #
 
 find_package(Magnum REQUIRED)
+
+# Global bindings include dir
+find_path(MAGNUMBINDINGS_INCLUDE_DIR Magnum
+    HINTS ${MAGNUMBINDINGS_INCLUDE_DIR})
+mark_as_advanced(MAGNUMBINDINGS_INCLUDE_DIR)
 
 # Component distinction (listing them explicitly to avoid mistakes with finding
 # components from other repositories)
@@ -93,12 +98,16 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
             # Find includes
             find_path(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR
                 NAMES ${_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES}
-                HINTS ${MAGNUM_INCLUDE_DIR})
+                HINTS ${MAGNUMBINDINGS_INCLUDE_DIR})
             mark_as_advanced(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
 
             # Link to core Magnum library
             set_property(TARGET MagnumBindings::${_component} APPEND PROPERTY
                 INTERFACE_LINK_LIBRARIES Magnum::Magnum)
+
+            # Add bindings incldue dir
+            set_property(TARGET MagnumBindings::${_component} APPEND PROPERTY
+                INTERFACE_INCLUDE_DIRECTORIES ${MAGNUMBINDINGS_INCLUDE_DIR})
         endif()
 
         # Decide if the component was found
@@ -112,5 +121,5 @@ endforeach()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MagnumBindings
-    REQUIRED_VARS MAGNUM_INCLUDE_DIR
+    REQUIRED_VARS MAGNUMBINDINGS_INCLUDE_DIR
     HANDLE_COMPONENTS)

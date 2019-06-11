@@ -30,3 +30,6 @@ add_subdirectory(Magnum)
 if(WITH_PYTHON)
     add_subdirectory(python)
 endif()
+
+# Magnum Bindings include dir for superprojects
+set(MAGNUMBINDINGS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" FORCE)
