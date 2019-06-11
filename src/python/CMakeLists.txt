@@ -26,9 +26,21 @@
 # Thanks, CMake, for making the recommended way of installing pacakges so
 # useless that it's impossible to call find_package() consistently independent
 # of whether it's installed system-wide or added through add_subdirectory().
-# This is absolutely awful.
+# This also means we can't use pybind11_VERSION below but have to extract it
+# from some private cache variables instead. THIS IS ABSOLUTELY AWFUL, FFS.
 if(NOT COMMAND pybind11_add_module)
     find_package(pybind11 CONFIG REQUIRED)
+elseif(NOT pybind11_VERSION)
+    set(pybind11_VERSION ${PYBIND11_VERSION_MAJOR}.${PYBIND11_VERSION_MINOR}.${PYBIND11_VERSION_PATCH})
+endif()
+
+# By default, pybind11_add_module() adds the include directories as non-system.
+# That, combined with Corrade's warning level, adds an insane amount of
+# warnings to the build. Since https://github.com/pybind/pybind11/pull/1416
+# (scheduled to release in 2.3) it's possible to override that by passing
+# SYSTEM to pybind11_add_module().
+if(NOT pybind11_VERSION VERSION_LESS 2.3)
+    set(pybind11_add_module_SYSTEM SYSTEM)
 endif()
 
 # UGH FFS
