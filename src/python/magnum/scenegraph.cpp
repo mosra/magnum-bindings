@@ -78,8 +78,10 @@ template<class PyFeature, UnsignedInt dimensions, class Feature, class T> void f
         }, "Remove a feature from the group");
 }
 
-template<UnsignedInt dimensions, class T> void feature(py::class_<SceneGraph::AbstractFeature<dimensions, T>, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature<dimensions, T>>>& c) {
+template<UnsignedInt dimensions, class T> void feature(py::class_<SceneGraph::AbstractFeature<dimensions, T>, SceneGraph::PyFeature<SceneGraph::AbstractFeature<dimensions, T>>, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature<dimensions, T>>>& c) {
     c
+        .def(py::init_alias<SceneGraph::AbstractObject<dimensions, T>&>(),
+            "Constructor", py::arg("object"))
         .def_property_readonly("object", [](SceneGraph::AbstractFeature<dimensions, T>& self) -> SceneGraph::AbstractObject<dimensions, T>& {
             return self.object();
         }, "Object holding this feature");
@@ -146,8 +148,8 @@ void scenegraph(py::module& m) {
         py::class_<SceneGraph::DrawableGroup2D> drawableGroup2D{m, "DrawableGroup2D", "Group of drawables for two-dimensional float scenes"};
         py::class_<SceneGraph::DrawableGroup3D> drawableGroup3D{m, "DrawableGroup3D", "Group of drawables for three-dimensional float scenes"};
 
-        py::class_<SceneGraph::AbstractFeature2D, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature2D>> feature2D{m, "AbstractFeature2D", "Base for two-dimensional float features"};
-        py::class_<SceneGraph::AbstractFeature3D, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature3D>> feature3D{m, "AbstractFeature3D", "Base for three-dimensional float features"};
+        py::class_<SceneGraph::AbstractFeature2D, SceneGraph::PyFeature<SceneGraph::AbstractFeature2D>, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature2D>> feature2D{m, "AbstractFeature2D", "Base for two-dimensional float features"};
+        py::class_<SceneGraph::AbstractFeature3D, SceneGraph::PyFeature<SceneGraph::AbstractFeature3D>, SceneGraph::PyFeatureHolder<SceneGraph::AbstractFeature3D>> feature3D{m, "AbstractFeature3D", "Base for three-dimensional float features"};
         feature(feature2D);
         feature(feature3D);
 

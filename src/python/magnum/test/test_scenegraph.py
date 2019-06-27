@@ -242,3 +242,13 @@ class Object(unittest.TestCase):
         self.assertEqual(deleted, "yes :(")
         self.assertIsNone(camera.object)
         self.assertIs(len(drawables), 0)
+
+class Feature(unittest.TestCase):
+    def test(self):
+        class MyFeature(scenegraph.AbstractFeature3D):
+            def __init__(self, object: Object3D):
+                scenegraph.AbstractFeature3D.__init__(self, object)
+
+        object = Object3D()
+        feature = MyFeature(object)
+        self.assertIs(feature.object, object)
