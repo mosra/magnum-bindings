@@ -128,7 +128,7 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
     */
 
     c
-        /* Buffer protocol, needed in order to make numpy treat the matric
+        /* Buffer protocol, needed in order to make numpy treat the matrix
            correctly as column-major. The constructor is defined in
            everyRectangularMatrix(). */
         .def_buffer([](const T& self) -> py::buffer_info {
