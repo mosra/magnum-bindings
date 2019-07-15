@@ -64,7 +64,7 @@ INPUT_DOCS = [
 ]
 
 LINKS_NAVBAR2 = [
-    ('C++ API', '../../../../magnum/build/doc-mcss/html/index', [])
+    ('C++ API', '../../../../magnum/build/doc-mcss/html/index.html', [])
 ]
 
 PLUGINS = [
