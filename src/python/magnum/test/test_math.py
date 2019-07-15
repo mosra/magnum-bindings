@@ -638,7 +638,7 @@ class Matrix3_(unittest.TestCase):
     def test_static_methods(self):
         a = Matrix3.translation((0.0, -1.0))
         self.assertEqual(a[2].xy, Vector2(0.0, -1.0))
-        #self.assertEqual(a.translation, Vector2(0.0, -1.0)) # TODO
+        self.assertEqual(a._translation, Vector2(0.0, -1.0)) # TODO
 
         b = Matrix3.rotation(Deg(45.0))
         self.assertEqual(b.rotation(), Matrix2x2(
@@ -740,7 +740,7 @@ class Matrix4_(unittest.TestCase):
     def test_static_methods(self):
         a = Matrix4.translation((0.0, -1.0, 2.0))
         self.assertEqual(a[3].xyz, Vector3(0.0, -1.0, 2.0))
-        #self.assertEqual(a.translation, Vector3(0.0, -1.0, 2.0)) # TODO
+        self.assertEqual(a._translation, Vector3(0.0, -1.0, 2.0)) # TODO
 
         b = Matrix4.rotation(Deg(45.0), Vector3.x_axis())
         self.assertEqual(b.rotation(), Matrix3x3(
