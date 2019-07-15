@@ -80,21 +80,21 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
 }
 
 void mathVectorFloat(py::module& root, py::module& m) {
-    py::class_<Vector2> vector2{root, "Vector2", "Two-component float vector"};
-    py::class_<Vector3> vector3{root, "Vector3", "Threee-component float vector"};
-    py::class_<Vector4> vector4{root, "Vector4", "Four-component float vector"};
-    py::class_<Vector2d> vector2d{root, "Vector2d", "Two-component double vector"};
-    py::class_<Vector3d> vector3d{root, "Vector3d", "Threee-component double vector"};
-    py::class_<Vector4d> vector4d{root, "Vector4d", "Four-component double vector"};
+    py::class_<Vector2> vector2{root, "Vector2", "Two-component float vector", py::buffer_protocol{}};
+    py::class_<Vector3> vector3{root, "Vector3", "Threee-component float vector", py::buffer_protocol{}};
+    py::class_<Vector4> vector4{root, "Vector4", "Four-component float vector", py::buffer_protocol{}};
+    py::class_<Vector2d> vector2d{root, "Vector2d", "Two-component double vector", py::buffer_protocol{}};
+    py::class_<Vector3d> vector3d{root, "Vector3d", "Threee-component double vector", py::buffer_protocol{}};
+    py::class_<Vector4d> vector4d{root, "Vector4d", "Four-component double vector", py::buffer_protocol{}};
     vectorsFloat<Float>(m, vector2, vector3, vector4);
     vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
 
-    py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space"};
+    py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space", py::buffer_protocol{}};
     everyVector(color3_);
     color(color3_);
     color3(color3_);
 
-    py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
+    py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space", py::buffer_protocol{}};
     everyVector(color4_);
     color(color4_);
     color4(color4_);
@@ -110,6 +110,18 @@ void mathVectorFloat(py::module& root, py::module& m) {
     convertible(vector3d);
     convertible(vector4d);
     /* Colors are float-only at the moment, thus no conversions */
+
+    /* This needs to be *after* conversion constructors so the type conversion
+       gets picked before the general buffer constructor (which would then
+       fail) */
+    vectorBuffer(vector2);
+    vectorBuffer(vector3);
+    vectorBuffer(vector4);
+    vectorBuffer(vector2d);
+    vectorBuffer(vector3d);
+    vectorBuffer(vector4d);
+    vectorBuffer(color3_);
+    vectorBuffer(color4_);
 }
 
 }

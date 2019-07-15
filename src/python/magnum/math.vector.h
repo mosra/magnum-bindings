@@ -91,27 +91,24 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         }, "Construct a zero vector")
         .def(py::init(), "Default constructor")
 
-        /* Buffer protocol. If not present, implicit conversion from numpy
-           arrays of non-default types somehow doesn't work. On the other hand
-           only the constructor is needed (and thus also no py::buffer_protocol()
-           specified for the class), converting vectors to numpy arrays is
-           doable using the simple iteration iterface. */
-        .def(py::init([](py::buffer buffer) {
-            py::buffer_info info = buffer.request();
-
-            if(info.ndim != 1)
-                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", info.ndim)};
-
-            if(info.shape[0] != T::Size)
-                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, info.shape[0])};
-
-            if(!isTypeCompatible<typename T::Type>(info.format))
-                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", info.format, py::format_descriptor<typename T::Type>::format())};
-
-            T out{Math::NoInit};
-            initFromBuffer(out, info, std::is_floating_point<typename T::Type>{}, std::is_signed<typename T::Type>{});
-            return out;
-        }), "Construct from a buffer")
+        /* Ideally, only the constructor (in vectorBuffer()) would be needed
+           (and thus also no py::buffer_protocol() specified for the class),
+           but conversion of vectors to lists is extremely slow due to pybind
+           exceptions being somehow extra heavy compared to native python ones,
+           so in order to have acceptable performance we need the buffer
+           protocol on the other side as well. See test/benchmark_math.py for
+           more information. */
+        .def_buffer([](const T& self) -> py::buffer_info {
+            // TODO: ownership?
+            return py::buffer_info{
+                const_cast<typename T::Type*>(self.data()),
+                sizeof(typename T::Type),
+                py::format_descriptor<typename T::Type>::format(),
+                1,
+                {T::Size},
+                {sizeof(typename T::Type)}
+            };
+        })
 
         /* Operators */
         .def(-py::self, "Negated vector")
@@ -129,6 +126,31 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         .def(py::self / py::self, "Divide a vector component-wise")
         .def(typename T::Type{} * py::self, "Multiply a scalar with a vector")
         .def(typename T::Type{} / py::self, "Divide a vector with a scalar and invert");
+}
+
+/* Separate because it needs to be registered after the type conversion
+   constructors */
+template<class T, class ...Args> void vectorBuffer(py::class_<T, Args...>& c) {
+    c
+        /* Buffer protocol. If not present, implicit conversion from numpy
+           arrays of non-default types somehow doesn't work. There's also the
+           other part in vectorBuffer(). */
+        .def(py::init([](py::buffer buffer) {
+            py::buffer_info info = buffer.request();
+
+            if(info.ndim != 1)
+                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", info.ndim)};
+
+            if(info.shape[0] != T::Size)
+                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, info.shape[0])};
+
+            if(!isTypeCompatible<typename T::Type>(info.format))
+                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", info.format, py::format_descriptor<typename T::Type>::format())};
+
+            T out{Math::NoInit};
+            initFromBuffer(out, info, std::is_floating_point<typename T::Type>{}, std::is_signed<typename T::Type>{});
+            return out;
+        }), "Construct from a buffer");
 }
 
 /* Things common for vectors of all sizes and types */

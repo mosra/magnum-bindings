@@ -71,7 +71,7 @@ print("\n  constructing builtin array:\n")
 timethat('array.array("f", [])')
 timethat('array.array("f", [1.0, 2.0, 3.0])')
 timethat('memoryview(a)', setup='a = array.array("f", [1.0, 2.0, 3.0])')
-#timethat('memoryview(a)', setup='a = Vector3(1.0, 2.0, 3.0)')
+timethat('memoryview(a)', setup='a = Vector3(1.0, 2.0, 3.0)')
 
 print("\n  constructing np.array:\n")
 

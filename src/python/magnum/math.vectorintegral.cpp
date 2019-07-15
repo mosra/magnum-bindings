@@ -73,12 +73,12 @@ template<class T> void vectorsIntegral(py::module& m, py::class_<Math::Vector2<T
 }
 
 void mathVectorIntegral(py::module& root, py::module& m) {
-    py::class_<Vector2i> vector2i{root, "Vector2i", "Two-component signed integer vector"};
-    py::class_<Vector3i> vector3i{root, "Vector3i", "Threee-component signed integral vector"};
-    py::class_<Vector4i> vector4i{root, "Vector4i", "Four-component signed integral vector"};
-    py::class_<Vector2ui> vector2ui{root, "Vector2ui", "Two-component unsigned integral vector"};
-    py::class_<Vector3ui> vector3ui{root, "Vector3ui", "Threee-component unsigned integral vector"};
-    py::class_<Vector4ui> vector4ui{root, "Vector4ui", "Four-component unsigned integral vector"};
+    py::class_<Vector2i> vector2i{root, "Vector2i", "Two-component signed integer vector", py::buffer_protocol{}};
+    py::class_<Vector3i> vector3i{root, "Vector3i", "Threee-component signed integral vector", py::buffer_protocol{}};
+    py::class_<Vector4i> vector4i{root, "Vector4i", "Four-component signed integral vector", py::buffer_protocol{}};
+    py::class_<Vector2ui> vector2ui{root, "Vector2ui", "Two-component unsigned integral vector", py::buffer_protocol{}};
+    py::class_<Vector3ui> vector3ui{root, "Vector3ui", "Threee-component unsigned integral vector", py::buffer_protocol{}};
+    py::class_<Vector4ui> vector4ui{root, "Vector4ui", "Four-component unsigned integral vector", py::buffer_protocol{}};
     vectorsIntegral<Int>(m, vector2i, vector3i, vector4i);
     vectorsIntegral<UnsignedInt>(m, vector2ui, vector3ui, vector4ui);
 
@@ -90,6 +90,16 @@ void mathVectorIntegral(py::module& root, py::module& m) {
     convertible(vector2ui);
     convertible(vector3ui);
     convertible(vector4ui);
+
+    /* This needs to be *after* conversion constructors so the type conversion
+       gets picked before the general buffer constructor (which would then
+       fail) */
+    vectorBuffer(vector2i);
+    vectorBuffer(vector3i);
+    vectorBuffer(vector4i);
+    vectorBuffer(vector2ui);
+    vectorBuffer(vector3ui);
+    vectorBuffer(vector4ui);
 }
 
 }

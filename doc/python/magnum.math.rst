@@ -115,10 +115,10 @@
     ============================================
 
     All vector classes are implicitly convertible from a tuple of correct size
-    and type as well as any type implementing the buffer protocol, and these
-    can be also converted back to lists using list comprehensions. This makes
-    them fully compatible with `numpy.array`, so the following expressions are
-    completely valid:
+    and type as well as from/to type implementing the buffer protocol, and
+    these can be also converted back to lists using list comprehensions. This
+    makes them fully compatible with `numpy.array`, so the following
+    expressions are completely valid:
 
     ..
         >>> import numpy as np
@@ -135,15 +135,15 @@
 
         >>> m = Matrix4.scaling((0.5, 0.5, 1.0))
         >>> np.array(m.diagonal())
-        array([0.5, 0.5, 1. , 1. ])
+        array([0.5, 0.5, 1. , 1. ], dtype=float32)
 
     For matrices it's a bit more complicated, since Magnum is using
     column-major layout while numpy defaults to row-major (but can do
-    column-major as well). Matrices thus implement the buffer protocol for both
-    directions of the conversion to give numpy proper metadata and while they
-    are implicitly convertible from/to types implementing a buffer protocol,
-    they *are not* implicitly convertible from/to plain tuples like vectors
-    are.
+    column-major as well). To ensure proper conversions, the buffer protocol
+    implementation for matrix types handles the layout conversion as well.
+    While the matrix are implicitly convertible from/to types implementing a
+    buffer protocol, they *are not* implicitly convertible from/to plain tuples
+    like vectors are.
 
     To simplify the implementation, Magnum matrices are convertible only from
     32-bit and 64-bit floating-point types (:py:`'f'` and :py:`'d'` numpy
