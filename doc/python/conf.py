@@ -22,6 +22,7 @@ import magnum.trade
 
 # So the doc see everything
 # TODO: use just +=, m.css should reorder this on its own
+corrade.__all__ = ['containers']
 magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'trade'] + magnum.__all__
 
 # TODO ugh... can this be expressed directly in pybind?
