@@ -29,7 +29,7 @@ set(corrade_containers_SRCS
 # If Corrade is not built as static, compile the sub-libraries as separate
 # modules
 if(NOT CORRADE_BUILD_STATIC)
-    pybind11_add_module(corrade_containers ${pybind11_add_module_SYSTEM} ${corrade_containers_SRCS})
+    pybind11_add_module(corrade_containers SYSTEM ${corrade_containers_SRCS})
     target_include_directories(corrade_containers PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
     target_link_libraries(corrade_containers PRIVATE
         Corrade::Containers
@@ -47,7 +47,7 @@ else()
         corrade.cpp
         ${corrade_containers_SRCS})
 
-    pybind11_add_module(corrade ${pybind11_add_module_SYSTEM} ${corrade_SRCS})
+    pybind11_add_module(corrade SYSTEM ${corrade_SRCS})
     target_include_directories(corrade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
     target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
     set_target_properties(corrade PROPERTIES

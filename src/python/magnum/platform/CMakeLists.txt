@@ -25,7 +25,7 @@
 
 if(NOT MAGNUM_BUILD_STATIC)
     if(Magnum_GlfwApplication_FOUND)
-        pybind11_add_module(magnum_platform_glfw ${pybind11_add_module_SYSTEM} glfw.cpp)
+        pybind11_add_module(magnum_platform_glfw SYSTEM glfw.cpp)
         target_link_libraries(magnum_platform_glfw PRIVATE Magnum::GlfwApplication)
         target_include_directories(magnum_platform_glfw PRIVATE ${CMAKE_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_glfw PROPERTIES
@@ -35,7 +35,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_Sdl2Application_FOUND)
-        pybind11_add_module(magnum_platform_sdl2 ${pybind11_add_module_SYSTEM} sdl2.cpp)
+        pybind11_add_module(magnum_platform_sdl2 SYSTEM sdl2.cpp)
         target_link_libraries(magnum_platform_sdl2 PRIVATE Magnum::Sdl2Application)
         target_include_directories(magnum_platform_sdl2 PRIVATE ${CMAKE_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_sdl2 PROPERTIES
@@ -45,7 +45,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_WindowlessEglApplication_FOUND)
-        pybind11_add_module(magnum_platform_egl ${pybind11_add_module_SYSTEM} egl.cpp)
+        pybind11_add_module(magnum_platform_egl SYSTEM egl.cpp)
         target_link_libraries(magnum_platform_egl PRIVATE Magnum::WindowlessEglApplication)
         target_include_directories(magnum_platform_egl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_egl PROPERTIES
@@ -55,7 +55,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_WindowlessGlxApplication_FOUND)
-        pybind11_add_module(magnum_platform_glx ${pybind11_add_module_SYSTEM} glx.cpp)
+        pybind11_add_module(magnum_platform_glx SYSTEM glx.cpp)
         target_link_libraries(magnum_platform_glx PRIVATE Magnum::WindowlessGlxApplication)
         target_include_directories(magnum_platform_glx PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_glx PROPERTIES
