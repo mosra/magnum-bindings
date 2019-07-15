@@ -619,6 +619,9 @@ template<class T> void matrices(
         .def_static("perspective_projection", [](Radd fov, T aspectRatio, T near, T far) {
             return Math::Matrix4<T>::perspectiveProjection(Math::Rad<T>(fov), aspectRatio, near, far);
         }, "3D perspective projection matrix", py::arg("fov"), py::arg("aspect_ratio"), py::arg("near"), py::arg("far"))
+        .def_static("perspective_projection",
+            static_cast<Math::Matrix4<T>(*)(const Math::Vector2<T>&, const Math::Vector2<T>&, T, T)>(&Math::Matrix4<T>::perspectiveProjection),
+            "3D off-center perspective projection matrix", py::arg("bottom_left"), py::arg("top_right"), py::arg("near"), py::arg("far"))
         .def_static("look_at", &Math::Matrix4<T>::lookAt,
             "Matrix oriented towards a specific point", py::arg("eye"), py::arg("target"), py::arg("up"))
         .def_static("from", static_cast<Math::Matrix4<T>(*)(const Math::Matrix3x3<T>&, const Math::Vector3<T>&)>(&Math::Matrix4<T>::from),
