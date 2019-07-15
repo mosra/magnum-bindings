@@ -129,4 +129,3 @@ after_success:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" --output-file coverage.info; fi
 
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then cd src/python && coverage combine && codecov -X gcov; fi
-#- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then bash <(curl -s https://codecov.io/bash) -f coverage.info; fi
