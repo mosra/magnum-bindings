@@ -21,3 +21,7 @@ STYLESHEETS = [
 ]
 
 FAVICON = 'https://doc.magnum.graphics/favicon.ico'
+
+SEARCH_DOWNLOAD_BINARY = True
+SEARCH_BASE_URL = 'https://doc.magnum.graphics/python/'
+SEARCH_EXTERNAL_URL = 'https://google.com/search?q=site:doc.magnum.graphics+Magnum+Python+{query}'
