@@ -29,7 +29,8 @@
 
 namespace pybind11 {
 
-// TODO: add this to pybind itself
+// TODO: remove when https://github.com/pybind/pybind11/pull/1852 is merged and
+// released
 PYBIND11_RUNTIME_EXCEPTION(buffer_error, PyExc_BufferError)
 
 }
