@@ -404,7 +404,6 @@ class StridedArrayView2D(unittest.TestCase):
         a_refcount = sys.getrefcount(a)
 
         v = memoryview(a).cast('b', shape=[3, 8])
-        # TODO: construct as containers.StridedArrayView2D(a, (3, 8), (8, 1))
         b = containers.StridedArrayView2D(v)
         self.assertEqual(len(b), 3)
         self.assertEqual(bytes(b), b'01234567'

@@ -309,8 +309,6 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStride
                 py::reinterpret_borrow<py::object>(buffer.obj)};
         }), "Construct from a buffer")
 
-        // TODO: construct from a buffer + size/stride
-
         /* Length, size/stride tuple, dimension count and memory owning object */
         .def("__len__", [](const PyStridedArrayView<dimensions, T>& self) {
             return Containers::StridedDimensions<dimensions, std::size_t>(self.size())[0];
