@@ -86,5 +86,7 @@ __all__ = [
 
     'MeshPrimitive', 'MeshIndexType',
 
-    'PixelFormat', 'PixelStorage'
+    'PixelFormat', 'PixelStorage',
+    'ImageView1D', 'ImageView2D', 'ImageView3D',
+    'MutableImageView1D', 'MutableImageView2D', 'MutableImageView3D'
 ]

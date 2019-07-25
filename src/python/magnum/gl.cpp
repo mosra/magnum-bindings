@@ -45,8 +45,6 @@ namespace magnum {
 void gl(py::module& m) {
     m.doc() = "OpenGL wrapping layer";
 
-    py::module::import("corrade.containers");
-
     /* Abstract shader program */
     NonDestructible<GL::AbstractShaderProgram>{m,
         "AbstractShaderProgram", "Base for shader program implementations"};

@@ -23,6 +23,12 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+if(WITH_PYTHON)
+    add_custom_target(MagnumPython SOURCES Python.h)
+    set_target_properties(MagnumPython PROPERTIES FOLDER "Magnum/Python")
+    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
+endif()
+
 find_package(Magnum COMPONENTS SceneGraph)
 
 if(Magnum_SceneGraph_FOUND)

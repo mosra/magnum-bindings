@@ -29,6 +29,9 @@
 #include <Magnum/PixelFormat.h>
 #include <Magnum/PixelStorage.h>
 
+#include "Magnum/Python.h"
+
+#include "corrade/PyArrayView.h"
 #include "magnum/bootstrap.h"
 
 #ifdef MAGNUM_BUILD_STATIC
@@ -38,6 +41,69 @@
 namespace py = pybind11;
 
 namespace magnum { namespace {
+
+template<UnsignedInt dimensions, class T> struct PyDimensionTraits;
+template<class T> struct PyDimensionTraits<1, T> {
+    typedef T VectorType;
+    static VectorType from(const Math::Vector<1, T>& vec) { return vec[0]; }
+};
+template<class T> struct PyDimensionTraits<2, T> {
+    typedef Math::Vector2<T> VectorType;
+    static VectorType from(const Math::Vector<2, T>& vec) { return vec; }
+};
+template<class T> struct PyDimensionTraits<3, T> {
+    typedef Math::Vector3<T> VectorType;
+    static VectorType from(const Math::Vector<3, T>& vec) { return vec; }
+};
+
+template<class T> void imageView(py::class_<T>& c) {
+    /*
+        Missing APIs:
+
+        Type, ErasedType, Dimensions
+    */
+
+    c
+        /* Constructors */
+        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const corrade::PyArrayView<typename T::Type>& data) {
+            return T{ImageView<T::Dimensions, typename T::Type>{storage, format, size, data}, data.obj};
+        }), "Constructor")
+        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const corrade::PyArrayView<typename T::Type>& data) {
+            return T{ImageView<T::Dimensions, typename T::Type>{format, size, data}, data.obj};
+        }), "Constructor")
+        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
+            return T{ImageView<T::Dimensions, typename T::Type>{storage, format, size}, py::none{}};
+        }), "Construct an empty view")
+        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
+            return T{ImageView<T::Dimensions, typename T::Type>{format, size}, py::none{}};
+        }), "Construct an empty view")
+
+        /* Properties */
+        .def_property_readonly("storage", &T::storage, "Storage of pixel data")
+        .def_property_readonly("format", &T::format, "Format of pixel data")
+        .def_property_readonly("pixel_size", &T::pixelSize, "Pixel size (in bytes)")
+        .def_property_readonly("size", [](T& self) {
+            return PyDimensionTraits<T::Dimensions, Int>::from(self.size());
+        }, "Image size")
+        .def_property("data", [](T& self) {
+            return corrade::PyArrayView<typename T::Type>{{static_cast<typename T::Type*>(self.data().data()), self.data().size()}, self.owner};
+        }, [](T& self, const corrade::PyArrayView<typename T::Type>& data) {
+            self.setData(data);
+            self.owner = data.obj;
+        }, "Image data")
+        .def_property_readonly("pixels", [](T& self) {
+            return corrade::PyStridedArrayView<T::Dimensions+1, typename T::Type>{self.pixels(), self.owner};
+        }, "View on pixel data")
+
+        .def_readonly("owner", &T::owner, "Memory owner");
+}
+
+template<class T> void imageViewFromMutable(py::class_<T>& c) {
+    c
+        .def(py::init([](const PyImageView<T::Dimensions, char>& other) {
+            return T{ImageView<T::Dimensions, const char>{other}, other.owner};
+        }), "Constructor");
+}
 
 void magnum(py::module& m) {
     py::enum_<MeshPrimitive>{m, "MeshPrimitive", "Mesh primitive type"}
@@ -120,11 +186,32 @@ void magnum(py::module& m) {
             &PixelStorage::imageHeight, &PixelStorage::setImageHeight, "Image height")
         .def_property("skip",
             &PixelStorage::skip, &PixelStorage::setSkip, "Pixel, row and image skip");
+
+    py::class_<PyImageView<1, const char>> imageView1D{m, "ImageView1D", "One-dimensional image view"};
+    py::class_<PyImageView<2, const char>> imageView2D{m, "ImageView2D", "Two-dimensional image view"};
+    py::class_<PyImageView<3, const char>> imageView3D{m, "ImageView3D", "Three-dimensional image view"};
+    py::class_<PyImageView<1, char>> mutableImageView1D{m, "MutableImageView1D", "One-dimensional mutable image view"};
+    py::class_<PyImageView<2, char>> mutableImageView2D{m, "MutableImageView2D", "Two-dimensional mutable image view"};
+    py::class_<PyImageView<3, char>> mutableImageView3D{m, "MutableImageView3D", "Three-dimensional mutable image view"};
+
+    imageView(imageView1D);
+    imageView(imageView2D);
+    imageView(imageView3D);
+    imageView(mutableImageView1D);
+    imageView(mutableImageView2D);
+    imageView(mutableImageView3D);
+
+    imageViewFromMutable(imageView1D);
+    imageViewFromMutable(imageView2D);
+    imageViewFromMutable(imageView3D);
 }
 
 }}
 
 PYBIND11_MODULE(_magnum, m) {
+    /* We need ArrayView for images */
+    py::module::import("corrade.containers");
+
     m.doc() = "Root Magnum module";
 
     py::module math = m.def_submodule("math");
