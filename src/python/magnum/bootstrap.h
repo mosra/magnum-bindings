@@ -38,6 +38,7 @@ void mathVectorFloat(py::module& root, py::module& m);
 void mathVectorIntegral(py::module& root, py::module& m);
 void mathMatrixFloat(py::module& root);
 void mathMatrixDouble(py::module& root);
+void mathRange(py::module& root, py::module& m);
 
 void gl(py::module& m);
 void meshtools(py::module& m);

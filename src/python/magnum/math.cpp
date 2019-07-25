@@ -374,6 +374,9 @@ void math(py::module& root, py::module& m) {
     quaternion(m, quaterniond);
     convertible<Quaterniond>(quaternion_);
     convertible<Quaternion>(quaterniond);
+
+    /* Range */
+    magnum::mathRange(root, m);
 }
 
 }

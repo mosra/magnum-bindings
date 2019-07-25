@@ -903,3 +903,78 @@ class Quaternion_(unittest.TestCase):
     def test_repr(self):
         a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())
         self.assertEqual(repr(a), 'Quaternion({0.382683, 0, 0}, 0.92388)')
+
+class Range(unittest.TestCase):
+    def test_init(self):
+        a = Range1Di()
+        self.assertEqual(a.min, 0)
+        self.assertEqual(a.max, 0)
+
+        b = Range1D(3.5, 5.0)
+        self.assertEqual(b.min, 3.5)
+        self.assertEqual(b.max, 5.0)
+
+        c1 = Range2D(Vector2(1.0, 0.3), Vector2(2.0, 0.6))
+        self.assertEqual(c1.min, Vector2(1.0, 0.3))
+        self.assertEqual(c1.max, Vector2(2.0, 0.6))
+
+        c2 = Range2D((1.0, 0.3), (2.0, 0.6))
+        self.assertEqual(c2.min, Vector2(1.0, 0.3))
+        self.assertEqual(c2.max, Vector2(2.0, 0.6))
+
+        c3 = Range2D(((1.0, 0.3), (2.0, 0.6)))
+        self.assertEqual(c3.min, Vector2(1.0, 0.3))
+        self.assertEqual(c3.max, Vector2(2.0, 0.6))
+
+        d1 = Range3Dd(Vector3d(1.0, 0.2, 0.3), Vector3d(1.0, 2.0, 3.0))
+        self.assertEqual(d1.min, Vector3d(1.0, 0.2, 0.3))
+        self.assertEqual(d1.max, Vector3d(1.0, 2.0, 3.0))
+
+        d2 = Range3Dd((1.0, 0.2, 0.3), (1.0, 2.0, 3.0))
+        self.assertEqual(d2.min, Vector3d(1.0, 0.2, 0.3))
+        self.assertEqual(d2.max, Vector3d(1.0, 2.0, 3.0))
+
+        d3 = Range3Dd(((1.0, 0.2, 0.3), (1.0, 2.0, 3.0)))
+        self.assertEqual(d3.min, Vector3d(1.0, 0.2, 0.3))
+        self.assertEqual(d3.max, Vector3d(1.0, 2.0, 3.0))
+
+    def test_convert(self):
+        a = Range2Dd(Range2Di((3, 5), (8, 7)))
+        self.assertEqual(a, Range2Dd((3.0, 5.0), (8.0, 7.0)))
+
+    def test_static_methods(self):
+        a = Range2D.zero_init()
+        self.assertEqual(a.min, Vector2())
+        self.assertEqual(a.max, Vector2())
+
+        b = Range2D.from_size((3.0, 1.0), (2.0, 0.5))
+        self.assertEqual(b.min, Vector2(3.0, 1.0))
+        self.assertEqual(b.max, Vector2(5.0, 1.5))
+
+        c = Range2D.from_center((4.0, 1.25), (1.0, 0.25))
+        self.assertEqual(c.min, Vector2(3.0, 1.0))
+        self.assertEqual(c.max, Vector2(5.0, 1.5))
+
+    def test_properties(self):
+        a = Range2D((1.0, 0.2), (2.0, 0.4))
+        self.assertEqual(a.bottom_right, Vector2(2.0, 0.2))
+        self.assertEqual(a.top_left, Vector2(1.0, 0.4))
+
+        a.bottom_right = Vector2(3.0, 0.3)
+        a.top = 7.0
+        self.assertEqual(a, Range2D((1.0, 0.3), (3.0, 7.0)))
+
+        b = Range3D((1.0, 0.2, -1.0), (2.0, 0.4, 5.0))
+        self.assertEqual(b.front_bottom_right, Vector3(2.0, 0.2, 5.0))
+        self.assertEqual(b.back_top_left, Vector3(1.0, 0.4, -1.0))
+
+        b.back_bottom_right = Vector3(3.0, 0.3, -1.5)
+        b.front = 7.0
+        b.left = 1.1
+        self.assertEqual(b, Range3D((1.1, 0.3, -1.5), (3.0, 0.4, 7.0)))
+
+    def test_methods(self):
+        a = math.join(Range2D(Vector2(), (3.0, 5.0)).translated((1.5, 0.7)),
+                      Range2D((0.3, 2.0), (0.4, 2.1)))
+        self.assertEqual(a, Range2D((0.3, 0.7), (4.5, 5.7)))
+        self.assertEqual(a.center(), Vector2(2.4, 3.2))

@@ -42,6 +42,7 @@ set(magnum_SRCS
     math.cpp
     math.matrixfloat.cpp
     math.matrixdouble.cpp
+    math.range.cpp
     math.vectorfloat.cpp
     math.vectorintegral.cpp)
 

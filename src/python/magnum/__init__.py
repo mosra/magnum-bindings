@@ -80,6 +80,9 @@ __all__ = [
     'Matrix3', 'Matrix4', 'Matrix3d', 'Matrix4d',
 
     'Quaternion', 'Quaterniond',
+    'Range1D', 'Range1Di', 'Range1Dd',
+    'Range2D', 'Range2Di', 'Range2Dd',
+    'Range3D', 'Range3Di', 'Range3Dd',
 
     'MeshPrimitive', 'MeshIndexType'
 ]
