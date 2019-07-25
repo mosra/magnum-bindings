@@ -171,6 +171,7 @@ template<unsigned dimensions, class T> struct DimensionsTuple;
 template<class T> struct DimensionsTuple<1, T> { typedef std::tuple<T> Type; };
 template<class T> struct DimensionsTuple<2, T> { typedef std::tuple<T, T> Type; };
 template<class T> struct DimensionsTuple<3, T> { typedef std::tuple<T, T, T> Type; };
+template<class T> struct DimensionsTuple<4, T> { typedef std::tuple<T, T, T, T> Type; };
 
 /* Size tuple for given dimension */
 template<unsigned dimensions> typename DimensionsTuple<dimensions, std::size_t>::Type size(Containers::StridedDimensions<dimensions, std::size_t>);
@@ -183,6 +184,9 @@ template<> std::tuple<std::size_t, std::size_t> size(Containers::StridedDimensio
 template<> std::tuple<std::size_t, std::size_t, std::size_t> size(Containers::StridedDimensions<3, std::size_t> size) {
     return std::make_tuple(size[0], size[1], size[2]);
 }
+template<> std::tuple<std::size_t, std::size_t, std::size_t, std::size_t> size(Containers::StridedDimensions<4, std::size_t> size) {
+    return std::make_tuple(size[0], size[1], size[2], size[3]);
+}
 
 /* Stride tuple for given dimension */
 template<unsigned dimensions> typename DimensionsTuple<dimensions, std::ptrdiff_t>::Type stride(Containers::StridedDimensions<dimensions, std::ptrdiff_t>);
@@ -194,6 +198,9 @@ template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t> stride(Containers::Strided
 }
 template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(Containers::StridedDimensions<3, std::ptrdiff_t> stride) {
     return std::make_tuple(stride[0], stride[1], stride[2]);
+}
+template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(Containers::StridedDimensions<4, std::ptrdiff_t> stride) {
+    return std::make_tuple(stride[0], stride[1], stride[2], stride[3]);
 }
 
 /* Byte conversion for given dimension */
@@ -219,6 +226,15 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView3D<const ch
             for(const char k: j) out[pos++] = k;
     return out;
 }
+template<> Containers::Array<char> bytes(Containers::StridedArrayView<4, const char> view) {
+    Containers::Array<char> out{view.size()[0]*view.size()[1]*view.size()[2]*view.size()[3]};
+    std::size_t pos = 0;
+    for(Containers::StridedArrayView3D<const char> i: view)
+        for(Containers::StridedArrayView2D<const char> j: i)
+            for(Containers::StridedArrayView1D<const char> k: j)
+                for(const char l: k) out[pos++] = l;
+    return out;
+}
 
 /* Getting a runtime tuple index. Ugh. */
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<1, T>::Type& tuple, std::size_t i) {
@@ -234,6 +250,13 @@ template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<3, 
     if(i == 0) return std::get<0>(tuple);
     if(i == 1) return std::get<1>(tuple);
     if(i == 2) return std::get<2>(tuple);
+    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<4, T>::Type& tuple, std::size_t i) {
+    if(i == 0) return std::get<0>(tuple);
+    if(i == 1) return std::get<1>(tuple);
+    if(i == 2) return std::get<2>(tuple);
+    if(i == 3) return std::get<3>(tuple);
     CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -445,6 +468,60 @@ template<class T> void stridedArrayView3D(py::class_<PyStridedArrayView<3, T>>& 
         }, "Broadcast a dimension");
 }
 
+template<class T> void stridedArrayView4D(py::class_<PyStridedArrayView<4, T>>& c) {
+    c
+        .def("__getitem__", [](const PyStridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i) {
+            if(std::get<0>(i) >= self.size()[0] ||
+               std::get<1>(i) >= self.size()[1] ||
+               std::get<2>(i) >= self.size()[2] ||
+               std::get<3>(i) >= self.size()[3]) throw pybind11::index_error{};
+            return self[std::get<0>(i)][std::get<1>(i)][std::get<2>(i)][std::get<3>(i)];
+        }, "Value at given position")
+        .def("transposed", [](const PyStridedArrayView<4, T>& self, const std::size_t a, std::size_t b) {
+            if((a == 0 && b == 1) ||
+               (a == 1 && b == 0))
+                return PyStridedArrayView<4, T>{self.template transposed<0, 1>(), self.obj};
+            if((a == 0 && b == 2) ||
+               (a == 2 && b == 0))
+                return PyStridedArrayView<4, T>{self.template transposed<0, 2>(), self.obj};
+            if((a == 0 && b == 3) ||
+               (a == 3 && b == 0))
+                return PyStridedArrayView<4, T>{self.template transposed<0, 3>(), self.obj};
+            if((a == 1 && b == 2) ||
+               (a == 2 && b == 1))
+                return PyStridedArrayView<4, T>{self.template transposed<1, 2>(), self.obj};
+            if((a == 1 && b == 3) ||
+               (a == 3 && b == 1))
+                return PyStridedArrayView<4, T>{self.template transposed<1, 3>(), self.obj};
+            if((a == 2 && b == 3) ||
+               (a == 3 && b == 2))
+                return PyStridedArrayView<4, T>{self.template transposed<2, 3>(), self.obj};
+            throw py::value_error{Utility::formatString("dimensions {}, {} can't be transposed in a {}D view", a, b, 4)};
+        }, "Transpose two dimensions")
+        .def("flipped", [](const PyStridedArrayView<4, T>& self, const std::size_t dimension) {
+            if(dimension == 0)
+                return PyStridedArrayView<4, T>{self.template flipped<0>(), self.obj};
+            if(dimension == 1)
+                return PyStridedArrayView<4, T>{self.template flipped<1>(), self.obj};
+            if(dimension == 2)
+                return PyStridedArrayView<4, T>{self.template flipped<2>(), self.obj};
+            if(dimension == 3)
+                return PyStridedArrayView<4, T>{self.template flipped<3>(), self.obj};
+            throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 4)};
+        }, "Flip a dimension")
+        .def("broadcasted", [](const PyStridedArrayView<4, T>& self, const std::size_t dimension, std::size_t size) {
+            if(dimension == 0)
+                return PyStridedArrayView<4, T>{self.template broadcasted<0>(size), self.obj};
+            if(dimension == 1)
+                return PyStridedArrayView<4, T>{self.template broadcasted<1>(size), self.obj};
+            if(dimension == 2)
+                return PyStridedArrayView<4, T>{self.template broadcasted<2>(size), self.obj};
+            if(dimension == 3)
+                return PyStridedArrayView<4, T>{self.template broadcasted<3>(size), self.obj};
+            throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 4)};
+        }, "Broadcast a dimension");
+}
+
 template<class T> void mutableStridedArrayView1D(py::class_<PyStridedArrayView<1, T>>& c) {
     c
         .def("__setitem__", [](const PyStridedArrayView<1, T>& self, const std::size_t i, const T& value) {
@@ -472,6 +549,17 @@ template<class T> void mutableStridedArrayView3D(py::class_<PyStridedArrayView<3
         }, "Set a value at given position");
 }
 
+template<class T> void mutableStridedArrayView4D(py::class_<PyStridedArrayView<4, T>>& c) {
+    c
+        .def("__setitem__", [](const PyStridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i, const T& value) {
+            if(std::get<0>(i) >= self.size()[0] ||
+               std::get<1>(i) >= self.size()[1] ||
+               std::get<2>(i) >= self.size()[2] ||
+               std::get<3>(i) >= self.size()[3]) throw pybind11::index_error{};
+            self[std::get<0>(i)][std::get<1>(i)][std::get<2>(i)][std::get<3>(i)] = value;
+        }, "Set a value at given position");
+}
+
 }
 
 void containers(py::module& m) {
@@ -492,6 +580,8 @@ void containers(py::module& m) {
         "StridedArrayView2D", "Two-dimensional array view with stride information", py::buffer_protocol{}};
     py::class_<PyStridedArrayView<3, const char>> stridedArrayView3D_{m,
         "StridedArrayView3D", "Three-dimensional array view with stride information", py::buffer_protocol{}};
+    py::class_<PyStridedArrayView<4, const char>> stridedArrayView4D_{m,
+        "StridedArrayView4D", "Four-dimensional array view with stride information", py::buffer_protocol{}};
     stridedArrayView(stridedArrayView1D_);
     stridedArrayView1D(stridedArrayView1D_);
     stridedArrayView(stridedArrayView2D_);
@@ -500,6 +590,9 @@ void containers(py::module& m) {
     stridedArrayView(stridedArrayView3D_);
     stridedArrayViewND(stridedArrayView3D_);
     stridedArrayView3D(stridedArrayView3D_);
+    stridedArrayView(stridedArrayView4D_);
+    stridedArrayViewND(stridedArrayView4D_);
+    stridedArrayView4D(stridedArrayView4D_);
 
     py::class_<PyStridedArrayView<1, char>> mutableStridedArrayView1D_{m,
         "MutableStridedArrayView1D", "Mutable one-dimensional array view with stride information", py::buffer_protocol{}};
@@ -507,6 +600,8 @@ void containers(py::module& m) {
         "MutableStridedArrayView2D", "Mutable two-dimensional array view with stride information", py::buffer_protocol{}};
     py::class_<PyStridedArrayView<3, char>> mutableStridedArrayView3D_{m,
         "MutableStridedArrayView3D", "Mutable three-dimensional array view with stride information", py::buffer_protocol{}};
+    py::class_<PyStridedArrayView<4, char>> mutableStridedArrayView4D_{m,
+        "MutableStridedArrayView4D", "Mutable four-dimensional array view with stride information", py::buffer_protocol{}};
     stridedArrayView(mutableStridedArrayView1D_);
     stridedArrayView1D(mutableStridedArrayView1D_);
     stridedArrayView(mutableStridedArrayView2D_);
@@ -515,9 +610,13 @@ void containers(py::module& m) {
     stridedArrayView(mutableStridedArrayView3D_);
     stridedArrayViewND(mutableStridedArrayView3D_);
     stridedArrayView3D(mutableStridedArrayView3D_);
+    stridedArrayView(mutableStridedArrayView4D_);
+    stridedArrayViewND(mutableStridedArrayView4D_);
+    stridedArrayView4D(mutableStridedArrayView4D_);
     mutableStridedArrayView1D(mutableStridedArrayView1D_);
     mutableStridedArrayView2D(mutableStridedArrayView2D_);
     mutableStridedArrayView3D(mutableStridedArrayView3D_);
+    mutableStridedArrayView4D(mutableStridedArrayView4D_);
 }
 
 }

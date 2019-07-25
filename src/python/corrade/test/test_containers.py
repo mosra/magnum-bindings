@@ -717,3 +717,81 @@ class StridedArrayView3D(unittest.TestCase):
         self.assertEqual(f.size, (2, 3, 5))
         self.assertEqual(f.stride, (24, 8, 0))
         self.assertEqual(bytes(f), b'000004444488888ccccc0000044444')
+
+# This is just a dumb copy of the above with one dimension inserted at the
+# second place.
+class StridedArrayView4D(unittest.TestCase):
+    def test_init_buffer(self):
+        a = (b'01234567'
+             b'456789ab'
+             b'89abcdef'
+
+             b'cdef0123'
+             b'01234567'
+             b'456789ab')
+        b = containers.StridedArrayView4D(memoryview(a).cast('b', shape=[2, 1, 3, 8]))
+        self.assertEqual(len(b), 2)
+        self.assertEqual(bytes(b), b'01234567456789ab89abcdefcdef012301234567456789ab')
+        self.assertEqual(b.size, (2, 1, 3, 8))
+        self.assertEqual(b.stride, (24, 24, 8, 1))
+        self.assertEqual(b[1, 0, 2, 3], '7')
+        self.assertEqual(b[1][0][2][3], '7')
+
+    def test_init_buffer_mutable(self):
+        a = bytearray(b'01234567'
+                      b'456789ab'
+                      b'89abcdef'
+
+                      b'cdef0123'
+                      b'01234567'
+                      b'456789ab')
+        b = containers.MutableStridedArrayView4D(memoryview(a).cast('b', shape=[2, 1, 3, 8]))
+        b[0, 0, 0, 7] = '!'
+        b[0, 0, 1, 7] = '!'
+        b[0, 0, 2, 7] = '!'
+        b[1, 0, 0, 7] = '!'
+        b[1, 0, 1, 7] = '!'
+        b[1, 0, 2, 7] = '!'
+        self.assertEqual(b[1][0][1][7], '!')
+        self.assertEqual(bytes(b), b'0123456!'
+                                   b'456789a!'
+                                   b'89abcde!'
+
+                                   b'cdef012!'
+                                   b'0123456!'
+                                   b'456789a!')
+
+    def test_ops(self):
+        a = (b'01234567'
+             b'456789ab'
+             b'89abcdef'
+
+             b'cdef0123'
+             b'01234567'
+             b'456789ab')
+        v = memoryview(a).cast('b', shape=[2, 1, 3, 8])
+
+        b = containers.StridedArrayView4D(v).transposed(0, 2).flipped(0)
+        self.assertEqual(b.size, (3, 1, 2, 8))
+        self.assertEqual(b.stride, (-8, 24, 24, 1))
+        self.assertEqual(bytes(b), b'89abcdef456789ab456789ab0123456701234567cdef0123')
+
+        c = containers.StridedArrayView4D(v).transposed(3, 0).flipped(2)
+        self.assertEqual(c.size, (8, 1, 3, 2))
+        self.assertEqual(c.stride, (1, 24, -8, 24))
+        self.assertEqual(bytes(c), b'84400c95511da6622eb7733fc88440d99551eaa662fbb773')
+
+        d = containers.StridedArrayView4D(v).transposed(2, 3)[0:1, :, 3:5, :].broadcasted(0, 5)
+        self.assertEqual(d.size, (5, 1, 2, 3))
+        self.assertEqual(d.stride, (0, 24, 1, 8))
+        self.assertEqual(bytes(d), b'37b48c37b48c37b48c37b48c37b48c')
+
+        e = containers.StridedArrayView4D(v)[:, :, 1:2, 3:4].flipped(3).broadcasted(2, 2)
+        self.assertEqual(e.size, (2, 1, 2, 1))
+        self.assertEqual(e.stride, (24, 24, 0, -1))
+        self.assertEqual(bytes(e), b'7733')
+
+        f = containers.StridedArrayView4D(v)[:, :, :, 0:1].broadcasted(3, 5)
+        self.assertEqual(f.size, (2, 1, 3, 5))
+        self.assertEqual(f.stride, (24, 24, 8, 0))
+        self.assertEqual(bytes(f), b'000004444488888ccccc0000044444')
