@@ -79,11 +79,9 @@ void mathVectorIntegral(py::module& root, py::module& m) {
     py::class_<Vector2ui> vector2ui{root, "Vector2ui", "Two-component unsigned integral vector", py::buffer_protocol{}};
     py::class_<Vector3ui> vector3ui{root, "Vector3ui", "Threee-component unsigned integral vector", py::buffer_protocol{}};
     py::class_<Vector4ui> vector4ui{root, "Vector4ui", "Four-component unsigned integral vector", py::buffer_protocol{}};
-    vectorsIntegral<Int>(m, vector2i, vector3i, vector4i);
-    vectorsIntegral<UnsignedInt>(m, vector2ui, vector3ui, vector4ui);
 
-    /* At this point we should have both float and integral types registered,
-       so register type conversions */
+    /* First register type conversions as those should have a priority over
+       buffer and list constructors. */
     convertible(vector2i);
     convertible(vector3i);
     convertible(vector4i);
@@ -93,13 +91,19 @@ void mathVectorIntegral(py::module& root, py::module& m) {
 
     /* This needs to be *after* conversion constructors so the type conversion
        gets picked before the general buffer constructor (which would then
-       fail) */
-    vectorBuffer(vector2i);
-    vectorBuffer(vector3i);
-    vectorBuffer(vector4i);
-    vectorBuffer(vector2ui);
-    vectorBuffer(vector3ui);
-    vectorBuffer(vector4ui);
+       fail). On the other hand, this needs to be before generic from-list
+       constructors because buffer protocol is generally faster than
+       iteration. */
+    everyVectorBuffer(vector2i);
+    everyVectorBuffer(vector3i);
+    everyVectorBuffer(vector4i);
+    everyVectorBuffer(vector2ui);
+    everyVectorBuffer(vector3ui);
+    everyVectorBuffer(vector4ui);
+
+    /* Now register the generic from-list constructors and everything else */
+    vectorsIntegral<Int>(m, vector2i, vector3i, vector4i);
+    vectorsIntegral<UnsignedInt>(m, vector2ui, vector3ui, vector4ui);
 }
 
 }

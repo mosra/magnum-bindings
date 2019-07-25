@@ -111,8 +111,8 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
 }
 
 /* Separate because it needs to be registered after the type conversion
-   constructors */
-template<class T, class ...Args> void vectorBuffer(py::class_<T, Args...>& c) {
+   constructors. Needs to be called also for subclasses. */
+template<class T, class ...Args> void everyVectorBuffer(py::class_<T, Args...>& c) {
     c
         /* Buffer protocol. If not present, implicit conversion from numpy
            arrays of non-default types somehow doesn't work. There's also the
@@ -437,17 +437,23 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
         .def("value", &Math::Color3<T>::value, "Value");
 }
 
+/* Needs to be separate to make it a priority over buffer protocol */
+template<class T> void color4from3(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) {
+    py::implicitly_convertible<const Math::Vector3<T>&, Math::Color4<T>>();
+
+    c
+        .def(py::init<Math::Vector3<T>, T>(), "Construct from a three-component color", py::arg("rgb"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def(py::init<Math::Vector4<T>>(), "Construct from a vector");
+}
+
 template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) {
     py::implicitly_convertible<const std::tuple<T, T, T>&, Math::Color4<T>>();
     py::implicitly_convertible<const std::tuple<T, T, T, T>&, Math::Color4<T>>();
-    py::implicitly_convertible<const Math::Color3<T>&, Math::Color4<T>>();
 
     c
         /* Constructors */
         .def(py::init<T, T, T, T>(), "Constructor", py::arg("r"), py::arg("g"), py::arg("b"), py::arg("a") = Math::Implementation::fullChannel<T>())
         .def(py::init<T, T>(), "Construct with one value for all components", py::arg("rgb"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
-        .def(py::init<Math::Color3<T>, T>(), "Construct from a vector", py::arg("rgb"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
-        .def(py::init<Math::Vector4<T>>(), "Construct from a vector")
         .def(py::init([](const std::tuple<T, T, T>& value) {
             return Math::Color4<T>{std::get<0>(value), std::get<1>(value), std::get<2>(value)};
         }), "Construct from a RGB tuple")

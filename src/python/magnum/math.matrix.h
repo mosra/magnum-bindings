@@ -68,6 +68,34 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
         .def(py::init(), "Default constructor")
         .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
 
+        /* Operators */
+        .def(-py::self, "Negated matrix")
+        .def(py::self += py::self, "Add and assign a matrix")
+        .def(py::self + py::self, "Add a matrix")
+        .def(py::self -= py::self, "Subtract and assign a matrix")
+        .def(py::self - py::self, "Subtract a matrix")
+        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
+        .def(py::self * typename T::Type{}, "Multiply with a scalar")
+        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
+        .def(py::self / typename T::Type{}, "Divide with a scalar")
+        .def("__mul__", [](const T& self, const typename VectorTraits<T::Cols, typename T::Type>::Type& vector) -> typename VectorTraits<T::Rows, typename T::Type>::Type {
+            return self*vector;
+        }, "Multiply a vector")
+        .def(typename T::Type{} * py::self, "Multiply a scalar with a matrix")
+        .def(typename T::Type{} / py::self, "Divide a matrix with a scalar and invert")
+
+        /* Member functions that don't return a size-dependent type */
+        .def("flipped_cols", &T::flippedCols, "Matrix with flipped cols")
+        .def("flipped_rows", &T::flippedRows, "Matrix with flipped rows")
+        .def("diagonal", [](const T& self) -> typename VectorTraits<T::DiagonalSize, typename T::Type>::Type {
+            return self.diagonal();
+        }, "Values on diagonal");
+}
+
+/* Separate because it needs to be registered after the type conversion
+   constructors. Needs to be called also for subclasses. */
+template<class T, class ...Args> void everyRectangularMatrixBuffer(py::class_<T, Args...>& c) {
+    c
         /* Buffer protocol, needed in order to properly detect row-major
            layouts. Has to be defined *before* the from-tuple constructor so it
            gets precedence for types that implement the buffer protocol. */
@@ -94,30 +122,7 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
             else throw py::buffer_error{Utility::formatString("expected format f or d but got {}", buffer.format)};
 
             return out;
-        }), "Construct from a buffer")
-
-        /* Operators */
-        .def(-py::self, "Negated matrix")
-        .def(py::self += py::self, "Add and assign a matrix")
-        .def(py::self + py::self, "Add a matrix")
-        .def(py::self -= py::self, "Subtract and assign a matrix")
-        .def(py::self - py::self, "Subtract a matrix")
-        .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
-        .def(py::self * typename T::Type{}, "Multiply with a scalar")
-        .def(py::self /= typename T::Type{}, "Divide with a scalar and assign")
-        .def(py::self / typename T::Type{}, "Divide with a scalar")
-        .def("__mul__", [](const T& self, const typename VectorTraits<T::Cols, typename T::Type>::Type& vector) -> typename VectorTraits<T::Rows, typename T::Type>::Type {
-            return self*vector;
-        }, "Multiply a vector")
-        .def(typename T::Type{} * py::self, "Multiply a scalar with a matrix")
-        .def(typename T::Type{} / py::self, "Divide a matrix with a scalar and invert")
-
-        /* Member functions that don't return a size-dependent type */
-        .def("flipped_cols", &T::flippedCols, "Matrix with flipped cols")
-        .def("flipped_rows", &T::flippedRows, "Matrix with flipped rows")
-        .def("diagonal", [](const T& self) -> typename VectorTraits<T::DiagonalSize, typename T::Type>::Type {
-            return self.diagonal();
-        }, "Values on diagonal");
+        }), "Construct from a buffer");
 }
 
 template<class T> bool rectangularMatrixBufferProtocol(T& self, Py_buffer& buffer, int flags) {

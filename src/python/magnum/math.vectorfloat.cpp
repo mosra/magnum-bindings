@@ -86,28 +86,21 @@ void mathVectorFloat(py::module& root, py::module& m) {
     py::class_<Vector2d> vector2d{root, "Vector2d", "Two-component double vector", py::buffer_protocol{}};
     py::class_<Vector3d> vector3d{root, "Vector3d", "Threee-component double vector", py::buffer_protocol{}};
     py::class_<Vector4d> vector4d{root, "Vector4d", "Four-component double vector", py::buffer_protocol{}};
-    vectorsFloat<Float>(m, vector2, vector3, vector4);
-    vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
 
     /* The subclasses don't have buffer protocol enabled, as that's already
        done by the base classes. Moreover, just adding py::buffer_protocol{}
        would cause it to not find the buffer functions as we don't add them
        anywhere, thus failing with `pybind11_getbuffer(): Internal error`. */
-
     py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space"};
-    everyVector(color3_);
-    color(color3_);
-    color3(color3_);
-
     py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
-    everyVector(color4_);
-    color(color4_);
-    color4(color4_);
 
-    /* Register the integer types as well, only after that register type
+    /* Register the integer types first, only after that register type
        conversions because they need all the types */
     mathVectorIntegral(root, m);
 
+    /* Register type conversions as soon as possible as those should have a
+       priority over buffer and list constructors. These need all the types to
+       be present, so can't be interwinted with the class definitions above. */
     convertible(vector2);
     convertible(vector3);
     convertible(vector4);
@@ -116,17 +109,34 @@ void mathVectorFloat(py::module& root, py::module& m) {
     convertible(vector4d);
     /* Colors are float-only at the moment, thus no conversions */
 
+    /* This needs to be before buffer constructors otherwise a buffer
+       constructor gets picked and it will fail because there are just 3
+       elements */
+    color4from3(color4_);
+
     /* This needs to be *after* conversion constructors so the type conversion
        gets picked before the general buffer constructor (which would then
-       fail) */
-    vectorBuffer(vector2);
-    vectorBuffer(vector3);
-    vectorBuffer(vector4);
-    vectorBuffer(vector2d);
-    vectorBuffer(vector3d);
-    vectorBuffer(vector4d);
-    vectorBuffer(color3_);
-    vectorBuffer(color4_);
+       fail). On the other hand, this needs to be before generic from-list
+       constructors because buffer protocol is generally faster than
+       iteration. */
+    everyVectorBuffer(vector2);
+    everyVectorBuffer(vector3);
+    everyVectorBuffer(vector4);
+    everyVectorBuffer(vector2d);
+    everyVectorBuffer(vector3d);
+    everyVectorBuffer(vector4d);
+    everyVectorBuffer(color3_);
+    everyVectorBuffer(color4_);
+
+    /* Now register the generic from-list constructors and everything else */
+    vectorsFloat<Float>(m, vector2, vector3, vector4);
+    vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
+    everyVector(color3_);
+    color(color3_);
+    color3(color3_);
+    everyVector(color4_);
+    color(color4_);
+    color4(color4_);
 }
 
 }

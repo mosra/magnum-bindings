@@ -44,20 +44,16 @@ void mathMatrixFloat(py::module& root) {
        done by the base classes. Moreover, just adding py::buffer_protocol{}
        would cause it to not find the buffer functions as we don't add them
        anywhere, thus failing with `pybind11_getbuffer(): Internal error`. */
-
     py::class_<Matrix3, Matrix3x3> matrix3{root, "Matrix3", "2D float transformation matrix"};
     py::class_<Matrix4, Matrix4x4> matrix4{root, "Matrix4", "3D float transformation matrix"};
-
-    matrices<Float>(
-        matrix2x2, matrix2x3, matrix2x4,
-        matrix3x2, matrix3x3, matrix3x4,
-        matrix4x2, matrix4x3, matrix4x4,
-        matrix3, matrix4);
 
     /* Register the double types as well, only after that register type
        conversions because they need all the types */
     mathMatrixDouble(root);
 
+    /* Register type conversions as soon as possible as those should have a
+       priority over buffer and list constructors. These need all the types to
+       be present, so can't be interwinted with the class definitions above. */
     convertible<Matrix2x2d>(matrix2x2);
     convertible<Matrix2x3d>(matrix2x3);
     convertible<Matrix2x4d>(matrix2x4);
@@ -67,9 +63,32 @@ void mathMatrixFloat(py::module& root) {
     convertible<Matrix4x2d>(matrix4x2);
     convertible<Matrix4x3d>(matrix4x3);
     convertible<Matrix4x4d>(matrix4x4);
-
     convertible<Matrix3d>(matrix3);
     convertible<Matrix4d>(matrix4);
+
+    /* This needs to be *after* conversion constructors so the type conversion
+       gets picked before the general buffer constructor (which would then
+       fail). On the other hand, this needs to be before generic from-list
+       constructors because buffer protocol is generally faster than
+       iteration. */
+    everyRectangularMatrixBuffer(matrix2x2);
+    everyRectangularMatrixBuffer(matrix2x3);
+    everyRectangularMatrixBuffer(matrix2x4);
+    everyRectangularMatrixBuffer(matrix3x2);
+    everyRectangularMatrixBuffer(matrix3x3);
+    everyRectangularMatrixBuffer(matrix3x4);
+    everyRectangularMatrixBuffer(matrix4x2);
+    everyRectangularMatrixBuffer(matrix4x3);
+    everyRectangularMatrixBuffer(matrix4x4);
+    everyRectangularMatrixBuffer(matrix3);
+    everyRectangularMatrixBuffer(matrix4);
+
+    /* Now register the generic from-list constructors and everything else */
+    matrices<Float>(
+        matrix2x2, matrix2x3, matrix2x4,
+        matrix3x2, matrix3x3, matrix3x4,
+        matrix4x2, matrix4x3, matrix4x4,
+        matrix3, matrix4);
 }
 
 }
