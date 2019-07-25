@@ -63,22 +63,24 @@ print("\n  Vector3 from/to list:\n")
 timethat('Vector3()')
 timethat('Vector3(1.0, 2.0, 3.0)')
 timethat('Vector3([1.0, 2.0, 3.0])')
-timethat('list(Vector3(1.0, 2.0, 3.0))')
-timethat('a = Vector3(1.0, 2.0, 3.0); [a.x, a.y, a.z]')
+timethat('list(a)', setup='a = Vector3(1.0, 2.0, 3.0)')
+timethat('[a.x, a.y, a.z]', setup='a = Vector3(1.0, 2.0, 3.0)')
 
-print("\n  constructing builtin array:\n")
+print("\n  Vector3 from/to builtin array:\n")
 
 timethat('array.array("f", [])')
 timethat('array.array("f", [1.0, 2.0, 3.0])')
 timethat('memoryview(a)', setup='a = array.array("f", [1.0, 2.0, 3.0])')
 timethat('memoryview(a)', setup='a = Vector3(1.0, 2.0, 3.0)')
+timethat('Vector3(a)', setup='a = array.array("f", [1.0, 2.0, 3.0])')
 
-print("\n  constructing np.array:\n")
+print("\n  Vector3 from/to np.array:\n")
 
 timethat('np.array([])')
 timethat('np.array([1.0, 2.0, 3.0])')
 timethat('np.array(a)', setup='a = array.array("f", [1.0, 2.0, 3.0])')
 timethat('np.array(a)', setup='a = Vector3(1.0, 2.0, 3.0)')
+timethat('Vector3(a)', setup='a = np.array([1.0, 2.0, 3.0])')
 
 print("\n  Matrix3 from/to list, equivalent np.array operations:\n")
 
