@@ -24,6 +24,7 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h> /* for Mesh.buffers */
 #include <Corrade/Containers/ArrayView.h>
 #include <Corrade/Utility/FormatStl.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -247,7 +248,8 @@ void gl(py::module& m) {
             self.draw(shader);
         }, "Draw the mesh")
         /** @todo more */
-        ;
+
+        .def_readonly("buffers", &PyMesh::buffers, "Buffer objects referenced by the mesh");
 
     /* Renderer */
     {

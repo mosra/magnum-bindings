@@ -96,6 +96,8 @@ class Mesh(GLTestCase):
         # Adding a buffer to the mesh should increase its ref count
         mesh = gl.Mesh()
         mesh.add_vertex_buffer(buffer, 0, 8, gl.Attribute(gl.Attribute.Kind.GENERIC, 2, gl.Attribute.Components.TWO, gl.Attribute.DataType.FLOAT))
+        self.assertEqual(len(mesh.buffers), 1)
+        self.assertIs(mesh.buffers[0], buffer)
         self.assertEqual(sys.getrefcount(buffer), buffer_refcount + 1)
 
         # Deleting the mesh should decrease it again
