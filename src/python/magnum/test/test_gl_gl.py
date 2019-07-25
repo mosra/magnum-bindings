@@ -104,6 +104,12 @@ class Mesh(GLTestCase):
         del mesh
         self.assertEqual(sys.getrefcount(buffer), buffer_refcount)
 
+class Renderbuffer(GLTestCase):
+    def test_init(self):
+        renderbuffer = gl.Renderbuffer()
+        renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (16, 16))
+        self.assertNotEqual(renderbuffer.id, 0)
+
 class Renderer(GLTestCase):
     def test_feature(self):
         gl.Renderer.enable(gl.Renderer.Feature.DEPTH_TEST)

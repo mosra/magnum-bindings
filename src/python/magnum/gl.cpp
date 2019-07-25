@@ -33,6 +33,8 @@
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Renderer.h>
+#include <Magnum/GL/Renderbuffer.h>
+#include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Math/Color.h>
 
 #include "corrade/PyArrayView.h"
@@ -167,6 +169,108 @@ void gl(py::module& m) {
             self.setData(data, usage);
         }, "Set buffer data", py::arg("data"), py::arg("usage") = GL::BufferUsage::StaticDraw)
         /** @todo more */;
+
+    /* Renderbuffer */
+    py::enum_<GL::RenderbufferFormat>{m, "RenderbufferFormat", "Internal renderbuffer format"}
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RED", GL::RenderbufferFormat::Red)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("R8", GL::RenderbufferFormat::R8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RG", GL::RenderbufferFormat::RG)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RG8", GL::RenderbufferFormat::RG8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RGBA", GL::RenderbufferFormat::RGBA)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RGBA8", GL::RenderbufferFormat::RGBA8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("R16", GL::RenderbufferFormat::R16)
+        .value("RG16", GL::RenderbufferFormat::RG16)
+        .value("RGB16", GL::RenderbufferFormat::RGB16)
+        .value("RGBA16", GL::RenderbufferFormat::RGBA16)
+        .value("R8UI", GL::RenderbufferFormat::R8UI)
+        .value("RG8UI", GL::RenderbufferFormat::RG8UI)
+        .value("RGBA8UI", GL::RenderbufferFormat::RGBA8UI)
+        .value("R8I", GL::RenderbufferFormat::R8I)
+        .value("RG8I", GL::RenderbufferFormat::RG8I)
+        .value("RGBA8I", GL::RenderbufferFormat::RGBA8I)
+        .value("R16UI", GL::RenderbufferFormat::R16UI)
+        .value("RG16UI", GL::RenderbufferFormat::RG16UI)
+        .value("RGBA16UI", GL::RenderbufferFormat::RGBA16UI)
+        .value("R16I", GL::RenderbufferFormat::R16I)
+        .value("RG16I", GL::RenderbufferFormat::RG16I)
+        .value("RGBA16I", GL::RenderbufferFormat::RGBA16I)
+        .value("R32UI", GL::RenderbufferFormat::R32UI)
+        .value("RG32UI", GL::RenderbufferFormat::RG32UI)
+        .value("RGBA32UI", GL::RenderbufferFormat::RGBA32UI)
+        .value("R32I", GL::RenderbufferFormat::R32I)
+        .value("RG32I", GL::RenderbufferFormat::RG32I)
+        .value("RGBA32I", GL::RenderbufferFormat::RGBA32I)
+        .value("R16F", GL::RenderbufferFormat::R16F)
+        .value("RG16F", GL::RenderbufferFormat::RG16F)
+        .value("RGBA16F", GL::RenderbufferFormat::RGBA16F)
+        .value("R32F", GL::RenderbufferFormat::R32F)
+        .value("RG32F", GL::RenderbufferFormat::RG32F)
+        .value("RGBA32F", GL::RenderbufferFormat::RGBA32F)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("RGB10A2", GL::RenderbufferFormat::RGB10A2)
+        .value("RGB10A2UI", GL::RenderbufferFormat::RGB10A2UI)
+        #endif
+        .value("RGB5A1", GL::RenderbufferFormat::RGB5A1)
+        .value("RGBA4", GL::RenderbufferFormat::RGBA4)
+        #ifndef MAGNUM_TARGET_GLES
+        .value("R11FG11FB10F", GL::RenderbufferFormat::R11FG11FB10F)
+        #endif
+        .value("RGB565", GL::RenderbufferFormat::RGB565)
+        .value("SRGB8_ALPHA8", GL::RenderbufferFormat::SRGB8Alpha8)
+        #ifndef MAGNUM_TARGET_GLES
+        .value("DEPTH_COMPONENT", GL::RenderbufferFormat::DepthComponent)
+        #endif
+        .value("DEPTH_COMPONENT16", GL::RenderbufferFormat::DepthComponent16)
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH_COMPONENT24", GL::RenderbufferFormat::DepthComponent24)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("DEPTH_COMPONENT32", GL::RenderbufferFormat::DepthComponent32)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DEPTH_COMPONENT32F", GL::RenderbufferFormat::DepthComponent32F)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("STENCIL_INDEX", GL::RenderbufferFormat::StencilIndex)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("STENCIL_INDEX1", GL::RenderbufferFormat::StencilIndex1)
+        .value("STENCIL_INDEX4", GL::RenderbufferFormat::StencilIndex4)
+        #endif
+        .value("STENCIL_INDEX8", GL::RenderbufferFormat::StencilIndex8)
+        #ifndef MAGNUM_TARGET_GLES
+        .value("STENCIL_INDEX16", GL::RenderbufferFormat::StencilIndex16)
+        #endif
+        #if !defined(MAGNUM_TARGET_GLES) || (defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH_STENCIL", GL::RenderbufferFormat::DepthStencil)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH24_STENCIL8", GL::RenderbufferFormat::Depth24Stencil8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DEPTH32F_STENCIL8", GL::RenderbufferFormat::Depth32FStencil8)
+        #endif
+        ;
+
+    py::class_<GL::Renderbuffer>{m, "Renderbuffer", "Renderbuffer"}
+        .def(py::init(), "Constructor")
+        .def_property_readonly("id", &GL::Renderbuffer::id, "OpenGL renderbuffer ID")
+        .def("set_storage", &GL::Renderbuffer::setStorage, "Set renderbuffer storage")
+        .def("set_storage_multisample", &GL::Renderbuffer::setStorageMultisample, "Set multisample renderbuffer storage");
 
     /* Framebuffers */
     py::enum_<GL::FramebufferClear> framebufferClear{m, "FramebufferClear", "Mask for framebuffer clearing"};
