@@ -85,6 +85,9 @@ class Vector(unittest.TestCase):
         a = Vector2d(np.array([1.0, 2.0], dtype='float32'))
         self.assertEqual(a, Vector2d(1.0, 2.0))
 
+        a = Vector2(np.array([1.0, 2.0], dtype='float64'))
+        self.assertEqual(a, Vector2(1.0, 2.0))
+
     def test_type_from_numpy_invalid_float(self):
         a = np.array([1, 2, 3])
         self.assertEqual(a.dtype, 'int64')
