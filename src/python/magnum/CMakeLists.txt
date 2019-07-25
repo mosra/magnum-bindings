@@ -74,7 +74,9 @@ set(magnum_trade_SRCS
 if(NOT MAGNUM_BUILD_STATIC)
     if(Magnum_GL_FOUND)
         pybind11_add_module(magnum_gl SYSTEM ${magnum_gl_SRCS})
-        target_include_directories(magnum_gl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_include_directories(magnum_gl PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_gl PRIVATE Magnum::GL)
         set_target_properties(magnum_gl PROPERTIES
             FOLDER "python"

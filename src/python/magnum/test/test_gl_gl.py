@@ -74,6 +74,23 @@ class Framebuffer(GLTestCase):
         self.assertIs(framebuffer.attached[0], renderbuffer)
         self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount + 1)
 
+    def test_read(self):
+        renderbuffer = gl.Renderbuffer()
+        renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
+
+        framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
+        framebuffer.attach_renderbuffer(gl.Framebuffer.ColorAttachment(0), renderbuffer)
+
+        gl.Renderer.clear_color = Color4(1.0, 0.5, 0.75)
+        framebuffer.clear(gl.FramebufferClear.COLOR)
+
+        a = MutableImageView2D(PixelFormat.RGBA8UNORM, (2, 2), bytearray(16))
+        framebuffer.read(Range2Di.from_size((1, 1), (2, 2)), a)
+        self.assertEqual(a.size, Vector2i(2, 2))
+        self.assertEqual(ord(a.pixels[0, 0, 0]), 0xff)
+        self.assertEqual(ord(a.pixels[0, 1, 1]), 0x80)
+        self.assertEqual(ord(a.pixels[1, 0, 2]), 0xbf)
+
 class Mesh(GLTestCase):
     def test_init(self):
         a = gl.Mesh()

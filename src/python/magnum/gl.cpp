@@ -27,6 +27,7 @@
 #include <pybind11/stl.h> /* for Mesh.buffers */
 #include <Corrade/Containers/ArrayView.h>
 #include <Corrade/Utility/FormatStl.h>
+#include <Magnum/ImageView.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
@@ -37,6 +38,8 @@
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Math/Color.h>
+
+#include "Magnum/Python.h"
 
 #include "corrade/PyArrayView.h"
 #include "corrade/EnumOperators.h"
@@ -295,7 +298,10 @@ void gl(py::module& m) {
         /* Using lambdas to avoid method chaining getting into signatures */
         .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
             self.clear(mask);
-        });
+        }, "Clear specified buffers in the framebuffer")
+        .def("read", [](GL::AbstractFramebuffer& self, const Range2Di& rectangle, PyImageView<2, char>& image) {
+            self.read(rectangle, image);
+        }, "Read block of pixels from the framebuffer to an image view");
 
     NonDestructibleBase<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
