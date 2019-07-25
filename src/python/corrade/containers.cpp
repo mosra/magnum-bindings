@@ -99,6 +99,8 @@ template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int f
 template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, PyArrayView<T>>();
+    /* This is needed for implicit conversion from np.array */
+    py::implicitly_convertible<py::array, PyArrayView<T>>();
 
     c
         /* Constructor */
@@ -296,6 +298,11 @@ inline std::size_t largerStride(std::size_t a, std::size_t b) {
 }
 
 template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStridedArrayView<dimensions, T>>& c) {
+    /* Implicitly convertible from a buffer */
+    py::implicitly_convertible<py::buffer, PyStridedArrayView<dimensions, T>>();
+    /* This is needed for implicit conversion from np.array */
+    py::implicitly_convertible<py::array, PyStridedArrayView<dimensions, T>>();
+
     c
         /* Constructor */
         .def(py::init(), "Default constructor")
