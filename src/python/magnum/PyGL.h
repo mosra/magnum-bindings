@@ -28,6 +28,7 @@
 #include <pybind11/pybind11.h>
 #include <vector>
 #include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Framebuffer.h>
 
 #include "magnum/bootstrap.h"
 
@@ -39,6 +40,12 @@ struct PyMesh: GL::Mesh {
     explicit PyMesh(GL::Mesh&& mesh): GL::Mesh(std::move(mesh)) {}
 
     std::vector<py::object> buffers;
+};
+
+struct PyFramebuffer: GL::Framebuffer {
+    explicit PyFramebuffer(const Range2Di& viewport): GL::Framebuffer{viewport} {}
+
+    std::vector<py::object> attached;
 };
 
 }

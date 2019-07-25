@@ -57,6 +57,23 @@ class DefaultFramebuffer(GLTestCase):
         # Using it should not crash, leak or cause double-free issues
         self.assertTrue(gl.default_framebuffer is not None)
 
+class Framebuffer(GLTestCase):
+    def test(self):
+        framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
+        self.assertNotEqual(framebuffer.id, 0)
+        self.assertEqual(len(framebuffer.attached), 0)
+
+    def test_attach(self):
+        renderbuffer = gl.Renderbuffer()
+        renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
+        renderbuffer_refcount = sys.getrefcount(renderbuffer)
+
+        framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
+        framebuffer.attach_renderbuffer(gl.Framebuffer.ColorAttachment(0), renderbuffer)
+        self.assertEqual(len(framebuffer.attached), 1)
+        self.assertIs(framebuffer.attached[0], renderbuffer)
+        self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount + 1)
+
 class Mesh(GLTestCase):
     def test_init(self):
         a = gl.Mesh()

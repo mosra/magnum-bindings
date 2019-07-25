@@ -31,6 +31,7 @@
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Framebuffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/GL/Renderbuffer.h>
@@ -46,6 +47,13 @@
 namespace magnum {
 
 void gl(py::module& m) {
+    /*
+        Missing APIs:
+
+        GL object labels
+        limit queries
+    */
+
     m.doc() = "OpenGL wrapping layer";
 
     /* Abstract shader program */
@@ -291,6 +299,37 @@ void gl(py::module& m) {
 
     NonDestructibleBase<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
+
+    NonDestructibleBase<PyFramebuffer, GL::AbstractFramebuffer> framebuffer{m,
+        "Framebuffer", "Framebuffer"};
+
+    py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
+        .def(py::init<UnsignedByte>(), "Constructor");
+
+    py::class_<GL::Framebuffer::BufferAttachment>{framebuffer, "BufferAttachment", "Buffer attachment"}
+        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color buffer")
+        .def_readonly_static("DEPTH", &GL::Framebuffer::BufferAttachment::Depth, "Depth buffer")
+        .def_readonly_static("STENCIL", &GL::Framebuffer::BufferAttachment::Stencil, "Stencil buffer")
+        #if !defined(MAGNUM_TARGET_GLES2) || defined(MAGNUM_TARGET_WEBGL)
+        .def_readonly_static("DEPTH_STENCIL", &GL::Framebuffer::BufferAttachment::DepthStencil, "Both depth and stencil buffer")
+        #endif
+        ;
+
+    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::BufferAttachment>();
+
+    framebuffer
+        .def(py::init<const Range2Di&>(), "Constructor")
+        .def_property_readonly("id", &GL::Framebuffer::id, "OpenGL framebuffer ID")
+        .def("attach_renderbuffer", [](PyFramebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
+            self.attachRenderbuffer(attachment, renderbuffer);
+
+            /* Keep a reference to the renderbuffer to avoid it being deleted
+               before the framebuffer */
+            /** @todo isn't there an API for this? */
+            self.attached.emplace_back(py::detail::get_object_handle(&renderbuffer, py::detail::get_type_info(typeid(GL::Renderbuffer))), true);
+        }, "Attach renderbuffer to given buffer")
+
+        .def_readonly("attached", &PyFramebuffer::attached, "Renderbuffer and texture objects referenced by the framebuffer");
 
     /* An equivalent to this would be
         m.attr("default_framebuffer") = &GL::defaultFramebuffer;
