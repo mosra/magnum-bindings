@@ -23,8 +23,11 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <Magnum/Mesh.h>
+#include <Magnum/PixelFormat.h>
+#include <Magnum/PixelStorage.h>
 
 #include "magnum/bootstrap.h"
 
@@ -50,6 +53,73 @@ void magnum(py::module& m) {
         .value("UNSIGNED_BYTE", MeshIndexType::UnsignedByte)
         .value("UNSIGNED_SHORT", MeshIndexType::UnsignedShort)
         .value("UNSIGNED_INT", MeshIndexType::UnsignedInt);
+
+    py::enum_<PixelFormat>{m, "PixelFormat", "Format of pixel data"}
+        .value("R8UNORM", PixelFormat::R8Unorm)
+        .value("RG8UNORM", PixelFormat::RG8Unorm)
+        .value("RGB8UNORM", PixelFormat::RGB8Unorm)
+        .value("RGBA8UNORM", PixelFormat::RGBA8Unorm)
+        .value("R8SNORM", PixelFormat::R8Snorm)
+        .value("RG8SNORM", PixelFormat::RG8Snorm)
+        .value("RGB8SNORM", PixelFormat::RGB8Snorm)
+        .value("RGBA8SNORM", PixelFormat::RGBA8Snorm)
+        .value("R8UI", PixelFormat::R8UI)
+        .value("RG8UI", PixelFormat::RG8UI)
+        .value("RGB8UI", PixelFormat::RGB8UI)
+        .value("RGBA8UI", PixelFormat::RGBA8UI)
+        .value("R8I", PixelFormat::R8I)
+        .value("RG8I", PixelFormat::RG8I)
+        .value("RGB8I", PixelFormat::RGB8I)
+        .value("RGBA8I", PixelFormat::RGBA8I)
+        .value("R16UNORM", PixelFormat::R16Unorm)
+        .value("RG16UNORM", PixelFormat::RG16Unorm)
+        .value("RGB16UNORM", PixelFormat::RGB16Unorm)
+        .value("RGBA16UNORM", PixelFormat::RGBA16Unorm)
+        .value("R16SNORM", PixelFormat::R16Snorm)
+        .value("RG16SNORM", PixelFormat::RG16Snorm)
+        .value("RGB16SNORM", PixelFormat::RGB16Snorm)
+        .value("RGBA16SNORM", PixelFormat::RGBA16Snorm)
+        .value("R16UI", PixelFormat::R16UI)
+        .value("RG16UI", PixelFormat::RG16UI)
+        .value("RGB16UI", PixelFormat::RGB16UI)
+        .value("RGBA16UI", PixelFormat::RGBA16UI)
+        .value("R16I", PixelFormat::R16I)
+        .value("RG16I", PixelFormat::RG16I)
+        .value("RGB16I", PixelFormat::RGB16I)
+        .value("RGBA16I", PixelFormat::RGBA16I)
+        .value("R32UI", PixelFormat::R32UI)
+        .value("RG32UI", PixelFormat::RG32UI)
+        .value("RGB32UI", PixelFormat::RGB32UI)
+        .value("RGBA32UI", PixelFormat::RGBA32UI)
+        .value("R32I", PixelFormat::R32I)
+        .value("RG32I", PixelFormat::RG32I)
+        .value("RGB32I", PixelFormat::RGB32I)
+        .value("RGBA32I", PixelFormat::RGBA32I)
+        .value("R16F", PixelFormat::R16F)
+        .value("RG16F", PixelFormat::RG16F)
+        .value("RGB16F", PixelFormat::RGB16F)
+        .value("RGBA16F", PixelFormat::RGBA16F)
+        .value("R32F", PixelFormat::R32F)
+        .value("RG32F", PixelFormat::RG32F)
+        .value("RGB32F", PixelFormat::RGB32F)
+        .value("RGBA32F", PixelFormat::RGBA32F);
+
+    py::class_<PixelStorage>{m, "PixelStorage", "Pixel storage parameters"}
+        .def(py::init(), "Default constructor")
+
+        /* Comparison */
+        .def(py::self == py::self, "Equality comparison")
+        .def(py::self != py::self, "Non-equality comparison")
+
+        /* Properties */
+        .def_property("alignment",
+            &PixelStorage::alignment, &PixelStorage::setAlignment, "Row alignment")
+        .def_property("row_length",
+            &PixelStorage::rowLength, &PixelStorage::setRowLength, "Row length")
+        .def_property("image_height",
+            &PixelStorage::imageHeight, &PixelStorage::setImageHeight, "Image height")
+        .def_property("skip",
+            &PixelStorage::skip, &PixelStorage::setSkip, "Pixel, row and image skip");
 }
 
 }}
@@ -57,10 +127,11 @@ void magnum(py::module& m) {
 PYBIND11_MODULE(_magnum, m) {
     m.doc() = "Root Magnum module";
 
-    magnum::magnum(m);
-
     py::module math = m.def_submodule("math");
     magnum::math(m, math);
+
+    /* These need stuff from math, so need to be called after */
+    magnum::magnum(m);
 
     /* In case Magnum is a bunch of static libraries, put everything into a
        single shared lib to make it easier to install (which is the point of

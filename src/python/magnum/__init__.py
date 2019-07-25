@@ -84,5 +84,7 @@ __all__ = [
     'Range2D', 'Range2Di', 'Range2Dd',
     'Range3D', 'Range3Di', 'Range3Dd',
 
-    'MeshPrimitive', 'MeshIndexType'
+    'MeshPrimitive', 'MeshIndexType',
+
+    'PixelFormat', 'PixelStorage'
 ]
