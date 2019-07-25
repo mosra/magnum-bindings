@@ -26,15 +26,25 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h> /* so ArrayView is convertible from python array */
 #include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/ScopeGuard.h>
 #include <Corrade/Utility/FormatStl.h>
 
 #include "corrade/bootstrap.h"
 #include "corrade/PyArrayView.h"
 #include "corrade/PybindExtras.h"
+#include "corrade/PyBuffer.h"
 
 namespace corrade {
 
 namespace {
+
+const char* const FormatStrings[]{
+    /* 0. Representing bytes as unsigned. Not using 'c' because then it behaves
+       differently from bytes/bytearray, where you can do `a[0] = ord('A')`. */
+    "B",
+};
+template<class> constexpr std::size_t formatIndex();
+template<> constexpr std::size_t formatIndex<char>() { return 0; }
 
 struct Slice {
     std::size_t start;
@@ -61,6 +71,32 @@ Slice calculateSlice(py::slice slice, std::size_t containerSize) {
     return Slice{std::size_t(start), std::size_t(stop), step};
 }
 
+template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int flags) {
+    if((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE && !std::is_const<typename T::Type>::value) {
+        PyErr_SetString(PyExc_BufferError, "array view is not writable");
+        return false;
+    }
+
+    /* I hate the const_casts but I assume this is to make editing easier, NOT
+       to make it possible for users to stomp on these values. */
+    buffer.ndim = 1;
+    buffer.itemsize = sizeof(typename T::Type);
+    buffer.len = sizeof(typename T::Type)*self.size();
+    buffer.buf = const_cast<typename std::decay<typename T::Type>::type*>(self.data());
+    buffer.readonly = std::is_const<typename T::Type>::value;
+    if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
+        buffer.format = const_cast<char*>(FormatStrings[formatIndex<typename std::decay<typename T::Type>::type>()]);
+    if(flags != PyBUF_SIMPLE) {
+        /* The view is immutable (can't change its size after it has been
+           constructed), so referencing the size directly is okay */
+        buffer.shape = reinterpret_cast<Py_ssize_t*>(&self.sizeRef());
+        if((flags & PyBUF_STRIDES) == PyBUF_STRIDES)
+            buffer.strides = &buffer.itemsize;
+    }
+
+    return true;
+}
+
 template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, PyArrayView<T>>();
@@ -70,27 +106,25 @@ template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
         .def(py::init(), "Default constructor")
 
         /* Buffer protocol */
-        .def(py::init([](py::buffer buffer) {
-            py::buffer_info info = buffer.request(!std::is_const<T>::value);
+        .def(py::init([](py::buffer other) {
+            Py_buffer buffer{};
+            if(PyObject_GetBuffer(other.ptr(), &buffer, (std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
+                throw py::error_already_set{};
 
-            if(info.ndim != 1)
-                throw py::buffer_error{Utility::formatString("expected one dimension but got {}", info.ndim)};
-            if(info.strides[0] != info.itemsize)
-                throw py::buffer_error{Utility::formatString("expected stride of {} but got {}", info.itemsize, info.strides[0])};
+            Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            // TODO: need to take buffer.obj, not buffer!
-            return PyArrayView<T>{{static_cast<T*>(info.ptr), std::size_t(info.shape[0]*info.itemsize)}, buffer};
+            if(buffer.ndim != 1)
+                throw py::buffer_error{Utility::formatString("expected one dimension but got {}", buffer.ndim)};
+            if(buffer.strides && buffer.strides[0] != buffer.itemsize)
+                throw py::buffer_error{Utility::formatString("expected stride of {} but got {}", buffer.itemsize, buffer.strides[0])};
+
+            /* reinterpret_borrow converts PyObject* to an (automatically
+               refcounted) py::object. We take the underlying object instead of
+               the buffer because we no longer care about the buffer
+               descriptor -- that could allow the GC to haul away a bit more
+               garbage */
+            return PyArrayView<T>{{static_cast<T*>(buffer.buf), std::size_t(buffer.len)}, py::reinterpret_borrow<py::object>(buffer.obj)};
         }), "Construct from a buffer")
-        .def_buffer([](const PyArrayView<T>& self) -> py::buffer_info {
-            return py::buffer_info{
-                const_cast<char*>(self.data()),
-                sizeof(T),
-                py::format_descriptor<T>::format(),
-                1,
-                {self.size()},
-                {1} // TODO: need to pass self.obj to the buffer, not self!
-            };
-        })
 
         /* Length and memory owning object */
         .def("__len__", &PyArrayView<T>::size, "View size")
@@ -121,6 +155,8 @@ template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
             /* Usual business */
             return py::cast(PyArrayView<T>{self.slice(calculated.start, calculated.stop), self.obj});
         }, "Slice the view");
+
+    enableBetterBufferProtocol<PyArrayView<T>, arrayViewBufferProtocol>(c);
 }
 
 template<class T> void mutableArrayView(py::class_<PyArrayView<T>>& c) {
@@ -202,42 +238,76 @@ template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<3, 
     CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
+template<class T> bool stridedArrayViewBufferProtocol(T& self, Py_buffer& buffer, int flags) {
+    if((flags & PyBUF_STRIDES) != PyBUF_STRIDES) {
+        /* TODO: allow this if the array actually *is* contiguous? */
+        PyErr_SetString(PyExc_BufferError, "array view is not contiguous");
+        return false;
+    }
+
+    if((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE && !std::is_const<typename T::Type>::value) {
+        PyErr_SetString(PyExc_BufferError, "array view is not writable");
+        return false;
+    }
+
+    /* I hate the const_casts but I assume this is to make editing easier, NOT
+       to make it possible for users to stomp on these values. */
+    buffer.ndim = T::Dimensions;
+    buffer.itemsize = sizeof(typename T::Type);
+    buffer.len = sizeof(typename T::Type);
+    for(std::size_t i = 0; i != T::Dimensions; ++i)
+        buffer.len *= self.sizeRef()[i];
+    buffer.buf = const_cast<typename std::decay<typename T::ErasedType>::type*>(self.data());
+    buffer.readonly = std::is_const<typename T::Type>::value;
+    if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
+        buffer.format = const_cast<char*>(FormatStrings[formatIndex<typename std::decay<typename T::Type>::type>()]);
+    /* The view is immutable (can't change its size after it has been
+       constructed), so referencing the size/stride directly is okay */
+    buffer.shape = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(self.sizeRef().begin()));
+    buffer.strides = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(self.strideRef().begin()));
+
+    return true;
+}
+
+inline std::size_t largerStride(std::size_t a, std::size_t b) {
+    return a < b ? b : a; /* max(), but named like this to avoid clashes */
+}
+
 template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStridedArrayView<dimensions, T>>& c) {
     c
         /* Constructor */
         .def(py::init(), "Default constructor")
 
         /* Buffer protocol */
-        .def(py::init([](py::buffer buffer) {
-            py::buffer_info info = buffer.request(!std::is_const<T>::value);
+        .def(py::init([](py::buffer other) {
+            Py_buffer buffer{};
+            if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_STRIDES|(std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
+                throw py::error_already_set{};
 
-            if(info.ndim != dimensions)
-                throw py::buffer_error{Utility::formatString("expected {} dimensions but got {}", dimensions, info.ndim)};
+            Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
+            if(buffer.ndim != dimensions)
+                throw py::buffer_error{Utility::formatString("expected {} dimensions but got {}", dimensions, buffer.ndim)};
+
+            Containers::StaticArrayView<dimensions, const std::size_t> sizes{reinterpret_cast<std::size_t*>(buffer.shape)};
+            Containers::StaticArrayView<dimensions, const std::ptrdiff_t> strides{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)};
+            /* Calculate total memory size that spans the whole view. Mainly to
+               make the constructor assert happy, not used otherwise */
+            std::size_t size = 0;
+            for(std::size_t i = 0; i != dimensions; ++i)
+                size = largerStride(buffer.shape[i]*(buffer.strides[i] < 0 ? -buffer.strides[i] : buffer.strides[i]), size);
+
+            /* reinterpret_borrow converts PyObject* to an (automatically
+               refcounted) py::object. We take the underlying object instead of
+               the buffer because we no longer care about the buffer
+               descriptor -- that could allow the GC to haul away a bit more
+               garbage */
             return PyStridedArrayView<dimensions, T>{{
-                {static_cast<T*>(info.ptr), std::size_t(info.size*info.strides[0])},
-                Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(&info.shape[0])},
-                Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(&info.strides[0])}},
-                // TODO: need to take buffer.obj, not buffer!
-                buffer};
+                {static_cast<T*>(buffer.buf), size},
+                Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(buffer.shape)},
+                Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)}},
+                py::reinterpret_borrow<py::object>(buffer.obj)};
         }), "Construct from a buffer")
-        .def_buffer([](const PyStridedArrayView<dimensions, T>& self) -> py::buffer_info {
-            std::vector<py::ssize_t> shape(dimensions);
-            Containers::StridedDimensions<dimensions, std::size_t> selfSize{self.size()};
-            for(std::size_t i = 0; i != dimensions; ++i) shape[i] = selfSize[i];
-
-            std::vector<py::ssize_t> strides(dimensions);
-            Containers::StridedDimensions<dimensions, std::ptrdiff_t> selfStride{self.stride()};
-            for(std::size_t i = 0; i != dimensions; ++i) strides[i] = selfStride[i];
-            return py::buffer_info{
-                const_cast<void*>(self.data()),
-                sizeof(T),
-                py::format_descriptor<T>::format(),
-                dimensions,
-                shape, strides
-                // TODO: need to pass self.obj to the buffer, not self!
-            };
-        })
 
         // TODO: construct from a buffer + size/stride
 
@@ -266,6 +336,8 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStride
             const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]);
             return py::cast(PyStridedArrayView<dimensions, T>(self.slice(calculated.start, calculated.stop).every(calculated.step), self.obj));
         }, "Slice the view");
+
+    enableBetterBufferProtocol<PyStridedArrayView<dimensions, T>, stridedArrayViewBufferProtocol>(c);
 }
 
 template<class T> void stridedArrayView1D(py::class_<PyStridedArrayView<1, T>>& c) {

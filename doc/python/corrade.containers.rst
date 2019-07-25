@@ -51,25 +51,15 @@
     Unlike in C++, the view keeps a reference to the original memory owner
     object, meaning that calling :py:`del` on the original object will *not*
     invalidate the view. Slicing a view creates a new view referencing the same
-    original object, without any dependency on the previous view.
+    original object, without any dependency on the previous view. That means a
+    long chained slicing operation will not cause increased memory usage.
 
     .. code:: pycon
 
         >>> b.obj is a
         True
-        >>> b[1:4].obj is a
+        >>> b[1:4][:-1].obj is a
         True
-
-    .. block-danger:: Pybind11 Buffer Protocol issues
-
-        Currently, due to how buffer protocol is exposed in pybind11, there are
-        several issues with converting array views from and to buffer objects:
-
-        -   readonly property is not preserved when converting an ArrayView
-            to Python `memoryview`
-        -   subsequent slicing and view conversion keeps reference to the
-            previous view instance instead of just to the original object,
-            creating unnecesarily long GC chains
 
     `Comparison to Python's memoryview`_
     ====================================

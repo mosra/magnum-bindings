@@ -66,6 +66,14 @@ class ArrayView(unittest.TestCase):
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
+    def test_init_buffer_memoryview_obj(self):
+        a = b'hello'
+        v = memoryview(a)
+        b = containers.ArrayView(v)
+        # memoryview's buffer protocol returns itself, not the underlying
+        # bytes, as it manages the Py_buffer instance. So this is expected.
+        self.assertIs(b.obj, v)
+
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
         b = containers.MutableArrayView(a)
@@ -79,16 +87,18 @@ class ArrayView(unittest.TestCase):
         self.assertIs(b.obj, a)
         self.assertEqual(len(b), 3*4)
 
+    @unittest.skip("there doesn't seem to be a way to make memoryview give back N-dimensional array that can't be represented as linear memory")
     def test_init_buffer_unexpected_dimensions(self):
         a = memoryview(b'123456').cast('b', shape=[2, 3])
         self.assertEqual(bytes(a), b'123456')
-        with self.assertRaisesRegex(BufferError, "expected one dimension but got 2"):
+        with self.assertRaisesRegex(BufferError, "but what"):
             b = containers.ArrayView(a)
 
     def test_init_buffer_unexpected_stride(self):
         a = memoryview(b'hello')[::2]
         self.assertEqual(bytes(a), b'hlo')
-        with self.assertRaisesRegex(BufferError, "expected stride of 1 but got 2"):
+        # Error emitted by memoryview, not us
+        with self.assertRaisesRegex(BufferError, "memoryview: underlying buffer is not C-contiguous"):
             b = containers.ArrayView(a)
 
     def test_init_buffer_mutable_from_immutable(self):
@@ -183,12 +193,24 @@ class ArrayView(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
-        # TODO: fix when pybind is replaced
-
         c = memoryview(b)
-        self.assertEqual(c.obj, b) # TODO: should be a
-        self.assertEqual(sys.getrefcount(b), b_refcount + 1) # TODO: should not hcange
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be +2
+        # Unlike slicing, ArrayView's buffer protocol returns a reference to
+        # itself -- it needs to be kept around because the Py_buffer refers to
+        # its internals for size. Also returning a reference to the underlying
+        # buffer would mean the underlying buffer's releasebuffer function gets
+        # called instead of ours which is *not* wanted.
+        self.assertEqual(c.obj, b)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        with self.assertRaisesRegex(TypeError, "cannot modify read-only memory"):
+            c[-1] = ord('?')
+
+    def test_convert_mutable_memoryview(self):
+        a = bytearray(b'World is hell!')
+        b = memoryview(containers.MutableArrayView(a))
+        b[-1] = ord('?')
+        self.assertEqual(a, b'World is hell?')
 
 class StridedArrayView1D(unittest.TestCase):
     def test_init(self):
@@ -235,12 +257,13 @@ class StridedArrayView1D(unittest.TestCase):
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
-    @unittest.expectedFailure
     def test_init_buffer_memoryview_obj(self):
         a = b'hello'
         v = memoryview(a)
         b = containers.StridedArrayView1D(v)
-        self.assertIs(b.obj, a) # TODO: it's b because pybind is stupid
+        # memoryview's buffer protocol returns itself, not the underlying
+        # bytes, as it manages the Py_buffer instance. So this is expected.
+        self.assertIs(b.obj, v)
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
@@ -334,18 +357,28 @@ class StridedArrayView1D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
-        # TODO: fix when pybind is replaced
-
         c = memoryview(b)
         self.assertEqual(c.ndim, 1)
         self.assertEqual(len(c), len(a))
         self.assertEqual(bytes(c), a)
-        self.assertEqual(c.obj, b) # TODO: should be a
-        self.assertEqual(sys.getrefcount(b), b_refcount + 1) # TODO: should not change
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be +2
+        # Unlike slicing, StridedArrayView's buffer protocol returns a
+        # reference to itself and not the underlying buffer -- it needs to be
+        # kept around because the Py_buffer refers to its internals for size.
+        # Also returning a reference to the underlying buffer would mean the
+        # underlying buffer's releasebuffer function gets called instead of
+        # ours which is *not* wanted.
+        self.assertEqual(c.obj, b)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
-        c[-1] = ord('?') # TODO: wrong, should fail
-        self.assertEqual(a, b'World is hell?') # TODO: wrong
+        with self.assertRaisesRegex(TypeError, "cannot modify read-only memory"):
+            c[-1] = ord('?')
+
+    def test_convert_mutable_memoryview(self):
+        a = bytearray(b'World is hell!')
+        b = memoryview(containers.MutableStridedArrayView1D(a))
+        b[-1] = ord('?')
+        self.assertEqual(a, b'World is hell?')
 
 class StridedArrayView2D(unittest.TestCase):
     def test_init(self):
@@ -370,9 +403,9 @@ class StridedArrayView2D(unittest.TestCase):
              b'89abcdef')
         a_refcount = sys.getrefcount(a)
 
-        b = containers.StridedArrayView2D(memoryview(a).cast('b', shape=[3, 8]))
+        v = memoryview(a).cast('b', shape=[3, 8])
         # TODO: construct as containers.StridedArrayView2D(a, (3, 8), (8, 1))
-        #self.assertIs(b.obj, a) # TODO
+        b = containers.StridedArrayView2D(v)
         self.assertEqual(len(b), 3)
         self.assertEqual(bytes(b), b'01234567'
                                    b'456789ab'
@@ -439,20 +472,17 @@ class StridedArrayView2D(unittest.TestCase):
             b = containers.MutableStridedArrayView2D(a)
 
     def test_slice(self):
-        a = (b'01234567'
-             b'456789ab'
-             b'89abcdef')
+        a = memoryview(b'01234567'
+                       b'456789ab'
+                       b'89abcdef').cast('b', shape=[3, 8])
         a_refcount = sys.getrefcount(a)
 
-        v = memoryview(a).cast('b', shape=[3, 8])
-        v_refcount = sys.getrefcount(v)
-
-        # TODO: Pybind refcounts against v, not a
-
-        b = containers.StridedArrayView2D(v)
+        b = containers.StridedArrayView2D(a)
         b_refcount = sys.getrefcount(b)
+        # memoryview's buffer protocol returns itself, not the underlying
+        # bytes, as it manages the Py_buffer instance. So this is expected.
+        self.assertEqual(b.obj, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
 
         # When slicing, b's refcount should not change but a's refcount should
         # increase
@@ -462,30 +492,25 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(c.stride, (8, 1))
         self.assertEqual(bytes(c), b'01234567456789ab')
         self.assertEqual(sys.getrefcount(b), b_refcount)
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be +2
-        self.assertEqual(sys.getrefcount(v), v_refcount + 2) # TODO: should not change
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
 
         # Deleting a slice should reduce a's refcount again, keep b's unchanged
         del c
         self.assertEqual(sys.getrefcount(b), b_refcount)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
 
     def test_slice_multidimensional(self):
-        a = (b'01234567'
-             b'456789ab'
-             b'89abcdef')
+        a = memoryview(b'01234567'
+                       b'456789ab'
+                       b'89abcdef').cast('b', shape=[3, 8])
         a_refcount = sys.getrefcount(a)
 
-        v = memoryview(a).cast('b', shape=[3, 8])
-        v_refcount = sys.getrefcount(v)
-
-        # TODO: Pybind refcounts against v, not a
-
-        b = containers.StridedArrayView2D(v)
+        b = containers.StridedArrayView2D(a)
         b_refcount = sys.getrefcount(b)
+        # memoryview's buffer protocol returns itself, not the underlying
+        # bytes, as it manages the Py_buffer instance. So this is expected.
+        self.assertEqual(b.obj, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
 
         # When slicing, b's refcount should not change but a's refcount should
         # increase
@@ -496,14 +521,12 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(bytes(c[0]), b'89a')
         self.assertEqual(bytes(c[1]), b'cde')
         self.assertEqual(sys.getrefcount(b), b_refcount)
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be +2
-        self.assertEqual(sys.getrefcount(v), v_refcount + 2) # TODO: should not change
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
 
         # Deleting a slice should reduce a's refcount again, keep b's unchanged
         del c
         self.assertEqual(sys.getrefcount(b), b_refcount)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
 
     def test_slice_invalid(self):
         with self.assertRaisesRegex(ValueError, "slice step cannot be zero"):
@@ -600,29 +623,25 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(bytes(d), b'3377bb')
 
     def test_convert_memoryview(self):
-        a = (b'01234567'
-             b'456789ab'
-             b'89abcdef')
+        a = memoryview(b'01234567'
+                       b'456789ab'
+                       b'89abcdef').cast('b', shape=[3, 8])
         a_refcount = sys.getrefcount(a)
-        v = memoryview(a).cast('b', shape=[3, 8])
-        v_refcount = sys.getrefcount(v)
 
-        b = containers.StridedArrayView2D(v)
+        b = containers.StridedArrayView2D(a)
         b_refcount = sys.getrefcount(b)
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be + 2
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
+        # memoryview's buffer protocol returns itself, not the underlying
+        # bytes, as it manages the Py_buffer instance. So this is expected.
+        self.assertEqual(b.obj, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         c = memoryview(b)
         self.assertEqual(c.ndim, 2)
         self.assertEqual(c.shape, (3, 8))
         self.assertEqual(c.strides, (8, 1))
-        self.assertEqual(c.obj, v) # TODO: should be a
-        self.assertEqual(sys.getrefcount(b), b_refcount + 1) # TODO: should not change
-        self.assertEqual(sys.getrefcount(a), a_refcount + 1) # TODO: should be + 2
-        self.assertEqual(sys.getrefcount(v), v_refcount + 1) # TODO: should not change
-
-        c[2, 1] = ord('!') # TODO: wrong, should fail
-        self.assertEqual(chr(c[2, 1]), '!') # TODO: should be 9
+        self.assertEqual(c.obj, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
 
 class StridedArrayView3D(unittest.TestCase):
     def test_init_buffer(self):

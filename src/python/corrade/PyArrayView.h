@@ -38,6 +38,10 @@ template<class T> struct PyArrayView: Containers::ArrayView<T> {
     /*implicit*/PyArrayView() noexcept: obj{py::none{}} {}
     explicit PyArrayView(Containers::ArrayView<T> view, py::object obj) noexcept: Containers::ArrayView<T>{view}, obj{std::move(obj)} {}
 
+    /* Turning this into a reference so buffer protocol can point to it instead
+       of needing to allocate */
+    std::size_t& sizeRef() { return Containers::ArrayView<T>::_size; }
+
     py::object obj;
 };
 
@@ -45,6 +49,15 @@ template<class T> struct PyArrayView: Containers::ArrayView<T> {
 template<unsigned dimensions, class T> struct PyStridedArrayView: Containers::StridedArrayView<dimensions, T> {
     /*implicit*/ PyStridedArrayView() noexcept: obj{py::none{}} {}
     explicit PyStridedArrayView(Containers::StridedArrayView<dimensions, T> view, py::object obj) noexcept: Containers::StridedArrayView<dimensions, T>{view}, obj{std::move(obj)} {}
+
+    /* Turning this into a reference so buffer protocol can point to it instead
+       of needing to allocate */
+    Containers::StridedDimensions<dimensions, std::size_t>& sizeRef() {
+        return Containers::StridedArrayView<dimensions, T>::_size;
+    }
+    Containers::StridedDimensions<dimensions, std::ptrdiff_t>& strideRef() {
+        return Containers::StridedArrayView<dimensions, T>::_stride;
+    }
 
     py::object obj;
 };
