@@ -37,6 +37,56 @@
 
 namespace magnum {
 
+/* Keep in sync with math.h */
+
+const char* const FormatStrings[]{
+    /* 0. Representing bytes as unsigned. Not using 'c' because then it behaves
+       differently from bytes/bytearray, where you can do `a[0] = ord('A')`. */
+    "B",
+
+    "b", /* 1 -- std::int8_t */
+    "B", /* 2 -- std::uint8_t */
+    "i", /* 3 -- std::int32_t */
+    "I", /* 4 -- std::uint32_t */
+    "f", /* 5 -- float */
+    "d"  /* 6 -- double */
+};
+
+/* Flipped as numpy expects row-major */
+const Py_ssize_t MatrixShapes[][2]{
+    {2, 2}, /* 0 -- 2 cols, 2 rows */
+    {3, 2}, /* 1 -- 2 cols, 3 rows */
+    {4, 2}, /* 2 -- 2 cols, 4 rows */
+    {2, 3}, /* 3 -- 3 cols, 2 rows */
+    {3, 3}, /* 4 -- 3 cols, 3 rows */
+    {4, 3}, /* 5 -- 3 cols, 4 rows */
+    {2, 4}, /* 6 -- 4 cols, 2 rows */
+    {3, 4}, /* 7 -- 4 cols, 3 rows */
+    {4, 4}  /* 8 -- 4 cols, 4 rows */
+};
+const Py_ssize_t MatrixStridesFloat[][2]{
+    {4, 4*2}, /* 0 -- 2 cols, 2 rows */
+    {4, 4*3}, /* 1 -- 2 cols, 3 rows */
+    {4, 4*4}, /* 2 -- 2 cols, 4 rows */
+    {4, 4*2}, /* 3 -- 3 cols, 2 rows */
+    {4, 4*3}, /* 4 -- 3 cols, 3 rows */
+    {4, 4*4}, /* 5 -- 3 cols, 4 rows */
+    {4, 4*2}, /* 6 -- 4 cols, 2 rows */
+    {4, 4*3}, /* 7 -- 4 cols, 3 rows */
+    {4, 4*4}  /* 8 -- 4 cols, 4 rows */
+};
+const Py_ssize_t MatrixStridesDouble[][2]{
+    {8, 8*2}, /* 0 -- 2 cols, 2 rows */
+    {8, 8*3}, /* 1 -- 2 cols, 3 rows */
+    {8, 8*4}, /* 2 -- 2 cols, 4 rows */
+    {8, 8*2}, /* 3 -- 3 cols, 2 rows */
+    {8, 8*3}, /* 4 -- 3 cols, 3 rows */
+    {8, 8*4}, /* 5 -- 3 cols, 4 rows */
+    {8, 8*2}, /* 6 -- 4 cols, 2 rows */
+    {8, 8*3}, /* 7 -- 4 cols, 3 rows */
+    {8, 8*4}  /* 8 -- 4 cols, 4 rows */
+};
+
 namespace {
 
 template<class T> void angle(py::class_<T>& c) {

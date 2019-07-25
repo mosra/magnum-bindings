@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import unittest
 
 from magnum import *
@@ -263,6 +264,14 @@ class Vector(unittest.TestCase):
     def test_repr(self):
         self.assertEqual(repr(Vector3(1.0, 3.14, -13.37)), 'Vector(1, 3.14, -13.37)')
 
+    def test_from_buffer(self):
+        a = Vector3i(array.array('i', [2, 3, 5]))
+        self.assertEqual(a, Vector3i(2, 3, 5))
+
+    def test_to_buffer(self):
+        a = memoryview(Vector4(1.0, 2.0, 3.0, 4.0))
+        self.assertEqual(a.tolist(), [1.0, 2.0, 3.0, 4.0])
+
 class Color3_(unittest.TestCase):
     def test_init(self):
         a1 = Color3()
@@ -349,6 +358,16 @@ class Color4_(unittest.TestCase):
         self.assertIsInstance(Color4.zero_init(), Color4)
         self.assertIsInstance(Color4().rgb, Color3)
         self.assertIsInstance(Color4().xyz, Color3)
+
+    def test_from_buffer(self):
+        a = Color3(array.array('f', [2.0, 3.0, 5.0]))
+        self.assertEqual(a, Color3(2.0, 3.0, 5.0))
+
+    def test_to_buffer(self):
+        # Color4 doesn't define py::buffer_protocol(), the one from base should
+        # "just work"
+        a = memoryview(Color4(1.0, 2.0, 3.0, 4.0))
+        self.assertEqual(a.tolist(), [1.0, 2.0, 3.0, 4.0])
 
 class Matrix(unittest.TestCase):
     def test_init(self):
@@ -582,6 +601,13 @@ class Matrix(unittest.TestCase):
                                   '       2, 5,\n'
                                   '       3, 6)')
 
+    # conversion from buffer is tested in test_math_numpy, array.array is
+    # one-dimensional and I don't want to drag numpy here just for one test
+
+    def test_to_buffer(self):
+        a = memoryview(Matrix2x2((1.0, 2.0), (3.0, 4.0)))
+        self.assertEqual(a.tolist(), [[1.0, 3.0], [2.0, 4.0]])
+
 class Matrix3_(unittest.TestCase):
     def test_init(self):
         a = Matrix3()
@@ -672,6 +698,20 @@ class Matrix3_(unittest.TestCase):
         self.assertIsInstance(Matrix3()+Matrix3(), Matrix3)
         self.assertIsInstance(Matrix3().transposed(), Matrix3)
         self.assertIsInstance(Matrix3().inverted(), Matrix3)
+
+    # conversion from buffer is tested in test_math_numpy, array.array is
+    # one-dimensional and I don't want to drag numpy here just for one test
+
+    def test_to_buffer(self):
+        # Matrix3 doesn't define py::buffer_protocol(), the one from base
+        # should "just work"
+        a = memoryview(Matrix3((1.0, 2.0, 3.0),
+                               (4.0, 5.0, 6.0),
+                               (7.0, 8.0, 9.0)))
+        self.assertEqual(a.tolist(), [
+            [1.0, 4.0, 7.0],
+            [2.0, 5.0, 8.0],
+            [3.0, 6.0, 9.0]])
 
 class Matrix4_(unittest.TestCase):
     def test_init(self):
@@ -777,6 +817,22 @@ class Matrix4_(unittest.TestCase):
         self.assertIsInstance(Matrix4()+Matrix4(), Matrix4)
         self.assertIsInstance(Matrix4().transposed(), Matrix4)
         self.assertIsInstance(Matrix4().inverted(), Matrix4)
+
+    # conversion from buffer is tested in test_math_numpy, array.array is
+    # one-dimensional and I don't want to drag numpy here just for one test
+
+    def test_to_buffer(self):
+        # Matrix3 doesn't define py::buffer_protocol(), the one from base
+        # should "just work"
+        a = memoryview(Matrix4((1.0, 2.0, 3.0, 4.0),
+                               (5.0, 6.0, 7.0, 8.0),
+                               (9.0, 10.0, 11.0, 12.0),
+                               (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(a.tolist(), [
+            [1.0, 5.0, 9.0, 13.0],
+            [2.0, 6.0, 10.0, 14.0],
+            [3.0, 7.0, 11.0, 15.0],
+            [4.0, 8.0, 12.0, 16.0]])
 
 class Quaternion_(unittest.TestCase):
     def test_init(self):

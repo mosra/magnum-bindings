@@ -89,12 +89,17 @@ void mathVectorFloat(py::module& root, py::module& m) {
     vectorsFloat<Float>(m, vector2, vector3, vector4);
     vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
 
-    py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space", py::buffer_protocol{}};
+    /* The subclasses don't have buffer protocol enabled, as that's already
+       done by the base classes. Moreover, just adding py::buffer_protocol{}
+       would cause it to not find the buffer functions as we don't add them
+       anywhere, thus failing with `pybind11_getbuffer(): Internal error`. */
+
+    py::class_<Color3, Vector3> color3_{root, "Color3", "Color in linear RGB color space"};
     everyVector(color3_);
     color(color3_);
     color3(color3_);
 
-    py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space", py::buffer_protocol{}};
+    py::class_<Color4, Vector4> color4_{root, "Color4", "Color in linear RGBA color space"};
     everyVector(color4_);
     color(color4_);
     color4(color4_);

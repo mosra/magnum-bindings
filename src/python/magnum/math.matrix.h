@@ -27,11 +27,13 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <Corrade/Containers/ScopeGuard.h>
 #include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
 
 #include "corrade/PybindExtras.h"
+#include "corrade/PyBuffer.h"
 
 #include "magnum/math.h"
 
@@ -44,10 +46,10 @@ template<class T> struct VectorTraits<2, T> { typedef Math::Vector2<T> Type; };
 template<class T> struct VectorTraits<3, T> { typedef Math::Vector3<T> Type; };
 template<class T> struct VectorTraits<4, T> { typedef Math::Vector4<T> Type; };
 
-template<class U, class T> void initFromBuffer(T& out, const py::buffer_info& info) {
+template<class U, class T> void initFromBuffer(T& out, const Py_buffer& buffer) {
     for(std::size_t i = 0; i != T::Cols; ++i)
         for(std::size_t j = 0; j != T::Rows; ++j)
-            out[i][j] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(info.ptr) + i*info.strides[1] + j*info.strides[0]));
+            out[i][j] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(buffer.buf) + i*buffer.strides[1] + j*buffer.strides[0]));
 }
 
 /* Called for both Matrix3x3 and Matrix3 in order to return a proper type /
@@ -67,24 +69,30 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
         .def(py::init(), "Default constructor")
         .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
 
-        /* Buffer protocol, needed in order to make numpy treat the matric
-           correctly as column-major. Has to be defined *before* the from-tuple
-           constructor so it gets precedence for types that implement the
-           buffer protocol. */
-        .def(py::init([](py::buffer buffer) {
-            py::buffer_info info = buffer.request();
+        /* Buffer protocol, needed in order to properly detect row-major
+           layouts. Has to be defined *before* the from-tuple constructor so it
+           gets precedence for types that implement the buffer protocol. */
+        .def(py::init([](py::buffer other) {
+            Py_buffer buffer{};
+            if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_FORMAT|PyBUF_STRIDES) != 0)
+                throw py::error_already_set{};
 
-            if(info.ndim != 2)
-                throw py::buffer_error{Utility::formatString("expected 2 dimensions but got {}", info.ndim)};
+            Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            if(info.shape[0] != T::Rows ||info.shape[1] != T::Cols)
-                throw py::buffer_error{Utility::formatString("expected {}x{} elements but got {}x{}", T::Cols, T::Rows, info.shape[1], info.shape[0])};
+            if(buffer.ndim != 2)
+                throw py::buffer_error{Utility::formatString("expected 2 dimensions but got {}", buffer.ndim)};
+
+            if(buffer.shape[0] != T::Rows || buffer.shape[1] != T::Cols)
+                throw py::buffer_error{Utility::formatString("expected {}x{} elements but got {}x{}", T::Cols, T::Rows, buffer.shape[1], buffer.shape[0])};
 
             T out{Math::NoInit};
 
-            if(info.format == "f") initFromBuffer<Float>(out, info);
-            else if(info.format == "d") initFromBuffer<Double>(out, info);
-            else throw py::buffer_error{Utility::formatString("expected format f or d but got {}", info.format)};
+            /* Expecting just an one-letter format */
+            if(buffer.format[0] == 'f' && !buffer.format[1])
+                initFromBuffer<Float>(out, buffer);
+            else if(buffer.format[0] == 'd' && !buffer.format[1])
+                initFromBuffer<Double>(out, buffer);
+            else throw py::buffer_error{Utility::formatString("expected format f or d but got {}", buffer.format)};
 
             return out;
         }), "Construct from a buffer")
@@ -113,6 +121,31 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
         }, "Values on diagonal");
 }
 
+template<class T> bool rectangularMatrixBufferProtocol(T& self, Py_buffer& buffer, int flags) {
+    /* I hate the const_casts but I assume this is to make editing easier, NOT
+       to make it possible for users to stomp on these values. */
+    buffer.ndim = 2;
+    buffer.itemsize = sizeof(typename T::Type);
+    buffer.len = sizeof(T);
+    buffer.buf = self.data();
+    buffer.readonly = false;
+    if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
+        buffer.format = const_cast<char*>(FormatStrings[formatIndex<typename T::Type>()]);
+    if(flags != PyBUF_SIMPLE) {
+        /* Reusing shape definitions from matrices because I don't want to
+           create another useless array for that and reinterpret_cast on the
+           buffer.internal is UGLY. It's flipped from column-major to
+           row-major, so adjusting the row instead. */
+        buffer.shape = const_cast<Py_ssize_t*>(MatrixShapes[matrixShapeStrideIndex<T::Cols, T::Rows>()]);
+        CORRADE_INTERNAL_ASSERT(buffer.shape[0] == T::Rows);
+        CORRADE_INTERNAL_ASSERT(buffer.shape[1] == T::Cols);
+        if((flags & PyBUF_STRIDES) == PyBUF_STRIDES)
+            buffer.strides = const_cast<Py_ssize_t*>(matrixStridesFor<typename T::Type>(matrixShapeStrideIndex<T::Cols, T::Rows>()));
+    }
+
+    return true;
+}
+
 template<class T> void rectangularMatrix(py::class_<T>& c) {
     /*
         Missing APIs:
@@ -128,21 +161,6 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
     */
 
     c
-        /* Buffer protocol, needed in order to make numpy treat the matrix
-           correctly as column-major. The constructor is defined in
-           everyRectangularMatrix(). */
-        .def_buffer([](const T& self) -> py::buffer_info {
-            // TODO: ownership?
-            return py::buffer_info{
-                const_cast<typename T::Type*>(self.data()),
-                sizeof(typename T::Type),
-                py::format_descriptor<typename T::Type>::format(),
-                2,
-                {T::Rows, T::Cols},
-                {sizeof(typename T::Type), sizeof(typename T::Type)*T::Rows}
-            };
-        })
-
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")
         .def(py::self != py::self, "Non-equality comparison")
@@ -169,6 +187,11 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         }, "Value at given col/row")
 
         .def("__repr__", repr<T>, "Object representation");
+
+    /* Buffer protocol, needed in order to make numpy treat the matrix
+       correctly as column-major. The constructor is defined in
+       everyRectangularMatrix(). */
+    corrade::enableBetterBufferProtocol<T, rectangularMatrixBufferProtocol>(c);
 
     /* Matrix column count */
     char lenDocstring[] = "Matrix column count. Returns _.";

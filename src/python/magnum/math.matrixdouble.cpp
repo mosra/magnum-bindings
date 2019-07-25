@@ -40,8 +40,13 @@ void mathMatrixDouble(py::module& root) {
     py::class_<Matrix4x3d> matrix4x3d{root, "Matrix4x3d", "4x3 double matrix", py::buffer_protocol{}};
     py::class_<Matrix4x4d> matrix4x4d{root, "Matrix4x4d", "4x4 double matrix", py::buffer_protocol{}};
 
-    py::class_<Matrix3d, Matrix3x3d> matrix3d{root, "Matrix3d", "2D double transformation matrix", py::buffer_protocol{}};
-    py::class_<Matrix4d, Matrix4x4d> matrix4d{root, "Matrix4d", "3D double transformation matrix", py::buffer_protocol{}};
+    /* The subclasses don't have buffer protocol enabled, as that's already
+       done by the base classes. Moreover, just adding py::buffer_protocol{}
+       would cause it to not find the buffer functions as we don't add them
+       anywhere, thus failing with `pybind11_getbuffer(): Internal error`. */
+
+    py::class_<Matrix3d, Matrix3x3d> matrix3d{root, "Matrix3d", "2D double transformation matrix"};
+    py::class_<Matrix4d, Matrix4x4d> matrix4d{root, "Matrix4d", "3D double transformation matrix"};
 
     matrices<Double>(
         matrix2x2d, matrix2x3d, matrix2x4d,

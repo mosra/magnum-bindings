@@ -26,53 +26,55 @@
 */
 
 #include <pybind11/operators.h>
+#include <Corrade/Containers/ScopeGuard.h>
 #include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
 
 #include "corrade/PybindExtras.h"
+#include "corrade/PyBuffer.h"
 
 #include "magnum/math.h"
 
 namespace magnum {
 
-template<class> bool isTypeCompatible(const std::string&);
-template<> inline bool isTypeCompatible<Float>(const std::string& format) {
-    return format == "f" || format == "d";
+template<class> constexpr bool isTypeCompatible(char);
+template<> constexpr bool isTypeCompatible<Float>(char format) {
+    return format == 'f' || format == 'd';
 }
-template<> inline bool isTypeCompatible<Double>(const std::string& format) {
-    return format == "f" || format == "d";
+template<> constexpr bool isTypeCompatible<Double>(char format) {
+    return format == 'f' || format == 'd';
 }
-template<> inline bool isTypeCompatible<Int>(const std::string& format) {
-    return format == "i" || format == "l";
+template<> constexpr bool isTypeCompatible<Int>(char format) {
+    return format == 'i' || format == 'l';
 }
-template<> inline bool isTypeCompatible<UnsignedInt>(const std::string& format) {
-    return format == "I" || format == "L";
+template<> constexpr bool isTypeCompatible<UnsignedInt>(char format) {
+    return format == 'I' || format == 'L';
 }
 
-template<class U, class T> void initFromBuffer(T& out, const py::buffer_info& info) {
+template<class U, class T> void initFromBuffer(T& out, const Py_buffer& buffer) {
     for(std::size_t i = 0; i != T::Size; ++i)
-        out[i] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(info.ptr) + i*info.strides[0]));
+        out[i] = static_cast<typename T::Type>(*reinterpret_cast<const U*>(static_cast<const char*>(buffer.buf) + i*buffer.strides[0]));
 }
 
 /* Floating-point init */
-template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::true_type, std::true_type) {
-    if(info.format == "f") initFromBuffer<Float>(out, info);
-    else if(info.format == "d") initFromBuffer<Double>(out, info);
+template<class T> void initFromBuffer(typename std::enable_if<std::is_floating_point<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
+    if(buffer.format[0] == 'f') initFromBuffer<Float>(out, buffer);
+    else if(buffer.format[0] == 'd') initFromBuffer<Double>(out, buffer);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-/* Signed integeral init */
-template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::false_type, std::true_type) {
-    if(info.format == "i") initFromBuffer<Int>(out, info);
-    else if(info.format == "l") initFromBuffer<Long>(out, info);
+/* Signed integral init */
+template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_signed<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
+    if(buffer.format[0] == 'i') initFromBuffer<Int>(out, buffer);
+    else if(buffer.format[0] == 'l') initFromBuffer<Long>(out, buffer);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-/* Unsigned integeral init */
-template<class T> void initFromBuffer(T& out, const py::buffer_info& info, std::false_type, std::false_type) {
-    if(info.format == "I") initFromBuffer<UnsignedInt>(out, info);
-    else if(info.format == "L") initFromBuffer<UnsignedLong>(out, info);
+/* Unsigned integral init */
+template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_unsigned<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
+    if(buffer.format[0] == 'I') initFromBuffer<UnsignedInt>(out, buffer);
+    else if(buffer.format[0] == 'L') initFromBuffer<UnsignedLong>(out, buffer);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -90,25 +92,6 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
             return T{Math::ZeroInit};
         }, "Construct a zero vector")
         .def(py::init(), "Default constructor")
-
-        /* Ideally, only the constructor (in vectorBuffer()) would be needed
-           (and thus also no py::buffer_protocol() specified for the class),
-           but conversion of vectors to lists is extremely slow due to pybind
-           exceptions being somehow extra heavy compared to native python ones,
-           so in order to have acceptable performance we need the buffer
-           protocol on the other side as well. See test/benchmark_math.py for
-           more information. */
-        .def_buffer([](const T& self) -> py::buffer_info {
-            // TODO: ownership?
-            return py::buffer_info{
-                const_cast<typename T::Type*>(self.data()),
-                sizeof(typename T::Type),
-                py::format_descriptor<typename T::Type>::format(),
-                1,
-                {T::Size},
-                {sizeof(typename T::Type)}
-            };
-        })
 
         /* Operators */
         .def(-py::self, "Negated vector")
@@ -135,22 +118,51 @@ template<class T, class ...Args> void vectorBuffer(py::class_<T, Args...>& c) {
         /* Buffer protocol. If not present, implicit conversion from numpy
            arrays of non-default types somehow doesn't work. There's also the
            other part in vectorBuffer(). */
-        .def(py::init([](py::buffer buffer) {
-            py::buffer_info info = buffer.request();
+        .def(py::init([](py::buffer other) {
+            Py_buffer buffer{};
+            if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_FORMAT|PyBUF_STRIDES) != 0)
+                throw py::error_already_set{};
 
-            if(info.ndim != 1)
-                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", info.ndim)};
+            Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            if(info.shape[0] != T::Size)
-                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, info.shape[0])};
+            if(buffer.ndim != 1)
+                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", buffer.ndim)};
 
-            if(!isTypeCompatible<typename T::Type>(info.format))
-                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", info.format, py::format_descriptor<typename T::Type>::format())};
+            if(buffer.shape[0] != T::Size)
+                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, buffer.shape[0])};
+
+            /* Expecting just an one-letter format */
+            if(!buffer.format[0] || buffer.format[1] || !isTypeCompatible<typename T::Type>(buffer.format[0]))
+                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", buffer.format, FormatStrings[formatIndex<typename T::Type>()])};
 
             T out{Math::NoInit};
-            initFromBuffer(out, info, std::is_floating_point<typename T::Type>{}, std::is_signed<typename T::Type>{});
+            initFromBuffer<T>(out, buffer);
             return out;
         }), "Construct from a buffer");
+}
+
+template<class T> bool vectorBufferProtocol(T& self, Py_buffer& buffer, int flags) {
+    /* I hate the const_casts but I assume this is to make editing easier, NOT
+       to make it possible for users to stomp on these values. */
+    buffer.ndim = 1;
+    buffer.itemsize = sizeof(typename T::Type);
+    buffer.len = sizeof(T);
+    buffer.buf = self.data();
+    buffer.readonly = false;
+    if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
+        buffer.format = const_cast<char*>(FormatStrings[formatIndex<typename T::Type>()]);
+    if(flags != PyBUF_SIMPLE) {
+        /* Reusing shape definitions from matrices because I don't want to
+           create another useless array for that and reinterpret_cast on the
+           buffer.internal is UGLY. It's flipped from column-major to
+           row-major, so adjusting the row instead. */
+        buffer.shape = const_cast<Py_ssize_t*>(MatrixShapes[matrixShapeStrideIndex<2, T::Size>()]);
+        CORRADE_INTERNAL_ASSERT(buffer.shape[0] == T::Size);
+        if((flags & PyBUF_STRIDES) == PyBUF_STRIDES)
+            buffer.strides = &buffer.itemsize;
+    }
+
+    return true;
 }
 
 /* Things common for vectors of all sizes and types */
@@ -202,6 +214,15 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def("minmax", &T::minmax, "Minimal and maximal value in the vector")
 
         .def("__repr__", repr<T>, "Object representation");
+
+    /* Ideally, only the constructor (in vectorBuffer()) would be needed
+       (and thus also no py::buffer_protocol() specified for the class),
+       but conversion of vectors to lists is extremely slow due to pybind
+       exceptions being somehow extra heavy compared to native python ones,
+       so in order to have acceptable performance we need the buffer
+       protocol on the other side as well. See test/benchmark_math.py for more
+       information. */
+    corrade::enableBetterBufferProtocol<T, vectorBufferProtocol>(c);
 
     /* Vector length */
     char lenDocstring[] = "Vector size. Returns _.";
