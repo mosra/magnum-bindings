@@ -511,8 +511,10 @@ void containers(py::module& m) {
     stridedArrayView1D(mutableStridedArrayView1D_);
     stridedArrayView(mutableStridedArrayView2D_);
     stridedArrayViewND(mutableStridedArrayView2D_);
+    stridedArrayView2D(mutableStridedArrayView2D_);
     stridedArrayView(mutableStridedArrayView3D_);
     stridedArrayViewND(mutableStridedArrayView3D_);
+    stridedArrayView3D(mutableStridedArrayView3D_);
     mutableStridedArrayView1D(mutableStridedArrayView1D_);
     mutableStridedArrayView2D(mutableStridedArrayView2D_);
     mutableStridedArrayView3D(mutableStridedArrayView3D_);
