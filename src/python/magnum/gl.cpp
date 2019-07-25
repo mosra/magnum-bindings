@@ -390,6 +390,7 @@ void gl(py::module& m) {
 
             /* Keep a reference to the buffer to avoid it being deleted before
                the mesh */
+            /** @todo isn't there an API for this? */
             self.buffers.emplace_back(py::detail::get_object_handle(&buffer, py::detail::get_type_info(typeid(GL::Buffer))), true);
         }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
         .def("draw", [](PyMesh& self, GL::AbstractShaderProgram& shader) {
