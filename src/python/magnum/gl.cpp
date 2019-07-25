@@ -33,6 +33,7 @@
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Renderer.h>
+#include <Magnum/Math/Color.h>
 
 #include "corrade/PyArrayView.h"
 #include "corrade/EnumOperators.h"
@@ -298,7 +299,13 @@ void gl(py::module& m) {
         renderer
             .def_static("enable", GL::Renderer::enable, "Enable a feature")
             .def_static("disable", GL::Renderer::disable, "Disable a feature")
-            .def_static("set_feature", GL::Renderer::setFeature, "Enable or disable a feature");
+            .def_static("set_feature", GL::Renderer::setFeature, "Enable or disable a feature")
+
+            .def_property_static("clear_color", nullptr,
+                [](py::object, const Color4& color) {
+                    /** @todo why can't it be just a single param? */
+                    GL::Renderer::setClearColor(color);
+                }, "Set clear color");
     }
 }
 
