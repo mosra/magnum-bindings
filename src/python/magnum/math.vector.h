@@ -31,7 +31,6 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
 
-#include "corrade/PybindExtras.h"
 #include "corrade/PyBuffer.h"
 
 #include "magnum/math.h"

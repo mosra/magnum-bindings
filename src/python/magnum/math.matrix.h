@@ -32,7 +32,6 @@
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
 
-#include "corrade/PybindExtras.h"
 #include "corrade/PyBuffer.h"
 
 #include "magnum/math.h"

@@ -31,7 +31,6 @@
 
 #include "corrade/bootstrap.h"
 #include "corrade/PyArrayView.h"
-#include "corrade/PybindExtras.h"
 #include "corrade/PyBuffer.h"
 
 namespace corrade {
