@@ -647,11 +647,11 @@ template<class T> void matrices(
         .def_static("reflection", &Math::Matrix4<T>::reflection,
             "3D reflection matrix")
         .def_static("shearing_xy", &Math::Matrix4<T>::shearingXY,
-            "3D shearing matrix along the XY plane", py::arg("amountx"), py::arg("amounty"))
+            "3D shearing matrix along the XY plane", py::arg("amount_x"), py::arg("amount_y"))
         .def_static("shearing_xz", &Math::Matrix4<T>::shearingXZ,
-            "3D shearning matrix along the XZ plane", py::arg("amountx"), py::arg("amountz"))
+            "3D shearning matrix along the XZ plane", py::arg("amount_x"), py::arg("amount_z"))
         .def_static("shearing_yz", &Math::Matrix4<T>::shearingYZ,
-            "3D shearing matrix along the YZ plane", py::arg("amounty"), py::arg("amountz"))
+            "3D shearing matrix along the YZ plane", py::arg("amount_y"), py::arg("amount_z"))
         .def_static("orthographic_projection", &Math::Matrix4<T>::orthographicProjection,
             "3D orthographic projection matrix", py::arg("size"), py::arg("near"), py::arg("far"))
         .def_static("perspective_projection",
