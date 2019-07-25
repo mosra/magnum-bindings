@@ -241,6 +241,12 @@ class Vector(unittest.TestCase):
         b.xy += (1, -1)
         self.assertEqual(b, Vector4i(4, 3, 15, 6))
 
+        # OOB access should fire, as that's needed for iteration
+        with self.assertRaises(IndexError):
+            a[5]
+        with self.assertRaises(IndexError):
+            a[3] = 1.1
+
     def test_iterate(self):
         a = [i for i in Vector4(1.0, 3.25, 3.5, -1.125)]
         # assertAlmostEqual doesn't work on lists so i'm using values directly
@@ -559,6 +565,16 @@ class Matrix(unittest.TestCase):
 
         a[0, 1] = 2.5
         self.assertEqual(a[0], Vector3(1.0, 2.5, 3.0)) # yes, 2.5
+
+        # OOB access should fire, as that's needed for iteration
+        with self.assertRaises(IndexError):
+            a[2]
+        with self.assertRaises(IndexError):
+            a[1, 3]
+        with self.assertRaises(IndexError):
+            a[2] = Vector3()
+        with self.assertRaises(IndexError):
+            a[2, 1] = 0.5
 
     @unittest.expectedFailure
     def test_set_two_brackets(self):

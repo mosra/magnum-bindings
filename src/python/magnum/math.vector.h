@@ -191,13 +191,22 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def(py::self >= py::self, "Component-wise greater than or equal comparison")
 
         /* Set / get. Need to throw IndexError in order to allow iteration:
-           https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+           https://docs.python.org/3/reference/datamodel.html#object.__getitem__
+           Using error_already_set is slightly faster than throwing index_error
+           directly, but still much slower than not throwing at all. Waiting
+           for https://github.com/pybind/pybind11/pull/1853 to get merged. */
         .def("__setitem__", [](T& self, std::size_t i, typename T::Type value) {
-            if(i >= T::Size) throw pybind11::index_error{};
+            if(i >= T::Size) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw pybind11::error_already_set{};
+            }
             self[i] = value;
         }, "Set a value at given position")
         .def("__getitem__", [](const T& self, std::size_t i) {
-            if(i >= T::Size) throw pybind11::index_error{};
+            if(i >= T::Size) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw pybind11::error_already_set{};
+            }
             return self[i];
         }, "Value at given position")
 
