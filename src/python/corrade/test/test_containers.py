@@ -87,13 +87,6 @@ class ArrayView(unittest.TestCase):
         self.assertIs(b.obj, a)
         self.assertEqual(len(b), 3*4)
 
-    @unittest.skip("there doesn't seem to be a way to make memoryview give back N-dimensional array that can't be represented as linear memory")
-    def test_init_buffer_unexpected_dimensions(self):
-        a = memoryview(b'123456').cast('b', shape=[2, 3])
-        self.assertEqual(bytes(a), b'123456')
-        with self.assertRaisesRegex(BufferError, "but what"):
-            b = containers.ArrayView(a)
-
     def test_init_buffer_unexpected_stride(self):
         a = memoryview(b'hello')[::2]
         self.assertEqual(bytes(a), b'hlo')

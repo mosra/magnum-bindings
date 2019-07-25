@@ -114,8 +114,9 @@ template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
 
             Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            if(buffer.ndim != 1)
-                throw py::buffer_error{Utility::formatString("expected one dimension but got {}", buffer.ndim)};
+            /* I would test for dimensions here but np.array() sometimes gives
+               0 for an one-dimensional array so ¯\_(ツ)_/¯ */
+
             if(buffer.strides && buffer.strides[0] != buffer.itemsize)
                 throw py::buffer_error{Utility::formatString("expected stride of {} but got {}", buffer.itemsize, buffer.strides[0])};
 
