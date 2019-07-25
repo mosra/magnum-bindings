@@ -1,3 +1,5 @@
+#ifndef magnum_PyGL_h
+#define magnum_PyGL_h
 /*
     This file is part of Magnum.
 
@@ -40,3 +42,5 @@ struct PyMesh: GL::Mesh {
 };
 
 }
+
+#endif

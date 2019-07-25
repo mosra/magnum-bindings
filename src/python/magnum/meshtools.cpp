@@ -30,7 +30,7 @@
 #include <Magnum/Trade/MeshData3D.h>
 
 #include "magnum/bootstrap.h"
-#include "magnum/PyMesh.h"
+#include "magnum/PyGL.h"
 
 namespace magnum {
 

@@ -39,7 +39,7 @@
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 #include "magnum/NonDestructible.h"
-#include "magnum/PyMesh.h"
+#include "magnum/PyGL.h"
 
 namespace magnum {
 
