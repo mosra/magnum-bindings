@@ -152,7 +152,6 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         from(T*)
         fromVector() (would need Vector6,...Vector16 for that)
         Type
-        construction from different types
         construction by slicing or expanding differently sized matrices
         row() / setRow() (function? that's ugly. property? not sure how)
         component-wise operations (would need BoolVector6 ... BoolVector16)

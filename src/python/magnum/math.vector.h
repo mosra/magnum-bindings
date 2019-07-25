@@ -171,7 +171,6 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
 
         from(T*)
         Type
-        construction from different types
         VectorNi * VectorN and variants (5)
     */
 
