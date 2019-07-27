@@ -33,8 +33,8 @@ class ArrayView(unittest.TestCase):
     def test_init(self):
         a = containers.ArrayView()
         b = containers.MutableArrayView()
-        self.assertIs(a.obj, None)
-        self.assertIs(b.obj, None)
+        self.assertIs(a.owner, None)
+        self.assertIs(b.owner, None)
         self.assertEqual(len(a), 0)
         self.assertEqual(len(b), 0)
         self.assertEqual(bytes(a), b'')
@@ -45,7 +45,7 @@ class ArrayView(unittest.TestCase):
         a_refcount = sys.getrefcount(a)
 
         b = containers.ArrayView(a)
-        self.assertIs(b.obj, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(len(b), 5)
         self.assertEqual(bytes(b), b'hello')
         self.assertEqual(b[2], 'l')
@@ -58,11 +58,11 @@ class ArrayView(unittest.TestCase):
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
-        self.assertTrue(sys.getrefcount(b.obj), a_refcount)
+        self.assertTrue(sys.getrefcount(b.owner), a_refcount)
         self.assertEqual(b[2], 'l')
 
         # Now, if we delete b, a should not be referenced by anything anymore
-        a = b.obj
+        a = b.owner
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
@@ -72,7 +72,7 @@ class ArrayView(unittest.TestCase):
         b = containers.ArrayView(v)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertIs(b.obj, v)
+        self.assertIs(b.owner, v)
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
@@ -84,7 +84,7 @@ class ArrayView(unittest.TestCase):
     def test_init_array(self):
         a = array.array('f', [1.0, 4.5, 7.9])
         b = containers.ArrayView(a)
-        self.assertIs(b.obj, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(len(b), 3*4)
 
     def test_init_buffer_unexpected_stride(self):
@@ -209,8 +209,8 @@ class StridedArrayView1D(unittest.TestCase):
     def test_init(self):
         a = containers.StridedArrayView1D()
         b = containers.MutableStridedArrayView1D()
-        self.assertIs(a.obj, None)
-        self.assertIs(b.obj, None)
+        self.assertIs(a.owner, None)
+        self.assertIs(b.owner, None)
         self.assertEqual(len(a), 0)
         self.assertEqual(len(b), 0)
         self.assertEqual(bytes(a), b'')
@@ -227,7 +227,7 @@ class StridedArrayView1D(unittest.TestCase):
         a_refcount = sys.getrefcount(a)
 
         b = containers.StridedArrayView1D(a)
-        self.assertIs(b.obj, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(len(b), 5)
         self.assertEqual(bytes(b), b'hello')
         self.assertEqual(b.size, (5, ))
@@ -242,11 +242,11 @@ class StridedArrayView1D(unittest.TestCase):
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
-        self.assertTrue(sys.getrefcount(b.obj), a_refcount)
+        self.assertTrue(sys.getrefcount(b.owner), a_refcount)
         self.assertEqual(b[2], 'l')
 
         # Now, if we delete b, a should not be referenced by anything anymore
-        a = b.obj
+        a = b.owner
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
@@ -256,7 +256,7 @@ class StridedArrayView1D(unittest.TestCase):
         b = containers.StridedArrayView1D(v)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertIs(b.obj, v)
+        self.assertIs(b.owner, v)
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
@@ -377,8 +377,8 @@ class StridedArrayView2D(unittest.TestCase):
     def test_init(self):
         a = containers.StridedArrayView2D()
         b = containers.MutableStridedArrayView2D()
-        self.assertIs(a.obj, None)
-        self.assertIs(b.obj, None)
+        self.assertIs(a.owner, None)
+        self.assertIs(b.owner, None)
         self.assertEqual(len(a), 0)
         self.assertEqual(len(b), 0)
         self.assertEqual(bytes(a), b'')
@@ -417,11 +417,11 @@ class StridedArrayView2D(unittest.TestCase):
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
-        self.assertTrue(sys.getrefcount(b.obj), a_refcount)
+        self.assertTrue(sys.getrefcount(b.owner), a_refcount)
         self.assertEqual(b[1][2], '6')
 
         # Now, if we delete b, a should not be referenced by anything anymore
-        a = b.obj
+        a = b.owner
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
@@ -473,7 +473,7 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.obj, a)
+        self.assertEqual(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # When slicing, b's refcount should not change but a's refcount should
@@ -501,7 +501,7 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.obj, a)
+        self.assertEqual(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # When slicing, b's refcount should not change but a's refcount should
@@ -624,7 +624,7 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.obj, a)
+        self.assertEqual(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         c = memoryview(b)

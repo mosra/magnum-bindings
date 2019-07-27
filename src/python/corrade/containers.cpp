@@ -131,7 +131,7 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
 
         /* Length and memory owning object */
         .def("__len__", &Containers::ArrayView<T>::size, "View size")
-        .def_property_readonly("obj", [](const Containers::ArrayView<T>& self) {
+        .def_property_readonly("owner", [](const Containers::ArrayView<T>& self) {
             return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
         }, "Memory owner object")
 
@@ -352,7 +352,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
             return stride<dimensions>(self.stride());
         }, "View stride in each dimension")
         .def_property_readonly("dimensions", [](const Containers::StridedArrayView<dimensions, T>&) { return dimensions; }, "Dimension count")
-        .def_property_readonly("obj", [](const Containers::StridedArrayView<dimensions, T>& self) {
+        .def_property_readonly("owner", [](const Containers::StridedArrayView<dimensions, T>& self) {
             return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
         }, "Memory owner object")
 

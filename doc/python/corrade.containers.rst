@@ -56,9 +56,9 @@
 
     .. code:: pycon
 
-        >>> b.obj is a
+        >>> b.owner is a
         True
-        >>> b[1:4][:-1].obj is a
+        >>> b[1:4][:-1].owner is a
         True
 
     `Comparison to Python's memoryview`_
