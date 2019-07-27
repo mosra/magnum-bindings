@@ -126,6 +126,6 @@ script:
 after_success:
 # Keep in sync with package/archlinux/PKGBUILD-coverage, please
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --directory . --capture --output-file coverage.info > /dev/null; fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" --output-file coverage.info; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" "*/src/Corrade/*" "*/src/Magnum/*" --output-file coverage.info; fi
 
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then cd src/python && coverage combine && codecov -X gcov; fi
