@@ -23,14 +23,8 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
-
-add_subdirectory(Corrade)
-add_subdirectory(Magnum)
-
 if(WITH_PYTHON)
-    add_subdirectory(python)
+    add_custom_target(CorradePython SOURCES Python.h)
+    set_target_properties(CorradePython PROPERTIES FOLDER "Corrade/Python")
+    install(FILES Python.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 endif()
-
-# Magnum Bindings include dir for superprojects
-set(MAGNUMBINDINGS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" FORCE)
