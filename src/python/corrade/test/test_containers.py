@@ -192,7 +192,7 @@ class ArrayView(unittest.TestCase):
         # its internals for size. Also returning a reference to the underlying
         # buffer would mean the underlying buffer's releasebuffer function gets
         # called instead of ours which is *not* wanted.
-        self.assertEqual(c.obj, b)
+        self.assertIs(c.obj, b)
         self.assertEqual(sys.getrefcount(b), b_refcount + 1)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
@@ -292,6 +292,7 @@ class StridedArrayView1D(unittest.TestCase):
 
         b = containers.StridedArrayView1D(a)
         b_refcount = sys.getrefcount(b)
+        self.assertIs(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # When slicing, b's refcount should not change but a's refcount should
@@ -299,6 +300,7 @@ class StridedArrayView1D(unittest.TestCase):
         c = b[4:-4]
         self.assertEqual(c.size, (6,))
         self.assertEqual(c.stride, (1,))
+        self.assertIs(c.owner, a)
         self.assertIsInstance(c, containers.StridedArrayView1D)
         self.assertEqual(bytes(c), b'd is h')
         self.assertEqual(sys.getrefcount(b), b_refcount)
@@ -360,7 +362,7 @@ class StridedArrayView1D(unittest.TestCase):
         # Also returning a reference to the underlying buffer would mean the
         # underlying buffer's releasebuffer function gets called instead of
         # ours which is *not* wanted.
-        self.assertEqual(c.obj, b)
+        self.assertIs(c.obj, b)
         self.assertEqual(sys.getrefcount(b), b_refcount + 1)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
@@ -473,7 +475,7 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.owner, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # When slicing, b's refcount should not change but a's refcount should
@@ -501,7 +503,7 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.owner, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # When slicing, b's refcount should not change but a's refcount should
@@ -624,14 +626,14 @@ class StridedArrayView2D(unittest.TestCase):
         b_refcount = sys.getrefcount(b)
         # memoryview's buffer protocol returns itself, not the underlying
         # bytes, as it manages the Py_buffer instance. So this is expected.
-        self.assertEqual(b.owner, a)
+        self.assertIs(b.owner, a)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         c = memoryview(b)
         self.assertEqual(c.ndim, 2)
         self.assertEqual(c.shape, (3, 8))
         self.assertEqual(c.strides, (8, 1))
-        self.assertEqual(c.obj, a)
+        self.assertIs(c.obj, b)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
         self.assertEqual(sys.getrefcount(b), b_refcount + 1)
 
