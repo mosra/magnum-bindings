@@ -24,17 +24,7 @@
 #
 
 if(WITH_PYTHON)
-    add_custom_target(MagnumPython SOURCES Python.h)
-    set_target_properties(MagnumPython PROPERTIES FOLDER "Magnum/Python")
-    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
-endif()
-
-find_package(Magnum COMPONENTS GL SceneGraph)
-
-if(Magnum_GL_FOUND)
-    add_subdirectory(GL)
-endif()
-
-if(Magnum_SceneGraph_FOUND)
-    add_subdirectory(SceneGraph)
+    add_custom_target(MagnumGLPython SOURCES Python.h)
+    set_target_properties(MagnumGLPython PROPERTIES FOLDER "Magnum/Python")
+    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/GL)
 endif()

@@ -1,5 +1,5 @@
-#ifndef magnum_PyGL_h
-#define magnum_PyGL_h
+#ifndef Magnum_GL_Python_h
+#define Magnum_GL_Python_h
 /*
     This file is part of Magnum.
 
@@ -25,29 +25,37 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <pybind11/pybind11.h>
+#include <memory> /* :( */
 #include <vector>
-#include <Magnum/GL/Mesh.h>
-#include <Magnum/GL/Framebuffer.h>
+#include <pybind11/pybind11.h>
+#include <Magnum/GL/GL.h>
 
-#include "magnum/bootstrap.h"
+#include "Magnum/Python.h"
 
-namespace magnum {
+namespace Magnum { namespace GL {
 
-struct PyMesh: GL::Mesh {
-    explicit PyMesh(GL::MeshPrimitive primitive): GL::Mesh(primitive) {}
-    explicit PyMesh(MeshPrimitive primitive): GL::Mesh(primitive) {}
-    explicit PyMesh(GL::Mesh&& mesh): GL::Mesh(std::move(mesh)) {}
+/* Stores additional stuff needed for proper refcounting of buffers owned by
+   a mesh. For some reason it *has to be* templated, otherwise
+   PYBIND11_DECLARE_HOLDER_TYPE doesn't work. Ugh. */
+template<class T> struct PyMeshHolder: std::unique_ptr<T> {
+    static_assert(std::is_same<T, GL::Mesh>::value, "mesh holder has to hold a mesh");
 
-    std::vector<py::object> buffers;
+    explicit PyMeshHolder(T* object): std::unique_ptr<T>{object} {}
+
+    std::vector<pybind11::object> buffers;
 };
 
-struct PyFramebuffer: GL::Framebuffer {
-    explicit PyFramebuffer(const Range2Di& viewport): GL::Framebuffer{viewport} {}
+template<class T> struct PyFramebufferHolder: std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>> {
+    static_assert(std::is_same<T, GL::Framebuffer>::value, "framebuffer holder has to hold a framebuffer");
 
-    std::vector<py::object> attached;
+    explicit PyFramebufferHolder(T* object): std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>>{object} {}
+
+    std::vector<pybind11::object> attachments;
 };
 
-}
+}}
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::GL::PyMeshHolder<T>)
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::GL::PyFramebufferHolder<T>)
 
 #endif

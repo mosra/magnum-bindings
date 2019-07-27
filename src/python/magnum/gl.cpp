@@ -41,10 +41,23 @@
 
 #include "Corrade/Python.h"
 #include "Magnum/Python.h"
+#include "Magnum/GL/Python.h"
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
-#include "magnum/PyGL.h"
+
+namespace magnum { namespace {
+
+/* Otherwise pybind yells that `generic_type: type "Framebuffer" has a
+   non-default holder type while its base "Magnum::GL::AbstractFramebuffer"
+   does not` -- we're using PyFramebufferHolder for it */
+template<class T> struct NonDefaultFramebufferHolder: std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>> {
+    explicit NonDefaultFramebufferHolder(T* object): std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>>{object} {}
+};
+
+}}
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, magnum::NonDefaultFramebufferHolder<T>)
 
 namespace magnum {
 
@@ -290,7 +303,7 @@ void gl(py::module& m) {
         .value("STENCIL", GL::FramebufferClear::Stencil);
     corrade::enumOperators(framebufferClear);
 
-    PyNonDestructibleClass<GL::AbstractFramebuffer> abstractFramebuffer{m,
+    py::class_<GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::AbstractFramebuffer>> abstractFramebuffer{m,
         "AbstractFramebuffer", "Base for default and named framebuffers"};
 
     abstractFramebuffer
@@ -301,10 +314,10 @@ void gl(py::module& m) {
         .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read),
             "Read block of pixels from the framebuffer to an image view");
 
-    PyNonDestructibleClass<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
+    py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
 
-    PyNonDestructibleClass<PyFramebuffer, GL::AbstractFramebuffer> framebuffer{m,
+    py::class_<GL::Framebuffer, GL::AbstractFramebuffer, GL::PyFramebufferHolder<GL::Framebuffer>> framebuffer{m,
         "Framebuffer", "Framebuffer"};
 
     py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
@@ -324,15 +337,17 @@ void gl(py::module& m) {
     framebuffer
         .def(py::init<const Range2Di&>(), "Constructor")
         .def_property_readonly("id", &GL::Framebuffer::id, "OpenGL framebuffer ID")
-        .def("attach_renderbuffer", [](PyFramebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
+        .def("attach_renderbuffer", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
             self.attachRenderbuffer(attachment, renderbuffer);
 
             /* Keep a reference to the renderbuffer to avoid it being deleted
                before the framebuffer */
-            self.attached.emplace_back(pyObjectFromInstance(renderbuffer));
+            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
         }, "Attach renderbuffer to given buffer")
 
-        .def_readonly("attached", &PyFramebuffer::attached, "Renderbuffer and texture objects referenced by the framebuffer");
+        .def_property_readonly("attached", [](GL::Framebuffer& self) {
+            return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
+        }, "Renderbuffer and texture objects referenced by the framebuffer");
 
     /* An equivalent to this would be
         m.attr("default_framebuffer") = &GL::defaultFramebuffer;
@@ -362,12 +377,12 @@ void gl(py::module& m) {
         #endif
         ;
 
-    py::class_<PyMesh>{m, "Mesh", "Mesh"}
+    py::class_<GL::Mesh, GL::PyMeshHolder<GL::Mesh>>{m, "Mesh", "Mesh"}
         .def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
         .def(py::init<MeshPrimitive>(), "Constructor")
         .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
         .def_property("primitive", &GL::Mesh::primitive,
-            [](PyMesh& self, py::object primitive) {
+            [](GL::Mesh& self, py::object primitive) {
                 if(py::isinstance<MeshPrimitive>(primitive))
                     self.setPrimitive(py::cast<MeshPrimitive>(primitive));
                 else if(py::isinstance<GL::MeshPrimitive>(primitive))
@@ -376,25 +391,27 @@ void gl(py::module& m) {
             }, "Primitive type")
         /* Have to use a lambda because it returns GL::Mesh which is not
            tracked (unlike PyMesh) */
-        .def_property("count", &GL::Mesh::count, [](PyMesh& self, UnsignedInt count) {
+        .def_property("count", &GL::Mesh::count, [](GL::Mesh& self, UnsignedInt count) {
             self.setCount(count);
         }, "Vertex/index count")
 
         /* Using lambdas to avoid method chaining getting into signatures */
 
-        .def("add_vertex_buffer", [](PyMesh& self, GL::Buffer& buffer, GLintptr offset, GLsizei stride, const GL::DynamicAttribute& attribute) {
+        .def("add_vertex_buffer", [](GL::Mesh& self, GL::Buffer& buffer, GLintptr offset, GLsizei stride, const GL::DynamicAttribute& attribute) {
             self.addVertexBuffer(buffer, offset, stride, attribute);
 
             /* Keep a reference to the buffer to avoid it being deleted before
                the mesh */
-            self.buffers.emplace_back(pyObjectFromInstance(buffer));
+            pyObjectHolderFor<GL::PyMeshHolder>(self).buffers.emplace_back(pyObjectFromInstance(buffer));
         }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
-        .def("draw", [](PyMesh& self, GL::AbstractShaderProgram& shader) {
+        .def("draw", [](GL::Mesh& self, GL::AbstractShaderProgram& shader) {
             self.draw(shader);
         }, "Draw the mesh")
         /** @todo more */
 
-        .def_readonly("buffers", &PyMesh::buffers, "Buffer objects referenced by the mesh");
+        .def_property_readonly("buffers", [](GL::Mesh& self) {
+            return pyObjectHolderFor<GL::PyMeshHolder>(self).buffers;
+        }, "Buffer objects referenced by the mesh");
 
     /* Renderer */
     {

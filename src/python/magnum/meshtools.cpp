@@ -30,7 +30,6 @@
 #include <Magnum/Trade/MeshData3D.h>
 
 #include "magnum/bootstrap.h"
-#include "magnum/PyGL.h"
 
 namespace magnum {
 
@@ -46,10 +45,10 @@ void meshtools(py::module& m) {
 
     m
         .def("compile", [](const Trade::MeshData2D& data) {
-            return PyMesh{MeshTools::compile(data)};
+            return MeshTools::compile(data);
         }, "Compile 2D mesh data")
         .def("compile", [](const Trade::MeshData3D& data) {
-            return PyMesh{MeshTools::compile(data)};
+            return MeshTools::compile(data);
         }, "Compile 3D mesh data");
 }
 
