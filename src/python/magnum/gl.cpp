@@ -345,7 +345,7 @@ void gl(py::module& m) {
             pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
         }, "Attach renderbuffer to given buffer")
 
-        .def_property_readonly("attached", [](GL::Framebuffer& self) {
+        .def_property_readonly("attachments", [](GL::Framebuffer& self) {
             return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
         }, "Renderbuffer and texture objects referenced by the framebuffer");
 

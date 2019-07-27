@@ -61,7 +61,7 @@ class Framebuffer(GLTestCase):
     def test(self):
         framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
         self.assertNotEqual(framebuffer.id, 0)
-        self.assertEqual(len(framebuffer.attached), 0)
+        self.assertEqual(len(framebuffer.attachments), 0)
 
     def test_attach(self):
         renderbuffer = gl.Renderbuffer()
@@ -70,8 +70,8 @@ class Framebuffer(GLTestCase):
 
         framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
         framebuffer.attach_renderbuffer(gl.Framebuffer.ColorAttachment(0), renderbuffer)
-        self.assertEqual(len(framebuffer.attached), 1)
-        self.assertIs(framebuffer.attached[0], renderbuffer)
+        self.assertEqual(len(framebuffer.attachments), 1)
+        self.assertIs(framebuffer.attachments[0], renderbuffer)
         self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount + 1)
 
     def test_read(self):
