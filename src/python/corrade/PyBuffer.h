@@ -29,6 +29,8 @@
 #include <Corrade/Containers/Pointer.h>
 #include <Corrade/Containers/StridedArrayView.h>
 
+#include "Corrade/Python.h"
+
 #include "bootstrap.h"
 
 namespace corrade {
@@ -45,17 +47,12 @@ template<class Class, bool(*getter)(Class&, Py_buffer&, int)> void enableBetterB
     CORRADE_INTERNAL_ASSERT(typeObject.as_buffer.bf_releasebuffer == pybind11::detail::pybind11_releasebuffer);
 
     typeObject.as_buffer.bf_getbuffer = [](PyObject *obj, Py_buffer *buffer, int flags) {
-        /* Stolen from pybind11::class_::def_buffer(). Not sure what exactly
-           it does, but I assume caster is implicitly convertible to Class& and
-           thus can magically access the actual Class from the PyObject. */
-        pybind11::detail::make_caster<Class> caster;
         CORRADE_INTERNAL_ASSERT(!PyErr_Occurred() && buffer);
-        CORRADE_INTERNAL_ASSERT(caster.load(obj, /*convert=*/false));
 
         /* Zero-initialize the output and ask the class to fill it. If that
            fails for some reason, give up */
         *buffer = Py_buffer{};
-        if(!getter(caster, *buffer, flags)) {
+        if(!getter(pyInstanceFromHandle<Class>(obj), *buffer, flags)) {
             CORRADE_INTERNAL_ASSERT(!buffer->obj);
             CORRADE_INTERNAL_ASSERT(PyErr_Occurred());
             return -1;

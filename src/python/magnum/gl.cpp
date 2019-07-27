@@ -39,6 +39,7 @@
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Math/Color.h>
 
+#include "Corrade/Python.h"
 #include "Magnum/Python.h"
 
 #include "corrade/PyArrayView.h"
@@ -331,8 +332,7 @@ void gl(py::module& m) {
 
             /* Keep a reference to the renderbuffer to avoid it being deleted
                before the framebuffer */
-            /** @todo isn't there an API for this? */
-            self.attached.emplace_back(py::detail::get_object_handle(&renderbuffer, py::detail::get_type_info(typeid(GL::Renderbuffer))), true);
+            self.attached.emplace_back(pyObjectFromInstance(renderbuffer));
         }, "Attach renderbuffer to given buffer")
 
         .def_readonly("attached", &PyFramebuffer::attached, "Renderbuffer and texture objects referenced by the framebuffer");
@@ -390,8 +390,7 @@ void gl(py::module& m) {
 
             /* Keep a reference to the buffer to avoid it being deleted before
                the mesh */
-            /** @todo isn't there an API for this? */
-            self.buffers.emplace_back(py::detail::get_object_handle(&buffer, py::detail::get_type_info(typeid(GL::Buffer))), true);
+            self.buffers.emplace_back(pyObjectFromInstance(buffer));
         }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
         .def("draw", [](PyMesh& self, GL::AbstractShaderProgram& shader) {
             self.draw(shader);
