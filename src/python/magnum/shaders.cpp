@@ -29,15 +29,16 @@
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Shaders/VertexColor.h>
 
+#include "Magnum/Python.h"
+
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
-#include "magnum/NonDestructible.h"
 
 namespace magnum {
 
 namespace {
 
-template<UnsignedInt dimensions> void vertexColor(NonDestructibleBase<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
+template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
     c.attr("COLOR3") = GL::DynamicAttribute{
         GL::DynamicAttribute::Kind::Generic, 3,
@@ -71,9 +72,9 @@ void shaders(py::module& m) {
 
     /* 2D/3D vertex color shader */
     {
-        NonDestructibleBase<Shaders::VertexColor2D, GL::AbstractShaderProgram> vertexColor2D{m,
+        PyNonDestructibleClass<Shaders::VertexColor2D, GL::AbstractShaderProgram> vertexColor2D{m,
             "VertexColor2D", "2D vertex color shader"};
-        NonDestructibleBase<Shaders::VertexColor3D, GL::AbstractShaderProgram> vertexColor3D{m,
+        PyNonDestructibleClass<Shaders::VertexColor3D, GL::AbstractShaderProgram> vertexColor3D{m,
             "VertexColor3D", "3D vertex color shader"};
         vertexColor2D.attr("POSITION") = GL::DynamicAttribute{
             GL::DynamicAttribute::Kind::Generic, 0,
@@ -89,7 +90,7 @@ void shaders(py::module& m) {
 
     /* Phong shader */
     {
-        NonDestructibleBase<Shaders::Phong, GL::AbstractShaderProgram> phong{m,
+        PyNonDestructibleClass<Shaders::Phong, GL::AbstractShaderProgram> phong{m,
             "Phong", "Phong shader"};
         phong.attr("POSITION") = GL::DynamicAttribute{
             GL::DynamicAttribute::Kind::Generic, 0,

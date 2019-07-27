@@ -118,7 +118,9 @@ if(NOT MAGNUM_BUILD_STATIC)
 
     if(Magnum_Shaders_FOUND)
         pybind11_add_module(magnum_shaders SYSTEM ${magnum_shaders_SRCS})
-        target_include_directories(magnum_shaders PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_include_directories(magnum_shaders PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_shaders PRIVATE Magnum::Shaders)
         set_target_properties(magnum_shaders PROPERTIES
             FOLDER "python"

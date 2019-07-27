@@ -44,7 +44,6 @@
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
-#include "magnum/NonDestructible.h"
 #include "magnum/PyGL.h"
 
 namespace magnum {
@@ -60,7 +59,7 @@ void gl(py::module& m) {
     m.doc() = "OpenGL wrapping layer";
 
     /* Abstract shader program */
-    NonDestructible<GL::AbstractShaderProgram>{m,
+    PyNonDestructibleClass<GL::AbstractShaderProgram>{m,
         "AbstractShaderProgram", "Base for shader program implementations"};
     /** @todo more */
 
@@ -291,7 +290,7 @@ void gl(py::module& m) {
         .value("STENCIL", GL::FramebufferClear::Stencil);
     corrade::enumOperators(framebufferClear);
 
-    NonDestructible<GL::AbstractFramebuffer> abstractFramebuffer{m,
+    PyNonDestructibleClass<GL::AbstractFramebuffer> abstractFramebuffer{m,
         "AbstractFramebuffer", "Base for default and named framebuffers"};
 
     abstractFramebuffer
@@ -302,10 +301,10 @@ void gl(py::module& m) {
         .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read),
             "Read block of pixels from the framebuffer to an image view");
 
-    NonDestructibleBase<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
+    PyNonDestructibleClass<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
 
-    NonDestructibleBase<PyFramebuffer, GL::AbstractFramebuffer> framebuffer{m,
+    PyNonDestructibleClass<PyFramebuffer, GL::AbstractFramebuffer> framebuffer{m,
         "Framebuffer", "Framebuffer"};
 
     py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
