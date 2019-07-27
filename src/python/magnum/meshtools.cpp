@@ -29,6 +29,7 @@
 #include <Magnum/Trade/MeshData2D.h>
 #include <Magnum/Trade/MeshData3D.h>
 
+#include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 
 namespace magnum {
@@ -43,13 +44,19 @@ void meshtools(py::module& m) {
     py::module::import("magnum.trade");
     #endif
 
+    py::enum_<MeshTools::CompileFlag> compileFlag{m, "CompileFlag", "Mesh compilation flags"};
+    compileFlag
+        .value("NONE", MeshTools::CompileFlag{})
+        .value("GENERATE_FLAT_NORMALS", MeshTools::CompileFlag::GenerateFlatNormals)
+        .value("GENERATE_SMOOTH_NORMALS", MeshTools::CompileFlag::GenerateSmoothNormals);
+    corrade::enumOperators(compileFlag);
+
     m
-        .def("compile", [](const Trade::MeshData2D& data) {
-            return MeshTools::compile(data);
-        }, "Compile 2D mesh data")
-        .def("compile", [](const Trade::MeshData3D& data) {
-            return MeshTools::compile(data);
-        }, "Compile 3D mesh data");
+        .def("compile", static_cast<GL::Mesh(*)(const Trade::MeshData2D& data)>(&MeshTools::compile),
+            "Compile 2D mesh data", py::arg("mesh_data"))
+        .def("compile", [](const Trade::MeshData3D& meshData, MeshTools::CompileFlag flags) {
+            return MeshTools::compile(meshData, flags);
+        }, "Compile 3D mesh data", py::arg("mesh_data"), py::arg("flags") = MeshTools::CompileFlag{});
 }
 
 }
