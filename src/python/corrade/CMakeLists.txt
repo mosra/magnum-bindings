@@ -30,7 +30,9 @@ set(corrade_containers_SRCS
 # modules
 if(NOT CORRADE_BUILD_STATIC)
     pybind11_add_module(corrade_containers SYSTEM ${corrade_containers_SRCS})
-    target_include_directories(corrade_containers PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_include_directories(corrade_containers PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/src/python)
     target_link_libraries(corrade_containers PRIVATE
         Corrade::Containers
         Corrade::Utility)
@@ -48,7 +50,9 @@ else()
         ${corrade_containers_SRCS})
 
     pybind11_add_module(corrade SYSTEM ${corrade_SRCS})
-    target_include_directories(corrade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+    target_include_directories(corrade PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/src/python)
     target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
     set_target_properties(corrade PROPERTIES
         FOLDER "python"

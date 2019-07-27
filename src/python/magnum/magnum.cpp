@@ -25,13 +25,16 @@
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
+#include <Corrade/Containers/StridedArrayView.h>
+#include <Magnum/ImageView.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/PixelFormat.h>
 #include <Magnum/PixelStorage.h>
 
+#include "Corrade/Python.h"
+#include "Corrade/Containers/Python.h"
 #include "Magnum/Python.h"
 
-#include "corrade/PyArrayView.h"
 #include "magnum/bootstrap.h"
 
 #ifdef MAGNUM_BUILD_STATIC
@@ -56,7 +59,7 @@ template<class T> struct PyDimensionTraits<3, T> {
     static VectorType from(const Math::Vector<3, T>& vec) { return vec; }
 };
 
-template<class T> void imageView(py::class_<T>& c) {
+template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
     /*
         Missing APIs:
 
@@ -65,17 +68,17 @@ template<class T> void imageView(py::class_<T>& c) {
 
     c
         /* Constructors */
-        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const corrade::PyArrayView<typename T::Type>& data) {
-            return T{ImageView<T::Dimensions, typename T::Type>{storage, format, size, data}, data.obj};
+        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            return pyImageViewHolder(T{storage, format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
-        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const corrade::PyArrayView<typename T::Type>& data) {
-            return T{ImageView<T::Dimensions, typename T::Type>{format, size, data}, data.obj};
+        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
         .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
-            return T{ImageView<T::Dimensions, typename T::Type>{storage, format, size}, py::none{}};
+            return T{storage, format, size};
         }), "Construct an empty view")
         .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
-            return T{ImageView<T::Dimensions, typename T::Type>{format, size}, py::none{}};
+            return T{format, size};
         }), "Construct an empty view")
 
         /* Properties */
@@ -86,22 +89,25 @@ template<class T> void imageView(py::class_<T>& c) {
             return PyDimensionTraits<T::Dimensions, Int>::from(self.size());
         }, "Image size")
         .def_property("data", [](T& self) {
-            return corrade::PyArrayView<typename T::Type>{{static_cast<typename T::Type*>(self.data().data()), self.data().size()}, self.owner};
-        }, [](T& self, const corrade::PyArrayView<typename T::Type>& data) {
+            return Containers::pyArrayViewHolder(self.data(), pyObjectHolderFor<PyImageViewHolder>(self).owner);
+        }, [](T& self, const Containers::ArrayView<typename T::Type>& data) {
             self.setData(data);
-            self.owner = data.obj;
+            pyObjectHolderFor<PyImageViewHolder>(self).owner =
+            pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner;
         }, "Image data")
         .def_property_readonly("pixels", [](T& self) {
-            return corrade::PyStridedArrayView<T::Dimensions+1, typename T::Type>{self.pixels(), self.owner};
+            return Containers::pyArrayViewHolder(self.pixels(), pyObjectHolderFor<PyImageViewHolder>(self).owner);
         }, "View on pixel data")
 
-        .def_readonly("owner", &T::owner, "Memory owner");
+        .def_property_readonly("owner", [](T& self) {
+            return pyObjectHolderFor<PyImageViewHolder>(self).owner;
+        }, "Memory owner");
 }
 
-template<class T> void imageViewFromMutable(py::class_<T>& c) {
+template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>& c) {
     c
-        .def(py::init([](const PyImageView<T::Dimensions, char>& other) {
-            return T{ImageView<T::Dimensions, const char>{other}, other.owner};
+        .def(py::init([](const BasicMutableImageView<T::Dimensions>& other) {
+            return pyImageViewHolder(BasicImageView<T::Dimensions>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
         }), "Constructor");
 }
 
@@ -187,12 +193,12 @@ void magnum(py::module& m) {
         .def_property("skip",
             &PixelStorage::skip, &PixelStorage::setSkip, "Pixel, row and image skip");
 
-    py::class_<PyImageView<1, const char>> imageView1D{m, "ImageView1D", "One-dimensional image view"};
-    py::class_<PyImageView<2, const char>> imageView2D{m, "ImageView2D", "Two-dimensional image view"};
-    py::class_<PyImageView<3, const char>> imageView3D{m, "ImageView3D", "Three-dimensional image view"};
-    py::class_<PyImageView<1, char>> mutableImageView1D{m, "MutableImageView1D", "One-dimensional mutable image view"};
-    py::class_<PyImageView<2, char>> mutableImageView2D{m, "MutableImageView2D", "Two-dimensional mutable image view"};
-    py::class_<PyImageView<3, char>> mutableImageView3D{m, "MutableImageView3D", "Three-dimensional mutable image view"};
+    py::class_<ImageView1D, PyImageViewHolder<ImageView1D>> imageView1D{m, "ImageView1D", "One-dimensional image view"};
+    py::class_<ImageView2D, PyImageViewHolder<ImageView2D>> imageView2D{m, "ImageView2D", "Two-dimensional image view"};
+    py::class_<ImageView3D, PyImageViewHolder<ImageView3D>> imageView3D{m, "ImageView3D", "Three-dimensional image view"};
+    py::class_<MutableImageView1D, PyImageViewHolder<MutableImageView1D>> mutableImageView1D{m, "MutableImageView1D", "One-dimensional mutable image view"};
+    py::class_<MutableImageView2D, PyImageViewHolder<MutableImageView2D>> mutableImageView2D{m, "MutableImageView2D", "Two-dimensional mutable image view"};
+    py::class_<MutableImageView3D, PyImageViewHolder<MutableImageView3D>> mutableImageView3D{m, "MutableImageView3D", "Three-dimensional mutable image view"};
 
     imageView(imageView1D);
     imageView(imageView2D);

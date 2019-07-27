@@ -29,8 +29,9 @@
 #include <Corrade/Containers/ScopeGuard.h>
 #include <Corrade/Utility/FormatStl.h>
 
+#include "Corrade/Containers/Python.h"
+
 #include "corrade/bootstrap.h"
-#include "corrade/PyArrayView.h"
 #include "corrade/PyBuffer.h"
 
 namespace corrade {
@@ -88,7 +89,7 @@ template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int f
     if(flags != PyBUF_SIMPLE) {
         /* The view is immutable (can't change its size after it has been
            constructed), so referencing the size directly is okay */
-        buffer.shape = reinterpret_cast<Py_ssize_t*>(&self.sizeRef());
+        buffer.shape = reinterpret_cast<Py_ssize_t*>(&Containers::Implementation::sizeRef(self));
         if((flags & PyBUF_STRIDES) == PyBUF_STRIDES)
             buffer.strides = &buffer.itemsize;
     }
@@ -96,11 +97,11 @@ template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int f
     return true;
 }
 
-template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
+template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers::PyArrayViewHolder<Containers::ArrayView<T>>>& c) {
     /* Implicitly convertible from a buffer */
-    py::implicitly_convertible<py::buffer, PyArrayView<T>>();
+    py::implicitly_convertible<py::buffer, Containers::ArrayView<T>>();
     /* This is needed for implicit conversion from np.array */
-    py::implicitly_convertible<py::array, PyArrayView<T>>();
+    py::implicitly_convertible<py::array, Containers::ArrayView<T>>();
 
     c
         /* Constructor */
@@ -125,45 +126,46 @@ template<class T> void arrayView(py::class_<PyArrayView<T>>& c) {
                the buffer because we no longer care about the buffer
                descriptor -- that could allow the GC to haul away a bit more
                garbage */
-            return PyArrayView<T>{{static_cast<T*>(buffer.buf), std::size_t(buffer.len)}, py::reinterpret_borrow<py::object>(buffer.obj)};
+            return Containers::pyArrayViewHolder(Containers::ArrayView<T>{static_cast<T*>(buffer.buf), std::size_t(buffer.len)}, py::reinterpret_borrow<py::object>(buffer.obj));
         }), "Construct from a buffer")
 
         /* Length and memory owning object */
-        .def("__len__", &PyArrayView<T>::size, "View size")
-        .def_readonly("obj", &PyArrayView<T>::obj, "Memory owner object")
+        .def("__len__", &Containers::ArrayView<T>::size, "View size")
+        .def_property_readonly("obj", [](const Containers::ArrayView<T>& self) {
+            return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
+        }, "Memory owner object")
 
         /* Conversion to bytes */
-        .def("__bytes__", [](const PyArrayView<T>& self) {
+        .def("__bytes__", [](const Containers::ArrayView<T>& self) {
             return py::bytes(self.data(), self.size());
         }, "Convert to bytes")
 
         /* Single item retrieval. Need to throw IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
-        .def("__getitem__", [](const PyArrayView<T>& self, std::size_t i) {
+        .def("__getitem__", [](const Containers::ArrayView<T>& self, std::size_t i) {
             if(i >= self.size()) throw pybind11::index_error{};
             return self[i];
         }, "Value at given position")
 
         /* Slicing */
-        .def("__getitem__", [](const PyArrayView<T>& self, py::slice slice) -> py::object {
+        .def("__getitem__", [](const Containers::ArrayView<T>& self, py::slice slice) -> py::object {
             const Slice calculated = calculateSlice(slice, self.size());
 
             /* Non-trivial stride, return a different type */
             if(calculated.step != 1) {
-                return py::cast(PyStridedArrayView<1, T>(
-                Containers::stridedArrayView(self).slice(calculated.start, calculated.stop).every(calculated.step), self.obj));
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(Containers::stridedArrayView(self).slice(calculated.start, calculated.stop).every(calculated.step), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
             }
 
             /* Usual business */
-            return py::cast(PyArrayView<T>{self.slice(calculated.start, calculated.stop), self.obj});
+            return pyCastButNotShitty(Containers::pyArrayViewHolder(self.slice(calculated.start, calculated.stop), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
         }, "Slice the view");
 
-    enableBetterBufferProtocol<PyArrayView<T>, arrayViewBufferProtocol>(c);
+    enableBetterBufferProtocol<Containers::ArrayView<T>, arrayViewBufferProtocol>(c);
 }
 
-template<class T> void mutableArrayView(py::class_<PyArrayView<T>>& c) {
+template<class T> void mutableArrayView(py::class_<Containers::ArrayView<T>, Containers::PyArrayViewHolder<Containers::ArrayView<T>>>& c) {
     c
-        .def("__setitem__", [](const PyArrayView<T>& self, std::size_t i, const T& value) {
+        .def("__setitem__", [](const Containers::ArrayView<T>& self, std::size_t i, const T& value) {
             if(i >= self.size()) throw pybind11::index_error{};
             self[i] = value;
         }, "Set a value at given position");
@@ -281,15 +283,15 @@ template<class T> bool stridedArrayViewBufferProtocol(T& self, Py_buffer& buffer
     buffer.itemsize = sizeof(typename T::Type);
     buffer.len = sizeof(typename T::Type);
     for(std::size_t i = 0; i != T::Dimensions; ++i)
-        buffer.len *= self.sizeRef()[i];
+        buffer.len *= Containers::Implementation::sizeRef(self)[i];
     buffer.buf = const_cast<typename std::decay<typename T::ErasedType>::type*>(self.data());
     buffer.readonly = std::is_const<typename T::Type>::value;
     if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
         buffer.format = const_cast<char*>(FormatStrings[formatIndex<typename std::decay<typename T::Type>::type>()]);
     /* The view is immutable (can't change its size after it has been
        constructed), so referencing the size/stride directly is okay */
-    buffer.shape = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(self.sizeRef().begin()));
-    buffer.strides = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(self.strideRef().begin()));
+    buffer.shape = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(Containers::Implementation::sizeRef(self).begin()));
+    buffer.strides = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(Containers::Implementation::strideRef(self).begin()));
 
     return true;
 }
@@ -298,11 +300,11 @@ inline std::size_t largerStride(std::size_t a, std::size_t b) {
     return a < b ? b : a; /* max(), but named like this to avoid clashes */
 }
 
-template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStridedArrayView<dimensions, T>>& c) {
+template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containers::StridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<dimensions, T>>>& c) {
     /* Implicitly convertible from a buffer */
-    py::implicitly_convertible<py::buffer, PyStridedArrayView<dimensions, T>>();
+    py::implicitly_convertible<py::buffer, Containers::StridedArrayView<dimensions, T>>();
     /* This is needed for implicit conversion from np.array */
-    py::implicitly_convertible<py::array, PyStridedArrayView<dimensions, T>>();
+    py::implicitly_convertible<py::array, Containers::StridedArrayView<dimensions, T>>();
 
     c
         /* Constructor */
@@ -332,66 +334,68 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<PyStride
                the buffer because we no longer care about the buffer
                descriptor -- that could allow the GC to haul away a bit more
                garbage */
-            return PyStridedArrayView<dimensions, T>{{
+            return Containers::pyArrayViewHolder(Containers::StridedArrayView<dimensions, T>{
                 {static_cast<T*>(buffer.buf), size},
                 Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(buffer.shape)},
                 Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)}},
-                py::reinterpret_borrow<py::object>(buffer.obj)};
+                py::reinterpret_borrow<py::object>(buffer.obj));
         }), "Construct from a buffer")
 
         /* Length, size/stride tuple, dimension count and memory owning object */
-        .def("__len__", [](const PyStridedArrayView<dimensions, T>& self) {
+        .def("__len__", [](const Containers::StridedArrayView<dimensions, T>& self) {
             return Containers::StridedDimensions<dimensions, std::size_t>(self.size())[0];
         }, "View size in the top-level dimension")
-        .def_property_readonly("size", [](const PyStridedArrayView<dimensions, T>& self) {
+        .def_property_readonly("size", [](const Containers::StridedArrayView<dimensions, T>& self) {
             return size<dimensions>(self.size());
         }, "View size in each dimension")
-        .def_property_readonly("stride", [](const PyStridedArrayView<dimensions, T>& self) {
+        .def_property_readonly("stride", [](const Containers::StridedArrayView<dimensions, T>& self) {
             return stride<dimensions>(self.stride());
         }, "View stride in each dimension")
-        .def_property_readonly("dimensions", [](const PyStridedArrayView<dimensions, T>&) { return dimensions; }, "Dimension count")
-        .def_readonly("obj", &PyStridedArrayView<dimensions, T>::obj, "Memory owner object")
+        .def_property_readonly("dimensions", [](const Containers::StridedArrayView<dimensions, T>&) { return dimensions; }, "Dimension count")
+        .def_property_readonly("obj", [](const Containers::StridedArrayView<dimensions, T>& self) {
+            return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
+        }, "Memory owner object")
 
         /* Conversion to bytes */
-        .def("__bytes__", [](const PyStridedArrayView<dimensions, T>& self) {
+        .def("__bytes__", [](const Containers::StridedArrayView<dimensions, T>& self) {
             /* TODO: use _PyBytes_Resize() to avoid the double copy */
             const Containers::Array<char> out = bytes(Containers::arrayCast<const char>(self));
             return py::bytes(out.data(), out.size());
         }, "Convert to bytes")
 
         /* Slicing of the top dimension */
-        .def("__getitem__", [](const PyStridedArrayView<dimensions, T>& self, py::slice slice) -> py::object {
+        .def("__getitem__", [](const Containers::StridedArrayView<dimensions, T>& self, py::slice slice) {
             const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]);
-            return py::cast(PyStridedArrayView<dimensions, T>(self.slice(calculated.start, calculated.stop).every(calculated.step), self.obj));
+            return Containers::pyArrayViewHolder(self.slice(calculated.start, calculated.stop).every(calculated.step), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
 
-    enableBetterBufferProtocol<PyStridedArrayView<dimensions, T>, stridedArrayViewBufferProtocol>(c);
+    enableBetterBufferProtocol<Containers::StridedArrayView<dimensions, T>, stridedArrayViewBufferProtocol>(c);
 }
 
-template<class T> void stridedArrayView1D(py::class_<PyStridedArrayView<1, T>>& c) {
+template<class T> void stridedArrayView1D(py::class_<Containers::StridedArrayView<1, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<1, T>>>& c) {
     c
         /* Single item retrieval. Need to throw IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
-        .def("__getitem__", [](const PyStridedArrayView<1, T>& self, std::size_t i) {
+        .def("__getitem__", [](const Containers::StridedArrayView<1, T>& self, std::size_t i) {
             if(i >= self.size()) throw pybind11::index_error{};
             return self[i];
         }, "Value at given position");
 }
 
-template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<PyStridedArrayView<dimensions, T>>& c) {
+template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Containers::StridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<dimensions, T>>>& c) {
     c
         /* Sub-view retrieval. Need to throw IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
-        .def("__getitem__", [](const PyStridedArrayView<dimensions, T>& self, std::size_t i) {
+        .def("__getitem__", [](const Containers::StridedArrayView<dimensions, T>& self, std::size_t i) {
             if(i >= Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]) throw pybind11::index_error{};
-            return PyStridedArrayView<dimensions - 1, T>{self[i], self.obj};
+            return Containers::pyArrayViewHolder(self[i], pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Sub-view at given position")
 
         /* Single-item retrieval. Need to throw IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
 
         /* Multi-dimensional slicing */
-        .def("__getitem__", [](const PyStridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) -> py::object {
+        .def("__getitem__", [](const Containers::StridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) {
             Containers::StridedDimensions<dimensions, std::size_t> starts;
             Containers::StridedDimensions<dimensions, std::size_t> stops;
             Containers::StridedDimensions<dimensions, std::ptrdiff_t> steps;
@@ -403,153 +407,153 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<PyStri
                 steps[i] = calculated.step;
             }
 
-            return py::cast(PyStridedArrayView<dimensions, T>(self.slice(starts, stops).every(steps), self.obj));
+            return Containers::pyArrayViewHolder(self.slice(starts, stops).every(steps), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
 }
 
-template<class T> void stridedArrayView2D(py::class_<PyStridedArrayView<2, T>>& c) {
+template<class T> void stridedArrayView2D(py::class_<Containers::StridedArrayView<2, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<2, T>>>& c) {
     c
-        .def("__getitem__", [](const PyStridedArrayView<2, T>& self, const std::tuple<std::size_t, std::size_t>& i) {
+        .def("__getitem__", [](const Containers::StridedArrayView<2, T>& self, const std::tuple<std::size_t, std::size_t>& i) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1]) throw py::index_error{};
             return self[std::get<0>(i)][std::get<1>(i)];
         }, "Value at given position")
-        .def("transposed", [](const PyStridedArrayView<2, T>& self, const std::size_t a, std::size_t b) {
+        .def("transposed", [](const Containers::StridedArrayView<2, T>& self, const std::size_t a, std::size_t b) {
             if((a == 0 && b == 1) ||
                (a == 1 && b == 0))
-                return PyStridedArrayView<2, T>{self.template transposed<0, 1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimensions {}, {} can't be transposed in a {}D view", a, b, 2)};
         }, "Transpose two dimensions")
-        .def("flipped", [](const PyStridedArrayView<2, T>& self, const std::size_t dimension) {
+        .def("flipped", [](const Containers::StridedArrayView<2, T>& self, const std::size_t dimension) {
             if(dimension == 0)
-                return PyStridedArrayView<2, T>{self.template flipped<0>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<0>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<2, T>{self.template flipped<1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 2)};
         }, "Flip a dimension")
-        .def("broadcasted", [](const PyStridedArrayView<2, T>& self, const std::size_t dimension, std::size_t size) {
+        .def("broadcasted", [](const Containers::StridedArrayView<2, T>& self, const std::size_t dimension, std::size_t size) {
             if(dimension == 0)
-                return PyStridedArrayView<2, T>{self.template broadcasted<0>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<0>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<2, T>{self.template broadcasted<1>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<1>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 2)};
         }, "Broadcast a dimension");
 }
 
-template<class T> void stridedArrayView3D(py::class_<PyStridedArrayView<3, T>>& c) {
+template<class T> void stridedArrayView3D(py::class_<Containers::StridedArrayView<3, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<3, T>>>& c) {
     c
-        .def("__getitem__", [](const PyStridedArrayView<3, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t>& i) {
+        .def("__getitem__", [](const Containers::StridedArrayView<3, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t>& i) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1] ||
                std::get<2>(i) >= self.size()[2]) throw pybind11::index_error{};
             return self[std::get<0>(i)][std::get<1>(i)][std::get<2>(i)];
         }, "Value at given position")
-        .def("transposed", [](const PyStridedArrayView<3, T>& self, const std::size_t a, std::size_t b) {
+        .def("transposed", [](const Containers::StridedArrayView<3, T>& self, const std::size_t a, std::size_t b) {
             if((a == 0 && b == 1) ||
                (a == 1 && b == 0))
-                return PyStridedArrayView<3, T>{self.template transposed<0, 1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 0 && b == 2) ||
                (a == 2 && b == 0))
-                return PyStridedArrayView<3, T>{self.template transposed<0, 2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 1 && b == 2) ||
                (a == 2 && b == 1))
-                return PyStridedArrayView<3, T>{self.template transposed<1, 2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<1, 2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimensions {}, {} can't be transposed in a {}D view", a, b, 3)};
         }, "Transpose two dimensions")
-        .def("flipped", [](const PyStridedArrayView<3, T>& self, const std::size_t dimension) {
+        .def("flipped", [](const Containers::StridedArrayView<3, T>& self, const std::size_t dimension) {
             if(dimension == 0)
-                return PyStridedArrayView<3, T>{self.template flipped<0>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<0>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<3, T>{self.template flipped<1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 2)
-                return PyStridedArrayView<3, T>{self.template flipped<2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 3)};
         }, "Flip a dimension")
-        .def("broadcasted", [](const PyStridedArrayView<3, T>& self, const std::size_t dimension, std::size_t size) {
+        .def("broadcasted", [](const Containers::StridedArrayView<3, T>& self, const std::size_t dimension, std::size_t size) {
             if(dimension == 0)
-                return PyStridedArrayView<3, T>{self.template broadcasted<0>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<0>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<3, T>{self.template broadcasted<1>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<1>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 2)
-                return PyStridedArrayView<3, T>{self.template broadcasted<2>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<2>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 3)};
         }, "Broadcast a dimension");
 }
 
-template<class T> void stridedArrayView4D(py::class_<PyStridedArrayView<4, T>>& c) {
+template<class T> void stridedArrayView4D(py::class_<Containers::StridedArrayView<4, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<4, T>>>& c) {
     c
-        .def("__getitem__", [](const PyStridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i) {
+        .def("__getitem__", [](const Containers::StridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1] ||
                std::get<2>(i) >= self.size()[2] ||
                std::get<3>(i) >= self.size()[3]) throw pybind11::index_error{};
             return self[std::get<0>(i)][std::get<1>(i)][std::get<2>(i)][std::get<3>(i)];
         }, "Value at given position")
-        .def("transposed", [](const PyStridedArrayView<4, T>& self, const std::size_t a, std::size_t b) {
+        .def("transposed", [](const Containers::StridedArrayView<4, T>& self, const std::size_t a, std::size_t b) {
             if((a == 0 && b == 1) ||
                (a == 1 && b == 0))
-                return PyStridedArrayView<4, T>{self.template transposed<0, 1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 0 && b == 2) ||
                (a == 2 && b == 0))
-                return PyStridedArrayView<4, T>{self.template transposed<0, 2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 0 && b == 3) ||
                (a == 3 && b == 0))
-                return PyStridedArrayView<4, T>{self.template transposed<0, 3>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<0, 3>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 1 && b == 2) ||
                (a == 2 && b == 1))
-                return PyStridedArrayView<4, T>{self.template transposed<1, 2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<1, 2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 1 && b == 3) ||
                (a == 3 && b == 1))
-                return PyStridedArrayView<4, T>{self.template transposed<1, 3>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<1, 3>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if((a == 2 && b == 3) ||
                (a == 3 && b == 2))
-                return PyStridedArrayView<4, T>{self.template transposed<2, 3>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template transposed<2, 3>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimensions {}, {} can't be transposed in a {}D view", a, b, 4)};
         }, "Transpose two dimensions")
-        .def("flipped", [](const PyStridedArrayView<4, T>& self, const std::size_t dimension) {
+        .def("flipped", [](const Containers::StridedArrayView<4, T>& self, const std::size_t dimension) {
             if(dimension == 0)
-                return PyStridedArrayView<4, T>{self.template flipped<0>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<0>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<4, T>{self.template flipped<1>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<1>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 2)
-                return PyStridedArrayView<4, T>{self.template flipped<2>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<2>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 3)
-                return PyStridedArrayView<4, T>{self.template flipped<3>(), self.obj};
+                return Containers::pyArrayViewHolder(self.template flipped<3>(), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 4)};
         }, "Flip a dimension")
-        .def("broadcasted", [](const PyStridedArrayView<4, T>& self, const std::size_t dimension, std::size_t size) {
+        .def("broadcasted", [](const Containers::StridedArrayView<4, T>& self, const std::size_t dimension, std::size_t size) {
             if(dimension == 0)
-                return PyStridedArrayView<4, T>{self.template broadcasted<0>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<0>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 1)
-                return PyStridedArrayView<4, T>{self.template broadcasted<1>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<1>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 2)
-                return PyStridedArrayView<4, T>{self.template broadcasted<2>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<2>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             if(dimension == 3)
-                return PyStridedArrayView<4, T>{self.template broadcasted<3>(size), self.obj};
+                return Containers::pyArrayViewHolder(self.template broadcasted<3>(size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
             throw py::value_error{Utility::formatString("dimension {} out of range for a {}D view", dimension, 4)};
         }, "Broadcast a dimension");
 }
 
-template<class T> void mutableStridedArrayView1D(py::class_<PyStridedArrayView<1, T>>& c) {
+template<class T> void mutableStridedArrayView1D(py::class_<Containers::StridedArrayView<1, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<1, T>>>& c) {
     c
-        .def("__setitem__", [](const PyStridedArrayView<1, T>& self, const std::size_t i, const T& value) {
+        .def("__setitem__", [](const Containers::StridedArrayView<1, T>& self, const std::size_t i, const T& value) {
             if(i >= self.size()) throw pybind11::index_error{};
             self[i] = value;
         }, "Set a value at given position");
 }
 
-template<class T> void mutableStridedArrayView2D(py::class_<PyStridedArrayView<2, T>>& c) {
+template<class T> void mutableStridedArrayView2D(py::class_<Containers::StridedArrayView<2, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<2, T>>>& c) {
     c
-        .def("__setitem__", [](const PyStridedArrayView<2, T>& self, const std::tuple<std::size_t, std::size_t>& i, const T& value) {
+        .def("__setitem__", [](const Containers::StridedArrayView<2, T>& self, const std::tuple<std::size_t, std::size_t>& i, const T& value) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1]) throw pybind11::index_error{};
             self[std::get<0>(i)][std::get<1>(i)] = value;
         }, "Set a value at given position");
 }
 
-template<class T> void mutableStridedArrayView3D(py::class_<PyStridedArrayView<3, T>>& c) {
+template<class T> void mutableStridedArrayView3D(py::class_<Containers::StridedArrayView<3, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<3, T>>>& c) {
     c
-        .def("__setitem__", [](const PyStridedArrayView<3, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t>& i, const T& value) {
+        .def("__setitem__", [](const Containers::StridedArrayView<3, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t>& i, const T& value) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1] ||
                std::get<2>(i) >= self.size()[2]) throw pybind11::index_error{};
@@ -557,9 +561,9 @@ template<class T> void mutableStridedArrayView3D(py::class_<PyStridedArrayView<3
         }, "Set a value at given position");
 }
 
-template<class T> void mutableStridedArrayView4D(py::class_<PyStridedArrayView<4, T>>& c) {
+template<class T> void mutableStridedArrayView4D(py::class_<Containers::StridedArrayView<4, T>, Containers::PyArrayViewHolder<Containers::StridedArrayView<4, T>>>& c) {
     c
-        .def("__setitem__", [](const PyStridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i, const T& value) {
+        .def("__setitem__", [](const Containers::StridedArrayView<4, T>& self, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& i, const T& value) {
             if(std::get<0>(i) >= self.size()[0] ||
                std::get<1>(i) >= self.size()[1] ||
                std::get<2>(i) >= self.size()[2] ||
@@ -573,22 +577,22 @@ template<class T> void mutableStridedArrayView4D(py::class_<PyStridedArrayView<4
 void containers(py::module& m) {
     m.doc() = "Corrade containers module";
 
-    py::class_<PyArrayView<const char>> arrayView_{m,
+    py::class_<Containers::ArrayView<const char>, Containers::PyArrayViewHolder<Containers::ArrayView<const char>>> arrayView_{m,
         "ArrayView", "Array view", py::buffer_protocol{}};
     arrayView(arrayView_);
 
-    py::class_<PyArrayView<char>> mutableArrayView_{m,
+    py::class_<Containers::ArrayView<char>, Containers::PyArrayViewHolder<Containers::ArrayView<char>>> mutableArrayView_{m,
         "MutableArrayView", "Mutable array view", py::buffer_protocol{}};
     arrayView(mutableArrayView_);
     mutableArrayView(mutableArrayView_);
 
-    py::class_<PyStridedArrayView<1, const char>> stridedArrayView1D_{m,
+    py::class_<Containers::StridedArrayView<1, const char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<1, const char>>> stridedArrayView1D_{m,
         "StridedArrayView1D", "One-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<2, const char>> stridedArrayView2D_{m,
+    py::class_<Containers::StridedArrayView<2, const char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<2, const char>>> stridedArrayView2D_{m,
         "StridedArrayView2D", "Two-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<3, const char>> stridedArrayView3D_{m,
+    py::class_<Containers::StridedArrayView<3, const char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<3, const char>>> stridedArrayView3D_{m,
         "StridedArrayView3D", "Three-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<4, const char>> stridedArrayView4D_{m,
+    py::class_<Containers::StridedArrayView<4, const char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<4, const char>>> stridedArrayView4D_{m,
         "StridedArrayView4D", "Four-dimensional array view with stride information", py::buffer_protocol{}};
     stridedArrayView(stridedArrayView1D_);
     stridedArrayView1D(stridedArrayView1D_);
@@ -602,13 +606,13 @@ void containers(py::module& m) {
     stridedArrayViewND(stridedArrayView4D_);
     stridedArrayView4D(stridedArrayView4D_);
 
-    py::class_<PyStridedArrayView<1, char>> mutableStridedArrayView1D_{m,
+    py::class_<Containers::StridedArrayView<1, char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<1, char>>> mutableStridedArrayView1D_{m,
         "MutableStridedArrayView1D", "Mutable one-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<2, char>> mutableStridedArrayView2D_{m,
+    py::class_<Containers::StridedArrayView<2, char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<2, char>>> mutableStridedArrayView2D_{m,
         "MutableStridedArrayView2D", "Mutable two-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<3, char>> mutableStridedArrayView3D_{m,
+    py::class_<Containers::StridedArrayView<3, char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<3, char>>> mutableStridedArrayView3D_{m,
         "MutableStridedArrayView3D", "Mutable three-dimensional array view with stride information", py::buffer_protocol{}};
-    py::class_<PyStridedArrayView<4, char>> mutableStridedArrayView4D_{m,
+    py::class_<Containers::StridedArrayView<4, char>, Containers::PyArrayViewHolder<Containers::StridedArrayView<4, char>>> mutableStridedArrayView4D_{m,
         "MutableStridedArrayView4D", "Mutable four-dimensional array view with stride information", py::buffer_protocol{}};
     stridedArrayView(mutableStridedArrayView1D_);
     stridedArrayView1D(mutableStridedArrayView1D_);

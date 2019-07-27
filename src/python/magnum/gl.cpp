@@ -42,7 +42,6 @@
 #include "Corrade/Python.h"
 #include "Magnum/Python.h"
 
-#include "corrade/PyArrayView.h"
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 #include "magnum/NonDestructible.h"
@@ -177,7 +176,7 @@ void gl(py::module& m) {
         .def_property_readonly("id", &GL::Buffer::id, "OpenGL buffer ID")
         .def_property("target_hint", &GL::Buffer::targetHint, &GL::Buffer::setTargetHint, "Target hint")
         /* Using lambdas to avoid method chaining getting into signatures */
-        .def("set_data", [](GL::Buffer& self, const corrade::PyArrayView<const char>& data, GL::BufferUsage usage) {
+        .def("set_data", [](GL::Buffer& self, const Containers::ArrayView<const char>& data, GL::BufferUsage usage) {
             self.setData(data, usage);
         }, "Set buffer data", py::arg("data"), py::arg("usage") = GL::BufferUsage::StaticDraw)
         /** @todo more */;
@@ -300,9 +299,8 @@ void gl(py::module& m) {
         .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
             self.clear(mask);
         }, "Clear specified buffers in the framebuffer")
-        .def("read", [](GL::AbstractFramebuffer& self, const Range2Di& rectangle, PyImageView<2, char>& image) {
-            self.read(rectangle, image);
-        }, "Read block of pixels from the framebuffer to an image view");
+        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read),
+            "Read block of pixels from the framebuffer to an image view");
 
     NonDestructibleBase<GL::DefaultFramebuffer, GL::AbstractFramebuffer> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};

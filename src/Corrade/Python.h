@@ -26,7 +26,7 @@
 */
 
 #include <pybind11/pybind11.h>
-#include <Corrade/Utility/Assert.h>
+#include <Corrade/Containers/ArrayView.h>
 
 namespace Corrade {
 
@@ -49,6 +49,43 @@ template<class T> inline T& pyInstanceFromHandle(pybind11::handle handle) {
     pybind11::detail::make_caster<T> caster;
     CORRADE_INTERNAL_ASSERT(caster.load(handle, /*convert=*/false));
     return caster;
+}
+
+/* py::cast() doesn't work on holder types because it takes const T&. Fuck
+   that. The casting "just works" for function return types, so instead reuse
+   the stuff that's done inside py::class_::def(). */
+template<template<class> class Holder, class T> pybind11::object pyCastButNotShitty(Holder<T>&& holder) {
+    static_assert(std::is_base_of<std::unique_ptr<T>, Holder<T>>::value,
+        "holder should be a subclass of std::unique_ptr");
+    /* Extracted out of cpp_function::initialize(), the cast_out alias. Not
+       *exactly* sure about the return value policy or parent. Stealing the
+       reference because cpp_function::dispatcher() seems to do that too (and
+       using reinterpret_borrow makes tests fail with too high refcount) */
+    return pybind11::reinterpret_steal<pybind11::object>(pybind11::detail::make_caster<Holder<T>>::cast(std::move(holder), pybind11::return_value_policy::move, {}));
+}
+
+/* Extracted the simplest case from py::type_caster_generic::load_impl() */
+template<class T> T& pyObjectHolderFor(pybind11::handle obj, pybind11::detail::type_info* typeinfo) {
+    /* So we don't need to bother with
+       copyable_holder_caster::check_holder_compat() */
+    static_assert(!std::is_copy_constructible<T>::value,
+        "holder should be a move-only type");
+    /* Assume the type is not subclassed on Python side */
+    CORRADE_INTERNAL_ASSERT(Py_TYPE(obj.ptr()) == typeinfo->type);
+    const pybind11::detail::value_and_holder vh = reinterpret_cast<pybind11::detail::instance*>(obj.ptr())->get_value_and_holder();
+    /* And its already created and everything (i.e., we're not calling it in
+       its own constructor) */
+    CORRADE_INTERNAL_ASSERT(vh.holder_constructed());
+    CORRADE_INTERNAL_ASSERT(vh.instance_registered());
+    return vh.holder<T>();
+}
+
+template<template<class> class T, class U> T<U>& pyObjectHolderFor(U& obj) {
+    /* Not using pyHandleFromInstance in order to avoid calling get_type_info
+       more than once. I bet it involves some std::unordered_map access and
+       that's like the slowest stuff ever. */
+    pybind11::detail::type_info* typeinfo = pybind11::detail::get_type_info(typeid(U));
+    return pyObjectHolderFor<T<U>>(pybind11::detail::get_object_handle(&obj, typeinfo), typeinfo);
 }
 
 }
