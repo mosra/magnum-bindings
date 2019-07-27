@@ -25,6 +25,6 @@
 
 if(WITH_PYTHON)
     add_custom_target(MagnumSceneGraphPython SOURCES Python.h)
-    set_target_properties(MagnumSceneGraphPython PROPERTIES FOLDER "Magnum/SceneGraph")
+    set_target_properties(MagnumSceneGraphPython PROPERTIES FOLDER "Magnum/Python")
     install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/SceneGraph)
 endif()
