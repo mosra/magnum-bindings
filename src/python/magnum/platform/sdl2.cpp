@@ -45,6 +45,10 @@ void sdl2(py::module& m) {
         void mousePressEvent(MouseEvent&) override {}
         void mouseReleaseEvent(MouseEvent&) override {}
         void mouseMoveEvent(MouseMoveEvent&) override {}
+
+        /* The base doesn't have a virtual destructor because in C++ it's never
+           deleted through a pointer to the base. Here we need it, though. */
+        virtual ~PublicizedApplication() {}
     };
 
     struct PyApplication: PublicizedApplication {

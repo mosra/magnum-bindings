@@ -58,6 +58,10 @@ void egl(py::module& m) {
             #pragma GCC diagnostic pop
             #endif
         }
+
+        /* The base doesn't have a virtual destructor because in C++ it's never
+           deleted through a pointer to the base. Here we need it, though. */
+        virtual ~PyWindowlessApplication() {}
     };
 
     py::class_<PyWindowlessApplication> windowlessEglApplication{m, "WindowlessApplication", "Windowless EGL application"};
