@@ -307,12 +307,17 @@ void gl(py::module& m) {
         "AbstractFramebuffer", "Base for default and named framebuffers"};
 
     abstractFramebuffer
+        .def("bind", &GL::AbstractFramebuffer::bind,
+            "Bind framebuffer for drawing")
+        .def_property("viewport", &GL::AbstractFramebuffer::viewport, &GL::AbstractFramebuffer::setViewport,
+            "Viewport")
         /* Using lambdas to avoid method chaining getting into signatures */
         .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
             self.clear(mask);
         }, "Clear specified buffers in the framebuffer")
         .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read),
-            "Read block of pixels from the framebuffer to an image view");
+            "Read block of pixels from the framebuffer to an image view")
+        /** @todo more */;
 
     py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
@@ -322,6 +327,12 @@ void gl(py::module& m) {
 
     py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
         .def(py::init<UnsignedInt>(), "Constructor");
+
+    py::class_<GL::Framebuffer::DrawAttachment>{framebuffer, "DrawAttachment", "Draw attachment"}
+        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color attachment")
+        .def_readonly_static("NONE", &GL::Framebuffer::DrawAttachment::None, "No attachment");
+
+    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::DrawAttachment>();
 
     py::class_<GL::Framebuffer::BufferAttachment>{framebuffer, "BufferAttachment", "Buffer attachment"}
         .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color buffer")
@@ -337,6 +348,14 @@ void gl(py::module& m) {
     framebuffer
         .def(py::init<const Range2Di&>(), "Constructor")
         .def_property_readonly("id", &GL::Framebuffer::id, "OpenGL framebuffer ID")
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def("map_for_draw", [](GL::Framebuffer& self, GL::Framebuffer::DrawAttachment attachment) {
+            self.mapForDraw(attachment);
+        }, "Map shader output to an attachment")
+        /** @todo list mapForDraw (neeeds a non-initlist variant on magnum side) */
+        .def("map_for_read", [](GL::Framebuffer& self, GL::Framebuffer::ColorAttachment attachment) {
+            self.mapForRead(attachment);
+        }, "Map given color attachment for reading")
         .def("attach_renderbuffer", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
             self.attachRenderbuffer(attachment, renderbuffer);
 
