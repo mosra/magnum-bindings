@@ -321,7 +321,7 @@ void gl(py::module& m) {
         "Framebuffer", "Framebuffer"};
 
     py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
-        .def(py::init<UnsignedByte>(), "Constructor");
+        .def(py::init<UnsignedInt>(), "Constructor");
 
     py::class_<GL::Framebuffer::BufferAttachment>{framebuffer, "BufferAttachment", "Buffer attachment"}
         .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color buffer")
