@@ -42,11 +42,21 @@ void glx(py::module& m) {
         explicit PyWindowlessApplication(const Configuration& configuration = Configuration{}): Platform::WindowlessApplication{Arguments{argc, nullptr}, configuration} {}
 
         int exec() override {
+            #ifdef __clang__
+            /* ugh pybind don't tell me I AM THE FIRST ON EARTH to get a
+               warning here. Why there's no PYBIND11_OVERLOAD_PURE_NAME_ARG()
+               variant *with* arguments and one without? */
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+            #endif
             PYBIND11_OVERLOAD_PURE_NAME(
                 int,
                 PyWindowlessApplication,
                 "exec",
             );
+            #ifdef __clang__
+            #pragma GCC diagnostic pop
+            #endif
         }
     };
 
