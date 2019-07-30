@@ -72,7 +72,14 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
         .def(-py::self, "Negated matrix")
         .def(py::self += py::self, "Add and assign a matrix")
         .def(py::self + py::self, "Add a matrix")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self -= py::self, "Subtract and assign a matrix")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self - py::self, "Subtract a matrix")
         .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
         .def(py::self * typename T::Type{}, "Multiply with a scalar")

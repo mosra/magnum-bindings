@@ -96,7 +96,14 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         .def(-py::self, "Negated vector")
         .def(py::self += py::self, "Add and assign a vector")
         .def(py::self + py::self, "Add a vector")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self -= py::self, "Subtract and assign a vector")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self - py::self, "Subtract a vector")
         .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
         .def(py::self * typename T::Type{}, "Multiply with a scalar")
@@ -104,7 +111,14 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         .def(py::self / typename T::Type{}, "Divide with a scalar")
         .def(py::self *= py::self, "Multiply a vector component-wise and assign")
         .def(py::self * py::self, "Multiply a vector component-wise")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self /= py::self, "Divide a vector component-wise and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self / py::self, "Divide a vector component-wise")
         .def(typename T::Type{} * py::self, "Multiply a scalar with a vector")
         .def(typename T::Type{} / py::self, "Divide a vector with a scalar and invert");

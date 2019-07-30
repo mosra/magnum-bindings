@@ -33,14 +33,42 @@ template<class T> void vectorIntegral(py::class_<T>& c) {
     c
         .def(py::self %= typename T::Type{}, "Do modulo of an integral vector and assign")
         .def(py::self % typename T::Type{}, "Modulo of an integral vector")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self %= py::self, "Do module of two integral vectors and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self % py::self, "Modulo of two integral vectors")
         .def(~py::self, "Bitwise NOT of an integral vector")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self &= py::self, "Do bitwise AND of two integral vectors and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self & py::self, "Bitwise AND of two integral vectors")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self |= py::self, "Do bitwise OR of two integral vectors and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self | py::self, "Bitwise OR of two integral vectors")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self ^= py::self, "Do bitwise XOR of two integral vectors and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self ^ py::self, "Bitwise XOR of two integral vectors")
         .def(py::self <<= typename T::Type{}, "Do bitwise left shift of an integral vector and assign")
         .def(py::self << typename T::Type{}, "Bitwise left shift of an integral vector")

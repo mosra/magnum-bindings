@@ -190,11 +190,32 @@ template<class T> void boolVector(py::class_<T>& c) {
 
         /* Operators */
         .def(~py::self, "Bitwise inversion")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self &= py::self, "Bitwise AND and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self & py::self, "Bitwise AND")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self |= py::self, "Bitwise OR and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self | py::self, "Bitwise OR")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self ^= py::self, "Bitwise XOR and assign")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self ^ py::self, "Bitwise XOR")
 
         .def("__repr__", repr<T>, "Object representation");
@@ -263,7 +284,14 @@ template<class T> void quaternion(py::module& m, py::class_<T>& c) {
         .def(-py::self, "Negated quaternion")
         .def(py::self += py::self, "Add and assign a quaternion")
         .def(py::self + py::self, "Add a quaternion")
+        #ifdef __clang__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+        #endif
         .def(py::self -= py::self, "Subtract and assign a quaternion")
+        #ifdef __clang__
+        #pragma GCC diagnostic pop
+        #endif
         .def(py::self - py::self, "Subtract a quaternion")
         .def(py::self *= typename T::Type{}, "Multiply with a scalar and assign")
         .def(py::self * typename T::Type{}, "Multiply with a scalar")
