@@ -176,6 +176,9 @@ void scenegraph(py::module& m) {
 }
 
 #ifndef MAGNUM_BUILD_STATIC
+/* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
+   is released */
+extern "C" PyObject* PyInit_scenegraph();
 PYBIND11_MODULE(scenegraph, m) {
     magnum::scenegraph(m);
 }

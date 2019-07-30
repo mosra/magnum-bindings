@@ -58,6 +58,9 @@ void glx(py::module& m) {
 }}
 
 #ifndef MAGNUM_BUILD_STATIC
+/* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
+   is released */
+extern "C" PyObject* PyInit_glx();
 PYBIND11_MODULE(glx, m) {
     magnum::platform::glx(m);
 }
