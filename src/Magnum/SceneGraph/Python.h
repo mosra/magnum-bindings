@@ -62,22 +62,22 @@ template<class T> struct PyFeatureHolder: std::unique_ptr<T> {
 
 /* Hey this needs docs. */
 
-template<class Object> class PyObject: public Object {
+template<class Obj> class PyObject: public Obj {
     public:
-        template<class ...Args> explicit PyObject(Args&&... args): Object{std::forward<Args>(args)...} {}
+        template<class ...Args> explicit PyObject(Args&&... args): Obj{std::forward<Args>(args)...} {}
 
-        PyObject(const PyObject<Object>&) = delete;
-        PyObject(PyObject<Object>&&) = delete;
+        PyObject(const PyObject<Obj>&) = delete;
+        PyObject(PyObject<Obj>&&) = delete;
 
-        PyObject<Object>& operator=(const PyObject<Object>&) = delete;
-        PyObject<Object>& operator=(PyObject<Object>&&) = delete;
+        PyObject<Obj>& operator=(const PyObject<Obj>&) = delete;
+        PyObject<Obj>& operator=(PyObject<Obj>&&) = delete;
 
     private:
         void doErase() override {
             /* When deleting a parent, disconnect this from the parent instead
                of deleting it. Deletion is then handled by Python itself. */
-            CORRADE_INTERNAL_ASSERT(Object::parent());
-            Object::setParent(nullptr);
+            CORRADE_INTERNAL_ASSERT(Obj::parent());
+            Obj::setParent(nullptr);
             pybind11::cast(this).dec_ref();
         }
 };

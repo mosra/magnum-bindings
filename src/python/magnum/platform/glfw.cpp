@@ -41,7 +41,7 @@ void glfw(py::module& m) {
     struct PublicizedApplication: Platform::Application {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
-        void drawEvent() override = 0;
+        void drawEvent() override {}
         void mousePressEvent(MouseEvent&) override {}
         void mouseReleaseEvent(MouseEvent&) override {}
         void mouseMoveEvent(MouseMoveEvent&) override {}
