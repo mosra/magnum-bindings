@@ -50,8 +50,9 @@ template<class Class, bool(*getter)(Class&, Py_buffer&, int)> void enableBetterB
         CORRADE_INTERNAL_ASSERT(!PyErr_Occurred() && buffer);
 
         /* Zero-initialize the output and ask the class to fill it. If that
-           fails for some reason, give up */
-        *buffer = Py_buffer{};
+           fails for some reason, give up. Need to list all members otherwise
+           GCC 4.8 loudly complains about missing initializers. */
+        *buffer = Py_buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
         if(!getter(pyInstanceFromHandle<Class>(obj), *buffer, flags)) {
             CORRADE_INTERNAL_ASSERT(!buffer->obj);
             CORRADE_INTERNAL_ASSERT(PyErr_Occurred());

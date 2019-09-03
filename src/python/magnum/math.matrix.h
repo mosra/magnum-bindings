@@ -107,7 +107,8 @@ template<class T, class ...Args> void everyRectangularMatrixBuffer(py::class_<T,
            layouts. Has to be defined *before* the from-tuple constructor so it
            gets precedence for types that implement the buffer protocol. */
         .def(py::init([](py::buffer other) {
-            Py_buffer buffer{};
+            /* GCC 4.8 otherwise loudly complains about missing initializers */
+            Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
             if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_FORMAT|PyBUF_STRIDES) != 0)
                 throw py::error_already_set{};
 

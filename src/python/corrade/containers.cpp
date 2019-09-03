@@ -109,7 +109,8 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
 
         /* Buffer protocol */
         .def(py::init([](py::buffer other) {
-            Py_buffer buffer{};
+            /* GCC 4.8 otherwise loudly complains about missing initializers */
+            Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
             if(PyObject_GetBuffer(other.ptr(), &buffer, (std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
                 throw py::error_already_set{};
 
@@ -312,7 +313,8 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
 
         /* Buffer protocol */
         .def(py::init([](py::buffer other) {
-            Py_buffer buffer{};
+            /* GCC 4.8 otherwise loudly complains about missing initializers */
+            Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
             if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_STRIDES|(std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
                 throw py::error_already_set{};
 
