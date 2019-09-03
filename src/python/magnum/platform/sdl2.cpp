@@ -41,7 +41,16 @@ void sdl2(py::module& m) {
     struct PublicizedApplication: Platform::Application {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
+        /* MSVC dies with "error C3640: a referenced or virtual member function
+           of a local class must be defined" if this is just `= 0` here. Since
+           we're overriding this method below anyway, it doesn't have to be
+           pure virtual. */
+        #ifdef _MSC_VER
+        void drawEvent() override {}
+        #else
         void drawEvent() override = 0;
+        #endif
+
         void mousePressEvent(MouseEvent&) override {}
         void mouseReleaseEvent(MouseEvent&) override {}
         void mouseMoveEvent(MouseMoveEvent&) override {}
