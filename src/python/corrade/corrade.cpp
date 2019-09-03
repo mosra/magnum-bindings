@@ -34,6 +34,9 @@
 
 namespace py = pybind11;
 
+/* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
+   is released */
+extern "C" PYBIND11_EXPORT PyObject* PyInit__corrade();
 PYBIND11_MODULE(_corrade, m) {
     py::module containers = m.def_submodule("containers");
     corrade::containers(containers);
