@@ -5,6 +5,8 @@ addons:
     - libgl1-mesa-dev
     - ninja-build
     - lcov
+    - libsdl2-dev
+    - libglfw3-dev
 
 matrix:
   include:
@@ -45,7 +47,8 @@ matrix:
         - g++-4.8
         - ninja-build
         - lcov
-        - libgles2-mesa-dev
+        - libsdl2-dev
+        - libglfw3-dev
   - language:  python
     python: 3.6
     os: linux
@@ -63,7 +66,8 @@ matrix:
         - g++-4.8
         - ninja-build
         - lcov
-        - libgles2-mesa-dev
+        - libsdl2-dev
+        - libglfw3-dev
   - language: cpp
     os: osx
     compiler: clang
@@ -88,6 +92,8 @@ cache:
 
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.8; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ] && ( [ "$TARGET" == "desktop" ] || [ "$TARGET" == "desktop-sanitizers" ] ); then export PLATFORM_GL_API=GLX; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TARGET" == "desktop-gles" ]; then export PLATFORM_GL_API=EGL; fi
 # Download CMake 3.1.3 to ensure we're still compatible with it (Travis has
 # 3.9 since December 2017). Also, the PATH setting can't be cached, so it's
 # separate (bit me two times already). Android needs CMake 3.7, but
@@ -104,6 +110,9 @@ install:
 # Travis image has just 2.2.4.
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ ! -e "$HOME/pybind11/bin" ]; then $TRAVIS_BUILD_DIR/package/ci/setup-pybind11.sh; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install pybind11; fi
+
+# SDL and GLFW on macOS
+- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TARGET" == "desktop" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl2 glfw; fi
 
 # numpy on macOS -- probably because we updated Homebrew to install new pybind
 # (and thus python as well, apparently), the preinstalled numpy is no longer

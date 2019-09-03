@@ -18,7 +18,8 @@ cmake .. \
 ninja install
 cd ../..
 
-# Magnum
+# Magnum. Keep the WindowlessApplication disabled as otherwise it would
+# attempt to run GL tests. We don't want that.
 git clone --depth 1 git://github.com/mosra/magnum.git
 cd magnum
 mkdir build && cd build
@@ -39,6 +40,9 @@ cmake .. \
     -DWITH_TEXTURETOOLS=OFF \
     -DWITH_TRADE=ON \
     -DWITH_VK=OFF \
+    -DWITH_GLFWAPPLICATION=ON \
+    -DWITH_SDL2APPLICATION=ON \
+    -DWITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=OFF \
     -G Ninja
 ninja install
 cd ../..
