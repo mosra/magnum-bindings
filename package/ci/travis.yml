@@ -18,17 +18,6 @@ matrix:
     env:
     - JOBID=linux-gl
     - TARGET=desktop
-    - BUILD_STATIC=OFF
-    - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
-  - language: python
-    python: 3.6
-    os: linux
-    dist: xenial
-    compiler: gcc
-    env:
-    - JOBID=linux-gl-static
-    - TARGET=desktop
-    - BUILD_STATIC=ON
     - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
   - language:  python
     python: 3.6
@@ -68,13 +57,29 @@ matrix:
         - lcov
         - libsdl2-dev
         - libglfw3-dev
+  - language: python
+    python: 3.6
+    os: linux
+    dist: xenial
+    compiler: gcc
+    env:
+    - JOBID=linux-static
+    - TARGET=desktop
+    - BUILD_STATIC=ON
+    - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
   - language: cpp
     os: osx
     compiler: clang
     env:
     - JOBID=macos-gl
     - TARGET=desktop
-    - BUILD_STATIC=OFF
+  - language: cpp
+    os: osx
+    compiler: clang
+    env:
+    - JOBID=macos-static
+    - TARGET=desktop
+    - BUILD_STATIC=ON
 
 notifications:
   webhooks:
@@ -92,6 +97,7 @@ cache:
 
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.8; fi
+- if [ "$BUILD_STATIC" != "ON" ]; then export BUILD_STATIC=OFF; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && ( [ "$TARGET" == "desktop" ] || [ "$TARGET" == "desktop-sanitizers" ] ); then export PLATFORM_GL_API=GLX; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TARGET" == "desktop-gles" ]; then export PLATFORM_GL_API=EGL; fi
 # Download CMake 3.1.3 to ensure we're still compatible with it (Travis has
