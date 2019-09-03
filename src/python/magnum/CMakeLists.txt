@@ -35,7 +35,8 @@ find_package(Magnum COMPONENTS
     GlfwApplication
     Sdl2Application
     WindowlessEglApplication
-    WindowlessGlxApplication)
+    WindowlessGlxApplication
+    WindowlessWglApplication)
 
 set(magnum_SRCS
     magnum.cpp
@@ -193,6 +194,11 @@ else()
     if(Magnum_WindowlessGlxApplication_FOUND)
         list(APPEND magnum_SRCS platform/glx.cpp)
         list(APPEND magnum_LIBS Magnum::WindowlessGlxApplication)
+    endif()
+
+    if(Magnum_WindowlessWglApplication_FOUND)
+        list(APPEND magnum_SRCS platform/wgl.cpp)
+        list(APPEND magnum_LIBS Magnum::WindowlessWglApplication)
     endif()
 endif()
 

@@ -40,7 +40,7 @@ for i in ['gl', 'meshtools', 'platform', 'primitives', 'scenegraph', 'shaders', 
 
 # Platform has subpackages
 if 'platform' in globals():
-    for i in ['glfw', 'sdl2', 'egl', 'glx']:
+    for i in ['glfw', 'sdl2', 'glx', 'wgl', 'egl']:
         if hasattr(platform, i): sys.modules['magnum.platform.' + i] = getattr(platform, i)
 
     # Bring one application implementation directly into the platform module.
@@ -53,6 +53,8 @@ if 'platform' in globals():
     # Same for windowless apps
     if hasattr(platform, 'glx'):
         platform.WindowlessApplication = platform.glx.WindowlessApplication
+    elif hasattr(platform, 'wgl'):
+        platform.WindowlessApplication = platform.wgl.WindowlessApplication
     elif hasattr(platform, 'egl'):
         platform.WindowlessApplication = platform.egl.WindowlessApplication
 

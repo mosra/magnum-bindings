@@ -63,6 +63,16 @@ if(NOT MAGNUM_BUILD_STATIC)
             OUTPUT_NAME "glx"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
+
+    if(Magnum_WindowlessWglApplication_FOUND)
+        pybind11_add_module(magnum_platform_wgl SYSTEM wgl.cpp)
+        target_link_libraries(magnum_platform_wgl PRIVATE Magnum::WindowlessWglApplication)
+        target_include_directories(magnum_platform_wgl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        set_target_properties(magnum_platform_wgl PROPERTIES
+            FOLDER "python/platform"
+            OUTPUT_NAME "wgl"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+    endif()
 endif()
 
 file(GENERATE OUTPUT ${output_dir}/magnum/platform/__init__.py

@@ -32,9 +32,12 @@ try:
     from .glx import WindowlessApplication
 except ImportError: # pragma: no cover
     try:
-        from .egl import WindowlessApplication
+        from .wgl import WindowlessApplication
     except ImportError:
-        pass
+        try:
+            from .egl import WindowlessApplication
+        except ImportError:
+            pass
 
 try:
     from .sdl2 import Application
