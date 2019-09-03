@@ -93,7 +93,6 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         .def(py::init(), "Default constructor")
 
         /* Operators */
-        .def(-py::self, "Negated vector")
         .def(py::self += py::self, "Add and assign a vector")
         .def(py::self + py::self, "Add a vector")
         #ifdef __clang__
@@ -122,6 +121,10 @@ template<class T, class ...Args> void everyVector(py::class_<T, Args...>& c) {
         .def(py::self / py::self, "Divide a vector component-wise")
         .def(typename T::Type{} * py::self, "Multiply a scalar with a vector")
         .def(typename T::Type{} / py::self, "Divide a vector with a scalar and invert");
+}
+
+template<class T, class ...Args> void everyVectorSigned(py::class_<T, Args...>& c) {
+    c.def(-py::self, "Negated vector");
 }
 
 /* Separate because it needs to be registered after the type conversion
@@ -272,10 +275,6 @@ template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {
         .def_static("y_scale", &Math::Vector2<T>::yScale,
             "Scaling vector in a direction of Y axis (height)", py::arg("scale"))
 
-        /* Methods */
-        .def("perpendicular", &Math::Vector2<T>::perpendicular,
-            "Perpendicular vector")
-
         /* Properties */
         .def_property("x",
             static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::x),
@@ -285,6 +284,11 @@ template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {
             static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::y),
             [](Math::Vector2<T>& self, T value) { self.y() = value; },
             "Y component");
+}
+
+template<class T> void vector2Signed(py::class_<Math::Vector2<T>>& c) {
+    /* Cast needed because these are enabled only for signed types */
+    c.def("perpendicular", static_cast<Math::Vector2<T>(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::perpendicular), "Perpendicular vector");
 }
 
 template<class T> void vector3(py::class_<Math::Vector3<T>>& c) {

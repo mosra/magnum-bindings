@@ -59,19 +59,23 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
         .def("cross", static_cast<T(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(Math::cross),
             "2D cross product");
     everyVector(vector2_);
+    everyVectorSigned(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
     vectorFloat<Math::Vector2<T>>(m, vector2_);
     vector2<T>(vector2_);
+    vector2Signed<T>(vector2_);
 
     vector3_
         .def("cross", static_cast<Math::Vector3<T>(*)(const Math::Vector3<T>&, const Math::Vector3<T>&)>(Math::cross),
             "Cross product");
     everyVector(vector3_);
+    everyVectorSigned(vector3_);
     vector<Math::Vector3<T>>(m, vector3_);
     vectorFloat<Math::Vector3<T>>(m, vector3_);
     vector3<T>(vector3_);
 
     everyVector(vector4_);
+    everyVectorSigned(vector4_);
     vector<Math::Vector4<T>>(m, vector4_);
     vectorFloat<Math::Vector4<T>>(m, vector4_);
     vector4<T>(vector4_);
@@ -132,9 +136,11 @@ void mathVectorFloat(py::module& root, py::module& m) {
     vectorsFloat<Float>(m, vector2, vector3, vector4);
     vectorsFloat<Double>(m, vector2d, vector3d, vector4d);
     everyVector(color3_);
+    everyVectorSigned(color3_);
     color(color3_);
     color3(color3_);
     everyVector(color4_);
+    everyVectorSigned(color4_);
     color(color4_);
     color4(color4_);
 }

@@ -98,6 +98,13 @@ template<class T> void vectorsIntegral(py::module& m, py::class_<Math::Vector2<T
     vector4<T>(vector4_);
 }
 
+template<class T> void vectorsIntegralSigned(py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
+    everyVectorSigned(vector2_);
+    everyVectorSigned(vector3_);
+    everyVectorSigned(vector4_);
+    vector2Signed<T>(vector2_);
+}
+
 }
 
 void mathVectorIntegral(py::module& root, py::module& m) {
@@ -131,6 +138,7 @@ void mathVectorIntegral(py::module& root, py::module& m) {
 
     /* Now register the generic from-list constructors and everything else */
     vectorsIntegral<Int>(m, vector2i, vector3i, vector4i);
+    vectorsIntegralSigned<Int>(vector2i, vector3i, vector4i);
     vectorsIntegral<UnsignedInt>(m, vector2ui, vector3ui, vector4ui);
 }
 
