@@ -34,7 +34,9 @@ if(CORRADE_TARGET_WINDOWS)
     add_definitions("-DUNICODE" "-D_UNICODE")
 endif()
 
-set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
+set_directory_properties(PROPERTIES
+    CORRADE_CXX_STANDARD 11
+    CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_subdirectory(Corrade)
 add_subdirectory(Magnum)
