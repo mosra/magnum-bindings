@@ -28,7 +28,10 @@ import unittest
 from magnum import *
 from magnum import math
 
-import numpy as np
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    raise unittest.SkipTest("numpy not installed")
 
 class Vector(unittest.TestCase):
     def test_from_numpy(self):

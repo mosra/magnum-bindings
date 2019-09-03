@@ -23,12 +23,16 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-import numpy as np
 import unittest
 
 from magnum import *
 from magnum import scenegraph
 from magnum.scenegraph.matrix import Object3D, Scene3D
+
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    raise unittest.SkipTest("numpy not installed")
 
 class Object(unittest.TestCase):
     def test_transformation(self):
