@@ -496,7 +496,7 @@ void gl(py::module& m) {
 #ifndef MAGNUM_BUILD_STATIC
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
-extern "C" PyObject* PyInit_gl();
+extern "C" PYBIND11_EXPORT PyObject* PyInit_gl();
 PYBIND11_MODULE(gl, m) {
     magnum::gl(m);
 }

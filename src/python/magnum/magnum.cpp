@@ -216,7 +216,7 @@ void magnum(py::module& m) {
 
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
-extern "C" PyObject* PyInit__magnum();
+extern "C" PYBIND11_EXPORT PyObject* PyInit__magnum();
 PYBIND11_MODULE(_magnum, m) {
     /* We need ArrayView for images */
     py::module::import("corrade.containers");

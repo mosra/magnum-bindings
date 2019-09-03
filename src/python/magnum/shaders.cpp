@@ -155,7 +155,7 @@ void shaders(py::module& m) {
 #ifndef MAGNUM_BUILD_STATIC
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
-extern "C" PyObject* PyInit_shaders();
+extern "C" PYBIND11_EXPORT PyObject* PyInit_shaders();
 PYBIND11_MODULE(shaders, m) {
     magnum::shaders(m);
 }

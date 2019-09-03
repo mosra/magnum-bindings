@@ -636,7 +636,7 @@ void containers(py::module& m) {
 #ifndef CORRADE_BUILD_STATIC
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
-extern "C" PyObject* PyInit_containers();
+extern "C" PYBIND11_EXPORT PyObject* PyInit_containers();
 PYBIND11_MODULE(containers, m) {
     corrade::containers(m);
 }
