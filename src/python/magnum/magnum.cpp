@@ -67,19 +67,40 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
     */
 
     c
-        /* Constructors */
-        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
-            return pyImageViewHolder(T{storage, format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
-        }), "Constructor")
-        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
-            return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
-        }), "Constructor")
+        /* Constructors. The variants *not* taking an array view have to be
+           first, otherwise things fail on systems that don't have numpy
+           installed:
+
+            ===================================================================
+            ERROR: test_init_empty (test.test.ImageView)
+            -------------------------------------------------------------------
+            Traceback (most recent call last):
+              File ".../magnum/test/test.py", line 102, in test_init_empty
+                b = ImageView2D(storage, PixelFormat.R32F, (8, 8))
+            ModuleNotFoundError: No module named 'numpy'
+
+           This is because of the order in which pybind processes arguments ---
+           it would first try to match the (PixelFormat, Vector2i, ArrayView)
+           variant and *somehow* getting all the way to the third argument,
+           where, because ArrayView is marked as implicitly convertible from
+           py::array for numpy compatibility, it ends up doing this in numpy.h:
+
+            module m = module::import("numpy.core.multiarray");
+            auto c = m.attr("_ARRAY_API");
+
+           Wonderful, isn't it. */
         .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
             return T{storage, format, size};
         }), "Construct an empty view")
         .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
             return T{format, size};
         }), "Construct an empty view")
+        .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            return pyImageViewHolder(T{storage, format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
+        }), "Constructor")
+        .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
+        }), "Constructor")
 
         /* Properties */
         .def_property_readonly("storage", &T::storage, "Storage of pixel data")
