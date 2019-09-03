@@ -18,8 +18,7 @@ cmake .. \
 ninja install
 cd ../..
 
-# Magnum. Keep the WindowlessApplication disabled as otherwise it would
-# attempt to run GL tests. We don't want that.
+# Magnum
 git clone --depth 1 git://github.com/mosra/magnum.git
 cd magnum
 mkdir build && cd build
@@ -42,7 +41,7 @@ cmake .. \
     -DWITH_VK=OFF \
     -DWITH_GLFWAPPLICATION=ON \
     -DWITH_SDL2APPLICATION=ON \
-    -DWITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=OFF \
+    -DWITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=ON \
     -G Ninja
 ninja install
 cd ../..
@@ -68,7 +67,7 @@ cd ../../../src/python/corrade
 coverage run -m unittest -v && cp .coverage ../.coverage.corrade
 
 cd ../magnum
-coverage run -m unittest -v && cp .coverage ../.coverage.magnum
+MAGNUM_SKIP_GL_TESTS=ON coverage run -m unittest -v && cp .coverage ../.coverage.magnum
 
 # Test docstring validity
 cd ../../../doc/python

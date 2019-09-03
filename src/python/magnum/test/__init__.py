@@ -34,6 +34,8 @@ from magnum import *
 from magnum import platform
 
 def setUpModule():
+    if os.environ.get('MAGNUM_SKIP_GL_TESTS') == 'ON':
+        raise unittest.SkipTest('GL tests skipped')
     if not hasattr(platform, 'WindowlessApplication'): # pragma: no cover
         raise unittest.SkipTest('no WindowlessApplication found')
 
