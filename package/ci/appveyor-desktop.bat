@@ -97,4 +97,6 @@ rem python -m doctest -v *.rst || exit /b
 rem Upload coverage
 cd ../../src/python || exit /b
 coverage combine || exit /b
-codecov -X gcov || exit /b
+rem TODO: Currently disabled because I can't seem to convince it to relocate
+rem the paths via codecov.yml: https://github.com/mosra/magnum-bindings/pull/3
+rem codecov -X gcov || exit /b
