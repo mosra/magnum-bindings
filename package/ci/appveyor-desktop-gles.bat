@@ -100,10 +100,14 @@ coverage combine || exit /b
 rem I am unable to convince codecov to relocate paths using codecov.yml so
 rem let's do that manually. But that doesn't work either.
 powershell -Command "(gc .coverage) -replace 'C:\\\\projects\\\\magnum-bindings\\\\build\\\\src\\\\python\\\\', 'C:\\projects\\magnum-bindings\\src\\python\\' | Out-File -encoding ASCII .coverage" || exit /b
+
+type .coverage
+
 del ..\..\build\src\python\corrade\__init__.py || exit /b
 del ..\..\build\src\python\magnum\__init__.py || exit /b
 del ..\..\build\src\python\magnum\platform\__init__.py || exit /b
 
+cd ..\..
 codecov -X gcov || exit /b
 
 type coverage.xml
