@@ -49,6 +49,7 @@ INPUT_PAGES = [
     'pages/index.rst',
     'pages/building.rst',
     'pages/api-conventions.rst',
+    'pages/credits.rst',
 
     '../../../magnum-examples/doc/python/examples.rst'
 ]
