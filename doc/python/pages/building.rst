@@ -187,7 +187,9 @@ following commands, the resulting HTML overview is located in
 =========================
 
 In ``package/ci/`` there is a ``travis.yml`` file that compiles and tests the
-bindings on Linux GCC 4.8 + CMake 3.1 and on macOS. Online at
-https://travis-ci.org/mosra/magnum-bindings. Code coverage for both the C++
-bindings code and Python side is reported to
+bindings on Linux GCC 4.8 + CMake 3.1 and on macOS, online at
+https://travis-ci.org/mosra/magnum-bindings. For Windows there is an
+``appveyor.yml`` testing on Windows with MSVC 2017 and 2019, online at
+https://ci.appveyor.com/project/mosra/magnum-bindings. Code coverage for both
+the C++ bindings code and Python side is reported to
 https://codecov.io/gh/mosra/magnum-bindings.
