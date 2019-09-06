@@ -84,7 +84,7 @@ class Framebuffer(GLTestCase):
         gl.Renderer.clear_color = Color4(1.0, 0.5, 0.75)
         framebuffer.clear(gl.FramebufferClear.COLOR)
 
-        a = MutableImageView2D(PixelFormat.RGBA8UNORM, (2, 2), bytearray(16))
+        a = MutableImageView2D(PixelFormat.RGBA8_UNORM, (2, 2), bytearray(16))
         framebuffer.read(Range2Di.from_size((1, 1), (2, 2)), a)
         self.assertEqual(a.size, Vector2i(2, 2))
         self.assertEqual(ord(a.pixels[0, 0, 0]), 0xff)

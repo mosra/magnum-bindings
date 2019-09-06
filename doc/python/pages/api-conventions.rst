@@ -90,7 +90,7 @@ C++                                                             Python
 ============================================== ============================
 C++                                            Python
 ============================================== ============================
-:dox:`PixelFormat::RGB8Unorm`                  `PixelFormat.RGB8UNORM`
+:dox:`PixelFormat::RGB8Unorm`                  `PixelFormat.RGB8_UNORM`
 :dox:`MeshPrimitive::TriangleStrip`            `MeshPrimitive.TRIANGLE_STRIP`
 ============================================== ============================
 

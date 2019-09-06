@@ -56,10 +56,10 @@ class ImageView(unittest.TestCase):
                 b'ijkIJK  ')
         data_refcount = sys.getrefcount(data)
 
-        a = ImageView2D(PixelFormat.RGB8UNORM, (2, 4), data)
+        a = ImageView2D(PixelFormat.RGB8_UNORM, (2, 4), data)
         self.assertEqual(a.storage, PixelStorage())
         self.assertEqual(a.size, Vector2i(2, 4))
-        self.assertEqual(a.format, PixelFormat.RGB8UNORM)
+        self.assertEqual(a.format, PixelFormat.RGB8_UNORM)
         self.assertEqual(a.pixel_size, 3)
         self.assertEqual(len(a.data), 32)
         self.assertIs(a.owner, data)
@@ -82,7 +82,7 @@ class ImageView(unittest.TestCase):
 
         storage = PixelStorage()
         storage.alignment = 2
-        a = ImageView3D(storage, PixelFormat.RGB8UNORM, (2, 2, 2), data)
+        a = ImageView3D(storage, PixelFormat.RGB8_UNORM, (2, 2, 2), data)
         self.assertEqual(a.storage.alignment, 2)
         self.assertEqual(a.size, Vector3i(2, 2, 2))
         self.assertEqual(len(a.data), 24)
@@ -113,7 +113,7 @@ class ImageView(unittest.TestCase):
                          b'ijkIJK  ')
         data_refcount = sys.getrefcount(data)
 
-        a = MutableImageView2D(PixelFormat.RGB8UNORM, (2, 4), data)
+        a = MutableImageView2D(PixelFormat.RGB8_UNORM, (2, 4), data)
         self.assertEqual(sys.getrefcount(data), data_refcount + 1)
 
         a.pixels[1, 1, 1] = '_'
@@ -129,7 +129,7 @@ class ImageView(unittest.TestCase):
         # Back to immutable
         b = ImageView2D(a)
         self.assertEqual(b.size, Vector2i(2, 4))
-        self.assertEqual(b.format, PixelFormat.RGB8UNORM)
+        self.assertEqual(b.format, PixelFormat.RGB8_UNORM)
         self.assertEqual(b.pixel_size, 3)
         self.assertEqual(len(b.data), 32)
         self.assertIs(b.owner, data)
@@ -143,7 +143,7 @@ class ImageView(unittest.TestCase):
                 b'ijkIJK  ')
         data_refcount = sys.getrefcount(data)
 
-        a = ImageView2D(PixelFormat.RGB8UNORM, (2, 4), data)
+        a = ImageView2D(PixelFormat.RGB8_UNORM, (2, 4), data)
         self.assertIs(a.owner, data)
         self.assertEqual(sys.getrefcount(data), data_refcount + 1)
 
