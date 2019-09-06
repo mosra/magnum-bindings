@@ -42,11 +42,11 @@ the C++ docs --- highlighting important differences and describing general
 conventions, but referring to documentation of underlying C++ APIs for all
 details.
 
-See the :link-ref:`building docs <building.html>` for an installation guide,
-:link-ref:`API convention documentation <api-conventions.html>` and
-:link-ref:`documentation of each module <modules.html>` for more information
-about the actual usage. There are also :link-ref:`examples <examples.html>` to
-give you an idea about how the API feels.
+See the `building docs <std:doc:building>` for an installation guide,
+`API convention documentation <std:doc:api-conventions>` and
+`documentation of each module <std:special:modules>` for more information about
+the actual usage. There are also `examples <std:doc:examples>` to give you an
+idea about how the API feels.
 
 `Contact & support`_
 ====================

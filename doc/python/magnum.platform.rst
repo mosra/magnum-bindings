@@ -28,9 +28,9 @@
     While concrete implementations of :py:`Application` and
     :py:`WindowlessApplication` classes are available in the submodules,
     there's a convenience logic importing the most fitting implementation
-    that's available directly into the :py:`platform` module, meaning you can
-    do just this without having to think about a particular implementation,
-    for example:
+    that's available directly into the `platform` module, meaning you can do
+    just this without having to think about a particular implementation, for
+    example:
 
     .. code:: py
 

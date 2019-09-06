@@ -29,11 +29,8 @@
     :language: c++
 .. role:: py(code)
     :language: py
-.. role:: link-ref(link)
-    :class: m-doc
 
 .. doctest setup
     >>> from magnum import *
 
-.. TODO: change this to py:ref or something when we are able to reference names
-.. default-role:: py
+.. default-role:: ref

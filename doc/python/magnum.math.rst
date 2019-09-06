@@ -24,6 +24,16 @@
 ..
 
 .. py:module:: magnum.math
+    :data pi: :math:`\pi`
+    :data pi_half: Half of a :math:`\pi`
+    :data pi_quarter: Quarter of a :math:`\pi`
+    :data tau: :math:`\tau`, or :math:`2 \pi`
+    :data e: Euler's number
+    :data sqrt2: Square root of 2
+    :data sqrt3: Square root of 3
+    :data sqrt_half: Square root of :math:`\frac{1}{2}`
+    :data nan: Quiet NaN
+    :data inf: Positive :math:`\infty`
 
     In the C++ API, math types are commonly used via :cpp:`typedef`\ s in the
     root namespace, only library-level generic code uses things like
@@ -83,12 +93,12 @@
 
         Currently, doing :py:`from magnum import math` will bring in the
         Magnum's math module which at the moment *does not* contain the
-        well-known Python APIs and constants. In particular, calling `math.sin()`
-        expects an explicit `Deg` / `Rad` type, while Python's :py:`math.sin()`
-        doesn't. This will get resolved either by making all Python overloads
-        present in the same module or giving the user an option whether to use
-        Magnum math or Python math. For now, to avoid confusion, do for example
-        this:
+        well-known Python APIs and constants. In particular, calling
+        `magnum.math.sin()` expects an explicit `Deg` / `Rad` type, while
+        Python's `math.sin()` doesn't. This will get resolved either by making
+        all Python overloads present in the same module or giving the user an
+        option whether to use Magnum math or Python math. For now, to avoid
+        confusion, do for example this:
 
         .. code:: pycon
 
@@ -104,9 +114,10 @@
 
     Since Python doesn't really differentiate between 32bit and 64bit doubles,
     all *scalar* functions taking or returning a floating-point type (such as
-    the `Deg` / `Rad` types, `math.pi` or `math.sin()`) use the :cpp:`double`
-    variant of the underlying C++ API --- the extra arithmetic cost is
-    negligible to the Python-to-C++ function call overhead.
+    the `Deg` / `Rad` types, `math.pi <magnum.math.pi>` or
+    `math.sin <magnum.math.sin()>`) use the :cpp:`double` variant of the
+    underlying C++ API --- the extra arithmetic cost is negligible to the
+    Python-to-C++ function call overhead.
 
     On the other hand, matrix and vector types are exposed in both the float
     and double variants.
@@ -117,7 +128,7 @@
     All vector classes are implicitly convertible from a tuple of correct size
     and type as well as from/to type implementing the buffer protocol, and
     these can be also converted back to lists using list comprehensions. This
-    makes them fully compatible with `numpy.array`, so the following
+    makes them fully compatible with `numpy.ndarray`, so the following
     expressions are completely valid:
 
     ..
@@ -210,33 +221,3 @@
         the corresponding :py:`mat.translation` property is temporarily
         available as an underscored `Matrix3._translation`. This will change
         later.
-
-.. py:data:: magnum.math.pi
-    :summary: :math:`\pi`
-
-.. py:data:: magnum.math.pi_half
-    :summary: Half of a :math:`\pi`
-
-.. py:data:: magnum.math.pi_quarter
-    :summary: Quarter of a :math:`\pi`
-
-.. py:data:: magnum.math.tau
-    :summary: :math:`\tau`
-
-.. py:data:: magnum.math.e
-    :summary: Euler's number
-
-.. py:data:: magnum.math.sqrt2
-    :summary: Square root of 2
-
-.. py:data:: magnum.math.sqrt3
-    :summary: Square root of 3
-
-.. py:data:: magnum.math.sqrt_half
-    :summary: Square root of :math:`\frac{1}{2}`
-
-.. py:data:: magnum.math.nan
-    :summary: Quiet NaN
-
-.. py:data:: magnum.math.inf
-    :summary: Positive :math:`\infty`

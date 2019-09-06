@@ -26,8 +26,11 @@
 Python API conventions
 ######################
 
-:summary: Basic rules and good practices for both Python binding develpoers and
+:summary: Basic rules and good practices for both Python binding developers and
     users.
+:ref-prefix:
+    corrade
+    magnum
 
 `API naming`_
 =============
@@ -70,14 +73,14 @@ C++                                 Python
 
 .. class:: m-table
 
-================================================ ==========================
-C++                                              Python
-================================================ ==========================
-:dox:`Math::angle()`                             `math.angle()`
-:dox:`Vector2::xAxis() <Math::Vector2::xAxis()>` `Vector2.x_axis()`
-:cpp:`v.isZero()`                                :py:`v.is_zero()`
-:cpp:`m.transformVector(a)`                      :py:`m.transform_vector(a)`
-================================================ ==========================
+=============================================================== ===========
+C++                                                             Python
+=============================================================== ===========
+:dox:`Math::angle()`                                            `math.angle()`
+:dox:`Vector2::xAxis() <Math::Vector2::xAxis()>`                `Vector2.x_axis()`
+:dox:`v.isZero() <Math::Vector::isZero()>`                      `v.is_zero() <Vector3.is_zero()>`
+:dox:`m.transformVector(a) <Math::Matrix4::transformVector()>`  `m.transform_vector(a) <Matrix4.transform_vector()>`
+=============================================================== ===========
 
 `Enums`_
 --------
@@ -88,14 +91,14 @@ C++                                              Python
 C++                                            Python
 ============================================== ============================
 :dox:`PixelFormat::RGB8Unorm`                  `PixelFormat.RGB8UNORM`
-:dox:`MeshPrimitive::TriangleStrip`            :py:`MeshPrimitive.TRIANGLE_STRIP`
+:dox:`MeshPrimitive::TriangleStrip`            `MeshPrimitive.TRIANGLE_STRIP`
 ============================================== ============================
 
 `Constants`_
 ------------
 
 Apart from :dox:`Math::Constants`, which are exposed directly as members of the
-`math` submodule to mimic Python's :py:`math`, most of the constants used
+`magnum.math` submodule to mimic Python's `math`, most of the constants used
 throughout the C++ API are related to templates. Those are, where applicable,
 converted to Python builtins such as :py:`len()`.
 
@@ -104,7 +107,7 @@ converted to Python builtins such as :py:`len()`.
 ============================================== ============================
 C++                                            Python
 ============================================== ============================
-:dox:`Constants::pi() <Math::Constants::pi()>` `math.pi`
+:dox:`Constants::pi() <Math::Constants::pi()>` `math.pi <magnum.math.pi>`
 :dox:`Math::Vector::Size`                      :py:`len(vec)`
 ============================================== ============================
 

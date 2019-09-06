@@ -87,9 +87,13 @@ STYLESHEETS = [
 FAVICON = '../favicon.ico'
 
 M_DOX_TAGFILES = [
-    # TODO: the path should be relative to this file
-    (os.path.join(os.path.dirname(__file__), '../../../corrade/build/doc-mcss/corrade.tag'), '../../../../corrade/build/doc-mcss/html/', ['Corrade::'],  ['m-doc-external']),
-    (os.path.join(os.path.dirname(__file__), '../../../magnum/build/doc-mcss/magnum.tag'), '../../../../magnum/build/doc-mcss/html/', ['Magnum::'],  ['m-doc-external'])
+    ('../../../corrade/build/doc-mcss/corrade.tag', '../../../../corrade/build/doc-mcss/html/', ['Corrade::'],  ['m-doc-external']),
+    ('../../../magnum/build/doc-mcss/magnum.tag', '../../../../magnum/build/doc-mcss/html/', ['Magnum::'],  ['m-doc-external'])
+]
+M_SPHINX_INVENTORY_OUTPUT = 'objects.inv'
+M_SPHINX_INVENTORIES = [
+    ('python.inv', 'https://docs.python.org/3/', [], ['m-doc-external']),
+    ('numpy.inv', 'https://docs.scipy.org/doc/numpy/', [], ["m-doc-external"])
 ]
 M_HTMLSANITY_SMART_QUOTES = True
 
