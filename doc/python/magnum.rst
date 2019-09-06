@@ -29,6 +29,8 @@
     :language: c++
 .. role:: py(code)
     :language: py
+.. role:: sh(code)
+    :language: sh
 
 .. doctest setup
     >>> from magnum import *

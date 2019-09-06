@@ -154,16 +154,17 @@ running them is then a matter of:
     cd src/python/magnum
     python -m unittest
 
-.. block-warning:: Subject to change
+.. block-default:: Disabling GL tests
 
-    If the tests detect that one of `platform.WindowlessApplication`\ s is
-    present, GL tests (suffixed with ``_gl``) will be run as well. Currently
-    there's no way to blacklist them if windowless application implementations
-    are compiled, you can only whitelist-run the remaining tests:
+    If the tests detect that one of
+    `platform.WindowlessApplication <platform.egl.WindowlessApplication>`\ s is
+    present, GL tests (suffixed with ``_gl``) will be run as well. In order to
+    disable them (for example when running on a headless CI), set the
+    :sh:`$MAGNUM_SKIP_GL_TESTS` environment variable to ``ON``:
 
     .. code:: sh
 
-        python -m unittest test.test_gl test.test_math # test.test_gl_gl is a GL test
+        MAGNUM_SKIP_GL_TESTS=ON python -m unittest
 
 For code coverage, `coverage.py <https://coverage.readthedocs.io/>`_ is used.
 Get it via ``pip`` or as a system package.
