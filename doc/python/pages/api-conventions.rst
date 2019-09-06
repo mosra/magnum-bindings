@@ -178,6 +178,33 @@ subnamespaces *do* have generic names. The :dox:`GL::version()` /
 generic name isn't a problem, but you wouldn't find anything of similar
 genericity in the root namespace / module.
 
+`Handling of alternate implementations`_
+----------------------------------------
+
+C++ APIs that have alternative implementations (such as
+:dox:`Platform::Sdl2Application` vs. :dox:`Platform::GlfwApplication`, or
+:dox:`SceneGraph::MatrixTransformation3D` vs.
+:dox:`SceneGraph::TranslationRotationScalingTransformation3D`) either provide
+:cpp:`typedef`\ s based on what header you include or require you to
+:cpp:`typedef` them yourselves:
+
+.. code:: c++
+
+    class MyApplication: Platform::Application {}; // depends on what you include
+
+    typedef SceneGraph::Object<SceneGraph::MatrixTransformation3D> Object3D;
+
+In Python, the alternate implementations are tucked in submodules (such as
+`platform.sdl2` vs. `platform.glfw`, or `scenegraph.matrix` vs.
+`scenegraph.trs`), each submodule providing the same names (such as
+`Application <platform.sdl2.Application>` or `Object3D <scenegraph.matrix.Object3D>`)
+and the designed way to use them is via :py:`from ... import`:
+
+.. code:: py
+
+    from magnum.platform.sdl2 import Application
+    from magnum.scenegraph.trs import Scene3D, Object3D
+
 `Basic guarantees`_
 ===================
 
