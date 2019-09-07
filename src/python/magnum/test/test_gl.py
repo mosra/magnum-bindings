@@ -25,6 +25,7 @@
 
 import unittest
 
+import magnum
 from magnum import gl
 
 class Attribute(unittest.TestCase):
@@ -39,3 +40,16 @@ class FramebufferClear(unittest.TestCase):
     def test_ops(self):
         self.assertEqual(gl.FramebufferClear.COLOR|gl.FramebufferClear.COLOR, gl.FramebufferClear.COLOR)
         self.assertFalse(gl.FramebufferClear.COLOR & ~gl.FramebufferClear.COLOR)
+
+class Version(unittest.TestCase):
+    def test_enum_to_major_minor(self):
+        if magnum.TARGET_GLES:
+            self.assertEqual(gl.version(gl.Version.GLES200), (2, 0))
+        else:
+            self.assertEqual(gl.version(gl.Version.GL430), (4, 3))
+
+    def test_major_minor_to_enum(self):
+        if magnum.TARGET_GLES:
+            self.assertEqual(gl.version(3, 0), gl.Version.GLES300)
+        else:
+            self.assertEqual(gl.version(4, 3), gl.Version.GL430)

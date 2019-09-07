@@ -37,6 +37,7 @@
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
+#include <Magnum/GL/Version.h>
 #include <Magnum/Math/Color.h>
 
 #include "Corrade/Python.h"
@@ -70,6 +71,35 @@ void gl(py::module& m) {
     */
 
     m.doc() = "OpenGL wrapping layer";
+
+    /* Version and related utilities */
+    py::enum_<GL::Version>{m, "Version", "OpenGL version"}
+        .value("NONE", GL::Version::None)
+        #ifndef MAGNUM_TARGET_GLES
+        .value("GL210", GL::Version::GL210)
+        .value("GL300", GL::Version::GL300)
+        .value("GL310", GL::Version::GL310)
+        .value("GL320", GL::Version::GL320)
+        .value("GL330", GL::Version::GL330)
+        .value("GL400", GL::Version::GL400)
+        .value("GL410", GL::Version::GL410)
+        .value("GL420", GL::Version::GL420)
+        .value("GL430", GL::Version::GL430)
+        .value("GL440", GL::Version::GL440)
+        .value("GL450", GL::Version::GL450)
+        .value("GL460", GL::Version::GL460)
+        #endif
+        .value("GLES200", GL::Version::GLES200)
+        .value("GLES300", GL::Version::GLES300)
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("GLES310", GL::Version::GLES310)
+        .value("GLES320", GL::Version::GLES320)
+        #endif
+        ;
+    m
+        .def("version", static_cast<GL::Version(*)(Int, Int)>(GL::version), "Enum value from major and minor version number", py::arg("major"), py::arg("minor"))
+        .def("version", static_cast<std::pair<Int, Int>(*)(GL::Version)>(GL::version), "Major and minor version number from enum value", py::arg("version"))
+        .def("is_version_es", GL::isVersionES, "Whether given version is OpenGL ES or WebGL");
 
     /* Abstract shader program */
     PyNonDestructibleClass<GL::AbstractShaderProgram>{m,
