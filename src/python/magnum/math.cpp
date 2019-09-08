@@ -341,6 +341,67 @@ template<class T> void quaternion(py::module& m, py::class_<T>& c) {
         .def("__repr__", repr<T>, "Object representation");
 }
 
+/* Behaves exactly like Py_Type_Type.tp_getattro but redirects access to the
+   translation attribute to _stranslation in order to make it behave like a
+   function when called on an object */
+PyObject* transformationMatrixGettattro(PyObject* const obj, PyObject* const name) {
+    if(PyUnicode_Check(name) && PyUnicode_CompareWithASCIIString(name, "translation") == 0) {
+        /* TODO: this means one allocation per every attribute access, any
+            chance we could minimize that? Storing a global reference to this
+            is crappy :/ Maybe allocate and store this inside
+            transformationMatrixMetaclass? But who would be responsible for
+            Py_DECREF then? Pybind's module destructors are kinda overdone:
+            https://pybind11.readthedocs.io/en/stable/advanced/misc.html#module-destructors */
+        PyObject* const _stranslation = PyUnicode_FromString("_stranslation");
+        PyObject* const ret = PyType_Type.tp_getattro(obj, _stranslation);
+        Py_DECREF(_stranslation);
+        return ret;
+    }
+
+    return PyType_Type.tp_getattro(obj, name);
+}
+
+/* Based off pybind11:detail::make_default_metaclass(), but with Python < 3.3
+   support and unneeded pybind specifics removed. In particular, we don't need
+   any static attribute access modifications from pybind's own metaclass, as
+   Matrix[34] doesn't need to support assignment to static attributes. */
+PyTypeObject* transformationMatrixMetaclass() {
+    constexpr auto *name = "TransformationMatrixType";
+    auto name_obj = py::reinterpret_steal<py::object>(PyUnicode_FromString(name));
+
+    /* Danger zone: from now (and until PyType_Ready), make sure to
+       issue no Python C API calls which could potentially invoke the
+       garbage collector (the GC will call type_traverse(), which will in
+       turn find the newly constructed type in an invalid state) */
+    auto heap_type = reinterpret_cast<PyHeapTypeObject*>(PyType_Type.tp_alloc(&PyType_Type, 0));
+    if(!heap_type)
+        py::pybind11_fail("magnum::transformationMatrixMetaclass(): error allocating metaclass!");
+
+    heap_type->ht_name = name_obj.inc_ref().ptr();
+    heap_type->ht_qualname = name_obj.inc_ref().ptr();
+
+    auto type = &heap_type->ht_type;
+    type->tp_name = name;
+    type->tp_base = py::detail::type_incref(&PyType_Type);
+    type->tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HEAPTYPE;
+
+    type->tp_setattro = PyType_Type.tp_setattro;
+    /* In order to create reasonable docs for this, we can't override the
+       translation attribute at that time --- the _stranslation will be then
+       used for documentation. */
+    if(std::getenv("MCSS_GENERATING_OUTPUT"))
+        type->tp_getattro = PyType_Type.tp_getattro;
+    else
+        type->tp_getattro = transformationMatrixGettattro;
+
+    if(PyType_Ready(type) < 0)
+        py::pybind11_fail("magnum::transformationMatrixMetaclass(): failure in PyType_Ready()!");
+
+    py::setattr(reinterpret_cast<PyObject*>(type), "__module__", py::str("magnum_builtins"));
+
+    return type;
+}
+
 }
 
 void math(py::module& root, py::module& m) {
@@ -391,9 +452,15 @@ void math(py::module& root, py::module& m) {
         .def("acos", [](Double angle) { return Math::acos(angle); }, "Arc cosine")
         .def("atan", [](Double angle) { return Math::atan(angle); }, "Arc tangent");
 
-    /* These are needed for the quaternion, so register them before */
+    /* These are needed for the quaternion, so register them before. Double
+       versions are called from inside these. */
     magnum::mathVectorFloat(root, m);
-    magnum::mathMatrixFloat(root);
+    /* Matrices need a metaclass in order to support the magic translation
+       attribute, so allocate it here, just once. TODO: I'm not sure who's
+       responsible for deleting the object, actually -- however neither pybind
+       seems to be destructing the metaclasses in any way, so in the worst case
+       it's being done wrong in a consistent way.  */
+    magnum::mathMatrixFloat(root, transformationMatrixMetaclass());
 
     /* Quaternion */
     py::class_<Quaternion> quaternion_(root, "Quaternion", "Float quaternion");

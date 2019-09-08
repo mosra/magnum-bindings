@@ -680,7 +680,7 @@ class Matrix3_(unittest.TestCase):
     def test_static_methods(self):
         a = Matrix3.translation((0.0, -1.0))
         self.assertEqual(a[2].xy, Vector2(0.0, -1.0))
-        self.assertEqual(a._translation, Vector2(0.0, -1.0)) # TODO
+        self.assertEqual(a.translation, Vector2(0.0, -1.0))
 
         b = Matrix3.rotation(Deg(45.0))
         self.assertEqual(b.rotation(), Matrix2x2(
@@ -694,11 +694,11 @@ class Matrix3_(unittest.TestCase):
         a = Matrix3.translation(Vector2.y_axis(-5.0))@Matrix3.rotation(Deg(45.0))
         self.assertEqual(a.right, Vector2(0.707107, 0.707107))
         self.assertEqual(a.up, Vector2(-0.707107, 0.707107))
-        self.assertEqual(a._translation, Vector2.y_axis(-5.0)) # TODO
+        self.assertEqual(a.translation, Vector2.y_axis(-5.0))
 
         a.right = Vector2.x_axis(2.0)
         a.up = -Vector2.y_axis()
-        a._translation = Vector2(0.0) # TODO
+        a.translation = Vector2(0.0)
         self.assertEqual(a, Matrix3.from_diagonal((2.0, -1.0, 1.0)))
 
     def test_methods(self):
@@ -796,7 +796,7 @@ class Matrix4_(unittest.TestCase):
     def test_static_methods(self):
         a = Matrix4.translation((0.0, -1.0, 2.0))
         self.assertEqual(a[3].xyz, Vector3(0.0, -1.0, 2.0))
-        self.assertEqual(a._translation, Vector3(0.0, -1.0, 2.0)) # TODO
+        self.assertEqual(a.translation, Vector3(0.0, -1.0, 2.0))
 
         b = Matrix4.rotation(Deg(45.0), Vector3.x_axis())
         self.assertEqual(b.rotation(), Matrix3x3(
@@ -812,12 +812,12 @@ class Matrix4_(unittest.TestCase):
         self.assertEqual(a.right, Vector3(0.707107, 0.707107, 0.0))
         self.assertEqual(a.up, Vector3(-0.707107, 0.707107, 0.0))
         self.assertEqual(a.backward, Vector3(0.0, 0.0, 1.0))
-        self.assertEqual(a._translation, Vector3.y_axis(-5.0)) # TODO
+        self.assertEqual(a.translation, Vector3.y_axis(-5.0))
 
         a.right = Vector3.x_axis(3.0)
         a.up = -Vector3.y_axis()
         a.backward = Vector3.z_axis(2.0)
-        a._translation = Vector3(0.0) # TODO
+        a.translation = Vector3(0.0)
         self.assertEqual(a, Matrix4.from_diagonal((3.0, -1.0, 2.0, 1.0)))
 
     def test_methods(self):

@@ -27,7 +27,7 @@
 
 namespace magnum {
 
-void mathMatrixDouble(py::module& root) {
+void mathMatrixDouble(py::module& root, PyTypeObject* const metaclass) {
     py::class_<Matrix2x2d> matrix2x2d{root, "Matrix2x2d", "2x2 double matrix", py::buffer_protocol{}};
     py::class_<Matrix2x3d> matrix2x3d{root, "Matrix2x3d", "2x3 double matrix", py::buffer_protocol{}};
     py::class_<Matrix2x4d> matrix2x4d{root, "Matrix2x4d", "2x4 double matrix", py::buffer_protocol{}};
@@ -43,9 +43,11 @@ void mathMatrixDouble(py::module& root) {
     /* The subclasses don't have buffer protocol enabled, as that's already
        done by the base classes. Moreover, just adding py::buffer_protocol{}
        would cause it to not find the buffer functions as we don't add them
-       anywhere, thus failing with `pybind11_getbuffer(): Internal error`. */
-    py::class_<Matrix3d, Matrix3x3d> matrix3d{root, "Matrix3d", "2D double transformation matrix"};
-    py::class_<Matrix4d, Matrix4x4d> matrix4d{root, "Matrix4d", "3D double transformation matrix"};
+       anywhere, thus failing with `pybind11_getbuffer(): Internal error`. The
+       metaclasses are needed for supporting the magic translation attribute,
+       see transformationMatrixMetaclass() in math.cpp for more information. */
+    py::class_<Matrix3d, Matrix3x3d> matrix3d{root, "Matrix3d", "2D double transformation matrix", py::metaclass(reinterpret_cast<PyObject*>(metaclass))};
+    py::class_<Matrix4d, Matrix4x4d> matrix4d{root, "Matrix4d", "3D double transformation matrix", py::metaclass(reinterpret_cast<PyObject*>(metaclass))};
 
     /* Register type conversions as soon as possible as those should have a
        priority over buffer and list constructors. These need all the types to

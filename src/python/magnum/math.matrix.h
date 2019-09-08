@@ -531,17 +531,14 @@ template<class T> void matrices(
             return self*other;
         }, "Multiply a matrix");
 
-
     /* 3x3 transformation matrix. Buffer constructors need to be *before* tuple
        constructors so numpy buffer protocol gets extracted correctly. */
     py::implicitly_convertible<Math::Matrix3x3<T>, Math::Matrix3<T>>();
     everyRectangularMatrix(matrix3);
     everyMatrix(matrix3);
     matrix3
-        /* Constructors. The scaling() / rotation() are handled below
-           as they conflict with member functions. */
-        .def_static("translation", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::translation),
-            "2D translation matrix")
+        /* Constructors. The translation() / scaling() / rotation() are handled
+           below as they conflict with member functions. */
         .def_static("reflection", &Math::Matrix3<T>::reflection,
             "2D reflection matrix")
         .def_static("shearing_x", &Math::Matrix3<T>::shearingX,
@@ -590,7 +587,8 @@ template<class T> void matrices(
         .def("transform_point", &Math::Matrix3<T>::transformPoint,
             "Transform a 2D point with the matrix")
 
-        /* Properties */
+        /* Properties. The translation is handled below together with a static
+           translation(). */
         .def_property("right",
             static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::right),
             [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.right() = value; },
@@ -598,40 +596,118 @@ template<class T> void matrices(
         .def_property("up",
             static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::up),
             [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.up() = value; },
-            "Up-pointing 2D vector")
-        .def_property("_translation", // TODO
-            static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::translation),
-            [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.translation() = value; },
-            "2D translation part of the matrix")
+            "Up-pointing 2D vector");
 
-        /* Static/member scaling(). Pybind doesn't support that natively, so
-           we create a scaling(*args, **kwargs) and dispatch ourselves. */
-        .def_static("_sscaling", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::scaling),
-            "2D scaling matrix")
-        .def("_iscaling", static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::scaling),
-            "Non-uniform scaling part of the matrix")
-        .def("scaling", [matrix3](py::args args, py::kwargs kwargs) {
-            if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
-                return matrix3.attr("_iscaling")(*args, **kwargs);
-            } else {
-                return matrix3.attr("_sscaling")(*args, **kwargs);
-            }
-        })
+    /* "Magic" static/member functions and properties. In order to have
+       reasonable docs, we need to disable pybind's function signatures and
+       supply ours faked instead. */
+    {
+        py::options options;
+        options.disable_function_signatures();
 
-        /* Static/member rotation(). Pybind doesn't support that natively, so
-           we create a rotation(*args, **kwargs) and dispatch ourselves. */
-        .def_static("_srotation", [](Radd angle) {
-            return Math::Matrix3<T>::rotation(Math::Rad<T>(angle));
-        }, "2D rotation matrix")
-        .def("_irotation", static_cast<Math::Matrix2x2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::rotation),
-            "2D rotation part of the matrix")
-        .def("rotation", [matrix3](py::args args, py::kwargs kwargs) {
-            if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
-                return matrix3.attr("_irotation")(*args, **kwargs);
-            } else {
-                return matrix3.attr("_srotation")(*args, **kwargs);
-            }
-        });
+        constexpr const char* ScalingDocstring[] {
+            R"(scaling(*args, **kwargs)
+Overloaded function.
+
+1. scaling(arg0: _magnum.Vector2) -> _magnum.Matrix3
+
+2D scaling matrix
+
+2. scaling(self: _magnum.Matrix3) -> _magnum.Vector2
+
+Non-uniform scaling part of the matrix
+)",
+            R"(scaling(*args, **kwargs)
+Overloaded function.
+
+1. scaling(arg0: _magnum.Vector2d) -> _magnum.Matrix3d
+
+2D scaling matrix
+
+2. scaling(self: _magnum.Matrix3d) -> _magnum.Vector2d
+
+Non-uniform scaling part of the matrix
+)"};
+        constexpr const char* RotationDocstring[] {
+            R"(rotation(*args, **kwargs)
+Overloaded function.
+
+1. rotation(arg0: _magnum.Rad) -> _magnum.Matrix3
+
+2D rotation matrix
+
+2. rotation(self: _magnum.Matrix3) -> _magnum.Matrix2x2
+
+2D rotation part of the matrix
+)",
+            R"(rotation(*args, **kwargs)
+Overloaded function.
+
+1. rotation(arg0: _magnum.Rad) -> _magnum.Matrix3d
+
+2D rotation matrix
+
+2. rotation(self: _magnum.Matrix3d) -> _magnum.Matrix2x2d
+
+2D rotation part of the matrix
+)"};
+        /* This one is special, as it renames the function */
+        constexpr const char* TranslationDocstring[] {
+            R"(_stranslation(*args, **kwargs)
+Overloaded function.
+
+1. translation(arg0: _magnum.Vector2) -> _magnum.Matrix3
+
+2D translation matrix
+)",
+            R"(_stranslation(*args, **kwargs)
+Overloaded function.
+
+1. translation(arg0: _magnum.Vector2d) -> _magnum.Matrix3d
+
+2D translation matrix
+)"};
+
+        matrix3
+            /* Static/member scaling(). Pybind doesn't support that natively,
+               so we create a scaling(*args, **kwargs) and dispatch ourselves. */
+            .def_static("_sscaling", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::scaling))
+            .def("_iscaling", static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::scaling))
+            .def("scaling", [matrix3](py::args args, py::kwargs kwargs) {
+                if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
+                    return matrix3.attr("_iscaling")(*args, **kwargs);
+                } else {
+                    return matrix3.attr("_sscaling")(*args, **kwargs);
+                }
+            }, ScalingDocstring[sizeof(T)/4 - 1])
+
+            /* Static/member rotation(). Pybind doesn't support that natively,
+               so we create a rotation(*args, **kwargs) and dispatch ourselves. */
+            .def_static("_srotation", [](Radd angle) {
+                return Math::Matrix3<T>::rotation(Math::Rad<T>(angle));
+            })
+            .def("_irotation", static_cast<Math::Matrix2x2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::rotation))
+            .def("rotation", [matrix3](py::args args, py::kwargs kwargs) {
+                if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
+                    return matrix3.attr("_irotation")(*args, **kwargs);
+                } else {
+                    return matrix3.attr("_srotation")(*args, **kwargs);
+                }
+            }, RotationDocstring[sizeof(T)/4 - 1])
+
+            /* Static translation function, member translation property. This
+               one is tricky and can't be done without supplying a special
+               metaclass that replaces static access to `translation` with
+               `_stranslation`. */
+            .def_static("_stranslation", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::translation), std::getenv("MCSS_GENERATING_OUTPUT") ? TranslationDocstring[sizeof(T)/4 - 1] : "");
+    }
+
+    /* The translation property again needs a pybind signature so we can
+       extract its type */
+    matrix3.def_property("translation",
+        static_cast<Math::Vector2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::translation),
+        [](Math::Matrix3<T>& self, const Math::Vector2<T>& value) { self.translation() = value; },
+        "2D translation part of the matrix");
 
     /* 4x4 transformation matrix. Buffer constructors need to be *before* tuple
        constructors so numpy buffer protocol gets extracted correctly. */
@@ -639,10 +715,8 @@ template<class T> void matrices(
     everyRectangularMatrix(matrix4);
     everyMatrix(matrix4);
     matrix4
-        /* Constructors. The scaling() / rotation() are handled below
-           as they conflict with member functions. */
-        .def_static("translation", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::translation),
-            "3D translation matrix")
+        /* Constructors. The translation() / scaling() / rotation() are handled
+           below as they conflict with member functions. */
         .def_static("rotation_x", [](Radd angle) {
             return Math::Matrix4<T>::rotationX(Math::Rad<T>(angle));
         }, "3D rotation matrix around the X axis")
@@ -715,7 +789,8 @@ template<class T> void matrices(
         .def("transform_point", &Math::Matrix4<T>::transformPoint,
             "Transform a 3D point with the matrix")
 
-        /* Properties */
+        /* Properties. The translation is handled below together with a static
+           translation(). */
         .def_property("right",
             static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::right),
             [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.right() = value; },
@@ -727,40 +802,120 @@ template<class T> void matrices(
         .def_property("backward",
             static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::backward),
             [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.backward() = value; },
-            "Backward-pointing 3D vector")
-        .def_property("_translation", // TODO
-            static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::translation),
-            [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.translation() = value; },
-            "3D translation part of the matrix")
+            "Backward-pointing 3D vector");
 
-        /* Static/member scaling(). Pybind doesn't support that natively, so
-           we create a scaling(*args, **kwargs) and dispatch ourselves. */
-        .def_static("_sscaling", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::scaling),
-            "3D scaling matrix")
-        .def("_iscaling", static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::scaling),
-            "Non-uniform scaling part of the matrix")
-        .def("scaling", [matrix4](py::args args, py::kwargs kwargs) {
-            if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
-                return matrix4.attr("_iscaling")(*args, **kwargs);
-            } else {
-                return matrix4.attr("_sscaling")(*args, **kwargs);
-            }
-        })
+    /* "Magic" static/member functions and properties. In order to have
+       reasonable docs, we need to disable pybind's function signatures and
+       supply ours faked instead. */
+    {
+        py::options options;
+        options.disable_function_signatures();
 
-        /* Static/member rotation(). Pybind doesn't support that natively, so
-           we create a rotation(*args, **kwargs) and dispatch ourselves. */
-        .def_static("_srotation", [](Radd angle, const Math::Vector3<T>& axis) {
-            return Math::Matrix4<T>::rotation(Math::Rad<T>(angle), axis);
-        }, "3D rotation matrix around arbitrary axis")
-        .def("_irotation", static_cast<Math::Matrix3x3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::rotation),
-            "3D rotation part of the matrix")
-        .def("rotation", [matrix4](py::args args, py::kwargs kwargs) {
-            if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
-                return matrix4.attr("_irotation")(*args, **kwargs);
-            } else {
-                return matrix4.attr("_srotation")(*args, **kwargs);
-            }
-        });
+        constexpr const char* ScalingDocstring[] {
+            R"(scaling(*args, **kwargs)
+Overloaded function.
+
+1. scaling(arg0: _magnum.Vector3) -> _magnum.Matrix4
+
+3D scaling matrix
+
+2. scaling(self: _magnum.Matrix4) -> _magnum.Vector3
+
+Non-uniform scaling part of the matrix
+)",
+            R"(scaling(*args, **kwargs)
+Overloaded function.
+
+1. scaling(arg0: _magnum.Vector3d) -> _magnum.Matrix4d
+
+2D scaling matrix
+
+2. scaling(self: _magnum.Matrix3d) -> _magnum.Vector3d
+
+Non-uniform scaling part of the matrix
+)"
+        };
+        constexpr const char* RotationDocstring[] {
+            R"(rotation(*args, **kwargs)
+Overloaded function.
+
+1. rotation(arg0: _magnum.Rad, arg1: _magnum.Vector3) -> _magnum.Matrix4
+
+3D rotation matrix
+
+2. rotation(self: _magnum.Matrix3) -> _magnum.Matrix3x3
+
+3D rotation part of the matrix
+)",
+            R"(rotation(*args, **kwargs)
+Overloaded function.
+
+1. rotation(arg0: _magnum.Rad, arg1: _magnum.Vector3d) -> _magnum.Matrix4d
+
+3D rotation matrix
+
+2. rotation(self: _magnum.Matrix4d) -> _magnum.Matrix3x3d
+
+3D rotation part of the matrix
+)",
+        };
+        /* This one is special, as it renames the function */
+        constexpr const char* TranslationDocstring[] {
+            R"(_stranslation(*args, **kwargs)
+Overloaded function.
+
+1. translation(arg0: _magnum.Vector3) -> _magnum.Matrix4
+
+3D translation matrix
+)",
+            R"(_stranslation(*args, **kwargs)
+Overloaded function.
+
+1. translation(arg0: _magnum.Vector3d) -> _magnum.Matrix4d
+
+3D translation matrix
+)"};
+
+        matrix4
+            /* Static/member scaling(). Pybind doesn't support that natively,
+               so we create a scaling(*args, **kwargs) and dispatch ourselves. */
+            .def_static("_sscaling", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::scaling))
+            .def("_iscaling", static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::scaling))
+            .def("scaling", [matrix4](py::args args, py::kwargs kwargs) {
+                if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
+                    return matrix4.attr("_iscaling")(*args, **kwargs);
+                } else {
+                    return matrix4.attr("_sscaling")(*args, **kwargs);
+                }
+            }, ScalingDocstring[sizeof(T)/4 - 1])
+
+            /* Static/member rotation(). Pybind doesn't support that natively,
+               so we create a rotation(*args, **kwargs) and dispatch ourselves. */
+            .def_static("_srotation", [](Radd angle, const Math::Vector3<T>& axis) {
+                return Math::Matrix4<T>::rotation(Math::Rad<T>(angle), axis);
+            })
+            .def("_irotation", static_cast<Math::Matrix3x3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::rotation))
+            .def("rotation", [matrix4](py::args args, py::kwargs kwargs) {
+                if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
+                    return matrix4.attr("_irotation")(*args, **kwargs);
+                } else {
+                    return matrix4.attr("_srotation")(*args, **kwargs);
+                }
+            }, RotationDocstring[sizeof(T)/4 - 1])
+
+            /* Static translation function, member translation property. This
+               one is tricky and can't be done without supplying a special
+               metaclass that replaces static access to `translation` with
+               `_stranslation`. */
+            .def_static("_stranslation", static_cast<Math::Matrix4<T>(*)(const Math::Vector3<T>&)>(&Math::Matrix4<T>::translation), std::getenv("MCSS_GENERATING_OUTPUT") ? TranslationDocstring[sizeof(T)/4 - 1] : "");
+    }
+
+    /* The translation property again needs a pybind signature so we can
+       extract its type */
+    matrix4.def_property("translation",
+        static_cast<Math::Vector3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::translation),
+        [](Math::Matrix4<T>& self, const Math::Vector3<T>& value) { self.translation() = value; },
+        "3D translation part of the matrix");
 }
 
 }

@@ -25,6 +25,8 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <Python.h>
+
 namespace pybind11 { class module; }
 namespace Magnum {}
 
@@ -36,8 +38,8 @@ namespace py = pybind11;
 void math(py::module& root, py::module& m);
 void mathVectorFloat(py::module& root, py::module& m);
 void mathVectorIntegral(py::module& root, py::module& m);
-void mathMatrixFloat(py::module& root);
-void mathMatrixDouble(py::module& root);
+void mathMatrixFloat(py::module& root, PyTypeObject* metaclass);
+void mathMatrixDouble(py::module& root, PyTypeObject* metaclass);
 void mathRange(py::module& root, py::module& m);
 
 void gl(py::module& m);

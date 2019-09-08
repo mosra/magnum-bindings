@@ -48,7 +48,7 @@ class Vector(unittest.TestCase):
         a.xyz = np.array([1.0, 2.0, 3.0])
 
         b = Matrix4.translation(np.array([1.0, 2.0, 3.0]))
-        self.assertEqual(b._translation, Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(b.translation, Vector3(1.0, 2.0, 3.0))
 
     def test_from_numpy_implicit_typed(self):
         # But this doesn't, works only if buffer protocol is defined
@@ -56,7 +56,7 @@ class Vector(unittest.TestCase):
         a.xyz = np.array([1.0, 2.0, 3.0], dtype='float32')
 
         a = Matrix4.translation(np.array([1.0, 2.0, 3.0], dtype='float32'))
-        self.assertEqual(a._translation, Vector3(1.0, 2.0, 3.0))
+        self.assertEqual(a.translation, Vector3(1.0, 2.0, 3.0))
 
     def test_from_numpy_invalid_dimensions(self):
         a = np.array([[1, 2], [3, 4]])

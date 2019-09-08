@@ -207,17 +207,14 @@
         implemented as a *real* swizzle, allowing for convenient expressions
         like :py:`vec.xz = (3.5, 0.1)`.
 
-    `Static constructors and instance method overloads`_
-    ----------------------------------------------------
+    `Static constructors and instance method / property overloads`_
+    ---------------------------------------------------------------
 
     While not common in Python, the `Matrix4.scaling()` / `Matrix4.rotation()`
-    methods mimic the C++ equivalent --- calling `Matrix4.scaling()` will
-    return a scaling matrix, while :py:`mat.scaling()` returns the 3x3 scaling
-    part of the matrix. Similarly for the `Matrix3` class.
-
-    .. block-warning:: Subject to change
-
-        On the other hand, there's currently just `Matrix3.translation()` and
-        the corresponding :py:`mat.translation` property is temporarily
-        available as an underscored `Matrix3._translation`. This will change
-        later.
+    methods mimic the C++ equivalent --- calling :py:`Matrix4.scaling(vec)`
+    will return a scaling matrix, while :py:`mat.scaling()` returns the 3x3
+    scaling part of the matrix. With `Matrix4.translation`, it's a bit more
+    involved --- calling :py:`Matrix4.translation(vec)` will return a
+    translation matrix, while :py:`mat.translation` is a read-write property
+    accessing the fourth column of the matrix. Similarly for the `Matrix3`
+    class.
