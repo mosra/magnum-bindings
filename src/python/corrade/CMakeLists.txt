@@ -23,6 +23,12 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+set(corrade_SRCS
+    corrade.cpp)
+
+# Extra libraries to link to. Populated only in case of CORRADE_BUILD_STATIC.
+set(corrade_LIBS )
+
 set(corrade_containers_SRCS
     containers.cpp)
 
@@ -45,20 +51,19 @@ if(NOT CORRADE_BUILD_STATIC)
 # point of static builds). It also nicely avoids problems with multiply-defined
 # global data.
 else()
-    set(corrade_SRCS
-        corrade.cpp
-        ${corrade_containers_SRCS})
-
-    pybind11_add_module(corrade SYSTEM ${corrade_SRCS})
-    target_include_directories(corrade PRIVATE
-        ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/src/python)
-    target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
-    set_target_properties(corrade PROPERTIES
-        FOLDER "python"
-        OUTPUT_NAME "_corrade"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+    list(APPEND corrade_SRCS ${corrade_containers_SRCS})
+    list(APPEND corrade_LIBS Corrade::Containers)
 endif()
+
+pybind11_add_module(corrade SYSTEM ${corrade_SRCS})
+target_include_directories(corrade PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/src/python)
+target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
+set_target_properties(corrade PROPERTIES
+    FOLDER "python"
+    OUTPUT_NAME "_corrade"
+    LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 
 file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)

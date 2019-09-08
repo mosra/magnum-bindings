@@ -22,10 +22,51 @@ import magnum.trade
 
 # So the doc see everything
 # TODO: use just +=, m.css should reorder this on its own
-corrade.__all__ = ['containers']
-magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'trade'] + magnum.__all__
+corrade.__all__ = ['containers', 'BUILD_STATIC', 'BUILD_MULTITHREADED', 'TARGET_UNIX', 'TARGET_APPLE', 'TARGET_IOS', 'TARGET_IOS_SIMULATOR', 'TARGET_WINDOWS', 'TARGET_WINDOWS_RT', 'TARGET_EMSCRIPTEN', 'TARGET_ANDROID']
+magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'trade', 'BUILD_STATIC', 'TARGET_GL', 'TARGET_GLES', 'TARGET_GLES2', 'TARGET_WEBGL', 'TARGET_VK'] + magnum.__all__
+
+# hide values of the preprocessor defines to avoid confusion by assigning a
+# class without __repr__ to them
+# TODO: more systematic solution directly in m.css
+class DoNotPrintValue: pass
+corrade.BUILD_STATIC = DoNotPrintValue()
+corrade.BUILD_MULTITHREADED = DoNotPrintValue()
+corrade.TARGET_UNIX = DoNotPrintValue()
+corrade.TARGET_APPLE = DoNotPrintValue()
+corrade.TARGET_IOS = DoNotPrintValue()
+corrade.TARGET_IOS_SIMULATOR = DoNotPrintValue()
+corrade.TARGET_WINDOWS = DoNotPrintValue()
+corrade.TARGET_WINDOWS_RT = DoNotPrintValue()
+corrade.TARGET_EMSCRIPTEN = DoNotPrintValue()
+corrade.TARGET_ANDROID = DoNotPrintValue()
+magnum.BUILD_STATIC = DoNotPrintValue()
+magnum.TARGET_GL = DoNotPrintValue()
+magnum.TARGET_GLES = DoNotPrintValue()
+magnum.TARGET_GLES2 = DoNotPrintValue()
+magnum.TARGET_WEBGL = DoNotPrintValue()
+magnum.TARGET_VK = DoNotPrintValue()
 
 # TODO ugh... can this be expressed directly in pybind?
+corrade.__annotations__ = {
+    'BUILD_STATIC': bool,
+    'BUILD_MULTITHREADED': bool,
+    'TARGET_UNIX': bool,
+    'TARGET_APPLE': bool,
+    'TARGET_IOS': bool,
+    'TARGET_IOS_SIMULATOR': bool,
+    'TARGET_WINDOWS': bool,
+    'TARGET_WINDOWS_RT': bool,
+    'TARGET_EMSCRIPTEN': bool,
+    'TARGET_ANDROID': bool
+}
+magnum.__annotations__ = {
+    'BUILD_STATIC': bool,
+    'TARGET_GL': bool,
+    'TARGET_GLES': bool,
+    'TARGET_GLES2': bool,
+    'TARGET_WEBGL': bool,
+    'TARGET_VK': bool
+}
 magnum.gl.__annotations__ = {}
 magnum.gl.__annotations__['default_framebuffer'] = magnum.gl.DefaultFramebuffer
 magnum.shaders.VertexColor2D.__annotations__ = {}
@@ -54,6 +95,7 @@ INPUT_PAGES = [
     '../../../magnum-examples/doc/python/examples.rst'
 ]
 INPUT_DOCS = [
+    'corrade.rst',
     'corrade.containers.rst',
 
     'magnum.rst',

@@ -28,16 +28,93 @@
 
 #include "corrade/bootstrap.h"
 
-#ifndef CORRADE_BUILD_STATIC
-#error this file should be compiled only in the static build
-#endif
-
 namespace py = pybind11;
 
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
 extern "C" PYBIND11_EXPORT PyObject* PyInit__corrade();
 PYBIND11_MODULE(_corrade, m) {
+    m.doc() = "Root Corrade module";
+    m.attr("BUILD_STATIC") =
+        #ifdef CORRADE_BUILD_STATIC
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("BUILD_MULTITHREADED") =
+        #ifdef CORRADE_BUILD_MULTITHREADED
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_APPLE") =
+        #ifdef CORRADE_TARGET_APPLE
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_IOS") =
+        #ifdef CORRADE_TARGET_IOS
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_IOS_SIMULATOR") =
+        #ifdef CORRADE_TARGET_IOS_SIMULATOR
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_UNIX") =
+        #ifdef CORRADE_TARGET_UNIX
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_WINDOWS") =
+        #ifdef CORRADE_TARGET_WINDOWS
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_WINDOWS_RT") =
+        #ifdef CORRADE_TARGET_WINDOWS_RT
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_EMSCRIPTEN") =
+        #ifdef CORRADE_TARGET_EMSCRIPTEN
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_ANDROID") =
+        #ifdef CORRADE_TARGET_ANDROID
+        true
+        #else
+        false
+        #endif
+        ;
+    /* Not exposing CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT as this
+       is a plugin itself and so if this works, plugin manager should too */
+
+    /* In case Corrade is a bunch of static libraries, put everything into a
+       single shared lib to make it easier to install (which is the point of
+       static builds) and avoid issues with multiply-defined global symbols.
+
+       These need to be defined in the order they depend on. */
+    #ifdef CORRADE_BUILD_STATIC
     py::module containers = m.def_submodule("containers");
     corrade::containers(containers);
+    #endif
 }

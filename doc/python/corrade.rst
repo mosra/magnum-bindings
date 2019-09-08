@@ -25,13 +25,26 @@
 
 .. roles used for all other docs
 
-.. doctest setup
-    >>> from magnum import *
+.. role:: cpp(code)
+    :language: c++
+.. role:: py(code)
+    :language: py
+.. role:: sh(code)
+    :language: sh
 
-.. py:module:: magnum
+.. doctest setup
+    >>> from corrade import *
+
+.. default-role:: ref
+
+.. py:module:: corrade
     :data BUILD_STATIC: Static library build
-    :data TARGET_GL: OpenGL interoperability
-    :data TARGET_GLES: OpenGL ES target
-    :data TARGET_GLES2: OpenGL ES 2.0 target
-    :data TARGET_WEBGL: WebGL target
-    :data TARGET_VK: Vulkan interoperability
+    :data BUILD_MULTITHREADED: Multi-threaded build
+    :data TARGET_UNIX: Unix target
+    :data TARGET_APPLE: Apple target
+    :data TARGET_IOS: iOS target
+    :data TARGET_IOS_SIMULATOR: iOS simulator target
+    :data TARGET_WINDOWS: Windows target
+    :data TARGET_WINDOWS_RT: Windows RT target
+    :data TARGET_EMSCRIPTEN: Emscripten target
+    :data TARGET_ANDROID: Android target

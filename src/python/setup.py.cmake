@@ -33,7 +33,7 @@ extension_paths = {
     # Filled in by cmake. This works for both static and dynamic builds -- in
     # case a library is built statically, only the underscored name will be
     # present.
-    '_corrade': '${corrade_file}',
+    '_corrade': '$<TARGET_FILE:corrade>',
     'corrade.containers': '${corrade_containers_file}',
     '_magnum': '$<TARGET_FILE:magnum>',
     'magnum.gl': '${magnum_gl_file}',

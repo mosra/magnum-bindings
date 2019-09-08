@@ -44,8 +44,23 @@ Python API conventions
 -   constants and enums ``UPPERCASE``, again underscores omitted if it doesn't
     hurt readability
 
-`Namespaces`_
--------------
+`Preprocessor definitions`_
+---------------------------
+
+Exposed to Python as plain boolean constants, and only those that actually are
+useful in a Python setting.
+
+.. class:: m-table
+
+=================================== ============================
+C++                                 Python
+=================================== ============================
+:dox:`CORRADE_BUILD_MULTITHREADED`  `corrade.BUILD_MULTITHREADED`
+:dox:`MAGNUM_TARGET_GLES`           `magnum.TARGET_GLES`
+=================================== ============================
+
+`Namespaces / modules`_
+-----------------------
 
 .. class:: m-table
 
@@ -177,6 +192,20 @@ subnamespaces *do* have generic names. The :dox:`GL::version()` /
 `gl.version()` API is one example --- it's tucked in a subnamespace so the
 generic name isn't a problem, but you wouldn't find anything of similar
 genericity in the root namespace / module.
+
+An exception to this rule is exposed preprocessor definitions --- these are
+*not* pulled in when doing :py:`from magnum import *` as this would likely
+cause conflicts (in particular, `BUILD_STATIC` is defined by Corrade as well).
+Instead, you have to access them like this:
+
+.. code:: py
+
+    import magnum
+
+    if magnum.TARGET_GLES2:
+        format = gl.TextureFormat.RGBA8
+    else:
+        format = gl.TextureFormat.R8
 
 `Handling of alternate implementations`_
 ----------------------------------------

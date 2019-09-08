@@ -46,7 +46,6 @@ add_subdirectory(magnum)
 # CMake 3.12, so I need to do two passes, first replacing variables using
 # configure_file() and then replacing generator expressions with file(GENERATE)
 foreach(target
-    corrade
     corrade_containers
     magnum_gl
     magnum_meshtools

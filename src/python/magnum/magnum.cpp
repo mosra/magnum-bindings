@@ -133,6 +133,53 @@ template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>&
 }
 
 void magnum(py::module& m) {
+    m.attr("BUILD_STATIC") =
+        #ifdef MAGNUM_BUILD_STATIC
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_GL") =
+        #ifdef MAGNUM_TARGET_GL
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_GLES") =
+        #ifdef MAGNUM_TARGET_GLES
+        true
+        #else
+        false
+        #endif
+        ;
+    m.attr("TARGET_GLES2") =
+        #ifdef MAGNUM_TARGET_GLES2
+        true
+        #else
+        false
+        #endif
+        ;
+    /** @todo do we need TARGET_GLES3? i hope not */
+    m.attr("TARGET_WEBGL") =
+        #ifdef MAGNUM_TARGET_WEBGL
+        true
+        #else
+        false
+        #endif
+        ;
+    /* TARGET_DESKTOP_GLES, TARGET_HEADLESS skipped as they make sense only
+       on native side (affecting what the builtin utilities use), not really in
+       Python */
+    m.attr("TARGET_VK") =
+        #ifdef MAGNUM_TARGET_VK
+        true
+        #else
+        false
+        #endif
+        ;
+
     py::enum_<MeshPrimitive>{m, "MeshPrimitive", "Mesh primitive type"}
         .value("POINTS", MeshPrimitive::Points)
         .value("LINES", MeshPrimitive::Lines)
