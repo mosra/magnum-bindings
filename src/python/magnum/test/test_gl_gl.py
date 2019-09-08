@@ -31,8 +31,68 @@ import unittest
 # be run
 from . import GLTestCase, setUpModule
 
+import magnum
 from magnum import *
 from magnum import gl
+
+class AbstractShaderProgram(GLTestCase):
+    def test(self):
+        a = gl.AbstractShaderProgram()
+
+        if magnum.TARGET_GLES2:
+            vert = gl.Shader(gl.Version.GLES200, gl.Shader.Type.VERTEX)
+        elif magnum.TARGET_GLES:
+            vert = gl.Shader(gl.Version.GLES300, gl.Shader.Type.VERTEX)
+        else:
+            vert = gl.Shader(gl.Version.GL300, gl.Shader.Type.VERTEX)
+        if magnum.TARGET_GLES2:
+            vert.add_source("""
+attribute lowp vec4 position;
+uniform lowp mat4 transformationProjectionMatrix;
+
+void main() {
+    gl_Position = transformationProjectionMatrix*position;
+}
+            """.strip())
+        else:
+            vert.add_source("""
+in lowp vec4 position;
+uniform lowp mat4 transformationProjectionMatrix;
+
+void main() {
+    gl_Position = transformationProjectionMatrix*position;
+}
+            """.strip())
+
+        self.assertTrue(vert.compile())
+        a.attach_shader(vert)
+
+        if magnum.TARGET_GLES2:
+            frag = gl.Shader(gl.Version.GLES200, gl.Shader.Type.FRAGMENT)
+        elif magnum.TARGET_GLES:
+            frag = gl.Shader(gl.Version.GLES300, gl.Shader.Type.FRAGMENT)
+        else:
+            frag = gl.Shader(gl.Version.GL300, gl.Shader.Type.FRAGMENT)
+        if magnum.TARGET_GLES2:
+            frag.add_source("""
+void main() {
+    gl_FragColor = vec4(0.0);
+}
+            """.strip())
+        else:
+            frag.add_source("""
+out lowp vec4 color;
+
+void main() {
+    color = vec4(0.0);
+}
+            """.strip())
+        self.assertTrue(frag.compile())
+        a.attach_shader(frag)
+
+        a.bind_attribute_location(0, "position")
+        self.assertTrue(a.link())
+        self.assertGreaterEqual(a.uniform_location("transformationProjectionMatrix"), 0)
 
 class Buffer(GLTestCase):
     def test_init(self):
@@ -149,3 +209,18 @@ class Renderer(GLTestCase):
         gl.Renderer.enable(gl.Renderer.Feature.DEPTH_TEST)
         gl.Renderer.disable(gl.Renderer.Feature.FACE_CULLING)
         gl.Renderer.set_feature(gl.Renderer.Feature.STENCIL_TEST, True)
+
+class Shader(GLTestCase):
+    def test(self):
+        if magnum.TARGET_GLES2:
+            a = gl.Shader(gl.Version.GLES200, gl.Shader.Type.VERTEX)
+        elif magnum.TARGET_GLES:
+            a = gl.Shader(gl.Version.GLES300, gl.Shader.Type.VERTEX)
+        else:
+            a = gl.Shader(gl.Version.GL300, gl.Shader.Type.VERTEX)
+        a.add_source("""
+        void main() {
+            gl_Position = vec4(0.0);
+        }
+        """)
+        self.assertTrue(a.compile())

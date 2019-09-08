@@ -37,6 +37,7 @@
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Color.h>
 
@@ -61,6 +62,41 @@ template<class T> struct NonDefaultFramebufferHolder: std::unique_ptr<T, PyNonDe
 PYBIND11_DECLARE_HOLDER_TYPE(T, magnum::NonDefaultFramebufferHolder<T>)
 
 namespace magnum {
+
+namespace {
+
+struct PublicizedAbstractShaderProgram: GL::AbstractShaderProgram {
+    #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+    using GL::AbstractShaderProgram::setRetrievableBinary;
+    #endif
+    #ifndef MAGNUM_TARGET_WEBGL
+    using GL::AbstractShaderProgram::setSeparable;
+    #endif
+    using GL::AbstractShaderProgram::attachShader;
+    using GL::AbstractShaderProgram::bindAttributeLocation;
+    #ifndef MAGNUM_TARGET_GLES
+    using GL::AbstractShaderProgram::bindFragmentDataLocation;
+    using GL::AbstractShaderProgram::bindFragmentDataLocationIndexed;
+    #endif
+    #ifndef MAGNUM_TARGET_GLES2
+    using GL::AbstractShaderProgram::setTransformFeedbackOutputs;
+    #endif
+    using GL::AbstractShaderProgram::link;
+    using GL::AbstractShaderProgram::uniformLocation;
+    #ifndef MAGNUM_TARGET_GLES2
+    using GL::AbstractShaderProgram::uniformBlockIndex;
+    #endif
+    using GL::AbstractShaderProgram::setUniform;
+    #ifndef MAGNUM_TARGET_GLES2
+    using GL::AbstractShaderProgram::setUniformBlockBinding;
+    #endif
+};
+
+template<class T> void setUniform(GL::AbstractShaderProgram& self, Int location, T value) {
+    static_cast<PublicizedAbstractShaderProgram&>(self).setUniform(location, value);
+}
+
+}
 
 void gl(py::module& m) {
     /*
@@ -101,10 +137,153 @@ void gl(py::module& m) {
         .def("version", static_cast<std::pair<Int, Int>(*)(GL::Version)>(GL::version), "Major and minor version number from enum value", py::arg("version"))
         .def("is_version_es", GL::isVersionES, "Whether given version is OpenGL ES or WebGL");
 
+    /* Shader (used by AbstractShaderProgram, so needs to be before) */
+    {
+        py::class_<GL::Shader> shader{m, "Shader", "Shader"};
+
+        py::enum_<GL::Shader::Type>{shader, "Type", "Shader type"}
+            .value("VERTEX", GL::Shader::Type::Vertex)
+            #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+            .value("TESSELLATION_CONTROL", GL::Shader::Type::TessellationControl)
+            .value("TESSELLATION_EVALUATION", GL::Shader::Type::TessellationEvaluation)
+            .value("GEOMETRY", GL::Shader::Type::Geometry)
+            .value("COMPUTE", GL::Shader::Type::Compute)
+            #endif
+            .value("FRAGMENT", GL::Shader::Type::Fragment);
+
+        shader
+            /** @todo limit queries */
+            /* Constructors */
+            .def(py::init<GL::Version, GL::Shader::Type>(), "Constructor", py::arg("version"), py::arg("type"))
+
+            /* Interface */
+            .def_property_readonly("id", &GL::Shader::id, "OpenGL shader ID")
+            .def_property_readonly("type", &GL::Shader::type, "Shader type")
+            .def_property_readonly("sources", &GL::Shader::sources, "Shader sources")
+            /* Using lambdas to avoid method chaining leaking to Python */
+            .def("add_source", [](GL::Shader& self, std::string source) {
+                self.addSource(std::move(source));
+            }, "Add shader source")
+            .def("add_file", [](GL::Shader& self, const std::string& filename) {
+                self.addFile(filename);
+            }, "Add shader source file")
+            .def("compile", static_cast<bool(GL::Shader::*)()>(&GL::Shader::compile), "Compile shader");
+    }
+
     /* Abstract shader program */
-    PyNonDestructibleClass<GL::AbstractShaderProgram>{m,
-        "AbstractShaderProgram", "Base for shader program implementations"};
-    /** @todo more */
+    {
+        /* The original class has protected functions and a pure virtual
+           destructor to force people to subclass it. */
+        struct PyAbstractShaderProgram: GL::AbstractShaderProgram {
+            using GL::AbstractShaderProgram::AbstractShaderProgram;
+        };
+        py::class_<GL::AbstractShaderProgram, PyAbstractShaderProgram> abstractShaderProgram{m, "AbstractShaderProgram", "Base for shader program implementations"};
+
+        #ifndef MAGNUM_TARGET_GLES2
+        py::enum_<GL::AbstractShaderProgram::TransformFeedbackBufferMode>{abstractShaderProgram, "TransformFeedbackBufferMode", "Buffer mode for transform feedback"}
+            .value("INTERLEAVED_ATTRIBUTES", GL::AbstractShaderProgram::TransformFeedbackBufferMode::InterleavedAttributes)
+            .value("SEPARATE_ATTRIBUTES", GL::AbstractShaderProgram::TransformFeedbackBufferMode::SeparateAttributes);
+        #endif
+
+        abstractShaderProgram
+            /** @todo limit queries */
+
+            /* Constructors */
+            .def_static("no_create", []() {
+                return PyAbstractShaderProgram{NoCreate};
+            }, "Construct without creating the underlying OpenGL object")
+            .def(py::init(), "Constructor")
+
+            /* Public interface */
+            .def_property_readonly("id", &GL::AbstractShaderProgram::id, "OpenGL program ID")
+            .def("validate", &GL::AbstractShaderProgram::validate, "Validate program")
+            #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+            .def("dispatch_compute", &GL::AbstractShaderProgram::dispatchCompute, "Dispatch compute")
+            #endif
+
+            /* Protected interface */
+            #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+            .def_property("retrievable_binary", nullptr, &PublicizedAbstractShaderProgram::setRetrievableBinary, "Allow retrieving program binary")
+            #endif
+            #ifndef MAGNUM_TARGET_WEBGL
+            .def_property("separable", nullptr, &PublicizedAbstractShaderProgram::setSeparable, "Allow the program to be bound to individual pipeline stages")
+            #endif
+            .def("attach_shader", &PublicizedAbstractShaderProgram::attachShader, "Attach a shader")
+            /** @todo list-taking shader attach function */
+            /* Somehow the overload static_casts don't work and it complains it
+               can't bind a protected function, have to use lambdas */
+            .def("bind_attribute_location", [](GL::AbstractShaderProgram& self, UnsignedInt location, const std::string& name) {
+                static_cast<PublicizedAbstractShaderProgram&>(self).bindAttributeLocation(location, name);
+            }, "Bind an attribute to given location", py::arg("location"), py::arg("name"))
+            #ifndef MAGNUM_TARGET_GLES
+            .def("bind_fragment_data_location_indexed", [](GL::AbstractShaderProgram& self, UnsignedInt location, UnsignedInt index, const std::string& name) {
+                static_cast<PublicizedAbstractShaderProgram&>(self).bindFragmentDataLocationIndexed(location, index, name);
+            }, "Bind fragment data to given location and first color input index", py::arg("location"), py::arg("index"), py::arg("name"))
+            .def("bind_fragment_data_location", [](GL::AbstractShaderProgram& self, UnsignedInt location, const std::string& name) {
+                static_cast<PublicizedAbstractShaderProgram&>(self).bindFragmentDataLocation(location, name);
+            }, "Bind fragment data to given location and first color input index", py::arg("location"), py::arg("name"))
+            #endif
+            /** @todo setTransformFeedbackOutputs, list-taking link functions */
+            /* Somehow the overload static_casts don't work and it complains it
+               can't bind a protected function, have to use lambdas */
+            .def("link", [](GL::AbstractShaderProgram& self) {
+                return static_cast<PublicizedAbstractShaderProgram&>(self).link();
+            }, "Link the shader")
+            .def("uniform_location", [](GL::AbstractShaderProgram& self, const std::string& name) {
+                return static_cast<PublicizedAbstractShaderProgram&>(self).uniformLocation(name);
+            }, "Get uniform location")
+            #ifndef MAGNUM_TARGET_GLES2
+            .def("uniform_block_index", [](GL::AbstractShaderProgram& self, const std::string& name) {
+                return static_cast<PublicizedAbstractShaderProgram&>(self).uniformBlockIndex(name);
+            }, "Get uniform block index")
+            #endif
+            .def("set_uniform", setUniform<Float>, "Set uniform value")
+            .def("set_uniform", setUniform<Int>, "Set uniform value")
+            #ifndef MAGNUM_TARGET_GLES2
+            /** @todo How to distinguish *this*? Python has just an int. */
+            .def("set_uniform", setUniform<UnsignedInt>, "Set uniform value")
+            #endif
+            /** @todo double scalar uniform, how to distinguish? if I add it, it will get a priority over floats */
+            .def("set_uniform", setUniform<Vector2>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector3>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector4>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector2i>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector3i>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector4i>, "Set uniform value")
+            #ifndef MAGNUM_TARGET_GLES2
+            .def("set_uniform", setUniform<Vector2ui>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector3ui>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector4ui>, "Set uniform value")
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .def("set_uniform", setUniform<Vector2d>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector3d>, "Set uniform value")
+            .def("set_uniform", setUniform<Vector4d>, "Set uniform value")
+            #endif
+            .def("set_uniform", setUniform<Matrix2x2>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix3x3>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix4x4>, "Set uniform value")
+            #ifndef MAGNUM_TARGET_GLES2
+            .def("set_uniform", setUniform<Matrix2x3>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix3x2>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix2x4>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix4x2>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix3x4>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix4x3>, "Set uniform value")
+            #endif
+            #ifndef MAGNUM_TARGET_GLES
+            .def("set_uniform", setUniform<Matrix2x3d>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix3x2d>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix2x4d>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix4x2d>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix3x4d>, "Set uniform value")
+            .def("set_uniform", setUniform<Matrix4x3d>, "Set uniform value")
+            #endif
+            #ifndef MAGNUM_TARGET_GLES2
+            .def("set_uniform_block_binding", &PublicizedAbstractShaderProgram::setUniformBlockBinding, "Set uniform block binding")
+            #endif
+            ;
+    }
 
     /* (Dynamic) attribute */
     py::class_<GL::DynamicAttribute> attribute{m, "Attribute", "Vertex attribute location and type"};
