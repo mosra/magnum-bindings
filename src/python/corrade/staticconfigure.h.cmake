@@ -1,5 +1,3 @@
-#ifndef corrade_h
-#define corrade_h
 /*
     This file is part of Magnum.
 
@@ -25,17 +23,7 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-namespace pybind11 { class module; }
-namespace Corrade {}
+/* Named corrade/staticconfigure.h to avoid it colliding with Corrade/configure.h
+   on case-insensitive filesystems */
 
-namespace corrade {
-
-using namespace Corrade;
-namespace py = pybind11;
-
-void containers(py::module& m);
-void pluginmanager(py::module& m);
-
-}
-
-#endif
+#cmakedefine Corrade_PluginManager_FOUND

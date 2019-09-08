@@ -88,6 +88,17 @@ template<template<class> class T, class U> T<U>& pyObjectHolderFor(U& obj) {
     return pyObjectHolderFor<T<U>>(pybind11::detail::get_object_handle(&obj, typeinfo), typeinfo);
 }
 
+/* This is a variant of https://github.com/pybind/pybind11/issues/1178,
+   implemented on the client side instead of patching pybind itself */
+template<class, bool> struct PyNonDestructibleBaseDeleter;
+template<class T> struct PyNonDestructibleBaseDeleter<T, false> {
+    void operator()(T*) { CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */ }
+};
+template<class T> struct PyNonDestructibleBaseDeleter<T, true> {
+    void operator()(T* ptr) { delete ptr; }
+};
+template<class T, class... Args> using PyNonDestructibleClass = pybind11::class_<T, Args..., std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>>>;
+
 }
 
 #endif

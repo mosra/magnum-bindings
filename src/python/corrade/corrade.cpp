@@ -116,5 +116,10 @@ PYBIND11_MODULE(_corrade, m) {
     #ifdef CORRADE_BUILD_STATIC
     py::module containers = m.def_submodule("containers");
     corrade::containers(containers);
+
+    #ifdef Corrade_PluginManager_FOUND
+    py::module pluginmanager = m.def_submodule("pluginmanager");
+    corrade::pluginmanager(pluginmanager);
+    #endif
     #endif
 }
