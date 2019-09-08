@@ -393,6 +393,8 @@ void gl(py::module& m) {
         ;
 
     buffer
+        /** @todo limit queries */
+
         .def(py::init<GL::Buffer::TargetHint>(), "Constructor", py::arg("target_hint") = GL::Buffer::TargetHint::Array)
         .def_property_readonly("id", &GL::Buffer::id, "OpenGL buffer ID")
         .def_property("target_hint", &GL::Buffer::targetHint, &GL::Buffer::setTargetHint, "Target hint")
@@ -499,6 +501,8 @@ void gl(py::module& m) {
         ;
 
     py::class_<GL::Renderbuffer>{m, "Renderbuffer", "Renderbuffer"}
+        /** @todo limit queries */
+
         .def(py::init(), "Constructor")
         .def_property_readonly("id", &GL::Renderbuffer::id, "OpenGL renderbuffer ID")
         .def("set_storage", &GL::Renderbuffer::setStorage, "Set renderbuffer storage")
@@ -516,6 +520,8 @@ void gl(py::module& m) {
         "AbstractFramebuffer", "Base for default and named framebuffers"};
 
     abstractFramebuffer
+        /** @todo limit queries */
+
         .def("bind", &GL::AbstractFramebuffer::bind,
             "Bind framebuffer for drawing")
         .def_property("viewport", &GL::AbstractFramebuffer::viewport, &GL::AbstractFramebuffer::setViewport,
