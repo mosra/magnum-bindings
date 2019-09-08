@@ -577,7 +577,7 @@ template<class T> void mutableStridedArrayView4D(py::class_<Containers::StridedA
 }
 
 void containers(py::module& m) {
-    m.doc() = "Corrade containers module";
+    m.doc() = "Container implementations";
 
     py::class_<Containers::ArrayView<const char>, Containers::PyArrayViewHolder<Containers::ArrayView<const char>>> arrayView_{m,
         "ArrayView", "Array view", py::buffer_protocol{}};
