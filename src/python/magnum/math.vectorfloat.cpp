@@ -53,11 +53,10 @@ template<class T> void vectorFloat(py::module& m, py::class_<T>& c) {
 }
 
 template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
-    vector2_
-        .def("aspect_ratio", static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::aspectRatio),
-            "Aspect ratio")
-        .def("cross", static_cast<T(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(Math::cross),
-            "2D cross product");
+    vector2_.def("aspect_ratio", static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::aspectRatio),
+        "Aspect ratio");
+    m.def("cross", static_cast<T(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(Math::cross),
+        "2D cross product");
     everyVector(vector2_);
     everyVectorSigned(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
@@ -65,9 +64,8 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
     vector2<T>(vector2_);
     vector2Signed<T>(vector2_);
 
-    vector3_
-        .def("cross", static_cast<Math::Vector3<T>(*)(const Math::Vector3<T>&, const Math::Vector3<T>&)>(Math::cross),
-            "Cross product");
+    m.def("cross", static_cast<Math::Vector3<T>(*)(const Math::Vector3<T>&, const Math::Vector3<T>&)>(Math::cross),
+        "Cross product");
     everyVector(vector3_);
     everyVectorSigned(vector3_);
     vector<Math::Vector3<T>>(m, vector3_);
