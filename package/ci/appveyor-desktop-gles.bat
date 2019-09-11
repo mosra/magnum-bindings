@@ -80,11 +80,13 @@ python setup.py install --root="%APPVEYOR_BUILD_FOLDER%/install" || exit /b
 
 rem Run tests & gather coverage
 cd ../../../src/python/corrade || exit /b
-coverage run -m unittest -v && cp .coverage ../.coverage.corrade || exit /b
+coverage run -m unittest -v || exit /b
+cp .coverage ../.coverage.corrade || exit /b
 
 cd ../magnum || exit /b
 set MAGNUM_SKIP_GL_TESTS=ON
-coverage run -m unittest -v && cp .coverage ../.coverage.magnum || exit /b
+coverage run -m unittest -v || exit /b
+cp .coverage ../.coverage.magnum || exit /b
 
 rem Test docstring validity
 cd ../../../doc/python || exit /b

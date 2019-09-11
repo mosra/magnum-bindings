@@ -70,10 +70,12 @@ python3 setup.py install --root="$TRAVIS_BUILD_DIR/install" --prefix=/usr
 
 # Run tests & gather coverage
 cd ../../../src/python/corrade
-coverage run -m unittest -v && cp .coverage ../.coverage.corrade
+coverage run -m unittest -v
+cp .coverage ../.coverage.corrade
 
 cd ../magnum
-coverage run -m unittest -v && cp .coverage ../.coverage.magnum
+coverage run -m unittest -v
+cp .coverage ../.coverage.magnum
 
 # Test docstring validity
 cd ../../../doc/python
