@@ -22,6 +22,19 @@ STYLESHEETS = [
 
 FAVICON = 'https://doc.magnum.graphics/favicon.ico'
 
-SEARCH_DOWNLOAD_BINARY = True
+SEARCH_DOWNLOAD_BINARY = 'searchdata-v1.bin'
 SEARCH_BASE_URL = 'https://doc.magnum.graphics/python/'
 SEARCH_EXTERNAL_URL = 'https://google.com/search?q=site:doc.magnum.graphics+Magnum+Python+{query}'
+
+def URL_FORMATTER(type, path):
+    # Put static files into the root, everything else into subdirs
+    if type.name == 'STATIC':
+        prefix = os.path.basename(path[0])
+        return prefix, '/python/' + prefix
+
+    # And special casing for index, of course
+    if type.name == 'PAGE' and len(path) == 1 and path[0] == 'index':
+        return 'index.html', '/python/'
+
+    prefix = '/'.join(path) + '/'
+    return prefix + 'index.html', '/python/' + prefix
