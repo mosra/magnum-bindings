@@ -62,22 +62,27 @@ template<class T> struct PyFeatureHolder: std::unique_ptr<T> {
 
 /* Hey this needs docs. */
 
-template<class Object> class PyObject: public Object {
+/* This template parameter can't be just Object, as that makes MSVC confused
+   when CRTP'ing something else than a class named Object -- it fails inside
+   the Object{} call in the constructor, saying `error C2614:
+   'Magnum::SceneGraph::PyObject<SomeOtherName>': illegal member initialization:
+   'Object' is not a base or member`. */
+template<class Object_> class PyObject: public Object_ {
     public:
-        template<class ...Args> explicit PyObject(Args&&... args): Object{std::forward<Args>(args)...} {}
+        template<class ...Args> explicit PyObject(Args&&... args): Object_{std::forward<Args>(args)...} {}
 
-        PyObject(const PyObject<Object>&) = delete;
-        PyObject(PyObject<Object>&&) = delete;
+        PyObject(const PyObject<Object_>&) = delete;
+        PyObject(PyObject<Object_>&&) = delete;
 
-        PyObject<Object>& operator=(const PyObject<Object>&) = delete;
-        PyObject<Object>& operator=(PyObject<Object>&&) = delete;
+        PyObject<Object_>& operator=(const PyObject<Object_>&) = delete;
+        PyObject<Object_>& operator=(PyObject<Object_>&&) = delete;
 
     private:
         void doErase() override {
             /* When deleting a parent, disconnect this from the parent instead
                of deleting it. Deletion is then handled by Python itself. */
-            CORRADE_INTERNAL_ASSERT(Object::parent());
-            Object::setParent(nullptr);
+            CORRADE_INTERNAL_ASSERT(Object_::parent());
+            Object_::setParent(nullptr);
             pybind11::cast(this).dec_ref();
         }
 };
