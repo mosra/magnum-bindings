@@ -267,6 +267,66 @@ class Vector(unittest.TestCase):
         self.assertEqual(2.0*Vector2(1.0, -3.0), Vector2(2.0, -6.0))
         self.assertEqual(6.0/Vector2(2.0, -3.0), Vector2(3.0, -2.0))
 
+    def test_swizzle(self):
+        self.assertEqual(Vector3(3.0, 1.5, 0.4).yzxz, Vector4(1.5, 0.4, 3.0, 0.4))
+        self.assertEqual(Vector3(3.0, 1.5, 0.4).gbrb, Vector4(1.5, 0.4, 3.0, 0.4))
+        self.assertEqual(Vector4(3.0, 1.5, 0.4, 1.2).wyx, Vector3(1.2, 1.5, 3.0))
+        self.assertEqual(Vector4(3.0, 1.5, 0.4, 1.2).agr, Vector3(1.2, 1.5, 3.0))
+        self.assertEqual(Vector2(3.0, 1.5).yx, Vector2(1.5, 3.0))
+        self.assertEqual(Vector2(3.0, 1.5).gr, Vector2(1.5, 3.0))
+
+        with self.assertRaisesRegex(AttributeError, "only four-component swizzles are supported at most"):
+            Vector4().xyzwx
+        with self.assertRaisesRegex(AttributeError, "invalid swizzle"):
+            Vector3().xyzw
+        with self.assertRaisesRegex(AttributeError, "invalid swizzle"):
+            Vector2().xyz
+        with self.assertRaisesRegex(AttributeError, "invalid swizzle"):
+            Vector4().c
+
+    def test_swizzle_set(self):
+        a1 = Vector3(3.0, 1.5, 0.4)
+        a2 = Vector3(3.0, 1.5, 0.4)
+        a1.zy = Vector2(0.5, 1.3)
+        a2.bg = Vector2(0.5, 1.3)
+        self.assertEqual(a1, Vector3(3.0, 1.3, 0.5))
+        self.assertEqual(a1, Vector3(3.0, 1.3, 0.5))
+
+        b1 = Vector4(3.0, 1.5, 0.4, 1.2)
+        b2 = Vector4(3.0, 1.5, 0.4, 1.2)
+        b1.wxz = Vector3(1.1, 0.0, -1.3)
+        b2.arb = Vector3(1.1, 0.0, -1.3)
+        self.assertEqual(b1, Vector4(0.0, 1.5, -1.3, 1.1))
+        self.assertEqual(b2, Vector4(0.0, 1.5, -1.3, 1.1))
+
+        # Not sure if this should be supported, but also why not
+        c = Vector2(1.1, 0.4)
+        c.xyyx = Vector4(0.1, 0.2, 0.3, 0.7)
+        self.assertEqual(c, Vector2(0.7, 0.3))
+
+        # Passing derived types should work too
+        d = Vector4(3.0, 1.5, 0.4, 1.2)
+        d.wxz = Color3(1.1, 0.0, -1.3)
+        self.assertEqual(d, Vector4(0.0, 1.5, -1.3, 1.1))
+
+        # Handled by pybind / python as a fallback directly
+        with self.assertRaises(AttributeError):
+            Vector4().xc = Vector2()
+        with self.assertRaisesRegex(TypeError, "incompatible function arguments"):
+            Vector4().xyz = 3
+        with self.assertRaisesRegex(TypeError, "incompatible function arguments"):
+            Vector4().xy = 3
+
+        # Handled by the swizzle implementation
+        with self.assertRaisesRegex(TypeError, "unrecognized swizzle type"):
+            Vector4().xzy = 3
+        with self.assertRaisesRegex(TypeError, "swizzle doesn't match passed vector component count"):
+            Vector2().yx = Vector3()
+        with self.assertRaisesRegex(AttributeError, "invalid swizzle"):
+            Vector3().xyzw = Vector4()
+        with self.assertRaisesRegex(AttributeError, "invalid swizzle"):
+            Vector2().xyz = Vector3()
+
     def test_repr(self):
         self.assertEqual(repr(Vector3(1.0, 3.14, -13.37)), 'Vector(1, 3.14, -13.37)')
 

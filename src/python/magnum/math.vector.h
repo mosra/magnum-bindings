@@ -228,6 +228,84 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
             return self[i];
         }, "Value at given position")
 
+        /* Swizzle */
+        /* TODO: both of these could be *way* more efficiently implemented
+           directly on PyObject (no need to throw, no need to do string
+           conversions...) but then these wouldn't be visible to docs I fear */
+        .def("__getattr__", [](T& self, const std::string& name) -> py::object {
+            if(name.size() > 4) {
+                PyErr_SetString(PyExc_AttributeError, "only four-component swizzles are supported at most");
+                throw pybind11::error_already_set{};
+            }
+
+            Math::Vector4<typename T::Type> out;
+            for(std::size_t i = 0; i != name.size(); ++i) {
+                if(name[i] == 'x' || name[i] == 'r') out[i] = self[0];
+                else if(name[i] == 'y' || name[i] == 'g') out[i] = self[1];
+                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b')) out[i] = self[2];
+                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) out[i] = self[3];
+                else {
+                    PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
+                    throw pybind11::error_already_set{};
+                }
+            }
+
+            if(name.size() == 4) return py::cast(out);
+            else if(name.size() == 3) return py::cast(out.xyz());
+            else if(name.size() == 2) return py::cast(out.xy());
+            /* this should be handled by the x/y/z/w/r/g/b/a properties instead */
+            else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+        }, "Vector swizzle")
+        .def("__setattr__", [](T& self, py::str nameO, py::object valueO) {
+            std::string name = py::cast<std::string>(nameO);
+            /* If the name is just one character, this is better handled by
+               dedicated properties (and if not, it'll provide a better
+               diagnostic than we can). Same for xy / xyz / ... when
+               applicable, and when the name contains non-swizzle characters */
+            if(name.size() == 1 ||
+              (name.compare("xy") == 0 && T::Size > 2) ||
+              (name.compare("xyz") == 0 && T::Size > 3) ||
+              (name.compare("rgb") == 0 && T::Size > 3) ||
+               name.find_first_not_of("xyzwrgba") != std::string::npos) {
+                if(PySuper_Type.tp_setattro(py::cast(self).ptr(), nameO.ptr(), valueO.ptr()) != 0)
+                    throw pybind11::error_already_set{};
+                return;
+            }
+
+            /* Here we can be certain it's a swizzle attempt, so throw clear
+               error messages */
+            const typename T::Type* data;
+            std::size_t size;
+            if(py::isinstance<Math::Vector2<typename T::Type>>(valueO)) {
+                data = py::cast<const Math::Vector2<typename T::Type>&>(valueO).data();
+                size = 2;
+            } else if(py::isinstance<Math::Vector3<typename T::Type>>(valueO)) {
+                data = py::cast<const Math::Vector3<typename T::Type>&>(valueO).data();
+                size = 3;
+            } else if(py::isinstance<Math::Vector4<typename T::Type>>(valueO)) {
+                data = py::cast<const Math::Vector4<typename T::Type>&>(valueO).data();
+                size = 4;
+            } else {
+                PyErr_SetString(PyExc_TypeError, "unrecognized swizzle type");
+                throw pybind11::error_already_set{};
+            }
+
+            if(name.size() != size) {
+                PyErr_SetString(PyExc_TypeError, "swizzle doesn't match passed vector component count");
+                throw pybind11::error_already_set{};
+            }
+            for(std::size_t i = 0; i != name.size(); ++i) {
+                if(name[i] == 'x' || name[i] == 'r') self[0] = data[i];
+                else if(name[i] == 'y' || name[i] == 'g') self[1] = data[i];
+                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b')) self[2] = data[i];
+                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) self[3] = data[i];
+                else {
+                    PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
+                    throw pybind11::error_already_set{};
+                }
+            }
+        }, "Vector swizzle")
+
         /* Member functions common for floating-point and integer types */
         .def("is_zero", &T::isZero, "Whether the vector is zero")
         .def("dot", static_cast<typename T::Type(T::*)() const>(&T::dot), "Dot product of the vector")

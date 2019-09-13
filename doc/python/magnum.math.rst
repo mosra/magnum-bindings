@@ -192,6 +192,17 @@
     -   All vector and matrix classes implement :py:`len()`, which is used
         instead of e.g. :dox:`Math::Vector::Size`. Works on both classes
         and instances.
+    -   :cpp:`Math::gather()` and :cpp:`Math::scatter()` operations are
+        implemented as real swizzles:
+
+        .. code:: pycon
+
+            >>> a = Vector4(1.5, 0.3, -1.0, 1.0)
+            >>> b = Vector4(7.2, 2.3, 1.1, 0.0)
+            >>> a.wxy = b.xwz
+            >>> a
+            Vector(0, 1.1, -1, 7.2)
+
     -   :py:`mat[a][b] = c` on matrices doesn't do the expected thing, use
         :py:`mat[a, b] = c` instead
     -   :cpp:`Math::BoolVector::set()` doesn't exist, use ``[]`` instead
@@ -199,13 +210,6 @@
         behave the same to ensure consistency in generic code, this is not
         possible to do in Python. Here the boolean operations behave like
         if :py:`any()` was applied before doing the operation.
-
-    .. block-warning:: Subject to change
-
-        The :dox:`Math::swizzle()` operation is not yet available in the Python
-        API. Thanks to better flexibility of the Python language this will get
-        implemented as a *real* swizzle, allowing for convenient expressions
-        like :py:`vec.xz = (3.5, 0.1)`.
 
     `Static constructors and instance method / property overloads`_
     ---------------------------------------------------------------
