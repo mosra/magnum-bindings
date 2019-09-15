@@ -210,6 +210,9 @@ class Renderer(GLTestCase):
         gl.Renderer.disable(gl.Renderer.Feature.FACE_CULLING)
         gl.Renderer.set_feature(gl.Renderer.Feature.STENCIL_TEST, True)
 
+    def test_error(self):
+        self.assertEqual(gl.Renderer.error, gl.Renderer.Error.NO_ERROR)
+
 class Shader(GLTestCase):
     def test(self):
         if magnum.TARGET_GLES2:

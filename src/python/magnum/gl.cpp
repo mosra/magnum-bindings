@@ -646,6 +646,19 @@ void gl(py::module& m) {
     {
         py::class_<GL::Renderer> renderer{m, "Renderer", "Global renderer configuration"};
 
+        py::enum_<GL::Renderer::Error>{renderer, "Error", "Error status"}
+            .value("NO_ERROR", GL::Renderer::Error::NoError)
+            .value("INVALID_ENUM", GL::Renderer::Error::InvalidEnum)
+            .value("INVALID_VALUE", GL::Renderer::Error::InvalidValue)
+            .value("INVALID_OPERATION", GL::Renderer::Error::InvalidOperation)
+            .value("INVALID_FRAMEBUFFER_OPERATION", GL::Renderer::Error::InvalidFramebufferOperation)
+            .value("OUT_OF_MEMORY", GL::Renderer::Error::OutOfMemory)
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("STACK_UNDERFLOW", GL::Renderer::Error::StackUnderflow)
+            .value("STACK_OVERFLOW", GL::Renderer::Error::StackOverflow)
+            #endif
+            ;
+
         py::enum_<GL::Renderer::Feature>{renderer, "Feature", "Feature"}
             #ifndef MAGNUM_TARGET_WEBGL
             .value("BLEND_ADVANCED_COHERENT", GL::Renderer::Feature::BlendAdvancedCoherent)
@@ -693,11 +706,13 @@ void gl(py::module& m) {
             .def_static("disable", GL::Renderer::disable, "Disable a feature")
             .def_static("set_feature", GL::Renderer::setFeature, "Enable or disable a feature")
 
-            .def_property_static("clear_color", nullptr,
-                [](py::object, const Color4& color) {
-                    /** @todo why can't it be just a single param? */
-                    GL::Renderer::setClearColor(color);
-                }, "Set clear color");
+            /** @todo FFS why do I have to pass the class as first argument?! */
+            .def_property_static("clear_color", nullptr, [](py::object, const Color4& color) {
+                GL::Renderer::setClearColor(color);
+            }, "Set clear color")
+            .def_property_readonly_static("error", [](py::object) {
+                return GL::Renderer::error();
+            }, "Error status");
     }
 }
 
