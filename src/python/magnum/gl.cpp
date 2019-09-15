@@ -244,6 +244,7 @@ void gl(py::module& m) {
 
         GL object labels
         limit queries
+        wrap/release of underlying GL object IDs
     */
 
     m.doc() = "OpenGL wrapping layer";
@@ -467,14 +468,10 @@ void gl(py::module& m) {
 
     attribute
         .def(py::init<GL::DynamicAttribute::Kind, UnsignedInt, GL::DynamicAttribute::Components, GL::DynamicAttribute::DataType>(), "Constructor", py::arg("kind"), py::arg("location"), py::arg("components"), py::arg("data_type"))
-        .def_property_readonly("kind", &GL::DynamicAttribute::kind,
-            "Attribute kind")
-        .def_property_readonly("location", &GL::DynamicAttribute::location,
-            "Attribute location")
-        .def_property_readonly("components", &GL::DynamicAttribute::components,
-            "Component count")
-        .def_property_readonly("data_type", &GL::DynamicAttribute::dataType,
-            "Type of passed data");
+        .def_property_readonly("kind", &GL::DynamicAttribute::kind, "Attribute kind")
+        .def_property_readonly("location", &GL::DynamicAttribute::location, "Attribute location")
+        .def_property_readonly("components", &GL::DynamicAttribute::components, "Component count")
+        .def_property_readonly("data_type", &GL::DynamicAttribute::dataType, "Type of passed data");
 
     /* Buffer */
     py::enum_<GL::BufferUsage>{m, "BufferUsage", "Buffer usage"}
@@ -529,7 +526,6 @@ void gl(py::module& m) {
 
     buffer
         /** @todo limit queries */
-
         .def(py::init<GL::Buffer::TargetHint>(), "Constructor", py::arg("target_hint") = GL::Buffer::TargetHint::Array)
         .def_property_readonly("id", &GL::Buffer::id, "OpenGL buffer ID")
         .def_property("target_hint", &GL::Buffer::targetHint, &GL::Buffer::setTargetHint, "Target hint")
@@ -657,16 +653,13 @@ void gl(py::module& m) {
     abstractFramebuffer
         /** @todo limit queries */
 
-        .def("bind", &GL::AbstractFramebuffer::bind,
-            "Bind framebuffer for drawing")
-        .def_property("viewport", &GL::AbstractFramebuffer::viewport, &GL::AbstractFramebuffer::setViewport,
-            "Viewport")
+        .def("bind", &GL::AbstractFramebuffer::bind, "Bind framebuffer for drawing")
+        .def_property("viewport", &GL::AbstractFramebuffer::viewport, &GL::AbstractFramebuffer::setViewport, "Viewport")
         /* Using lambdas to avoid method chaining getting into signatures */
         .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
             self.clear(mask);
         }, "Clear specified buffers in the framebuffer")
-        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read),
-            "Read block of pixels from the framebuffer to an image view")
+        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read), "Read block of pixels from the framebuffer to an image view")
         /** @todo more */;
 
     py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,
