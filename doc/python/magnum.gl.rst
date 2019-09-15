@@ -23,7 +23,25 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
+.. py:module:: magnum.gl
+
+    TODO: remove this once m.css stops ignoring the first caption on a page
+    #######################################################################
+
+    `NoCreate constructors`_
+    ========================
+
+    .. TODO: link to NoCreate once m.dox handles variables properly
+
+    Compared to C++, the Python APIs don't have an alternative to the
+    :dox:`NoCreate <NoCreateT>` constructor tag. In C++ these make it possible
+    to have class members initialized before a GL context is present, but in
+    Python there's no such limitation so these don't make sense.
+
 .. py:class:: magnum.gl.Mesh
+
+    TODO: remove this once m.css stops ignoring the first caption on a page
+    #######################################################################
 
     `Buffer ownership and reference counting`_
     ==========================================

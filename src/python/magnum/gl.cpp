@@ -187,11 +187,6 @@ void gl(py::module& m) {
 
         abstractShaderProgram
             /** @todo limit queries */
-
-            /* Constructors */
-            .def_static("no_create", []() {
-                return PyAbstractShaderProgram{NoCreate};
-            }, "Construct without creating the underlying OpenGL object")
             .def(py::init(), "Constructor")
 
             /* Public interface */
