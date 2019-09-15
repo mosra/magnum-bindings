@@ -92,7 +92,9 @@ void main() {
 
         a.bind_attribute_location(0, "position")
         self.assertTrue(a.link())
-        self.assertGreaterEqual(a.uniform_location("transformationProjectionMatrix"), 0)
+        location = a.uniform_location("transformationProjectionMatrix")
+        self.assertGreaterEqual(location, 0)
+        a.set_uniform(location, Matrix4())
 
 class Buffer(GLTestCase):
     def test_init(self):
