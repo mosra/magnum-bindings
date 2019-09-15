@@ -31,7 +31,7 @@ import unittest
 sys.path = [os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY_DIR', '../../../../build'), 'src/python')] + sys.path
 
 from magnum import *
-from magnum import platform
+from magnum import gl, platform
 
 def setUpModule():
     if os.environ.get('MAGNUM_SKIP_GL_TESTS') == 'ON':
@@ -46,3 +46,12 @@ class GLTestCase(unittest.TestCase):
     def setUpClass(cls):
         if not GLTestCase.app:
             GLTestCase.app = platform.WindowlessApplication()
+
+    def assertNoGLError(self):
+        self.assertEqual(gl.Renderer.error, gl.Renderer.Error.NO_ERROR)
+
+    def setUp(self):
+        self.assertNoGLError()
+
+    def tearDown(self):
+        self.assertNoGLError()
