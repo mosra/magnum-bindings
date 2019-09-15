@@ -227,3 +227,108 @@ class Shader(GLTestCase):
         }
         """)
         self.assertTrue(a.compile())
+
+class Texture(GLTestCase):
+    def test_minification_filter(self):
+        a = gl.Texture2D()
+
+        # Both generic and GL value should work
+        a.minification_filter = gl.SamplerFilter.LINEAR
+        a.minification_filter = SamplerFilter.LINEAR
+
+        # A tuple as well -- any combination
+        a.minification_filter = (gl.SamplerFilter.LINEAR, gl.SamplerMipmap.LINEAR)
+        a.minification_filter = (gl.SamplerFilter.LINEAR, SamplerMipmap.LINEAR)
+        a.minification_filter = (SamplerFilter.LINEAR, gl.SamplerMipmap.LINEAR)
+        a.minification_filter = (SamplerFilter.LINEAR, SamplerMipmap.LINEAR)
+
+    def test_minification_filter_invalid(self):
+        a = gl.Texture2D()
+
+        with self.assertRaisesRegex(TypeError, "expected SamplerFilter, gl.SamplerFilter or a two-element tuple"):
+            a.minification_filter = 3
+        with self.assertRaisesRegex(TypeError, "expected a tuple with SamplerFilter or gl.SamplerFilter as the first element"):
+            a.minification_filter = (3, SamplerMipmap.BASE)
+        with self.assertRaisesRegex(TypeError, "expected a tuple with SamplerMipmap or gl.SamplerMipmap as the second element"):
+            a.minification_filter = (SamplerFilter.NEAREST, 3)
+        with self.assertRaisesRegex(TypeError, "expected a tuple with SamplerFilter or gl.SamplerFilter as the first element"):
+            a.minification_filter = (3, SamplerMipmap.BASE)
+
+        # List doesn't work ATM, sorry
+        with self.assertRaisesRegex(TypeError, "expected SamplerFilter, gl.SamplerFilter or a two-element tuple"):
+            a.minification_filter = [gl.SamplerFilter.LINEAR, gl.SamplerMipmap.LINEAR]
+
+    def test_magnification_filter(self):
+        a = gl.Texture2D()
+
+        # Both generic and GL value should work
+        a.magnification_filter = gl.SamplerFilter.LINEAR
+        a.magnification_filter = SamplerFilter.LINEAR
+
+    def test_magnification_filter_invalid(self):
+        a = gl.Texture2D()
+
+        with self.assertRaisesRegex(TypeError, "expected SamplerFilter or gl.SamplerFilter"):
+            a.magnification_filter = 3
+
+    def test_wrapping(self):
+        a = gl.Texture2D()
+
+        # Both generic and GL value should work
+        a.wrapping = gl.SamplerWrapping.REPEAT
+        a.wrapping = SamplerWrapping.REPEAT
+
+    def test_wrapping_invalid(self):
+        a = gl.Texture2D()
+
+        with self.assertRaisesRegex(TypeError, "expected SamplerWrapping or gl.SamplerWrapping"):
+            a.wrapping = 3
+
+    # TODO: re-enable on ES when extensions can be checked
+    @unittest.skipUnless(not magnum.TARGET_WEBGL and not magnum.TARGET_GLES, "border color is not available on WebGL and requires an extension on ES which we can't check")
+    def test_border_color(self):
+        a = gl.Texture2D()
+
+        # Both three- and four-component should work
+        a.border_color = Color3()
+        a.border_color = Color4()
+
+        if not magnum.TARGET_GLES2:
+            a.border_color = Vector4ui()
+            a.border_color = Vector4i()
+
+    # TODO: re-enable on ES when extensions can be checked
+    @unittest.skipUnless(not magnum.TARGET_WEBGL and not magnum.TARGET_GLES, "border color is not available on WebGL and requires an extension on ES which we can't check")
+    def test_border_color_invalid(self):
+        a = gl.Texture2D()
+
+        if not magnum.TARGET_GLES2:
+            with self.assertRaisesRegex(TypeError, "expected Color3, Color4, Vector4ui or Vector4i"):
+                a.border_color = 3
+        else:
+            # On ES2 this is handled by pybind itself, so the message is
+            # different
+            with self.assertRaisesRegex(TypeError, "incompatible function arguments"):
+                a.border_color = 3
+
+            # This should raise a type error on ES2, as only floats are
+            # supported
+            with self.assertRaisesRegex(TypeError, "incompatible function arguments"):
+                a.border_color = Vector4ui()
+
+    def test_set_image(self):
+        a = gl.Texture2D()
+        a.set_image(level=0, internal_format=gl.TextureFormat.RGBA8,
+            image=ImageView2D(PixelFormat.RGBA8_UNORM, Vector2i(16)))
+
+    def test_set_storage_subimage(self):
+        a = gl.Texture2D()
+        a.set_storage(levels=5, internal_format=gl.TextureFormat.RGBA8,
+            size=Vector2i(16))
+        a.set_sub_image(0, Vector2i(), ImageView2D(PixelFormat.RGBA8_UNORM, Vector2i(16)))
+        a.generate_mipmap()
+
+        if not magnum.TARGET_GLES:
+            # This is in ES3.2 too, but we don't have a way to check for
+            # extensions / version yet
+            self.assertEqual(a.image_size(0), Vector2i(16, 16))

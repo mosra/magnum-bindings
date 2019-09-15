@@ -57,3 +57,33 @@
     this property can be set using either `magnum.MeshPrimitive` or
     `gl.MeshPrimitive`, similarly to how the overloaded
     :dox:`GL::Mesh::setPrimitive()` works.
+
+.. py:property:: magnum.gl.Texture1D.minification_filter
+
+    See `Texture2D.minification_filter` for more information.
+
+.. py:property:: magnum.gl.Texture2D.minification_filter
+
+    This property accepts either a tuple of `magnum.SamplerFilter` /
+    `gl.SamplerFilter` and `magnum.SamplerMipmap` / `gl.SamplerMipmap` values
+    or just `magnum.SamplerFilter` / `gl.SamplerFilter` alone in which case
+    `gl.SamplerMipmap.BASE` will be used implicitly; similarly to how the
+    overloaded :dox:`GL::Texture::setMinificationFilter()` works.
+
+.. py:property:: magnum.gl.Texture3D.minification_filter
+
+    See `Texture2D.minification_filter` for more information.
+
+.. py:property:: magnum.gl.Texture1D.magnification_filter
+
+    See `Texture2D.magnification_filter` for more information.
+
+.. py:property:: magnum.gl.Texture2D.magnification_filter
+
+    This property accepts either `magnum.SamplerFilter` or `gl.SamplerFilter`,
+    similarly to how the overloaded :dox:`GL::Texture::setMagnificationFilter()`
+    works.
+
+.. py:property:: magnum.gl.Texture3D.magnification_filter
+
+    See `Texture2D.magnification_filter` for more information.

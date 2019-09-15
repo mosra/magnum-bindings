@@ -30,6 +30,7 @@
 #include <Magnum/Mesh.h>
 #include <Magnum/PixelFormat.h>
 #include <Magnum/PixelStorage.h>
+#include <Magnum/Sampler.h>
 
 #include "Corrade/Python.h"
 #include "Corrade/Containers/Python.h"
@@ -44,20 +45,6 @@
 namespace py = pybind11;
 
 namespace magnum { namespace {
-
-template<UnsignedInt dimensions, class T> struct PyDimensionTraits;
-template<class T> struct PyDimensionTraits<1, T> {
-    typedef T VectorType;
-    static VectorType from(const Math::Vector<1, T>& vec) { return vec[0]; }
-};
-template<class T> struct PyDimensionTraits<2, T> {
-    typedef Math::Vector2<T> VectorType;
-    static VectorType from(const Math::Vector<2, T>& vec) { return vec; }
-};
-template<class T> struct PyDimensionTraits<3, T> {
-    typedef Math::Vector3<T> VectorType;
-    static VectorType from(const Math::Vector<3, T>& vec) { return vec; }
-};
 
 template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
     /*
@@ -282,6 +269,20 @@ void magnum(py::module& m) {
     imageViewFromMutable(imageView1D);
     imageViewFromMutable(imageView2D);
     imageViewFromMutable(imageView3D);
+
+    py::enum_<SamplerFilter>{m, "SamplerFilter", "Texture sampler filtering"}
+        .value("NEAREST", SamplerFilter::Nearest)
+        .value("LINEAR", SamplerFilter::Linear);
+    py::enum_<SamplerMipmap>{m, "SamplerMipmap", "Texture sampler mip level selection"}
+        .value("BASE", SamplerMipmap::Base)
+        .value("NEAREST", SamplerMipmap::Nearest)
+        .value("LINEAR", SamplerMipmap::Linear);
+    py::enum_<SamplerWrapping>{m, "SamplerWrapping", "Texture sampler wrapping"}
+        .value("REPEAT", SamplerWrapping::Repeat)
+        .value("MIRRORED_REPEAT", SamplerWrapping::MirroredRepeat)
+        .value("CLAMP_TO_EDGE", SamplerWrapping::ClampToEdge)
+        .value("CLAMP_TO_BORDER", SamplerWrapping::ClampToBorder)
+        .value("MIRROR_CLAMP_TO_EDGE", SamplerWrapping::MirrorClampToEdge);
 }
 
 }}

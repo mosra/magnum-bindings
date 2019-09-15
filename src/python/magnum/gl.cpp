@@ -38,6 +38,8 @@
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/GL/Shader.h>
+#include <Magnum/GL/TextureFormat.h>
+#include <Magnum/GL/Texture.h>
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Color.h>
 
@@ -94,6 +96,144 @@ struct PublicizedAbstractShaderProgram: GL::AbstractShaderProgram {
 
 template<class T> void setUniform(GL::AbstractShaderProgram& self, Int location, T value) {
     static_cast<PublicizedAbstractShaderProgram&>(self).setUniform(location, value);
+}
+
+template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>, GL::AbstractTexture>& c) {
+    c
+        /** @todo limits */
+        .def(py::init(), "Constructor")
+        /** @todo bindImage(), bindImageLayered */
+        #ifndef MAGNUM_TARGET_GLES2
+        .def_property("base_level", nullptr, &GL::Texture<dimensions>::setBaseLevel, "Base mip level")
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .def_property("max_level", nullptr, &GL::Texture<dimensions>::setMaxLevel, "Max mip level")
+        #endif
+        .def_property("minification_filter", nullptr,
+            [](GL::Texture<dimensions>& self, py::object value) {
+                if(py::isinstance<SamplerFilter>(value))
+                    self.setMinificationFilter(py::cast<SamplerFilter>(value));
+                else if(py::isinstance<GL::SamplerFilter>(value))
+                    self.setMinificationFilter(py::cast<GL::SamplerFilter>(value));
+                else if(py::isinstance<py::tuple>(value) && py::cast<py::tuple>(value).size() == 2) {
+                    auto tuple = py::cast<py::tuple>(value);
+
+                    GL::SamplerFilter filter;
+                    if(py::isinstance<SamplerFilter>(tuple[0]))
+                        filter = GL::samplerFilter(py::cast<SamplerFilter>(tuple[0]));
+                    else if(py::isinstance<GL::SamplerFilter>(tuple[0]))
+                        filter = py::cast<GL::SamplerFilter>(tuple[0]);
+                    else {
+                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerFilter or gl.SamplerFilter as the first element, got %A", value.get_type().ptr());
+                        throw py::error_already_set{};
+                    }
+
+                    GL::SamplerMipmap mipmap;
+                    if(py::isinstance<SamplerMipmap>(tuple[1]))
+                        mipmap = GL::samplerMipmap(py::cast<SamplerMipmap>(tuple[1]));
+                    else if(py::isinstance<GL::SamplerMipmap>(tuple[1]))
+                        mipmap = py::cast<GL::SamplerMipmap>(tuple[1]);
+                    else {
+                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerMipmap or gl.SamplerMipmap as the second element, got %A", value.get_type().ptr());
+                        throw py::error_already_set{};
+                    }
+
+                    self.setMinificationFilter(filter, mipmap);
+                } else {
+                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter, gl.SamplerFilter or a two-element tuple, got %A", value.get_type().ptr());
+                    throw py::error_already_set{};
+                }
+            }, "Minification filter")
+        .def_property("magnification_filter", nullptr,
+            [](GL::Texture<dimensions>& self, py::object filter) {
+                if(py::isinstance<SamplerFilter>(filter))
+                    self.setMagnificationFilter(py::cast<SamplerFilter>(filter));
+                else if(py::isinstance<GL::SamplerFilter>(filter))
+                    self.setMagnificationFilter(py::cast<GL::SamplerFilter>(filter));
+                else {
+                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter or gl.SamplerFilter, got %A", filter.get_type().ptr());
+                    throw py::error_already_set{};
+                }
+            }, "Magnification filter")
+        #ifndef MAGNUM_TARGET_GLES2
+        .def_property("min_lod", nullptr, &GL::Texture<dimensions>::setMinLod, "Minimum level-of-detail")
+        .def_property("max_lod", nullptr, &GL::Texture<dimensions>::setMaxLod, "Maximum level-of-detail")
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .def_property("lod_bias", nullptr, &GL::Texture<dimensions>::setLodBias, "Level-of-detail bias")
+        #endif
+        .def_property("wrapping", nullptr,
+            [](GL::Texture<dimensions>& self, py::object wrapping) {
+                /** @todo accept two/three different values as well */
+                if(py::isinstance<SamplerWrapping>(wrapping))
+                    self.setWrapping(py::cast<SamplerWrapping>(wrapping));
+                else if(py::isinstance<GL::SamplerWrapping>(wrapping))
+                    self.setWrapping(py::cast<GL::SamplerWrapping>(wrapping));
+                else {
+                    PyErr_Format(PyExc_TypeError, "expected SamplerWrapping or gl.SamplerWrapping, got %A", wrapping.get_type().ptr());
+                    throw py::error_already_set{};
+                }
+            }, "Wrapping")
+        #ifndef MAGNUM_TARGET_WEBGL
+        .def_property("border_color", nullptr,
+            #ifdef MAGNUM_TARGET_GLES2
+            &GL::Texture<dimensions>::setBorderColor,
+            #else
+            [](GL::Texture<dimensions>& self, py::object color) {
+                if(py::isinstance<Vector3>(color))
+                    self.setBorderColor(py::cast<Vector3>(color));
+                else if(py::isinstance<Vector4>(color))
+                    self.setBorderColor(py::cast<Vector4>(color));
+                else if(py::isinstance<Vector4ui>(color))
+                    self.setBorderColor(py::cast<Vector4ui>(color));
+                else if(py::isinstance<Vector4i>(color))
+                    self.setBorderColor(py::cast<Vector4i>(color));
+                else {
+                    PyErr_Format(PyExc_TypeError, "expected Color3, Color4, Vector4ui or Vector4i, got %A", color.get_type().ptr());
+                    throw py::error_already_set{};
+                }
+            },
+            #endif
+            "Border color")
+        #endif
+        .def_property("max_anisotropy", nullptr, &GL::Texture<dimensions>::setMaxAnisotropy, "Max anisotropy")
+        #ifndef MAGNUM_TARGET_WEBGL
+        .def_property("srgb_decode", nullptr, &GL::Texture<dimensions>::setSrgbDecode, "sRGB decoding")
+        #endif
+        /** @todo component swizzle (it's compile-time on C++ side, ugh) */
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .def_property("compare_mode", nullptr, &GL::Texture<dimensions>::setCompareMode, "Depth texture comparison mode")
+        .def_property("compare_function", nullptr, &GL::Texture<dimensions>::setCompareFunction, "Depth texture comparison function")
+        #endif
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        .def_property("depth_stencil_mode", nullptr, &GL::Texture<dimensions>::setDepthStencilMode, "Depth/stencil texture mode")
+        #endif
+        /* Using a lambda to avoid method chaining leaking to Python */
+        .def("set_storage", [](GL::Texture<dimensions>& self, Int levels, GL::TextureFormat internalFormat, const typename PyDimensionTraits<dimensions, Int>::VectorType& size) {
+            self.setStorage(levels, internalFormat, size);
+        }, "Set storage", py::arg("levels"), py::arg("internal_format"), py::arg("size"))
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        .def("image_size", [](GL::Texture<dimensions>& self, Int level) {
+            return PyDimensionTraits<dimensions, Int>::from(self.imageSize(level));
+        }, "Image size in given mip level", py::arg("level"))
+        #endif
+        /** @todo (compressed/buffer) (sub)image queries */
+        /* Using a lambda to avoid method chaining leaking to Python */
+        .def("set_image", [](GL::Texture<dimensions>& self, Int level, GL::TextureFormat internalFormat, const BasicImageView<dimensions>& image) {
+            self.setImage(level, internalFormat, image);
+        }, "Set image data", py::arg("level"), py::arg("internal_format"), py::arg("image"))
+        /** @todo compressed/buffer setImage() */
+        .def("set_sub_image", [](GL::Texture<dimensions>& self, Int level, const typename PyDimensionTraits<dimensions, Int>::VectorType& offset, const BasicImageView<dimensions>& image) {
+            self.setSubImage(level, offset, image);
+        }, "Set image subdata", py::arg("level"), py::arg("offset"), py::arg("image"))
+        /** @todo compressed/buffer setSubImage() */
+        .def("generate_mipmap", [](GL::Texture<dimensions>& self) {
+            self.generateMipmap();
+        }, "Generate mipmap")
+        .def("invalidate_image", &GL::Texture<dimensions>::invalidateImage, "Invalidate texture image", py::arg("level"))
+        .def("invalidate_sub_image", [](GL::Texture<dimensions>& self, Int level, const typename PyDimensionTraits<dimensions, Int>::VectorType& offset, const typename PyDimensionTraits<dimensions, Int>::VectorType& size) {
+            self.invalidateSubImage(level, offset, size);
+        }, "Invalidate texture subimage", py::arg("level"), py::arg("offset"), py::arg("size"));
 }
 
 }
@@ -714,6 +854,185 @@ void gl(py::module& m) {
                 return GL::Renderer::error();
             }, "Error status");
     }
+
+    /* Textures */
+
+    /** @todo enum constructors converting generic value to GL-specific? */
+    py::enum_<GL::SamplerFilter>{m, "SamplerFilter", "Texture sampler filtering"}
+        .value("NEAREST", GL::SamplerFilter::Nearest)
+        .value("LINEAR", GL::SamplerFilter::Linear);
+    py::enum_<GL::SamplerMipmap>{m, "SamplerMipmap", "Texture sampler mip level selection"}
+        .value("BASE", GL::SamplerMipmap::Base)
+        .value("NEAREST", GL::SamplerMipmap::Nearest)
+        .value("LINEAR", GL::SamplerMipmap::Linear);
+    py::enum_<GL::SamplerWrapping>{m, "SamplerWrapping", "Texture sampler wrapping"}
+        .value("REPEAT", GL::SamplerWrapping::Repeat)
+        .value("MIRRORED_REPEAT", GL::SamplerWrapping::MirroredRepeat)
+        .value("CLAMP_TO_EDGE", GL::SamplerWrapping::ClampToEdge)
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("CLAMP_TO_BORDER", GL::SamplerWrapping::ClampToBorder)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("MIRROR_CLAMP_TO_EDGE", GL::SamplerWrapping::MirrorClampToEdge)
+        #endif
+        ;
+    #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+    py::enum_<GL::SamplerCompareMode>{m, "SamplerCompareMode", "Depth texture comparison mode"}
+        .value("NONE", GL::SamplerCompareMode::None)
+        .value("COMPARE_REF_TO_TEXTURE", GL::SamplerCompareMode::CompareRefToTexture);
+    py::enum_<GL::SamplerCompareFunction>{m, "SamplerCompareFunction", "Texture sampler depth comparison function"}
+        .value("NEVER", GL::SamplerCompareFunction::Never)
+        .value("ALWAYS", GL::SamplerCompareFunction::Always)
+        .value("LESS", GL::SamplerCompareFunction::Less)
+        .value("LESS_OR_EQUAL", GL::SamplerCompareFunction::LessOrEqual)
+        .value("EQUAL", GL::SamplerCompareFunction::Equal)
+        .value("NOT_EQUAL", GL::SamplerCompareFunction::NotEqual)
+        .value("GREATER_OR_EQUAL", GL::SamplerCompareFunction::GreaterOrEqual)
+        .value("GREATER", GL::SamplerCompareFunction::Greater);
+    #endif
+    #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+    py::enum_<GL::SamplerDepthStencilMode>{m, "SamplerDepthStencilMode", "Texture sampler depth/stencil mode"}
+        .value("DEPTH_COMPONENT", GL::SamplerDepthStencilMode::DepthComponent)
+        .value("STENCIL_INDEX", GL::SamplerDepthStencilMode::StencilIndex);
+    #endif
+
+    py::enum_<GL::TextureFormat>{m, "TextureFormat", "Internal texture format"}
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RED", GL::TextureFormat::Red)
+        .value("R8", GL::TextureFormat::R8)
+        .value("RG", GL::TextureFormat::RG)
+        #endif
+        .value("RGB", GL::TextureFormat::RGB)
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RGB8", GL::TextureFormat::RGB8)
+        #endif
+        .value("RGBA", GL::TextureFormat::RGBA)
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RGBA8", GL::TextureFormat::RGBA8)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("SR8", GL::TextureFormat::SR8)
+        #ifdef MAGNUM_TARGET_GLES
+        /** @todo how to expose this one in the docs? */
+        .value("SRG8", GL::TextureFormat::SRG8)
+        #endif
+        #endif
+        #if !defined(MAGNUM_TARGET_GLES) || defined(MAGNUM_TARGET_GLES2)
+        .value("SRGB", GL::TextureFormat::SRGB)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("SRGB8", GL::TextureFormat::SRGB8)
+        #endif
+        #if !defined(MAGNUM_TARGET_GLES) || defined(MAGNUM_TARGET_GLES2)
+        .value("SRGB_ALPHA", GL::TextureFormat::SRGBAlpha)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("SRGB8_ALPHA8", GL::TextureFormat::SRGB8Alpha8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("R8_SNORM", GL::TextureFormat::R8Snorm)
+        .value("RG8_SNORM", GL::TextureFormat::RG8Snorm)
+        .value("RGB8_SNORM", GL::TextureFormat::RGB8Snorm)
+        .value("RGBA8_SNORM", GL::TextureFormat::RGBA8Snorm)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("R16", GL::TextureFormat::R16)
+        .value("RG16", GL::TextureFormat::RG16)
+        .value("RGB16", GL::TextureFormat::RGB16)
+        .value("RGBA16", GL::TextureFormat::RGBA16)
+        .value("R16_SNORM", GL::TextureFormat::R16Snorm)
+        .value("RG16_SNORM", GL::TextureFormat::RG16Snorm)
+        .value("RGB16_SNORM", GL::TextureFormat::RGB16Snorm)
+        .value("RGBA16_SNORM", GL::TextureFormat::RGBA16Snorm)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("R8UI", GL::TextureFormat::R8UI)
+        .value("RG8UI", GL::TextureFormat::RG8UI)
+        .value("RGB8UI", GL::TextureFormat::RGB8UI)
+        .value("RGBA8UI", GL::TextureFormat::RGBA8UI)
+        .value("R8I", GL::TextureFormat::R8I)
+        .value("RG8I", GL::TextureFormat::RG8I)
+        .value("RGB8I", GL::TextureFormat::RGB8I)
+        .value("RGBA8I", GL::TextureFormat::RGBA8I)
+        .value("R16UI", GL::TextureFormat::R16UI)
+        .value("RG16UI", GL::TextureFormat::RG16UI)
+        .value("RGB16UI", GL::TextureFormat::RGB16UI)
+        .value("RGBA16UI", GL::TextureFormat::RGBA16UI)
+        .value("R16I", GL::TextureFormat::R16I)
+        .value("RG16I", GL::TextureFormat::RG16I)
+        .value("RGB16I", GL::TextureFormat::RGB16I)
+        .value("RGBA16I", GL::TextureFormat::RGBA16I)
+        .value("R32UI", GL::TextureFormat::R32UI)
+        .value("RG32UI", GL::TextureFormat::RG32UI)
+        .value("RGB32UI", GL::TextureFormat::RGB32UI)
+        .value("RGBA32UI", GL::TextureFormat::RGBA32UI)
+        .value("R32I", GL::TextureFormat::R32I)
+        .value("RG32I", GL::TextureFormat::RG32I)
+        .value("RGB32I", GL::TextureFormat::RGB32I)
+        .value("RGBA32I", GL::TextureFormat::RGBA32I)
+        .value("R16F", GL::TextureFormat::R16F)
+        .value("RG16F", GL::TextureFormat::RG16F)
+        .value("RGB16F", GL::TextureFormat::RGB16F)
+        .value("RGBA16F", GL::TextureFormat::RGBA16F)
+        .value("R32F", GL::TextureFormat::R32F)
+        .value("RG32F", GL::TextureFormat::RG32F)
+        .value("RGB32F", GL::TextureFormat::RGB32F)
+        .value("RGBA32F", GL::TextureFormat::RGBA32F)
+        #endif
+        #ifdef MAGNUM_TARGET_GLES2
+        /** @todo how to expose those in the docs? */
+        .value("LUMINANCE", GL::TextureFormat::Luminance)
+        .value("LUMINANCE_ALPHA", GL::TextureFormat::LuminanceAlpha)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("R3B3G2", GL::TextureFormat::R3G3B2)
+        .value("RGB4", GL::TextureFormat::RGB4)
+        .value("RGB5", GL::TextureFormat::RGB5)
+        #endif
+        .value("RGB565", GL::TextureFormat::RGB565)
+        #if !defined(MAGNUM_TARGET_GLES) || (defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL))
+        .value("RGB10", GL::TextureFormat::RGB10)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RGB12", GL::TextureFormat::RGB12)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("R11FG11FB10F", GL::TextureFormat::R11FG11FB10F)
+        .value("RGB9E5", GL::TextureFormat::RGB9E5)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RGBA2", GL::TextureFormat::RGBA2)
+        #endif
+        .value("RGBA4", GL::TextureFormat::RGBA4)
+        .value("RGB5A1", GL::TextureFormat::RGB5A1)
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("RGB10A2", GL::TextureFormat::RGB10A2)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("RGB10A2UI", GL::TextureFormat::RGB10A2UI)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        .value("RGBA12", GL::TextureFormat::RGBA12)
+        #endif
+        ;
+        /** @todo compressed formats */
+
+    PyNonDestructibleClass<GL::AbstractTexture>{m, "AbstractTexture", "Base for textures"}
+        /** @todo limits */
+        .def_property_readonly("id", &GL::AbstractTexture::id, "OpenGL texture ID")
+        /** @todo list-taking bind */
+        .def("bind", static_cast<void(GL::AbstractTexture::*)(Int)>(&GL::AbstractTexture::bind), "Bind texture to given texture unit");
+
+    #ifndef MAGNUM_TARGET_GLES
+    py::class_<GL::Texture1D, GL::AbstractTexture> texture1D{m, "Texture1D", "One-dimensional texture"};
+    texture(texture1D);
+    #endif
+    py::class_<GL::Texture2D, GL::AbstractTexture> texture2D{m, "Texture2D", "Two-dimensional texture"};
+    texture(texture2D);
+    #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+    py::class_<GL::Texture3D, GL::AbstractTexture> texture3D{m, "Texture3D", "Three-dimensional texture"};
+    texture(texture3D);
+    #endif
 }
 
 }

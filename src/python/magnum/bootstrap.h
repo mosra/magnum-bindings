@@ -26,6 +26,7 @@
 */
 
 #include <Python.h>
+#include <Magnum/Magnum.h>
 
 namespace pybind11 { class module; }
 namespace Magnum {}
@@ -34,6 +35,20 @@ namespace magnum {
 
 using namespace Magnum;
 namespace py = pybind11;
+
+template<UnsignedInt dimensions, class T> struct PyDimensionTraits;
+template<class T> struct PyDimensionTraits<1, T> {
+    typedef T VectorType;
+    static VectorType from(const Math::Vector<1, T>& vec) { return vec[0]; }
+};
+template<class T> struct PyDimensionTraits<2, T> {
+    typedef Math::Vector2<T> VectorType;
+    static VectorType from(const Math::Vector<2, T>& vec) { return vec; }
+};
+template<class T> struct PyDimensionTraits<3, T> {
+    typedef Math::Vector3<T> VectorType;
+    static VectorType from(const Math::Vector<3, T>& vec) { return vec; }
+};
 
 void math(py::module& root, py::module& m);
 void mathVectorFloat(py::module& root, py::module& m);
