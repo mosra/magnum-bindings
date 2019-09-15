@@ -608,7 +608,7 @@ void gl(py::module& m) {
 
     py::class_<GL::Mesh, GL::PyMeshHolder<GL::Mesh>>{m, "Mesh", "Mesh"}
         .def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
-        .def(py::init<MeshPrimitive>(), "Constructor")
+        .def(py::init<MeshPrimitive>(), "Constructor", py::arg("primitive"))
         .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
         .def_property("primitive", &GL::Mesh::primitive,
             [](GL::Mesh& self, py::object primitive) {

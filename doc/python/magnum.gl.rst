@@ -50,3 +50,10 @@
     into the mesh or referenced externally (with the user being responsible for
     its lifetime), the `gl.Mesh` object keeps references to all buffers added
     to it.
+
+.. py:property:: magnum.gl.Mesh.primitive
+
+    While querying this property will always give back a `gl.MeshPrimitive`,
+    this property can be set using either `magnum.MeshPrimitive` or
+    `gl.MeshPrimitive`, similarly to how the overloaded
+    :dox:`GL::Mesh::setPrimitive()` works.
