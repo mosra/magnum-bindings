@@ -154,7 +154,59 @@ class Framebuffer(GLTestCase):
         self.assertIs(framebuffer.attachments[0], renderbuffer)
         self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount + 1)
 
-    def test_read(self):
+    def test_read_image(self):
+        renderbuffer = gl.Renderbuffer()
+        renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
+
+        framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
+        framebuffer.attach_renderbuffer(gl.Framebuffer.ColorAttachment(0), renderbuffer)
+
+        gl.Renderer.clear_color = Color4(1.0, 0.5, 0.75)
+        framebuffer.clear(gl.FramebufferClear.COLOR)
+
+        a = Image2D(PixelFormat.RGBA8_UNORM)
+        framebuffer.read(Range2Di.from_size((1, 1), (2, 2)), a)
+        self.assertEqual(a.size, Vector2i(2, 2))
+
+        # This tests Image internals because this is the only way how to get a
+        # non-empty Image ATM (sorry)
+        # TODO: remove once Image can be created non-empty
+        a_refcount = sys.getrefcount(a)
+
+        data = a.data
+        self.assertIs(data.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+        pixels = a.pixels
+        self.assertIs(pixels.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(ord(a.pixels[0, 0, 0]), 0xff)
+        self.assertEqual(ord(a.pixels[0, 1, 1]), 0x80)
+        self.assertEqual(ord(a.pixels[1, 0, 2]), 0xbf)
+
+        del pixels
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+        view = ImageView2D(a)
+        self.assertEqual(view.size, (2, 2))
+        self.assertIs(view.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del view
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+        mview = MutableImageView2D(a)
+        self.assertEqual(mview.size, (2, 2))
+        self.assertIs(mview.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del mview
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+    def test_read_view(self):
         renderbuffer = gl.Renderbuffer()
         renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
 

@@ -27,6 +27,7 @@
 #include <pybind11/stl.h> /* for Mesh.buffers */
 #include <Corrade/Containers/ArrayView.h>
 #include <Corrade/Utility/FormatStl.h>
+#include <Magnum/Image.h>
 #include <Magnum/ImageView.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Attribute.h>
@@ -686,6 +687,7 @@ void gl(py::module& m) {
             self.clear(mask);
         }, "Clear specified buffers in the framebuffer")
         .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read), "Read block of pixels from the framebuffer to an image view")
+        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, Image2D&)>(&GL::AbstractFramebuffer::read), "Read block of pixels from the framebuffer to an image")
         /** @todo more */;
 
     py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,

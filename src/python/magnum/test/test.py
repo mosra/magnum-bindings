@@ -65,6 +65,7 @@ class Image(unittest.TestCase):
 
     @unittest.skip("No way to create a non-empty Image at the moment")
     def test_data(self):
+        # Tested in test_gl_gl.Framebuffer.test_read_image instead
         a = Image2D(PixelFormat.R8I, Vector2i(3, 17)) # TODO
         a_refcount = sys.getrefcount(a)
 
@@ -87,6 +88,7 @@ class Image(unittest.TestCase):
 
     @unittest.skip("No way to create a non-empty Image at the moment")
     def test_pixels(self):
+        # Tested in test_gl_gl.Framebuffer.test_read_image instead
         a = Image2D(PixelFormat.RG32UI, Vector2i(3, 17)) # TODO
         a_refcount = sys.getrefcount(a)
 
@@ -197,6 +199,7 @@ class ImageView(unittest.TestCase):
 
     @unittest.skip("No way to create a non-empty Image at the moment")
     def test_init_image(self):
+        # Tested in test_gl_gl.Framebuffer.test_read_image instead
         a = Image2D(PixelFormat.R32F, Vector2i(3, 17)) # TODO
         a_refcount = sys.getrefcount(a)
 
