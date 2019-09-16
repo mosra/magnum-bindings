@@ -245,6 +245,15 @@ void trade(py::module& m) {
         .def("close", &Trade::AbstractImporter::close, "Close currently opened file")
 
         /** @todo all other data types */
+        .def_property_readonly("mesh2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh count")
+        .def_property_readonly("mesh3d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh count")
+        .def("mesh2d_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::mesh2DForName>, "Two-dimensional mesh ID for given name")
+        .def("mesh3d_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::mesh3DForName>, "Three-dimensional mesh ID for given name")
+        .def("mesh2d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::mesh2DName, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh name", py::arg("id"))
+        .def("mesh3d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::mesh3DName, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh name", py::arg("id"))
+        .def("mesh2d", checkOpenedBoundsResult<Trade::MeshData2D, &Trade::AbstractImporter::mesh2D, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh", py::arg("id"))
+        .def("mesh3d", checkOpenedBoundsResult<Trade::MeshData3D, &Trade::AbstractImporter::mesh3D, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh", py::arg("id"))
+
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
         .def_property_readonly("image2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image count")
         .def_property_readonly("image3d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image count")

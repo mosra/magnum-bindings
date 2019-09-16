@@ -89,9 +89,14 @@ class ImageData(unittest.TestCase):
             mutable_view = MutableImageView2D(image)
 
 class MeshData(unittest.TestCase):
-    def test_init(self):
-        # Well this doesn't do much but well
-        a = trade.MeshData2D
+    def test(self):
+        # The only way to get a mesh instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        mesh = importer.mesh3d(0)
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+        # TODO: test more, once it's exposed
 
 class Importer(unittest.TestCase):
     def test(self):
@@ -110,6 +115,26 @@ class Importer(unittest.TestCase):
     def test_no_file_opened(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertFalse(importer.is_opened)
+
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh2d_count
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh3d_count
+
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh2d_for_name('')
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh3d_for_name('')
+
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh2d_name(0)
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh3d_name(0)
+
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh2d(0)
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.mesh3d(0)
 
         with self.assertRaisesRegex(RuntimeError, "no file opened"):
             importer.image1d_count
@@ -144,6 +169,16 @@ class Importer(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
 
         with self.assertRaises(IndexError):
+            importer.mesh2d_name(0)
+        with self.assertRaises(IndexError):
+            importer.mesh3d_name(0)
+
+        with self.assertRaises(IndexError):
+            importer.mesh2d(0)
+        with self.assertRaises(IndexError):
+            importer.mesh3d(0)
+
+        with self.assertRaises(IndexError):
             importer.image1d_name(0)
         with self.assertRaises(IndexError):
             importer.image2d_name(1)
@@ -164,6 +199,17 @@ class Importer(unittest.TestCase):
             importer.open_file('nonexistent.png')
         with self.assertRaisesRegex(RuntimeError, "opening data failed"):
             importer.open_data(b'')
+
+    def test_mesh3d(self):
+        # importer refcounting tested in image2d
+        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        self.assertEqual(importer.mesh3d_count, 3)
+        self.assertEqual(importer.mesh3d_name(0), 'Non-indexed mesh')
+        self.assertEqual(importer.mesh3d_for_name('Non-indexed mesh'), 0)
+
+        mesh = importer.mesh3d(0)
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
     def test_image2d(self):
         manager = trade.ImporterManager()

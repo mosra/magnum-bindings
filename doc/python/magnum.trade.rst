@@ -95,6 +95,30 @@
 .. py:function:: magnum.trade.AbstractImporter.open_file
     :raise RuntimeError: If file opening fails
 
+.. py:property:: magnum.trade.AbstractImporter.mesh2d_count
+    :raise RuntimeError: If no file is opened
+.. py:property:: magnum.trade.AbstractImporter.mesh3d_count
+    :raise RuntimeError: If no file is opened
+
+.. py:function:: magnum.trade.AbstractImporter.mesh2d_for_name
+    :raise RuntimeError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.mesh3d_for_name
+    :raise RuntimeError: If no file is opened
+
+.. py:function:: magnum.trade.AbstractImporter.mesh2d_name
+    :raise RuntimeError: If no file is opened
+    :raise ValueError: If :p:`id` is negative or not less than `mesh2d_count`
+.. py:function:: magnum.trade.AbstractImporter.mesh3d_name
+    :raise RuntimeError: If no file is opened
+    :raise ValueError: If :p:`id` is negative or not less than `mesh3d_count`
+
+.. py:function:: magnum.trade.AbstractImporter.mesh2d
+    :raise RuntimeError: If no file is opened
+    :raise ValueError: If :p:`id` is negative or not less than `mesh2d_count`
+.. py:function:: magnum.trade.AbstractImporter.mesh3d
+    :raise RuntimeError: If no file is opened
+    :raise ValueError: If :p:`id` is negative or not less than `mesh3d_count`
+
 .. py:property:: magnum.trade.AbstractImporter.image1d_count
     :raise RuntimeError: If no file is opened
 .. py:property:: magnum.trade.AbstractImporter.image2d_count
