@@ -58,9 +58,19 @@ class Phong(GLTestCase):
         self.assertEqual(c.light_count, 3)
 
     def test_uniforms(self):
-        a = shaders.Phong()
+        a = shaders.Phong(shaders.Phong.Flags.ALPHA_MASK, 2)
         a.diffuse_color = (0.5, 1.0, 0.9)
         a.transformation_matrix = Matrix4.translation(Vector3.x_axis())
         a.projection_matrix = Matrix4.zero_init()
-        a.light_positions = [(0.5, 1.0, 0.3)]
-        a.light_colors = [Color4()]
+        a.light_positions = [(0.5, 1.0, 0.3), Vector3()]
+        a.light_colors = [Color4(), Color4()]
+        a.alpha_mask = 0.3
+
+    def test_uniforms_errors(self):
+        a = shaders.Phong()
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with alpha mask enabled"):
+            a.alpha_mask = 0.3
+        with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
+            a.light_positions = []
+        with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
+            a.light_colors = []

@@ -112,8 +112,14 @@ void shaders(py::module& m) {
             // TODO: textures, once exposed
             .def_property("shininess", nullptr,
                 &Shaders::Phong::setShininess, "Shininess")
-            .def_property("alpha_mask", nullptr,
-                &Shaders::Phong::setAlphaMask, "Alpha mask")
+            .def_property("alpha_mask", nullptr, [](Shaders::Phong& self, Float mask) {
+                if(!(self.flags() & Shaders::Phong::Flag::AlphaMask)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with alpha mask enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.setAlphaMask(mask);
+            }, "Alpha mask")
             .def_property("transformation_matrix", nullptr,
                 &Shaders::Phong::setTransformationMatrix, "Set transformation matrix")
             .def_property("normal_matrix", nullptr,
@@ -121,9 +127,19 @@ void shaders(py::module& m) {
             .def_property("projection_matrix", nullptr,
                 &Shaders::Phong::setProjectionMatrix, "Set projection matrix")
             .def_property("light_positions", nullptr, [](Shaders::Phong& self, const std::vector<Vector3>& positions) {
+                if(positions.size() != self.lightCount()) {
+                    PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(positions.size()));
+                    throw py::error_already_set{};
+                }
+
                 self.setLightPositions(positions);
             }, "Light positions")
             .def_property("light_colors", nullptr, [](Shaders::Phong& self, const std::vector<Color4>& colors) {
+                if(colors.size() != self.lightCount()) {
+                    PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(colors.size()));
+                    throw py::error_already_set{};
+                }
+
                 self.setLightColors(colors);
             }, "Light colors");
     }

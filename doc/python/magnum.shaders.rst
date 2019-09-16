@@ -37,3 +37,10 @@
     :data POSITION: Vertex position
     :data NORMAL: Normal direction
     :data TEXTURE_COORDINATES: 2D texture coordinates
+
+.. py:property:: magnum.shaders.Phong.alpha_mask
+    :raise AttributeError: If the shader was not created with `Flags.ALPHA_MASK`
+.. py:property:: magnum.shaders.Phong.light_positions
+    :raise ValueError: If list length is different from `light_count`
+.. py:property:: magnum.shaders.Phong.light_colors
+    :raise ValueError: If list length is different from `light_count`
