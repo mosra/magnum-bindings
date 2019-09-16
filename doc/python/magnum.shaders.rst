@@ -47,3 +47,20 @@
     :raise ValueError: If list length is different from `light_count`
 .. py:property:: magnum.shaders.Phong.light_colors
     :raise ValueError: If list length is different from `light_count`
+
+.. py:function:: magnum.shaders.Phong.bind_ambient_texture
+    :raise AttributeError: If the shader was not created with
+        `Flags.AMBIENT_TEXTURE`
+.. py:function:: magnum.shaders.Phong.bind_diffuse_texture
+    :raise AttributeError: If the shader was not created with
+        `Flags.DIFFUSE_TEXTURE`
+.. py:function:: magnum.shaders.Phong.bind_specular_texture
+    :raise AttributeError: If the shader was not created with
+        `Flags.SPECULAR_TEXTURE`
+.. py:function:: magnum.shaders.Phong.bind_normal_texture
+    :raise AttributeError: If the shader was not created with
+        `Flags.NORMAL_TEXTURE`
+.. py:function:: magnum.shaders.Phong.bind_textures
+    :raise AttributeError: If the shader was not created with any of
+        `Flags.AMBIENT_TEXTURE`, `Flags.DIFFUSE_TEXTURE`,
+        `Flags.SPECULAR_TEXTURE` or `Flags.NORMAL_TEXTURE`

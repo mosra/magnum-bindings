@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for vector arguments */
 #include <Corrade/Containers/ArrayViewStl.h>
+#include <Magnum/GL/Texture.h>
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Shaders/VertexColor.h>
 
@@ -116,7 +117,6 @@ void shaders(py::module& m) {
                 &Shaders::Phong::setDiffuseColor, "Diffuse color")
             .def_property("specular_color", nullptr,
                 &Shaders::Phong::setSpecularColor, "Specular color")
-            // TODO: textures, once exposed
             .def_property("shininess", nullptr,
                 &Shaders::Phong::setShininess, "Shininess")
             .def_property("alpha_mask", nullptr, [](Shaders::Phong& self, Float mask) {
@@ -148,7 +148,49 @@ void shaders(py::module& m) {
                 }
 
                 self.setLightColors(colors);
-            }, "Light colors");
+            }, "Light colors")
+
+            .def("bind_ambient_texture", [](Shaders::Phong& self, GL::Texture2D& texture) {
+                if(!(self.flags() & Shaders::Phong::Flag::AmbientTexture)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with ambient texture enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.bindAmbientTexture(texture);
+            }, "Bind an ambient texture")
+            .def("bind_diffuse_texture", [](Shaders::Phong& self, GL::Texture2D& texture) {
+                if(!(self.flags() & Shaders::Phong::Flag::DiffuseTexture)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with diffuse texture enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.bindDiffuseTexture(texture);
+            }, "Bind a diffuse texture")
+            .def("bind_specular_texture", [](Shaders::Phong& self, GL::Texture2D& texture) {
+                if(!(self.flags() & Shaders::Phong::Flag::SpecularTexture)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with specular texture enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.bindSpecularTexture(texture);
+            }, "Bind a specular texture")
+            .def("bind_normal_texture", [](Shaders::Phong& self, GL::Texture2D& texture) {
+                if(!(self.flags() & Shaders::Phong::Flag::NormalTexture)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with normal texture enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.bindNormalTexture(texture);
+            }, "Bind a normal texture")
+            .def("bind_textures", [](Shaders::Phong& self, GL::Texture2D* ambient, GL::Texture2D* diffuse, GL::Texture2D* specular, GL::Texture2D* normal) {
+                if(!(self.flags() & (Shaders::Phong::Flag::AmbientTexture|Shaders::Phong::Flag::DiffuseTexture|Shaders::Phong::Flag::SpecularTexture|Shaders::Phong::Flag::NormalTexture))) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with any textures enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.bindTextures(ambient, diffuse, specular, normal);
+            }, "Bind textures", py::arg("ambient") = nullptr, py::arg("diffuse") = nullptr, py::arg("specular") = nullptr, py::arg("normal") = nullptr)
+            ;
     }
 }
 
