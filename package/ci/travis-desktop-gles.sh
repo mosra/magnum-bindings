@@ -48,6 +48,21 @@ cmake .. \
 ninja install
 cd ../..
 
+# Magnum Plugins
+git clone --depth 1 git://github.com/mosra/magnum-plugins.git
+cd magnum-plugins
+mkdir build && cd build
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+    -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_STATIC=$BUILD_STATIC \
+    -DWITH_DDSIMPORTER=ON \
+    -DWITH_STBIMAGEIMPORTER=ON \
+    -G Ninja
+ninja install
+cd ../..
+
 # Build the thing
 mkdir build && cd build
 cmake .. \

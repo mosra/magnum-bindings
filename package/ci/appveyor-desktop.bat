@@ -62,6 +62,21 @@ cmake --build . || exit /b
 cmake --build . --target install || exit /b
 cd .. && cd ..
 
+rem Build Magnum Plugins
+git clone --depth 1 git://github.com/mosra/magnum-plugins.git || exit /b
+cd magnum-plugins || exit /b
+mkdir build && cd build || exit /b
+cmake .. ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
+    -DBUILD_STATIC=%BUILD_STATIC% ^
+    -DWITH_DDSIMPORTER=ON ^
+    -DWITH_STBIMAGEIMPORTER=ON ^
+    -G Ninja || exit /b
+cmake --build . || exit /b
+cmake --build . --target install || exit /b
+cd .. && cd ..
+
 rem Build. BUILD_GL_TESTS is enabled just to be sure, it should not be needed
 rem by any plugin.
 mkdir build && cd build || exit /b
