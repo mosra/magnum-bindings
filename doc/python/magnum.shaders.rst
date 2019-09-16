@@ -36,7 +36,10 @@
 .. py:class:: magnum.shaders.Phong
     :data POSITION: Vertex position
     :data NORMAL: Normal direction
+    :data TANGENT: Tangent direction
     :data TEXTURE_COORDINATES: 2D texture coordinates
+    :data COLOR3: Three-component vertex color
+    :data COLOR4: Four-component vertex color
 
 .. py:property:: magnum.shaders.Phong.alpha_mask
     :raise AttributeError: If the shader was not created with `Flags.ALPHA_MASK`

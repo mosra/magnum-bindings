@@ -82,7 +82,10 @@ void shaders(py::module& m) {
             "Phong", "Phong shader"};
         phong.attr("POSITION") = GL::DynamicAttribute{Shaders::Phong::Position{}};
         phong.attr("NORMAL") = GL::DynamicAttribute{Shaders::Phong::Normal{}};
+        phong.attr("TANGENT") = GL::DynamicAttribute{Shaders::Phong::Tangent{}};
         phong.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{Shaders::Phong::TextureCoordinates{}};
+        phong.attr("COLOR3") = GL::DynamicAttribute{Shaders::Phong::Color3{}};
+        phong.attr("COLOR4") = GL::DynamicAttribute{Shaders::Phong::Color4{}};
 
         py::enum_<Shaders::Phong::Flag> flags{phong, "Flags", "Flags"};
 
@@ -90,8 +93,12 @@ void shaders(py::module& m) {
             .value("AMBIENT_TEXTURE", Shaders::Phong::Flag::AmbientTexture)
             .value("DIFFUSE_TEXTURE", Shaders::Phong::Flag::DiffuseTexture)
             .value("SPECULAR_TEXTURE", Shaders::Phong::Flag::SpecularTexture)
+            .value("NORMAL_TEXTURE", Shaders::Phong::Flag::NormalTexture)
             .value("ALPHA_MASK", Shaders::Phong::Flag::AlphaMask)
-            .value("NONE", Shaders::Phong::Flag{});
+            .value("VERTEX_COLOR", Shaders::Phong::Flag::VertexColor)
+            .value("NONE", Shaders::Phong::Flag{})
+            /* TODO: OBJECT_ID, once multiple FB outputs and mapDraw is exposed */
+            ;
         corrade::enumOperators(flags);
 
         phong

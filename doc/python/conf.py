@@ -84,7 +84,10 @@ magnum.shaders.VertexColor3D.__annotations__ = {
 magnum.shaders.Phong.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'NORMAL': magnum.gl.Attribute,
-    'TEXTURE_COORDINATES': magnum.gl.Attribute
+    'TANGENT': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute,
+    'COLOR3': magnum.gl.Attribute,
+    'COLOR4': magnum.gl.Attribute
 }
 
 PROJECT_TITLE = 'Magnum'
