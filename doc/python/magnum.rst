@@ -36,6 +36,21 @@
     :data TARGET_WEBGL: WebGL target
     :data TARGET_VK: Vulkan interoperability
 
+.. py:class:: magnum.Image1D
+
+    See `Image2D` for more information.
+
+.. py:class:: magnum.Image2D
+
+    An owning counterpart to `ImageView2D` / `MutableImageView2D`. Holds its
+    own data buffer, thus doesn't have an equivalent to `ImageView2D.owner`.
+    Implicitly convertible to `ImageView2D` / `MutableImageView2D`, so all APIs
+    consuming image views work with this type as well.
+
+.. py:class:: magnum.Image3D
+
+    See `Image2D` for more information.
+
 .. py:class:: magnum.ImageView1D
 
     See `ImageView2D` for more information.

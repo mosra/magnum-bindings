@@ -26,6 +26,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/StridedArrayView.h>
+#include <Magnum/Image.h>
 #include <Magnum/ImageView.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/PixelFormat.h>
@@ -46,12 +47,37 @@ namespace py = pybind11;
 
 namespace magnum { namespace {
 
+template<class T> void image(py::class_<T>& c) {
+    c
+        /* Constructors. Only the ones taking the generic format and *not*
+           taking an Array, as Python has no way to "move" it in */
+        .def(py::init<const PixelStorage&, PixelFormat>(), "Construct an image placeholder")
+        .def(py::init<PixelFormat>(), "Construct an image placeholder")
+
+        /* Properties */
+        .def_property_readonly("storage", &T::storage, "Storage of pixel data")
+        .def_property_readonly("format", &T::format, "Format of pixel data")
+        /** @todo formatExtra() */
+        .def_property_readonly("pixel_size", &T::pixelSize, "Pixel size (in bytes)")
+        .def_property_readonly("size", [](T& self) {
+            return PyDimensionTraits<T::Dimensions, Int>::from(self.size());
+        }, "Image size")
+        .def_property_readonly("data", [](T& self) {
+            return Containers::pyArrayViewHolder(self.data(), self.data() ? py::cast(self) : py::none{});
+        }, "Image data")
+        .def_property_readonly("pixels", [](T& self) {
+            return Containers::pyArrayViewHolder(self.pixels(), self.data() ? py::cast(self) : py::none{});
+        }, "View on pixel data");
+}
+
 template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
     /*
         Missing APIs:
 
         Type, ErasedType, Dimensions
     */
+
+    py::implicitly_convertible<Image<T::Dimensions>, T>();
 
     c
         /* Constructors. The variants *not* taking an array view have to be
@@ -88,6 +114,9 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
         .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
             return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
+        .def(py::init([](Image<T::Dimensions>& image) {
+            return pyImageViewHolder(T{image}, image.data() ? py::cast(image) : py::none{});
+        }), "Construct a view on an image")
 
         /* Properties */
         .def_property_readonly("storage", &T::storage, "Storage of pixel data")
@@ -253,6 +282,13 @@ void magnum(py::module& m) {
             &PixelStorage::imageHeight, &PixelStorage::setImageHeight, "Image height")
         .def_property("skip",
             &PixelStorage::skip, &PixelStorage::setSkip, "Pixel, row and image skip");
+
+    py::class_<Image1D> image1D{m, "Image1D", "One-dimensional image"};
+    py::class_<Image2D> image2D{m, "Image2D", "Two-dimensional image"};
+    py::class_<Image3D> image3D{m, "Image3D", "Three-dimensional image"};
+    image(image1D);
+    image(image2D);
+    image(image3D);
 
     py::class_<ImageView1D, PyImageViewHolder<ImageView1D>> imageView1D{m, "ImageView1D", "One-dimensional image view"};
     py::class_<ImageView2D, PyImageViewHolder<ImageView2D>> imageView2D{m, "ImageView2D", "Two-dimensional image view"};
