@@ -113,6 +113,8 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
 }
 
 template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>& c) {
+    py::implicitly_convertible<BasicMutableImageView<T::Dimensions>, T>();
+
     c
         .def(py::init([](const BasicMutableImageView<T::Dimensions>& other) {
             return pyImageViewHolder(BasicImageView<T::Dimensions>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
