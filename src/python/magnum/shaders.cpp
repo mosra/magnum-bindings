@@ -27,6 +27,7 @@
 #include <pybind11/stl.h> /* for vector arguments */
 #include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/GL/Texture.h>
+#include <Magnum/Shaders/Flat.h>
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Shaders/VertexColor.h>
 
@@ -38,6 +39,42 @@
 namespace magnum {
 
 namespace {
+
+template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::Flat<dimensions>, GL::AbstractShaderProgram>& c) {
+    /* Attributes */
+    c.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{typename Shaders::Flat<dimensions>::TextureCoordinates{}};
+    c.attr("COLOR3") = GL::DynamicAttribute{typename Shaders::Flat<dimensions>::Color3{}};
+    c.attr("COLOR4") = GL::DynamicAttribute{typename Shaders::Flat<dimensions>::Color4{}};
+
+    /* Methods */
+    c
+        .def(py::init<typename Shaders::Flat<dimensions>::Flag>(), "Constructor",
+            py::arg("flags") = typename Shaders::Flat<dimensions>::Flag{})
+
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def_property_readonly("flags", [](Shaders::Flat<dimensions>& self) {
+            return typename Shaders::Flat<dimensions>::Flag(UnsignedByte(self.flags()));
+        }, "Flags")
+        .def_property("transformation_projection_matrix", nullptr, &Shaders::Flat<dimensions>::setTransformationProjectionMatrix,
+            "Transformation and projection matrix")
+        .def_property("color", nullptr, &Shaders::Flat<dimensions>::setColor, "Color")
+        .def_property("alpha_mask", nullptr, [](Shaders::Flat<dimensions>& self, Float mask) {
+            if(!(self.flags() & Shaders::Flat<dimensions>::Flag::AlphaMask)) {
+                PyErr_SetString(PyExc_AttributeError, "the shader was not created with alpha mask enabled");
+                throw py::error_already_set{};
+            }
+
+            self.setAlphaMask(mask);
+        }, "Alpha mask")
+        .def("bind_texture", [](Shaders::Flat<dimensions>& self, GL::Texture2D& texture) {
+            if(!(self.flags() & Shaders::Flat<dimensions>::Flag::Textured)) {
+                PyErr_SetString(PyExc_AttributeError, "the shader was not created with texturing enabled");
+                throw py::error_already_set{};
+            }
+
+            self.bindTexture(texture);
+        }, "Bind a color texture");
+}
 
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
@@ -64,6 +101,35 @@ void shaders(py::module& m) {
        import (also can't import because there it's _magnum.*) */
     py::module::import("magnum.gl");
     #endif
+
+    /* 2D/3D flat shader */
+    {
+        PyNonDestructibleClass<Shaders::Flat2D, GL::AbstractShaderProgram> flat2D{m,
+            "Flat2D", "2D flat shader"};
+        PyNonDestructibleClass<Shaders::Flat3D, GL::AbstractShaderProgram> flat3D{m,
+            "Flat3D", "3D flat shader"};
+        flat2D.attr("POSITION") = GL::DynamicAttribute{Shaders::Flat2D::Position{}};
+        flat3D.attr("POSITION") = GL::DynamicAttribute{Shaders::Flat3D::Position{}};
+
+        /* The flags are currently the same type for both 2D and 3D and pybind
+           doesn't want to have a single type registered twice, so doing it
+           this way instead */
+        py::enum_<Shaders::Flat2D::Flag> flags{flat2D, "Flags", "Flags"};
+        flags
+            .value("TEXTURED", Shaders::Flat2D::Flag::Textured)
+            .value("ALPHA_MASK", Shaders::Flat2D::Flag::AlphaMask)
+            .value("VERTEX_COLOR", Shaders::Flat3D::Flag::AlphaMask)
+            .value("NONE", Shaders::Flat3D::Flag{})
+            /* TODO: OBJECT_ID, once multiple FB outputs and mapDraw is exposed */
+            ;
+        flat3D.attr("Flags") = flags;
+
+        flat(flat2D);
+        flat(flat3D);
+
+        corrade::enumOperators(flags);
+
+    }
 
     /* 2D/3D vertex color shader */
     {

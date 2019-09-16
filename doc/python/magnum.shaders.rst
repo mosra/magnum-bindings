@@ -23,6 +23,28 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
+.. py:class:: magnum.shaders.Flat2D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+    :data COLOR3: Three-component vertex color
+    :data COLOR4: Four-component vertex color
+
+.. py:class:: magnum.shaders.Flat3D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+    :data COLOR3: Three-component vertex color
+    :data COLOR4: Four-component vertex color
+
+.. py:property:: magnum.shaders.Flat2D.alpha_mask
+    :raise AttributeError: If the shader was not created with `Flags.ALPHA_MASK`
+.. py:property:: magnum.shaders.Flat3D.alpha_mask
+    :raise AttributeError: If the shader was not created with `Flags.ALPHA_MASK`
+
+.. py:function:: magnum.shaders.Flat2D.bind_texture
+    :raise AttributeError: If the shader was not created with `Flags.TEXTURED`
+.. py:function:: magnum.shaders.Flat3D.bind_texture
+    :raise AttributeError: If the shader was not created with `Flags.TEXTURED`
+
 .. py:class:: magnum.shaders.VertexColor2D
     :data POSITION: Vertex position
     :data COLOR3: Three-component vertex color

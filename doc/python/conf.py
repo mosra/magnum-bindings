@@ -71,6 +71,18 @@ magnum.__annotations__ = {
 magnum.gl.__annotations__ = {
     'default_framebuffer': magnum.gl.DefaultFramebuffer
 }
+magnum.shaders.Flat2D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute,
+    'COLOR3': magnum.gl.Attribute,
+    'COLOR4': magnum.gl.Attribute
+}
+magnum.shaders.Flat3D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute,
+    'COLOR3': magnum.gl.Attribute,
+    'COLOR4': magnum.gl.Attribute
+}
 magnum.shaders.VertexColor2D.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'COLOR3': magnum.gl.Attribute,

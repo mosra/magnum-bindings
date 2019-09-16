@@ -32,6 +32,33 @@ from . import GLTestCase, setUpModule
 from magnum import *
 from magnum import gl, shaders
 
+class Flat(GLTestCase):
+    def test_init(self):
+        a = shaders.Flat3D()
+        self.assertEqual(a.flags, shaders.Flat3D.Flags.NONE)
+
+        b = shaders.Flat3D(shaders.Flat3D.Flags.TEXTURED|shaders.Flat3D.Flags.ALPHA_MASK)
+        self.assertEqual(b.flags, shaders.Flat3D.Flags.TEXTURED|shaders.Flat3D.Flags.ALPHA_MASK)
+
+    def test_uniforms_bindings(self):
+        a = shaders.Flat3D(shaders.Flat3D.Flags.TEXTURED|shaders.Flat3D.Flags.ALPHA_MASK)
+        a.color = (0.5, 1.0, 0.9)
+        a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())
+        a.alpha_mask = 0.3
+
+        texture = gl.Texture2D()
+        texture.set_storage(1, gl.TextureFormat.RGBA8, Vector2i(8))
+        a.bind_texture(texture)
+
+    def test_uniforms_bindings_errors(self):
+        a = shaders.Flat2D()
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with alpha mask enabled"):
+            a.alpha_mask = 0.3
+
+        texture = gl.Texture2D()
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with texturing enabled"):
+            a.bind_texture(texture)
+
 class VertexColor(GLTestCase):
     def test_init(self):
         a = shaders.VertexColor2D()
