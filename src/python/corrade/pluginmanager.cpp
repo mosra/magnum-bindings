@@ -59,8 +59,8 @@ void pluginmanager(py::module& m) {
         .def_property("plugin_directory", &PluginManager::AbstractManager::pluginDirectory, &PluginManager::AbstractManager::setPluginDirectory, "Plugin directory")
         .def("reload_plugin_directory", &PluginManager::AbstractManager::reloadPluginDirectory, "Reload plugin directory")
         /** @todo setPreferredPlugins (takes an init list) */
-        .def("plugin_list", &PluginManager::AbstractManager::pluginList, "List of all available plugin names")
-        .def("alias_list", &PluginManager::AbstractManager::aliasList, "List of all available alias names")
+        .def_property_readonly("plugin_list", &PluginManager::AbstractManager::pluginList, "List of all available plugin names")
+        .def_property_readonly("alias_list", &PluginManager::AbstractManager::aliasList, "List of all available alias names")
         /** @todo metadata() (figure out the ownership) */
         .def("load_state", &PluginManager::AbstractManager::loadState, "Load state of a plugin")
         .def("load", &PluginManager::AbstractManager::load, "Load a plugin")
