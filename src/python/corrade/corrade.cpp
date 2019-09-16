@@ -28,6 +28,10 @@
 
 #include "corrade/bootstrap.h"
 
+#ifdef CORRADE_BUILD_STATIC
+#include "corrade/staticconfigure.h"
+#endif
+
 namespace py = pybind11;
 
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863

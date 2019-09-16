@@ -71,6 +71,9 @@ if(NOT CORRADE_BUILD_STATIC)
 # point of static builds). It also nicely avoids problems with multiply-defined
 # global data.
 else()
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/staticconfigure.h.cmake
+                   ${CMAKE_CURRENT_BINARY_DIR}/staticconfigure.h)
+
     list(APPEND corrade_SRCS ${corrade_containers_SRCS})
     list(APPEND corrade_LIBS Corrade::Containers)
 

@@ -47,6 +47,7 @@ add_subdirectory(magnum)
 # configure_file() and then replacing generator expressions with file(GENERATE)
 foreach(target
     corrade_containers
+    corrade_pluginmanager
     magnum_gl
     magnum_meshtools
     magnum_primitives
