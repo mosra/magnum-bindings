@@ -26,7 +26,6 @@
 */
 
 #include <pybind11/pybind11.h>
-#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/SceneGraph/Object.h>
 #include <Magnum/SceneGraph/Scene.h>
 
@@ -61,7 +60,10 @@ template<UnsignedInt dimensions, class T, class Transformation> void object(py::
                 parent = py::cast<SceneGraph::Scene<Transformation>*>(parentobj);
             else if(py::isinstance<py::none>(parentobj))
                 parent = nullptr;
-            else throw py::type_error{Utility::formatString("expected Scene, Object or None, got {}", std::string(py::str{parentobj.get_type()}))};
+            else {
+                PyErr_Format(PyExc_TypeError, "expected Scene, Object or None, got %A", parentobj.get_type().ptr());
+                throw py::error_already_set{};
+            }
 
             /* Decrease refcount if a parent is removed, increase it if a
                parent gets added */

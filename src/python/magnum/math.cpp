@@ -177,14 +177,20 @@ template<class T> void boolVector(py::class_<T>& c) {
         .def("none", &T::none, "Whether no bits are set")
         .def("any", &T::any, "Whether any bit is set")
 
-        /* Set / get. Need to throw IndexError in order to allow iteration:
+        /* Set / get. Need to raise IndexError in order to allow iteration:
            https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
         .def("__setitem__",[](T& self, std::size_t i, bool value) {
-            if(i >= T::Size) throw pybind11::index_error{};
+            if(i >= T::Size) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
             self.set(i, value);
         }, "Set a bit at given position")
         .def("__getitem__", [](const T& self, std::size_t i) {
-            if(i >= T::Size) throw pybind11::index_error{};
+            if(i >= T::Size) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
             return self[i];
         }, "Bit at given position")
 

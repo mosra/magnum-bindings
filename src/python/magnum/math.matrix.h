@@ -28,7 +28,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <Corrade/Containers/ScopeGuard.h>
-#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
 
@@ -114,11 +113,15 @@ template<class T, class ...Args> void everyRectangularMatrixBuffer(py::class_<T,
 
             Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            if(buffer.ndim != 2)
-                throw py::buffer_error{Utility::formatString("expected 2 dimensions but got {}", buffer.ndim)};
+            if(buffer.ndim != 2) {
+                PyErr_Format(PyExc_BufferError, "expected 2 dimensions but got %i", buffer.ndim);
+                throw py::error_already_set{};
+            }
 
-            if(buffer.shape[0] != T::Rows || buffer.shape[1] != T::Cols)
-                throw py::buffer_error{Utility::formatString("expected {}x{} elements but got {}x{}", T::Cols, T::Rows, buffer.shape[1], buffer.shape[0])};
+            if(buffer.shape[0] != T::Rows || buffer.shape[1] != T::Cols) {
+                PyErr_Format(PyExc_BufferError, "expected %zux%zu elements but got %zix%zi", T::Cols, T::Rows, buffer.shape[1], buffer.shape[0]);
+                throw py::error_already_set{};
+            }
 
             T out{Math::NoInit};
 
@@ -127,7 +130,10 @@ template<class T, class ...Args> void everyRectangularMatrixBuffer(py::class_<T,
                 initFromBuffer<Float>(out, buffer);
             else if(buffer.format[0] == 'd' && !buffer.format[1])
                 initFromBuffer<Double>(out, buffer);
-            else throw py::buffer_error{Utility::formatString("expected format f or d but got {}", buffer.format)};
+            else {
+                PyErr_Format(PyExc_BufferError, "expected format f or d but got %s", buffer.format);
+                throw py::error_already_set{};
+            }
 
             return out;
         }), "Construct from a buffer");
@@ -176,7 +182,7 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         .def(py::self == py::self, "Equality comparison")
         .def(py::self != py::self, "Non-equality comparison")
 
-        /* Set / get. Need to throw IndexError in order to allow iteration:
+        /* Set / get. Need to raise IndexError in order to allow iteration:
            https://docs.python.org/3/reference/datamodel.html#object.__getitem__
            Using error_already_set is slightly faster than throwing index_error
            directly, but still much slower than not throwing at all. Waiting
@@ -184,14 +190,14 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         .def("__setitem__", [](T& self, std::size_t i, const  typename VectorTraits<T::Rows, typename T::Type>::Type& value) {
             if(i >= T::Cols) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             self[i] = value;
         }, "Set a column at given position")
         .def("__getitem__", [](const T& self, std::size_t i) ->  typename VectorTraits<T::Rows, typename T::Type>::Type {
             if(i >= T::Cols) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             return self[i];
         }, "Column at given position")
@@ -200,14 +206,14 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         .def("__setitem__", [](T& self, const std::pair<std::size_t, std::size_t>& i, typename T::Type value) {
             if(i.first >= T::Cols || i.second >= T::Rows) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             self[i.first][i.second] = value;
         }, "Set a value at given col/row")
         .def("__getitem__", [](const T& self, const std::pair<std::size_t, std::size_t>& i) {
             if(i.first >= T::Cols || i.second >= T::Rows) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             return self[i.first][i.second];
         }, "Value at given col/row")

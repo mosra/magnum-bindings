@@ -64,10 +64,13 @@ template<class PyFeature, UnsignedInt dimensions, class Feature, class T> void f
         .def("__len__", &SceneGraph::FeatureGroup<dimensions, Feature, T>::size,
             "Count of features in the group")
         /* Get item. Fetching the already registered instance and returning
-           that instead of wrapping the pointer again. Need to throw IndexError
+           that instead of wrapping the pointer again. Need to raise IndexError
            in order to allow iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
         .def("__getitem__", [](SceneGraph::FeatureGroup<dimensions, Feature, T>& self, std::size_t index) -> PyFeature& {
-            if(index >= self.size()) throw pybind11::index_error{};
+            if(index >= self.size())  {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
             return static_cast<PyFeature&>(self[index]);
         }, "Feature at given index")
         .def("add", [](SceneGraph::FeatureGroup<dimensions, Feature, T>& self, PyFeature& feature) {

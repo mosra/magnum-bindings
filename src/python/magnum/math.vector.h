@@ -27,7 +27,6 @@
 
 #include <pybind11/operators.h>
 #include <Corrade/Containers/ScopeGuard.h>
-#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
 
@@ -142,15 +141,21 @@ template<class T, class ...Args> void everyVectorBuffer(py::class_<T, Args...>& 
 
             Containers::ScopeGuard e{&buffer, PyBuffer_Release};
 
-            if(buffer.ndim != 1)
-                throw py::buffer_error{Utility::formatString("expected 1 dimension but got {}", buffer.ndim)};
+            if(buffer.ndim != 1) {
+                PyErr_Format(PyExc_BufferError, "expected 1 dimension but got %i", buffer.ndim);
+                throw py::error_already_set{};
+            }
 
-            if(buffer.shape[0] != T::Size)
-                throw py::buffer_error{Utility::formatString("expected {} elements but got {}", T::Size, buffer.shape[0])};
+            if(buffer.shape[0] != T::Size) {
+                PyErr_Format(PyExc_BufferError, "expected %zu elements but got %zi", T::Size, buffer.shape[0]);
+                throw py::error_already_set{};
+            }
 
             /* Expecting just an one-letter format */
-            if(!buffer.format[0] || buffer.format[1] || !isTypeCompatible<typename T::Type>(buffer.format[0]))
-                throw py::buffer_error{Utility::formatString("unexpected format {} for a {} vector", buffer.format, FormatStrings[formatIndex<typename T::Type>()])};
+            if(!buffer.format[0] || buffer.format[1] || !isTypeCompatible<typename T::Type>(buffer.format[0])) {
+                PyErr_Format(PyExc_BufferError, "unexpected format %s for a %s vector", buffer.format, FormatStrings[formatIndex<typename T::Type>()]);
+                throw py::error_already_set{};
+            }
 
             T out{Math::NoInit};
             initFromBuffer<T>(out, buffer);
@@ -208,7 +213,7 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def(py::self <= py::self, "Component-wise less than or equal comparison")
         .def(py::self >= py::self, "Component-wise greater than or equal comparison")
 
-        /* Set / get. Need to throw IndexError in order to allow iteration:
+        /* Set / get. Need to raise IndexError in order to allow iteration:
            https://docs.python.org/3/reference/datamodel.html#object.__getitem__
            Using error_already_set is slightly faster than throwing index_error
            directly, but still much slower than not throwing at all. Waiting
@@ -216,14 +221,14 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def("__setitem__", [](T& self, std::size_t i, typename T::Type value) {
             if(i >= T::Size) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             self[i] = value;
         }, "Set a value at given position")
         .def("__getitem__", [](const T& self, std::size_t i) {
             if(i >= T::Size) {
                 PyErr_SetString(PyExc_IndexError, "");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             return self[i];
         }, "Value at given position")
@@ -235,7 +240,7 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
         .def("__getattr__", [](T& self, const std::string& name) -> py::object {
             if(name.size() > 4) {
                 PyErr_SetString(PyExc_AttributeError, "only four-component swizzles are supported at most");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
 
             Math::Vector4<typename T::Type> out;
@@ -246,7 +251,7 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
                 else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) out[i] = self[3];
                 else {
                     PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
-                    throw pybind11::error_already_set{};
+                    throw py::error_already_set{};
                 }
             }
 
@@ -268,11 +273,11 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
               (name.compare("rgb") == 0 && T::Size > 3) ||
                name.find_first_not_of("xyzwrgba") != std::string::npos) {
                 if(PySuper_Type.tp_setattro(py::cast(self).ptr(), nameO.ptr(), valueO.ptr()) != 0)
-                    throw pybind11::error_already_set{};
+                    throw py::error_already_set{};
                 return;
             }
 
-            /* Here we can be certain it's a swizzle attempt, so throw clear
+            /* Here we can be certain it's a swizzle attempt, so raise clear
                error messages */
             const typename T::Type* data;
             std::size_t size;
@@ -287,12 +292,12 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
                 size = 4;
             } else {
                 PyErr_SetString(PyExc_TypeError, "unrecognized swizzle type");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
 
             if(name.size() != size) {
                 PyErr_SetString(PyExc_TypeError, "swizzle doesn't match passed vector component count");
-                throw pybind11::error_already_set{};
+                throw py::error_already_set{};
             }
             for(std::size_t i = 0; i != name.size(); ++i) {
                 if(name[i] == 'x' || name[i] == 'r') self[0] = data[i];
@@ -301,7 +306,7 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
                 else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) self[3] = data[i];
                 else {
                     PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
-                    throw pybind11::error_already_set{};
+                    throw py::error_already_set{};
                 }
             }
         }, "Vector swizzle")

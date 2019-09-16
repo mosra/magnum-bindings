@@ -26,7 +26,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for Mesh.buffers */
 #include <Corrade/Containers/ArrayView.h>
-#include <Corrade/Utility/FormatStl.h>
 #include <Magnum/Image.h>
 #include <Magnum/ImageView.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -777,7 +776,10 @@ void gl(py::module& m) {
                     self.setPrimitive(py::cast<MeshPrimitive>(primitive));
                 else if(py::isinstance<GL::MeshPrimitive>(primitive))
                     self.setPrimitive(py::cast<GL::MeshPrimitive>(primitive));
-                else throw py::type_error{Utility::formatString("expected MeshPrimitive or gl.MeshPrimitive, got {}", std::string(py::str{primitive.get_type()}))};
+                else {
+                    PyErr_Format(PyExc_TypeError, "expected MeshPrimitive or gl.MeshPrimitive, got %A", primitive.get_type().ptr());
+                    throw py::error_already_set{};
+                }
             }, "Primitive type")
         /* Have to use a lambda because it returns GL::Mesh which is not
            tracked (unlike PyMesh) */
