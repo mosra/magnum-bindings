@@ -40,14 +40,8 @@ namespace {
 
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
-    c.attr("COLOR3") = GL::DynamicAttribute{
-        GL::DynamicAttribute::Kind::Generic, 3,
-        GL::DynamicAttribute::Components::Three,
-        GL::DynamicAttribute::DataType::Float};
-    c.attr("COLOR4") = GL::DynamicAttribute{
-        GL::DynamicAttribute::Kind::Generic, 3,
-        GL::DynamicAttribute::Components::Four,
-        GL::DynamicAttribute::DataType::Float};
+    c.attr("COLOR3") = GL::DynamicAttribute{typename Shaders::VertexColor<dimensions>::Color3{}};
+    c.attr("COLOR4") = GL::DynamicAttribute{typename Shaders::VertexColor<dimensions>::Color4{}};
 
     /* Methods */
     c
@@ -76,14 +70,8 @@ void shaders(py::module& m) {
             "VertexColor2D", "2D vertex color shader"};
         PyNonDestructibleClass<Shaders::VertexColor3D, GL::AbstractShaderProgram> vertexColor3D{m,
             "VertexColor3D", "3D vertex color shader"};
-        vertexColor2D.attr("POSITION") = GL::DynamicAttribute{
-            GL::DynamicAttribute::Kind::Generic, 0,
-            GL::DynamicAttribute::Components::Two,
-            GL::DynamicAttribute::DataType::Float};
-        vertexColor3D.attr("POSITION") = GL::DynamicAttribute{
-            GL::DynamicAttribute::Kind::Generic, 0,
-            GL::DynamicAttribute::Components::Three,
-            GL::DynamicAttribute::DataType::Float};
+        vertexColor2D.attr("POSITION") = GL::DynamicAttribute{Shaders::VertexColor2D::Position{}};
+        vertexColor3D.attr("POSITION") = GL::DynamicAttribute{Shaders::VertexColor3D::Position{}};
         vertexColor(vertexColor2D);
         vertexColor(vertexColor3D);
     }
@@ -92,18 +80,9 @@ void shaders(py::module& m) {
     {
         PyNonDestructibleClass<Shaders::Phong, GL::AbstractShaderProgram> phong{m,
             "Phong", "Phong shader"};
-        phong.attr("POSITION") = GL::DynamicAttribute{
-            GL::DynamicAttribute::Kind::Generic, 0,
-            GL::DynamicAttribute::Components::Three,
-            GL::DynamicAttribute::DataType::Float};
-        phong.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{
-            GL::DynamicAttribute::Kind::Generic, 1,
-            GL::DynamicAttribute::Components::Two,
-            GL::DynamicAttribute::DataType::Float};
-        phong.attr("NORMAL") = GL::DynamicAttribute{
-            GL::DynamicAttribute::Kind::Generic, 2,
-            GL::DynamicAttribute::Components::Three,
-            GL::DynamicAttribute::DataType::Float};
+        phong.attr("POSITION") = GL::DynamicAttribute{Shaders::Phong::Position{}};
+        phong.attr("NORMAL") = GL::DynamicAttribute{Shaders::Phong::Normal{}};
+        phong.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{Shaders::Phong::TextureCoordinates{}};
 
         py::enum_<Shaders::Phong::Flag> flags{phong, "Flags", "Flags"};
 
