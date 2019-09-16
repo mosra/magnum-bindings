@@ -308,7 +308,14 @@ void gl(py::module& m) {
             .def("add_file", [](GL::Shader& self, const std::string& filename) {
                 self.addFile(filename);
             }, "Add shader source file")
-            .def("compile", static_cast<bool(GL::Shader::*)()>(&GL::Shader::compile), "Compile shader");
+            .def("compile", [](GL::Shader& self) {
+                /** @todo log redirection -- but we'd need assertions to not be
+                    part of that so when it dies, the user can still see why */
+                if(!self.compile()) {
+                    PyErr_SetString(PyExc_RuntimeError, "compilation failed");
+                    throw py::error_already_set{};
+                }
+            }, "Compile shader");
     }
 
     /* Abstract shader program */
@@ -363,14 +370,33 @@ void gl(py::module& m) {
             /* Somehow the overload static_casts don't work and it complains it
                can't bind a protected function, have to use lambdas */
             .def("link", [](GL::AbstractShaderProgram& self) {
-                return static_cast<PublicizedAbstractShaderProgram&>(self).link();
+                /** @todo log redirection -- but we'd need assertions to not be
+                    part of that so when it dies, the user can still see why */
+                if(!static_cast<PublicizedAbstractShaderProgram&>(self).link()) {
+                    PyErr_SetString(PyExc_RuntimeError, "linking failed");
+                    throw py::error_already_set{};
+                }
             }, "Link the shader")
             .def("uniform_location", [](GL::AbstractShaderProgram& self, const std::string& name) {
-                return static_cast<PublicizedAbstractShaderProgram&>(self).uniformLocation(name);
+                /** @todo log redirection -- but we'd need assertions to not be
+                    part of that so when it dies, the user can still see why */
+                const Int location = static_cast<PublicizedAbstractShaderProgram&>(self).uniformLocation(name);
+                if(location == -1) {
+                    PyErr_Format(PyExc_ValueError, "location of uniform '%s' cannot be retrieved", name.data());
+                    throw py::error_already_set{};
+                }
+                return location;
             }, "Get uniform location")
             #ifndef MAGNUM_TARGET_GLES2
             .def("uniform_block_index", [](GL::AbstractShaderProgram& self, const std::string& name) {
-                return static_cast<PublicizedAbstractShaderProgram&>(self).uniformBlockIndex(name);
+                /** @todo log redirection -- but we'd need assertions to not be
+                    part of that so when it dies, the user can still see why */
+                const UnsignedInt index = static_cast<PublicizedAbstractShaderProgram&>(self).uniformBlockIndex(name);
+                if(index == 0xffffffffu) {
+                    PyErr_Format(PyExc_ValueError, "index of uniform block '%s' cannot be retrieved", name.data());
+                    throw py::error_already_set{};
+                }
+                return index;
             }, "Get uniform block index")
             #endif
             .def("set_uniform", setUniform<Float>, "Set uniform value")

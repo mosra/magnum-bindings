@@ -38,6 +38,15 @@
     to have class members initialized before a GL context is present, but in
     Python there's no such limitation so these don't make sense.
 
+.. py:function:: magnum.gl.AbstractShaderProgram.link
+    :raise RuntimeError: If linking fails
+.. py:function:: magnum.gl.AbstractShaderProgram.uniform_location
+    :raise ValueError: If there's no uniform of that name
+.. py:function:: magnum.gl.AbstractShaderProgram.uniform_block_index
+    :raise ValueError: If there's no uniform block of that name
+.. py:function:: magnum.gl.Shader.compile
+    :raise RuntimeError: If compilation fails
+
 .. py:class:: magnum.gl.Mesh
 
     TODO: remove this once m.css stops ignoring the first caption on a page

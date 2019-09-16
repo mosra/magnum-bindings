@@ -64,7 +64,7 @@ void main() {
 }
             """.strip())
 
-        self.assertTrue(vert.compile())
+        vert.compile()
         a.attach_shader(vert)
 
         if magnum.TARGET_GLES2:
@@ -87,14 +87,32 @@ void main() {
     color = vec4(0.0);
 }
             """.strip())
-        self.assertTrue(frag.compile())
+        frag.compile()
         a.attach_shader(frag)
 
         a.bind_attribute_location(0, "position")
-        self.assertTrue(a.link())
+        a.link()
         location = a.uniform_location("transformationProjectionMatrix")
         self.assertGreaterEqual(location, 0)
         a.set_uniform(location, Matrix4())
+
+    def test_link_fail(self):
+        a = gl.AbstractShaderProgram()
+        # Link of an empty shader will always fail
+        with self.assertRaisesRegex(RuntimeError, "linking failed"):
+            a.link()
+
+    def test_uniform_fail(self):
+        a = gl.AbstractShaderProgram()
+        with self.assertRaisesRegex(ValueError, "location of uniform 'nonexistent' cannot be retrieved"):
+            a.uniform_location("nonexistent")
+        # Asking for uniform on a non-linked program is an error, eat it so the
+        # setup/teardown checks don't complain
+        self.assertEqual(gl.Renderer.error, gl.Renderer.Error.INVALID_OPERATION)
+
+        if not magnum.TARGET_GLES2:
+            with self.assertRaisesRegex(ValueError, "index of uniform block 'nonexistent' cannot be retrieved"):
+                a.uniform_block_index("nonexistent")
 
 class Buffer(GLTestCase):
     def test_init(self):
@@ -228,7 +246,18 @@ class Shader(GLTestCase):
             gl_Position = vec4(0.0);
         }
         """)
-        self.assertTrue(a.compile())
+        a.compile()
+
+    def test_compile_fail(self):
+        if magnum.TARGET_GLES2:
+            a = gl.Shader(gl.Version.GLES200, gl.Shader.Type.VERTEX)
+        elif magnum.TARGET_GLES:
+            a = gl.Shader(gl.Version.GLES300, gl.Shader.Type.VERTEX)
+        else:
+            a = gl.Shader(gl.Version.GL300, gl.Shader.Type.VERTEX)
+        a.add_source("error!!!!")
+        with self.assertRaisesRegex(RuntimeError, "compilation failed"):
+            a.compile()
 
 class Texture(GLTestCase):
     def test_minification_filter(self):
