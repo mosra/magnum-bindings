@@ -127,7 +127,7 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
                the buffer because we no longer care about the buffer
                descriptor -- that could allow the GC to haul away a bit more
                garbage */
-            return Containers::pyArrayViewHolder(Containers::ArrayView<T>{static_cast<T*>(buffer.buf), std::size_t(buffer.len)}, py::reinterpret_borrow<py::object>(buffer.obj));
+            return Containers::pyArrayViewHolder(Containers::ArrayView<T>{static_cast<T*>(buffer.buf), std::size_t(buffer.len)}, buffer.len ? py::reinterpret_borrow<py::object>(buffer.obj) : py::none{});
         }), "Construct from a buffer")
 
         /* Length and memory owning object */
@@ -154,11 +154,13 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
 
             /* Non-trivial stride, return a different type */
             if(calculated.step != 1) {
-                return pyCastButNotShitty(Containers::pyArrayViewHolder(Containers::stridedArrayView(self).slice(calculated.start, calculated.stop).every(calculated.step), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
+                auto sliced = Containers::stridedArrayView(self).slice(calculated.start, calculated.stop).every(calculated.step);
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
             }
 
             /* Usual business */
-            return pyCastButNotShitty(Containers::pyArrayViewHolder(self.slice(calculated.start, calculated.stop), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
+            auto sliced = self.slice(calculated.start, calculated.stop);
+            return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
         }, "Slice the view");
 
     enableBetterBufferProtocol<Containers::ArrayView<T>, arrayViewBufferProtocol>(c);
@@ -340,7 +342,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
                 {static_cast<T*>(buffer.buf), size},
                 Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(buffer.shape)},
                 Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)}},
-                py::reinterpret_borrow<py::object>(buffer.obj));
+                buffer.len ? py::reinterpret_borrow<py::object>(buffer.obj) : py::none{});
         }), "Construct from a buffer")
 
         /* Length, size/stride tuple, dimension count and memory owning object */
@@ -368,7 +370,8 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
         /* Slicing of the top dimension */
         .def("__getitem__", [](const Containers::StridedArrayView<dimensions, T>& self, py::slice slice) {
             const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]);
-            return Containers::pyArrayViewHolder(self.slice(calculated.start, calculated.stop).every(calculated.step), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+            const auto sliced = self.slice(calculated.start, calculated.stop).every(calculated.step);
+            return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
 
     enableBetterBufferProtocol<Containers::StridedArrayView<dimensions, T>, stridedArrayViewBufferProtocol>(c);
@@ -402,14 +405,18 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
             Containers::StridedDimensions<dimensions, std::size_t> stops;
             Containers::StridedDimensions<dimensions, std::ptrdiff_t> steps;
 
+            bool empty = false;
             for(std::size_t i = 0; i != dimensions; ++i) {
                 const Slice calculated = calculateSlice(dimensionsTupleGet<py::slice>(slice, i), self.size()[i]);
                 starts[i] = calculated.start;
                 stops[i] = calculated.stop;
                 steps[i] = calculated.step;
+
+                if(calculated.start == calculated.stop) empty = true;
             }
 
-            return Containers::pyArrayViewHolder(self.slice(starts, stops).every(steps), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+            const auto sliced = self.slice(starts, stops).every(steps);
+            return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
 }
 

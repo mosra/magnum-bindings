@@ -49,10 +49,11 @@
     ==========================================
 
     Unlike in C++, the view keeps a reference to the original memory owner
-    object, meaning that calling :py:`del` on the original object will *not*
-    invalidate the view. Slicing a view creates a new view referencing the same
-    original object, without any dependency on the previous view. That means a
-    long chained slicing operation will not cause increased memory usage.
+    object in the `owner` field, meaning that calling :py:`del` on the original
+    object will *not* invalidate the view. Slicing a view creates a new view
+    referencing the same original object, without any dependency on the
+    previous view. That means a long chained slicing operation will not cause
+    increased memory usage.
 
     .. code:: pycon
 
@@ -60,6 +61,8 @@
         True
         >>> b[1:4][:-1].owner is a
         True
+
+    The `owner` is :py:`None` if the view is empty.
 
     `Comparison to Python's memoryview`_
     ====================================

@@ -66,6 +66,15 @@ class ArrayView(unittest.TestCase):
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
+    def test_init_buffer_empty(self):
+        a = b''
+        a_refcount = sys.getrefcount(a)
+
+        b = containers.ArrayView(a)
+        self.assertIs(b.owner, None)
+        self.assertEqual(len(b), 0)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
     def test_init_buffer_memoryview_obj(self):
         a = b'hello'
         v = memoryview(a)
@@ -121,9 +130,16 @@ class ArrayView(unittest.TestCase):
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
     def test_slice_empty(self):
+        data = b'hello'
+        data_refcount = sys.getrefcount(data)
+
         # slice.start = slice.stop
-        a = containers.ArrayView(b'hello')[7:8]
+        a = containers.ArrayView(data)[7:8]
         self.assertEqual(len(a), 0)
+
+        # Empty view, original data not referenced at all
+        self.assertIs(a.owner, None)
+        self.assertEqual(sys.getrefcount(data), data_refcount)
 
     def test_slice_invalid(self):
         with self.assertRaisesRegex(ValueError, "slice step cannot be zero"):
@@ -157,6 +173,18 @@ class ArrayView(unittest.TestCase):
         del c2
         self.assertEqual(sys.getrefcount(b), b_refcount)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+    def test_slice_stride_empty(self):
+        data = b'hello'
+        data_refcount = sys.getrefcount(data)
+
+        # slice.start = slice.stop
+        a = containers.ArrayView(data)[7:8:2]
+        self.assertEqual(len(a), 0)
+
+        # Empty view, original data not referenced at all
+        self.assertIs(a.owner, None)
+        self.assertEqual(sys.getrefcount(data), data_refcount)
 
     def test_slice_stride_negative(self):
         a = b'World_ _i_s_ _hell!'
@@ -250,6 +278,15 @@ class StridedArrayView1D(unittest.TestCase):
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
+    def test_init_buffer_empty(self):
+        a = b''
+        a_refcount = sys.getrefcount(a)
+
+        b = containers.StridedArrayView1D(a)
+        self.assertIs(b.owner, None)
+        self.assertEqual(len(b), 0)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
     def test_init_buffer_memoryview_obj(self):
         a = b'hello'
         v = memoryview(a)
@@ -310,6 +347,18 @@ class StridedArrayView1D(unittest.TestCase):
         del c
         self.assertEqual(sys.getrefcount(b), b_refcount)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+    def test_slice_empty(self):
+        data = b'hello'
+        data_refcount = sys.getrefcount(data)
+
+        # slice.start = slice.stop
+        a = containers.StridedArrayView1D(data)[7:8]
+        self.assertEqual(a.size, (0, ))
+
+        # Empty view, original data not referenced at all
+        self.assertIs(a.owner, None)
+        self.assertEqual(sys.getrefcount(data), data_refcount)
 
     def test_slice_invalid(self):
         with self.assertRaisesRegex(TypeError, "indices must be integers"):
@@ -521,6 +570,19 @@ class StridedArrayView2D(unittest.TestCase):
         del c
         self.assertEqual(sys.getrefcount(b), b_refcount)
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+    def test_slice_multidimensional_empty(self):
+        a = memoryview(b'01234567'
+                       b'456789ab'
+                       b'89abcdef').cast('b', shape=[3, 8])
+        a_refcount = sys.getrefcount(a)
+
+        b = containers.StridedArrayView2D(a)[1:1,2:2]
+        self.assertEqual(b.size, (0, 0))
+
+        # Empty view, original data not referenced at all
+        self.assertIs(b.owner, None)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
 
     def test_slice_invalid(self):
         with self.assertRaisesRegex(ValueError, "slice step cannot be zero"):
