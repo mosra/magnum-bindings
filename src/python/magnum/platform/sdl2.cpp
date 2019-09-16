@@ -26,6 +26,8 @@
 #include <pybind11/pybind11.h>
 #include <Magnum/Platform/Sdl2Application.h>
 
+#include "Corrade/Python.h"
+
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"
 
@@ -51,9 +53,12 @@ void sdl2(py::module& m) {
         void drawEvent() override = 0;
         #endif
 
+        void keyPressEvent(KeyEvent&) override {}
+        void keyReleaseEvent(KeyEvent&) override {}
         void mousePressEvent(MouseEvent&) override {}
         void mouseReleaseEvent(MouseEvent&) override {}
         void mouseMoveEvent(MouseMoveEvent&) override {}
+        void mouseScrollEvent(MouseScrollEvent&) override {}
 
         /* The base doesn't have a virtual destructor because in C++ it's never
            deleted through a pointer to the base. Here we need it, though. */
@@ -86,6 +91,29 @@ void sdl2(py::module& m) {
            template param, which is return_value_policy::automatic_reference.
            That later gets changed to return_value_policy::copy in
            type_caster_base::cast() and there's no way to override that  */
+        void keyPressEvent(KeyEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "key_press_event",
+                keyPressEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+        void keyReleaseEvent(KeyEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "key_release_event",
+                keyReleaseEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
         void mousePressEvent(MouseEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
@@ -97,7 +125,6 @@ void sdl2(py::module& m) {
                 std::ref(event)
             );
         }
-
         void mouseReleaseEvent(MouseEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
@@ -109,13 +136,23 @@ void sdl2(py::module& m) {
                 std::ref(event)
             );
         }
-
         void mouseMoveEvent(MouseMoveEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
                 "mouse_move_event",
                 mouseMoveEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+        void mouseScrollEvent(MouseScrollEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "mouse_scroll_event",
+                mouseScrollEvent,
                 /* Have to use std::ref() otherwise pybind tries to copy
                    it and fails */
                 std::ref(event)
@@ -130,12 +167,18 @@ void sdl2(py::module& m) {
                 self.setSwapInterval(interval);
             }, "Swap interval");
 
-    py::class_<PublicizedApplication::MouseEvent> mouseEvent_{sdl2application, "MouseEvent", "Mouse event"};
-    py::class_<PublicizedApplication::MouseMoveEvent> mouseMoveEvent_{sdl2application, "MouseMoveEvent", "Mouse move event"};
+    PyNonDestructibleClass<PublicizedApplication::InputEvent> inputEvent_{sdl2application, "InputEvent", "Base for input events"};
+    py::class_<PublicizedApplication::KeyEvent, PublicizedApplication::InputEvent> keyEvent_{sdl2application, "KeyEvent", "Key event"};
+    py::class_<PublicizedApplication::MouseEvent, PublicizedApplication::InputEvent> mouseEvent_{sdl2application, "MouseEvent", "Mouse event"};
+    py::class_<PublicizedApplication::MouseMoveEvent, PublicizedApplication::InputEvent> mouseMoveEvent_{sdl2application, "MouseMoveEvent", "Mouse move event"};
+    py::class_<PublicizedApplication::MouseScrollEvent, PublicizedApplication::InputEvent> mouseScrollEvent_{sdl2application, "MouseScrollEvent", "Mouse scroll event"};
 
     application(sdl2application);
+    inputEvent(inputEvent_);
+    keyEvent(keyEvent_);
     mouseEvent(mouseEvent_);
     mouseMoveEvent(mouseMoveEvent_);
+    mouseScrollEvent(mouseScrollEvent_);
 }
 
 }}
