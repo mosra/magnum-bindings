@@ -131,7 +131,9 @@ if(NOT MAGNUM_BUILD_STATIC)
 
     if(Magnum_Trade_FOUND)
         pybind11_add_module(magnum_trade SYSTEM ${magnum_trade_SRCS})
-        target_include_directories(magnum_trade PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_include_directories(magnum_trade PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_trade PRIVATE Magnum::Trade)
         set_target_properties(magnum_trade PROPERTIES
             FOLDER "python"

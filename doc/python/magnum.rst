@@ -87,3 +87,39 @@
 .. py:class:: magnum.MutableImageView3D
 
     See `ImageView2D` for more information.
+
+.. py:function:: magnum.ImageView1D.__init__(self, arg0: magnum.ImageView1D)
+    :raise RuntimeError: If `trade.ImageData1D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData1D` in the `trade` module.
+
+.. py:function:: magnum.ImageView2D.__init__(self, arg0: magnum.ImageView2D)
+    :raise RuntimeError: If `trade.ImageData2D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData2D` in the `trade` module.
+
+.. py:function:: magnum.ImageView3D.__init__(self, arg0: magnum.ImageView3D)
+    :raise RuntimeError: If `trade.ImageData3D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData3D` in the `trade` module.
+
+.. py:function:: magnum.MutableImageView1D.__init__(self, arg0: magnum.MutableImageView1D)
+    :raise RuntimeError: If `trade.ImageData1D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData1D` in the `trade` module.
+
+.. py:function:: magnum.MutableImageView2D.__init__(self, arg0: magnum.MutableImageView2D)
+    :raise RuntimeError: If `trade.ImageData2D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData2D` in the `trade` module.
+
+.. py:function:: magnum.MutableImageView3D.__init__(self, arg0: magnum.MutableImageView3D)
+    :raise RuntimeError: If `trade.ImageData3D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    `trade.ImageData3D` in the `trade` module.

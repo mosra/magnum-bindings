@@ -124,7 +124,8 @@ INPUT_DOCS = [
     'magnum.math.rst',
     'magnum.platform.rst',
     'magnum.scenegraph.rst',
-    'magnum.shaders.rst'
+    'magnum.shaders.rst',
+    'magnum.trade.rst',
 ]
 
 LINKS_NAVBAR2 = [

@@ -117,6 +117,9 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
         .def(py::init([](Image<T::Dimensions>& image) {
             return pyImageViewHolder(T{image}, image.data() ? py::cast(image) : py::none{});
         }), "Construct a view on an image")
+        .def(py::init([](const ImageView<T::Dimensions, typename T::Type>& other) {
+            return pyImageViewHolder(ImageView<T::Dimensions, typename T::Type>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
+        }), "Construct from any type convertible to an image view")
 
         /* Properties */
         .def_property_readonly("storage", &T::storage, "Storage of pixel data")
@@ -147,7 +150,7 @@ template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>&
     c
         .def(py::init([](const BasicMutableImageView<T::Dimensions>& other) {
             return pyImageViewHolder(BasicImageView<T::Dimensions>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
-        }), "Constructor");
+        }), "Construct from a mutable view");
 }
 
 void magnum(py::module& m) {
