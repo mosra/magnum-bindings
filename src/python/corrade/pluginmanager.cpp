@@ -63,8 +63,28 @@ void pluginmanager(py::module& m) {
         .def_property_readonly("alias_list", &PluginManager::AbstractManager::aliasList, "List of all available alias names")
         /** @todo metadata() (figure out the ownership) */
         .def("load_state", &PluginManager::AbstractManager::loadState, "Load state of a plugin")
-        .def("load", &PluginManager::AbstractManager::load, "Load a plugin")
-        .def("unload", &PluginManager::AbstractManager::unload, "Unload a plugin");
+        .def("load", [](PluginManager::AbstractManager& self, const std::string& plugin) {
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            const PluginManager::LoadState state = self.load(plugin);
+            if(!(state & PluginManager::LoadState::Loaded)) {
+                PyErr_Format(PyExc_RuntimeError, "can't load plugin %s", plugin.data());
+                throw py::error_already_set{};
+            }
+
+            return state;
+        }, "Load a plugin")
+        .def("unload", [](PluginManager::AbstractManager& self, const std::string& plugin) {
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            const PluginManager::LoadState state = self.unload(plugin);
+            if(state != PluginManager::LoadState::NotLoaded && state != PluginManager::LoadState::Static) {
+                PyErr_Format(PyExc_RuntimeError, "can't unload plugin %s", plugin.data());
+                throw py::error_already_set{};
+            }
+
+            return state;
+        }, "Unload a plugin");
 }
 
 }

@@ -117,6 +117,7 @@ INPUT_PAGES = [
 INPUT_DOCS = [
     'corrade.rst',
     'corrade.containers.rst',
+    'corrade.pluginmanager.rst',
 
     'magnum.rst',
     'magnum.gl.rst',
