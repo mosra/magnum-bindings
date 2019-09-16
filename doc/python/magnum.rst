@@ -35,3 +35,40 @@
     :data TARGET_GLES2: OpenGL ES 2.0 target
     :data TARGET_WEBGL: WebGL target
     :data TARGET_VK: Vulkan interoperability
+
+.. py:class:: magnum.ImageView1D
+
+    See `ImageView2D` for more information.
+
+.. py:class:: magnum.ImageView2D
+
+    TODO: remove this once m.css stops ignoring the first caption on a page
+    #######################################################################
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    Similarly to `corrade.containers.ArrayView` (and unlike in C++), the view
+    keeps a reference to the original memory owner object in the `owner` field,
+    meaning that calling :py:`del` on the original object will *not* invalidate
+    the view. Slicing a view creates a new view referencing the same original
+    object, without any dependency on the previous view. That means a long
+    chained slicing operation will not cause increased memory usage.
+
+    The `owner` is :py:`None` if the view is empty.
+
+.. py:class:: magnum.ImageView3D
+
+    See `ImageView2D` for more information.
+
+.. py:class:: magnum.MutableImageView1D
+
+    See `ImageView2D` for more information.
+
+.. py:class:: magnum.MutableImageView2D
+
+    See `ImageView2D` for more information.
+
+.. py:class:: magnum.MutableImageView3D
+
+    See `ImageView2D` for more information.
