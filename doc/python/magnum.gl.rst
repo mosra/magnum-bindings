@@ -24,6 +24,7 @@
 ..
 
 .. py:module:: magnum.gl
+    :data default_framebuffer: Default framebuffer instance
 
     TODO: remove this once m.css stops ignoring the first caption on a page
     #######################################################################
