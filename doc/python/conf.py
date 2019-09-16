@@ -68,20 +68,24 @@ magnum.__annotations__ = {
     'TARGET_WEBGL': bool,
     'TARGET_VK': bool
 }
-magnum.gl.__annotations__ = {}
-magnum.gl.__annotations__['default_framebuffer'] = magnum.gl.DefaultFramebuffer
-magnum.shaders.VertexColor2D.__annotations__ = {}
-magnum.shaders.VertexColor2D.__annotations__['POSITION'] = magnum.gl.Attribute
-magnum.shaders.VertexColor2D.__annotations__['COLOR3'] = magnum.gl.Attribute
-magnum.shaders.VertexColor2D.__annotations__['COLOR4'] = magnum.gl.Attribute
-magnum.shaders.VertexColor3D.__annotations__ = {}
-magnum.shaders.VertexColor3D.__annotations__['POSITION'] = magnum.gl.Attribute
-magnum.shaders.VertexColor3D.__annotations__['COLOR3'] = magnum.gl.Attribute
-magnum.shaders.VertexColor3D.__annotations__['COLOR4'] = magnum.gl.Attribute
-magnum.shaders.Phong.__annotations__ = {}
-magnum.shaders.Phong.__annotations__['POSITION'] = magnum.gl.Attribute
-magnum.shaders.Phong.__annotations__['TEXTURE_COORDINATES'] = magnum.gl.Attribute
-magnum.shaders.Phong.__annotations__['NORMAL'] = magnum.gl.Attribute
+magnum.gl.__annotations__ = {
+    'default_framebuffer': magnum.gl.DefaultFramebuffer
+}
+magnum.shaders.VertexColor2D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'COLOR3': magnum.gl.Attribute,
+    'COLOR4': magnum.gl.Attribute
+}
+magnum.shaders.VertexColor3D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'COLOR3': magnum.gl.Attribute,
+    'COLOR4': magnum.gl.Attribute
+}
+magnum.shaders.Phong.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'NORMAL': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute
+}
 
 PROJECT_TITLE = 'Magnum'
 PROJECT_SUBTITLE = 'Python docs'

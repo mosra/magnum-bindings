@@ -23,20 +23,17 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
-.. py:data:: magnum.shaders.VertexColor2D.POSITION
-    :summary: Two-component vertex position
+.. py:class:: magnum.shaders.VertexColor2D
+    :data POSITION: Vertex position
+    :data COLOR3: Three-component vertex color
+    :data COLOR4: Four-component vertex color
 
-.. py:data:: magnum.shaders.VertexColor3D.POSITION
-    :summary: Three-component vertex position
+.. py:class:: magnum.shaders.VertexColor3D
+    :data POSITION: Vertex position
+    :data COLOR3: Three-component vertex color
+    :data COLOR4: Four-component vertex color
 
-.. py:data:: magnum.shaders.VertexColor2D.COLOR3
-    :summary: Three-component vertex color
-
-.. py:data:: magnum.shaders.VertexColor3D.COLOR3
-    :summary: Three-component vertex color
-
-.. py:data:: magnum.shaders.VertexColor2D.COLOR4
-    :summary: Four-component vertex color
-
-.. py:data:: magnum.shaders.VertexColor3D.COLOR4
-    :summary: Four-component vertex color
+.. py:class:: magnum.shaders.Phong
+    :data POSITION: Vertex position
+    :data NORMAL: Normal direction
+    :data TEXTURE_COORDINATES: 2D texture coordinates
