@@ -43,6 +43,7 @@ cmake .. \
     -DWITH_TRADE=ON \
     -DWITH_VK=OFF \
     -DWITH_WINDOWLESSEGLAPPLICATION=ON \
+    -DWITH_ANYIMAGEIMPORTER=ON \
     -DBUILD_DEPRECATED=OFF \
     -G Ninja
 ninja install
@@ -59,6 +60,7 @@ cmake .. \
     -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_DDSIMPORTER=ON \
     -DWITH_STBIMAGEIMPORTER=ON \
+    -DWITH_TINYGLTFIMPORTER=ON \
     -G Ninja
 ninja install
 cd ../..

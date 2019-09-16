@@ -57,6 +57,7 @@ cmake .. ^
     -DWITH_SDL2APPLICATION=OFF ^
     -DWITH_GLFWAPPLICATION=OFF ^
     -DWITH_WINDOWLESSWGLAPPLICATION=ON ^
+    -DWITH_ANYIMAGEIMPORTER=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b
@@ -72,6 +73,7 @@ cmake .. ^
     -DBUILD_STATIC=%BUILD_STATIC% ^
     -DWITH_DDSIMPORTER=ON ^
     -DWITH_STBIMAGEIMPORTER=ON ^
+    -DWITH_TINYGLTFIMPORTER=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b

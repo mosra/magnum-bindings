@@ -42,6 +42,7 @@ cmake .. \
     -DWITH_GLFWAPPLICATION=ON \
     -DWITH_SDL2APPLICATION=ON \
     -DWITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=ON \
+    -DWITH_ANYIMAGEIMPORTER=ON \
     -G Ninja
 ninja install
 cd ../..
@@ -57,6 +58,7 @@ cmake .. \
     -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_DDSIMPORTER=ON \
     -DWITH_STBIMAGEIMPORTER=ON \
+    -DWITH_TINYGLTFIMPORTER=ON \
     -G Ninja
 ninja install
 cd ../..
