@@ -65,8 +65,8 @@ template<class T, class Trampoline> void application(py::class_<T, Trampoline>& 
         .def("swap_buffers", &T::swapBuffers, "Swap buffers")
         /** @todo setMinimalLoopPeriod, needs a getter */
         .def("redraw", &T::redraw, "Redraw immediately")
-        .def("window_size", &T::windowSize, "Window size")
-        .def("framebuffer_size", &T::framebufferSize, "Framebuffer size")
+        .def_property_readonly("window_size", &T::windowSize, "Window size")
+        .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
 
         /* Event handlers */
         .def("draw_event", &T::drawEvent, "Draw event")
