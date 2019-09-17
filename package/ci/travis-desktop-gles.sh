@@ -9,7 +9,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
     -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_DEPRECATED=$BUILD_DEPRECATED \
+    -DBUILD_DEPRECATED=OFF \
     -DWITH_INTERCONNECT=OFF \
     -DWITH_PLUGINMANAGER=ON \
     -DWITH_TESTSUITE=OFF \
@@ -25,6 +25,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
     -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_DEPRECATED=OFF \
     -DEGL_LIBRARY=$HOME/swiftshader/libEGL.so \
     -DOPENGLES2_LIBRARY=$HOME/swiftshader/libGLESv2.so \
     -DOPENGLES3_LIBRARY=$HOME/swiftshader/libGLESv2.so \
@@ -44,7 +45,6 @@ cmake .. \
     -DWITH_VK=OFF \
     -DWITH_WINDOWLESSEGLAPPLICATION=ON \
     -DWITH_ANYIMAGEIMPORTER=ON \
-    -DBUILD_DEPRECATED=OFF \
     -G Ninja
 ninja install
 cd ../..
