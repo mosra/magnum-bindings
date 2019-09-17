@@ -332,10 +332,10 @@ void magnum(py::module& m) {
    is released */
 extern "C" PYBIND11_EXPORT PyObject* PyInit__magnum();
 PYBIND11_MODULE(_magnum, m) {
+    m.doc() = "Root Magnum module";
+
     /* We need ArrayView for images */
     py::module::import("corrade.containers");
-
-    m.doc() = "Root Magnum module";
 
     py::module math = m.def_submodule("math");
     magnum::math(m, math);
