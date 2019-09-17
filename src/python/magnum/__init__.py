@@ -43,21 +43,6 @@ if 'platform' in globals():
     for i in ['glfw', 'sdl2', 'glx', 'wgl', 'egl']:
         if hasattr(platform, i): sys.modules['magnum.platform.' + i] = getattr(platform, i)
 
-    # Bring one application implementation directly into the platform module.
-    # The same logic is duplicated in platform/__init__.py.
-    if hasattr(platform, 'sdl2'):
-        platform.Application = platform.sdl2.Application
-    elif hasattr(platform, 'glfw'):
-        platform.Application = platform.glfw.Application
-
-    # Same for windowless apps
-    if hasattr(platform, 'glx'):
-        platform.WindowlessApplication = platform.glx.WindowlessApplication
-    elif hasattr(platform, 'wgl'):
-        platform.WindowlessApplication = platform.wgl.WindowlessApplication
-    elif hasattr(platform, 'egl'):
-        platform.WindowlessApplication = platform.egl.WindowlessApplication
-
 # Scenegraph has subpackages
 if 'scenegraph' in globals():
     for i in ['matrix', 'trs']:

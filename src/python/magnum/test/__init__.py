@@ -33,10 +33,22 @@ sys.path = [os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY
 from magnum import *
 from magnum import gl, platform
 
+try:
+    from magnum.platform.glx import WindowlessApplication
+except ImportError:
+    try:
+        from magnum.platform.wgl import WindowlessApplication
+    except ImportError:
+        try:
+            from magnum.platform.egl import WindowlessApplication
+        except ImportError:
+            WindowlessApplication = None
+
 def setUpModule():
     if os.environ.get('MAGNUM_SKIP_GL_TESTS') == 'ON':
         raise unittest.SkipTest('GL tests skipped')
-    if not hasattr(platform, 'WindowlessApplication'): # pragma: no cover
+
+    if not WindowlessApplication:
         raise unittest.SkipTest('no WindowlessApplication found')
 
 class GLTestCase(unittest.TestCase):
@@ -45,7 +57,7 @@ class GLTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if not GLTestCase.app:
-            GLTestCase.app = platform.WindowlessApplication()
+            GLTestCase.app = WindowlessApplication()
 
     def assertNoGLError(self):
         self.assertEqual(gl.Renderer.error, gl.Renderer.Error.NO_ERROR)

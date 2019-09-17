@@ -25,18 +25,16 @@
 
 .. py:module:: magnum.platform
 
-    While concrete implementations of :py:`Application` and
-    :py:`WindowlessApplication` classes are available in the submodules,
-    there's a convenience logic importing the most fitting implementation
-    that's available directly into the `platform` module, meaning you can do
-    just this without having to think about a particular implementation, for
-    example:
+    Concrete implementations of :py:`Application` and :py:`WindowlessApplication`
+    classes are available in submodules, and it's up to you which one you
+    choose. For example:
 
     .. code:: py
 
         from magnum import platform
+        import magnum.platform.sdl2
 
-        class MyApp(platform.Application): # platform.sdl2.Application
+        class MyApp(platform.sdl2.Application):
             ...
 
     The same goes for :py:`WindowlessApplication` implementations, for example:
@@ -44,11 +42,16 @@
     .. code:: py
 
         from magnum import platform
+        import magnum.platform.egl
 
-        class MyApp(platform.WindowlessApplication): # platform.egl.WindowlessApp
+        class MyApp(platform.egl.WindowlessApplication):
             ...
 
-    .. block-warning:: Subject to change
+    Alternatively, if you want to narrow down the mention of a particular
+    toolkit to just one line, you can also do:
 
-        At the moment, there's no way to specify a different priority order or
-        disable the auto-import altogether.
+    .. code:: py
+
+        from magnum.platform.sdl2 import Application
+
+        class MyApp(Application):

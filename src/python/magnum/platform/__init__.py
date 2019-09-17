@@ -24,25 +24,3 @@
 #
 
 """Platform-specific application and context creation"""
-
-# This logic is repeated in magnum's main __init__.py for static builds as
-# there magnum.platform is a submodule inside the native _magnum module.
-
-try:
-    from .glx import WindowlessApplication
-except ImportError: # pragma: no cover
-    try:
-        from .wgl import WindowlessApplication
-    except ImportError:
-        try:
-            from .egl import WindowlessApplication
-        except ImportError:
-            pass
-
-try:
-    from .sdl2 import Application
-except ImportError: # pragma: no cover
-    try:
-        from .glfw import Application
-    except ImportError:
-        pass
