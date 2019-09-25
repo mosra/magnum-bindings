@@ -169,10 +169,9 @@ OUTPUT = '../../build/doc/python/'
 PAGE_HEADER = """
 .. container:: m-note m-success
 
-    Welcome to the exciting new Python-flavored future of Magnum! Have fun, but
-    please note this functionality is *heavily experimental* at the moment.
-    Most APIs are missing, documentation is very sparse and everything is still
-    evolving. **Use at your own risk.**
+    Welcome to Python-flavored Magnum! Please note that, while already being
+    rather stable, this functionality is still considered *experimental* and
+    some APIs might get changed without preserving full backwards compatibility.
 """
 
 FINE_PRINT = """
