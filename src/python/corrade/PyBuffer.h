@@ -77,10 +77,4 @@ template<class Class, bool(*getter)(Class&, Py_buffer&, int)> void enableBetterB
 
 }
 
-/** @todo remove when https://github.com/pybind/pybind11/pull/1852 is merged
-    and released */
-namespace pybind11 {
-    PYBIND11_RUNTIME_EXCEPTION(buffer_error, PyExc_BufferError)
-}
-
 #endif
