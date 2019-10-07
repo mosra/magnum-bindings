@@ -27,6 +27,9 @@
 #include <pybind11/stl.h> /* for vector arguments */
 #include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/GL/Texture.h>
+#include <Magnum/Math/Color.h>
+#include <Magnum/Math/Matrix3.h>
+#include <Magnum/Math/Matrix4.h>
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Shaders/VertexColor.h>
