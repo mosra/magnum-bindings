@@ -28,8 +28,8 @@ if(NOT MAGNUM_BUILD_STATIC)
         pybind11_add_module(magnum_platform_glfw SYSTEM glfw.cpp)
         target_link_libraries(magnum_platform_glfw PRIVATE Magnum::GlfwApplication)
         target_include_directories(magnum_platform_glfw PRIVATE
-            ${CMAKE_SOURCE_DIR}/src
-            ${CMAKE_SOURCE_DIR}/src/python)
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_glfw PROPERTIES
             FOLDER "python/platform"
             OUTPUT_NAME "glfw"
@@ -40,8 +40,8 @@ if(NOT MAGNUM_BUILD_STATIC)
         pybind11_add_module(magnum_platform_sdl2 SYSTEM sdl2.cpp)
         target_link_libraries(magnum_platform_sdl2 PRIVATE Magnum::Sdl2Application)
         target_include_directories(magnum_platform_sdl2 PRIVATE
-            ${CMAKE_SOURCE_DIR}/src
-            ${CMAKE_SOURCE_DIR}/src/python)
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_sdl2 PROPERTIES
             FOLDER "python/platform"
             OUTPUT_NAME "sdl2"
