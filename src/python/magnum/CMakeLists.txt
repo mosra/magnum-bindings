@@ -33,10 +33,19 @@ find_package(Magnum COMPONENTS
     Trade
 
     GlfwApplication
-    Sdl2Application
-    WindowlessEglApplication
-    WindowlessGlxApplication
-    WindowlessWglApplication)
+    Sdl2Application)
+# Find platform-specific apps only on the platforms where it matters, so we
+# don't get confusing -- Could NOT find WindowlessWglApplication on Linux and
+# such
+if(CORRADE_TARGET_UNIX OR MAGNUM_TARGET_GLES)
+    find_package(Magnum COMPONENTS WindowlessEglApplication)
+endif()
+if(CORRADE_TARGET_UNIX)
+    find_package(Magnum COMPONENTS WindowlessGlxApplication)
+endif()
+if(CORRADE_TARGET_WINDOWS)
+    find_package(Magnum COMPONENTS WindowlessWglApplication)
+endif()
 
 set(magnum_SRCS
     magnum.cpp
