@@ -51,7 +51,7 @@ void primitives(py::module& m) {
         .def("cube_solid_strip", Primitives::cubeSolidStrip, "Solid 3D cube as a single strip")
         .def("cube_wireframe", Primitives::cubeWireframe, "Wireframe 3D cube")
 
-        .def("square_solid", Primitives::squareSolid, "Solid 2D square")
+        .def("square_solid", Primitives::squareSolid, "Solid 2D square", py::arg("texture_coords") = Primitives::SquareTextureCoords::DontGenerate)
         .def("square_wireframe", Primitives::squareWireframe, "Wireframe 2D square");
 }
 
