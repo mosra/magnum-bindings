@@ -165,7 +165,8 @@ void sdl2(py::module& m) {
         .def_property("swap_interval", &PyApplication::swapInterval,
             [](PublicizedApplication& self, Int interval) {
                 self.setSwapInterval(interval);
-            }, "Swap interval");
+            }, "Swap interval")
+        .def("main_loop_iteration", &PyApplication::mainLoopIteration, "Run one iteration of application main loop");
 
     PyNonDestructibleClass<PublicizedApplication::InputEvent> inputEvent_{sdl2application, "InputEvent", "Base for input events"};
     py::class_<PublicizedApplication::KeyEvent, PublicizedApplication::InputEvent> keyEvent_{sdl2application, "KeyEvent", "Key event"};
