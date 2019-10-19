@@ -140,7 +140,9 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
 template<class T> void meshData(py::class_<T>& c) {
     c
         .def_property_readonly("primitive", &T::primitive, "Primitive")
-        .def("is_indexed", &T::isIndexed, "Whether the mesh is indexed");
+        .def("is_indexed", &T::isIndexed, "Whether the mesh is indexed")
+        .def("has_texture_coords2d", &T::hasTextureCoords2D, "Whether the data contain any 2D texture coordinates")
+        .def("has_colors", &T::hasColors, "Whether the data contain any vertex colors");
 }
 
 /* For some reason having ...Args as the second (and not last) template
@@ -209,6 +211,7 @@ void trade(py::module& m) {
     py::class_<Trade::MeshData3D> meshData3D{m, "MeshData3D", "Three-dimensional mesh data"};
     meshData(meshData2D);
     meshData(meshData3D);
+    meshData3D.def("has_normals", &Trade::MeshData3D::hasNormals, "Whether the data contain any normals");
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};

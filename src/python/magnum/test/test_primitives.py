@@ -49,6 +49,12 @@ class Square(unittest.TestCase):
         a = primitives.square_solid(primitives.SquareTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
         self.assertFalse(a.is_indexed())
+        self.assertTrue(a.has_texture_coords2d())
+
+        b = primitives.square_solid()
+        self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_STRIP)
+        self.assertFalse(b.is_indexed())
+        self.assertFalse(b.has_texture_coords2d())
 
     def test_wireframe(self):
         a = primitives.square_wireframe()
