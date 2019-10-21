@@ -79,5 +79,9 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 endif()
 
+# Not named __init__.py so this directory is not treated as a module by python
+# when running python -m unittest in the parent directory (because numpy uses
+# python's builtin platform module to check for PyPy and it's all downhill from
+# there)
 file(GENERATE OUTPUT ${output_dir}/magnum/platform/__init__.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/_init.py)
