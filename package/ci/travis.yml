@@ -69,12 +69,16 @@ matrix:
     - LCOV_EXTRA_OPTS="--gcov-tool /usr/bin/gcov-4.8"
   - language: cpp
     os: osx
+    # The default (9.4) fails to upgrade Homebrew since Oct 22 2019 because of
+    # some syntax error, unexpected keyword_rescue, expecting keyword_end
+    osx_image: xcode10.3
     compiler: clang
     env:
     - JOBID=macos-gl
     - TARGET=desktop
   - language: cpp
     os: osx
+    osx_image: xcode10.3
     compiler: clang
     env:
     - JOBID=macos-static
