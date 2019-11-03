@@ -673,12 +673,30 @@ void gl(py::module& m) {
         .value("STENCIL", GL::FramebufferClear::Stencil);
     corrade::enumOperators(framebufferClear);
 
+    py::enum_<GL::FramebufferBlit> framebufferBlit{m, "FramebufferBlit", "Mask for framebuffer blitting"};
+    framebufferBlit
+        .value("COLOR", GL::FramebufferBlit::Color)
+        .value("DEPTH", GL::FramebufferBlit::Depth)
+        .value("STENCIL", GL::FramebufferBlit::Stencil);
+    corrade::enumOperators(framebufferBlit);
+
+    py::enum_<GL::FramebufferBlitFilter>{m, "FramebufferBlitFilter", "Framebuffer blit filtering"}
+        .value("NEAREST", GL::FramebufferBlitFilter::Nearest)
+        .value("LINEAR", GL::FramebufferBlitFilter::Linear);
+
     py::class_<GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::AbstractFramebuffer>> abstractFramebuffer{m,
         "AbstractFramebuffer", "Base for default and named framebuffers"};
 
     abstractFramebuffer
         /** @todo limit queries */
 
+        /* Using lambdas to supply an enum and not enum set */
+        .def_static("blit", [](GL::AbstractFramebuffer& source, GL::AbstractFramebuffer& destination, const Range2Di& sourceRectangle, const Range2Di& destinationRectangle, GL::FramebufferBlit mask, GL::FramebufferBlitFilter filter) {
+            GL::AbstractFramebuffer::blit(source, destination, sourceRectangle, destinationRectangle, mask, filter);
+        }, "Copy a block of pixels", py::arg("source"), py::arg("destination"), py::arg("source_rectangle"), py::arg("destination_rectangle"), py::arg("mask"), py::arg("filter"))
+        .def_static("blit", [](GL::AbstractFramebuffer& source, GL::AbstractFramebuffer& destination, const Range2Di& rectangle, GL::FramebufferBlit mask) {
+            GL::AbstractFramebuffer::blit(source, destination, rectangle, mask);
+        }, "Copy a block of pixels", py::arg("source"), py::arg("destination"), py::arg("rectangle"), py::arg("mask"))
         .def("bind", &GL::AbstractFramebuffer::bind, "Bind framebuffer for drawing")
         .def_property("viewport", &GL::AbstractFramebuffer::viewport, &GL::AbstractFramebuffer::setViewport, "Viewport")
         /* Using lambdas to avoid method chaining getting into signatures */

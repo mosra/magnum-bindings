@@ -26,8 +26,16 @@
 Changelog
 #########
 
+:ref-prefix:
+    corrade
+    magnum
 :some_directive: TODO: why can't the title below "just work" and I have to
     add some bogus content before?
+
+`Changes since 2019.10`_
+========================
+
+-   Exposed `gl.AbstractFramebuffer.blit()` functions and related enums
 
 `2019.10`_
 ==========
