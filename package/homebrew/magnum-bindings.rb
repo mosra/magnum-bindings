@@ -1,9 +1,9 @@
 class MagnumBindings < Formula
   desc "`Bindings for the Magnum C++11/C++14 graphics engine"
   homepage "https://magnum.graphics"
-  # url "https://github.com/mosra/magnum-plugins/archive/v2019.01.tar.gz"
-  # wget https://github.com/mosra/magnum-plugins/archive/v2019.01.tar.gz -O - | sha256sum
-  # sha256 "d3adadc5b6d4f2e5061608d67f0c7fa07f0dd078bab4672dc5604ddbcd11ca80"
+  url "https://github.com/mosra/magnum-bindings/archive/v2019.10.tar.gz"
+  # wget https://github.com/mosra/magnum-bindings/archive/v2019.10.tar.gz -O - | sha256sum
+  # sha256 "7e0038149fd37237efaf8dff52cf7e4ee8629e630c84a4f76bcd0eb166898e8c"
   head "git://github.com/mosra/magnum-bindings.git"
 
   depends_on "cmake"
