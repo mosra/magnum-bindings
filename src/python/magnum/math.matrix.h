@@ -241,6 +241,12 @@ template<class T, class ...Args> void everyMatrix(py::class_<T, Args...>& c) {
         }, "Construct an identity matrix", py::arg("value") = typename T::Type(1))
 
         /* Methods */
+        .def("comatrix", [](const T& self) -> T {
+            return self.comatrix();
+        }, "Matrix of cofactors")
+        .def("adjugate", [](const T& self) -> T {
+            return self.adjugate();
+        }, "Adjugate matrix")
         .def("inverted", &T::inverted, "Inverted matrix")
         .def("inverted_orthogonal", &T::invertedOrthogonal, "Inverted orthogonal matrix")
         .def("__matmul__", [](const T& self, const T& other) -> T {
@@ -256,6 +262,7 @@ template<class T> void matrix(py::class_<T>& c) {
         /* Member functions for square matrices only */
         .def("is_orthogonal", &T::isOrthogonal, "Whether the matrix is orthogonal")
         .def("trace", &T::trace, "Trace of the matrix")
+        .def("cofactor", &T::cofactor, "Cofactor", py::arg("col"), py::arg("row"))
         .def("determinant", &T::determinant, "Determinant");
 }
 
@@ -788,6 +795,8 @@ Overloaded function.
             "Uniform scaling part of the matrix, squared")
         .def("uniform_scaling", &Math::Matrix4<T>::uniformScaling,
             "Uniform scaling part of the matrix")
+        .def("normal_matrix", &Math::Matrix4<T>::normalMatrix,
+             "Normal matrix")
         .def("inverted_rigid", &Math::Matrix4<T>::invertedRigid,
              "Inverted rigid transformation matrix")
         .def("transform_vector", &Math::Matrix4<T>::transformVector,

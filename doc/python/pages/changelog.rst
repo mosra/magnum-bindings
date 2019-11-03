@@ -35,6 +35,8 @@ Changelog
 `Changes since 2019.10`_
 ========================
 
+-   Exposed `Matrix4.cofactor()`, `Matrix4.comatrix()`, `Matrix4.adjugate()`
+    (and equivalents in other matrix sizes), and `Matrix4.normal_matrix()`
 -   Exposed `gl.AbstractFramebuffer.blit()` functions and related enums
 
 `2019.10`_
