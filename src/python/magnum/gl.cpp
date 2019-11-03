@@ -703,8 +703,8 @@ void gl(py::module& m) {
         .def("clear", [](GL::AbstractFramebuffer& self, GL::FramebufferClear mask) {
             self.clear(mask);
         }, "Clear specified buffers in the framebuffer")
-        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read), "Read block of pixels from the framebuffer to an image view")
-        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, Image2D&)>(&GL::AbstractFramebuffer::read), "Read block of pixels from the framebuffer to an image")
+        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, const MutableImageView2D&)>(&GL::AbstractFramebuffer::read), "Read a block of pixels from the framebuffer to an image view", py::arg("rectangle"), py::arg("image"))
+        .def("read", static_cast<void(GL::AbstractFramebuffer::*)(const Range2Di&, Image2D&)>(&GL::AbstractFramebuffer::read), "Read a block of pixels from the framebuffer to an image", py::arg("rectangle"), py::arg("image"))
         /** @todo more */;
 
     py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,
