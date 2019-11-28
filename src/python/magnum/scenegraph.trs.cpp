@@ -54,12 +54,6 @@ void scenegraphTrs(py::module& m) {
     py::module matrix = m.def_submodule("trs");
     matrix.doc() = "Translation/rotation/scaling-based scene graph implementation";
 
-    py::class_<SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation2D>> scene2D_{matrix, "Scene2D", "Two-dimensional scene with TRS-based transformation implementation"};
-    scene(scene2D_);
-
-    py::class_<SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation3D>> scene3D_{matrix, "Scene3D", "Three-dimensional scene with TRS-based transformation implementation"};
-    scene(scene3D_);
-
     py::class_<SceneGraph::Object<SceneGraph::TranslationRotationScalingTransformation2D>, SceneGraph::PyObject<SceneGraph::Object<SceneGraph::TranslationRotationScalingTransformation2D>>, SceneGraph::AbstractObject2D, SceneGraph::PyObjectHolder<SceneGraph::Object<SceneGraph::TranslationRotationScalingTransformation2D>>> object2D_{matrix, "Object2D", "Two-dimensional object with TRS-based transformation implementation"};
     object(object2D_);
     object2D(object2D_);
@@ -71,6 +65,12 @@ void scenegraphTrs(py::module& m) {
     object3D(object3D_);
     objectScale(object3D_);
     objectTrs(object3D_);
+    
+    py::class_<SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation2D>> scene2D_{matrix, "Scene2D", "Two-dimensional scene with TRS-based transformation implementation", object2D_};
+    scene(scene2D_);
+
+    py::class_<SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation3D>> scene3D_{matrix, "Scene3D", "Three-dimensional scene with TRS-based transformation implementation", object3D_};
+    scene(scene3D_);
 }
 
 }
