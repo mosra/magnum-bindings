@@ -133,6 +133,7 @@ template<class T, class ...Args> void keyEvent(py::class_<T, Args...>& c) {
 
         .value("SPACE", T::Key::Space)
         .value("TAB", T::Key::Tab)
+        .value("QUOTE", T::Key::Quote)
         .value("COMMA", T::Key::Comma)
         .value("PERIOD", T::Key::Period)
         .value("MINUS", T::Key::Minus)
@@ -141,6 +142,12 @@ template<class T, class ...Args> void keyEvent(py::class_<T, Args...>& c) {
         .value("PERCENT", T::Key::Percent)
         .value("SEMICOLON", T::Key::Semicolon)
         .value("EQUAL", T::Key::Equal)
+        .value("LEFT_BRACKET", T::Key::LeftBracket)
+        .value("RIGHT_BRACKET", T::Key::RightBracket)
+        .value("BACKSLASH", T::Key::Backslash)
+        .value("BACKQUOTE", T::Key::Backquote)
+
+        /* World1 / World2 supported only by GlfwApplication, omitted */
 
         .value("ZERO", T::Key::Zero)
         .value("ONE", T::Key::One)
