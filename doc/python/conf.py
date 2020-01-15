@@ -162,6 +162,7 @@ M_SPHINX_INVENTORIES = [
     ('numpy.inv', 'https://docs.scipy.org/doc/numpy/', [], ["m-doc-external"])
 ]
 M_HTMLSANITY_SMART_QUOTES = True
+M_MATH_CACHE = 'm.math.cache'
 
 PYBIND11_COMPATIBILITY = True
 
