@@ -71,14 +71,18 @@ matrix:
     os: osx
     # The default (9.4) fails to upgrade Homebrew since Oct 22 2019 because of
     # some syntax error, unexpected keyword_rescue, expecting keyword_end
-    osx_image: xcode10.3
+    # Homebrew fails to upgrade since Dec 2019 because of a Python 2->3
+    # migration, solution is apparently to disable upgrades. WTF! Everyone is
+    # fired. Using latest XCode image so I can get a reasonably new pybind.
+    # https://discuss.circleci.com/t/brew-link-step-failing-on-python-dependency/33925
+    osx_image: xcode11.3
     compiler: clang
     env:
     - JOBID=macos-gl
     - TARGET=desktop
   - language: cpp
     os: osx
-    osx_image: xcode10.3
+    osx_image: xcode11.3
     compiler: clang
     env:
     - JOBID=macos-static
@@ -113,18 +117,18 @@ install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$HOME/cmake/bin:$PATH && cmake --version; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install ninja; fi
 
-# pybind11 (cached). On macOS the version 2.3.0 needs a brew update, the stale
-# Travis image has just 2.2.4.
+# pybind11 (cached). Can't update because Py2->3 migration fails, so picking
+# whatever version is there on the xcode11.3 image. FFS.
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ ! -e "$HOME/pybind11/bin" ]; then $TRAVIS_BUILD_DIR/package/ci/setup-pybind11.sh; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install pybind11; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install pybind11; fi
 
 # SDL and GLFW on macOS
 - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TARGET" == "desktop" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl2 glfw; fi
 
 # numpy on macOS -- probably because we updated Homebrew to install new pybind
 # (and thus python as well, apparently), the preinstalled numpy is no longer
-# visible.
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew upgrade numpy; fi
+# visible. Disabled for now because we're not upgrading.
+# - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew upgrade numpy; fi
 
 # Code coverage of python bindings. This has to be below the above brew upgrade
 # and pybind install otherwise those packages get installed for Python 3.6 and
