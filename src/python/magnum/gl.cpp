@@ -1059,6 +1059,7 @@ void gl(py::module& m) {
         /** @todo compressed formats */
 
     PyNonDestructibleClass<GL::AbstractTexture>{m, "AbstractTexture", "Base for textures"}
+        .def_static("unbind", static_cast<void(*)(Int)>(&GL::AbstractTexture::unbind), "Unbind any texture from given texture unit")
         /** @todo limits */
         .def_property_readonly("id", &GL::AbstractTexture::id, "OpenGL texture ID")
         /** @todo list-taking bind */

@@ -311,6 +311,10 @@ class Shader(GLTestCase):
         with self.assertRaisesRegex(RuntimeError, "compilation failed"):
             a.compile()
 
+class AbstractTexture(GLTestCase):
+    def test_unbind(self):
+        gl.AbstractTexture.unbind(3)
+
 class Texture(GLTestCase):
     def test_minification_filter(self):
         a = gl.Texture2D()
