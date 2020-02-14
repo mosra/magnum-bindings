@@ -883,9 +883,10 @@ void gl(py::module& m) {
             .value("STENCIL_TEST", GL::Renderer::Feature::StencilTest);
 
         renderer
-            .def_static("enable", GL::Renderer::enable, "Enable a feature")
-            .def_static("disable", GL::Renderer::disable, "Disable a feature")
-            .def_static("set_feature", GL::Renderer::setFeature, "Enable or disable a feature")
+            .def_static("enable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::enable), "Enable a feature")
+            .def_static("disable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::disable), "Disable a feature")
+            .def_static("set_feature", static_cast<void(*)(GL::Renderer::Feature, bool)>(GL::Renderer::setFeature), "Enable or disable a feature")
+            /** @todo indexed variants */
 
             /** @todo FFS why do I have to pass the class as first argument?! */
             .def_property_static("clear_color", nullptr, [](py::object, const Color4& color) {
