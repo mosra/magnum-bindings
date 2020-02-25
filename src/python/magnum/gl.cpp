@@ -479,7 +479,7 @@ void gl(py::module& m) {
         .value("UNSIGNED_INT", GL::DynamicAttribute::DataType::UnsignedInt)
         .value("INT", GL::DynamicAttribute::DataType::Int)
         #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
-        .value("HALF_FLOAT", GL::DynamicAttribute::DataType::HalfFloat)
+        .value("HALF_FLOAT", GL::DynamicAttribute::DataType::Half)
         #endif
         .value("FLOAT", GL::DynamicAttribute::DataType::Float)
         #ifndef MAGNUM_TARGET_GLES
