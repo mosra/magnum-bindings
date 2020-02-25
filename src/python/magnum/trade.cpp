@@ -199,6 +199,28 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     return *std::move(out);
 }
 
+template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt, UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> R checkOpenedBoundsResult(Trade::AbstractImporter& self, UnsignedInt id, UnsignedInt level) {
+    if(!self.isOpened()) {
+        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        throw py::error_already_set{};
+    }
+
+    if(id >= (self.*bounds)()) {
+        PyErr_SetNone(PyExc_IndexError);
+        throw py::error_already_set{};
+    }
+
+    /** @todo log redirection -- but we'd need assertions to not be part of
+        that so when it dies, the user can still see why */
+    Containers::Optional<R> out = (self.*f)(id, level);
+    if(!out) {
+        PyErr_SetString(PyExc_RuntimeError, "import failed");
+        throw py::error_already_set{};
+    }
+
+    return *std::move(out);
+}
+
 }
 
 void trade(py::module& m) {
@@ -266,9 +288,9 @@ void trade(py::module& m) {
         .def("image1d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image1DName, &Trade::AbstractImporter::image1DCount>, "One-dimensional image name", py::arg("id"))
         .def("image2d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image2DName, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image name", py::arg("id"))
         .def("image3d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image3DName, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image name", py::arg("id"))
-        .def("image1d", checkOpenedBoundsResult<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DCount>, "One-dimensional image", py::arg("id"))
-        .def("image2d", checkOpenedBoundsResult<Trade::ImageData2D, &Trade::AbstractImporter::image2D, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image", py::arg("id"))
-        .def("image3d", checkOpenedBoundsResult<Trade::ImageData3D, &Trade::AbstractImporter::image3D, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image", py::arg("id"));
+        .def("image1d", checkOpenedBoundsResult<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DCount>, "One-dimensional image", py::arg("id"), py::arg("level") = 0)
+        .def("image2d", checkOpenedBoundsResult<Trade::ImageData2D, &Trade::AbstractImporter::image2D, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image", py::arg("id"), py::arg("level") = 0)
+        .def("image3d", checkOpenedBoundsResult<Trade::ImageData3D, &Trade::AbstractImporter::image3D, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image", py::arg("id"), py::arg("level") = 0);
 
     py::class_<PluginManager::Manager<Trade::AbstractImporter>, PluginManager::AbstractManager> importerManager{m, "ImporterManager", "Plugin manager for importer plugins"};
     corrade::manager(importerManager);
