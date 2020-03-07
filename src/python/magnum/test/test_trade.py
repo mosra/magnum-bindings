@@ -144,6 +144,13 @@ class Importer(unittest.TestCase):
             importer.image3d_count
 
         with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.image1d_level_count(0)
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.image2d_level_count(0)
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
+            importer.image3d_level_count(0)
+
+        with self.assertRaisesRegex(RuntimeError, "no file opened"):
             importer.image1d_for_name('')
         with self.assertRaisesRegex(RuntimeError, "no file opened"):
             importer.image2d_for_name('')
@@ -177,6 +184,13 @@ class Importer(unittest.TestCase):
             importer.mesh2d(0)
         with self.assertRaises(IndexError):
             importer.mesh3d(0)
+
+        with self.assertRaises(IndexError):
+            importer.image1d_level_count(0)
+        with self.assertRaises(IndexError):
+            importer.image2d_level_count(1)
+        with self.assertRaises(IndexError):
+            importer.image3d_level_count(0)
 
         with self.assertRaises(IndexError):
             importer.image1d_name(0)
@@ -223,6 +237,7 @@ class Importer(unittest.TestCase):
 
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
         self.assertEqual(importer.image2d_count, 1)
+        self.assertEqual(importer.image2d_level_count(0), 1)
         self.assertEqual(importer.image2d_name(0), '')
         self.assertEqual(importer.image2d_for_name(''), -1)
 
