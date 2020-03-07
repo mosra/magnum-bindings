@@ -39,8 +39,7 @@
 #include <Magnum/Primitives/Plane.h>
 #include <Magnum/Primitives/Square.h>
 #include <Magnum/Primitives/UVSphere.h>
-#include <Magnum/Trade/MeshData2D.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Magnum/Trade/MeshData.h>
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
@@ -138,10 +137,10 @@ void primitives(py::module& m) {
 
         .def("icosphere_solid", Primitives::icosphereSolid, py::arg("subdivisions"))
 
-        .def("line2d", static_cast<Trade::MeshData2D(*)(const Vector2&, const Vector2&)>(Primitives::line2D), "2D line", py::arg("a"), py::arg("b"))
-        .def("line2d", static_cast<Trade::MeshData2D(*)()>(Primitives::line2D), "2D line in an identity transformation")
-        .def("line3d", static_cast<Trade::MeshData3D(*)(const Vector3&, const Vector3&)>(Primitives::line3D), "3D line", py::arg("a"), py::arg("b"))
-        .def("line3d", static_cast<Trade::MeshData3D(*)()>(Primitives::line3D), "3D line in an identity transformation")
+        .def("line2d", static_cast<Trade::MeshData(*)(const Vector2&, const Vector2&)>(Primitives::line2D), "2D line", py::arg("a"), py::arg("b"))
+        .def("line2d", static_cast<Trade::MeshData(*)()>(Primitives::line2D), "2D line in an identity transformation")
+        .def("line3d", static_cast<Trade::MeshData(*)(const Vector3&, const Vector3&)>(Primitives::line3D), "3D line", py::arg("a"), py::arg("b"))
+        .def("line3d", static_cast<Trade::MeshData(*)()>(Primitives::line3D), "3D line in an identity transformation")
 
         .def("plane_solid", Primitives::planeSolid, "Solid 3D plane", py::arg("texture_coords") = Primitives::PlaneTextureCoords::DontGenerate)
         .def("plane_wireframe", Primitives::planeWireframe, "Wireframe 3D plane")

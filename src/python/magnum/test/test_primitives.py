@@ -32,253 +32,253 @@ class Axis(unittest.TestCase):
     def test_2d(self):
         a = primitives.axis2d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
     def test_3d(self):
         a = primitives.axis3d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
 class Capsule(unittest.TestCase):
     def test_2d_wireframe(self):
         a = primitives.capsule2d_wireframe(3, 3, 2.0)
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertEqual(a.attribute_count, 1)
 
     def test_3d_solid(self):
         a = primitives.capsule3d_solid(3, 3, 10, 2.0, primitives.CapsuleTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.capsule3d_solid(3, 3, 10, 2.0)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertTrue(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_3d_wireframe(self):
         a = primitives.capsule3d_wireframe(5, 3, 12, 0.3)
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Circle(unittest.TestCase):
     def test_2d_solid(self):
         a = primitives.circle2d_solid(5, primitives.CircleTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_FAN)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
         b = primitives.circle2d_solid(5)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_FAN)
-        self.assertFalse(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertFalse(b.is_indexed)
+        self.assertEqual(b.attribute_count, 1)
 
     def test_2d_wireframe(self):
         a = primitives.circle2d_wireframe(5)
         self.assertEqual(a.primitive, MeshPrimitive.LINE_LOOP)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_3d_solid(self):
         a = primitives.circle3d_solid(5, primitives.CircleTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_FAN)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.circle3d_solid(5)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_FAN)
-        self.assertFalse(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertFalse(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_3d_wireframe(self):
         a = primitives.circle3d_wireframe(5)
         self.assertEqual(a.primitive, MeshPrimitive.LINE_LOOP)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
 class Cone(unittest.TestCase):
     def test_solid(self):
         a = primitives.cone_solid(5, 7, 7.1, primitives.ConeFlags.GENERATE_TEXTURE_COORDS|primitives.ConeFlags.CAP_END)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.cone_solid(5, 7, 7.1)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertTrue(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_wireframe(self):
         a = primitives.cone_wireframe(16, 7.1)
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Crosshair(unittest.TestCase):
     def test_2d(self):
         a = primitives.crosshair2d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_3d(self):
         a = primitives.crosshair3d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
 class Cube(unittest.TestCase):
     def test_solid(self):
         a = primitives.cube_solid()
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
     def test_solid_strip(self):
         a = primitives.cube_solid_strip()
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_wireframe(self):
         a = primitives.cube_wireframe()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Cylinder(unittest.TestCase):
     def test_solid(self):
         a = primitives.cylinder_solid(7, 12, 0.2, primitives.CylinderFlags.GENERATE_TEXTURE_COORDS|primitives.CylinderFlags.CAP_ENDS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.cylinder_solid(7, 12, 0.2)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertTrue(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_wireframe(self):
         a = primitives.cylinder_wireframe(8, 16, 1.1)
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Gradient(unittest.TestCase):
     def test_gradient2d(self):
         a = primitives.gradient2d((3.1, 2.0), Color3(), (0.2, 1.1), Color4())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
     def test_gradient2d_horizontal(self):
         a = primitives.gradient2d_horizontal(Color4(), Color3())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
     def test_gradient2d_vertical(self):
         a = primitives.gradient2d_vertical(Color4(), Color3())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
     def test_gradient3d(self):
         a = primitives.gradient3d((3.1, 2.0, 0.1), Color3(), (0.2, 1.1, 1.2), Color4())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
     def test_gradient3d_horizontal(self):
         a = primitives.gradient3d_horizontal(Color4(), Color3())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
     def test_gradient3d_vertical(self):
         a = primitives.gradient3d_vertical(Color4(), Color3())
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_colors())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
 class Grid(unittest.TestCase):
     def test_solid(self):
         a = primitives.grid3d_solid((4, 5))
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
     def test_wireframe(self):
         a = primitives.grid3d_wireframe((2, 7))
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Icosphere(unittest.TestCase):
     def test(self):
         a = primitives.icosphere_solid(2)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)
 
 class Line(unittest.TestCase):
     def test_2d(self):
         a = primitives.line2d((1.0, 2.0), (7.0, 3.2))
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_2d_identity(self):
         a = primitives.line2d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_3d(self):
         a = primitives.line3d((1.0, 2.0, 1.1), (7.0, 3.2, 1.1))
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
     def test_3d_identity(self):
         a = primitives.line3d()
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
 class Plane(unittest.TestCase):
     def test_solid(self):
         a = primitives.plane_solid(primitives.PlaneTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.plane_solid()
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertFalse(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_wireframe(self):
         a = primitives.plane_wireframe()
         self.assertEqual(a.primitive, MeshPrimitive.LINE_LOOP)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
 class Square(unittest.TestCase):
     def test_solid(self):
         a = primitives.square_solid(primitives.SquareTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertFalse(a.is_indexed)
+        self.assertEqual(a.attribute_count, 2)
 
         b = primitives.square_solid()
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_STRIP)
-        self.assertFalse(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertFalse(b.is_indexed)
+        self.assertEqual(b.attribute_count, 1)
 
     def test_wireframe(self):
         a = primitives.square_wireframe()
         self.assertEqual(a.primitive, MeshPrimitive.LINE_LOOP)
-        self.assertFalse(a.is_indexed())
+        self.assertFalse(a.is_indexed)
 
 class UVSphere(unittest.TestCase):
     def test_solid(self):
         a = primitives.uv_sphere_solid(3, 7, primitives.UVSphereTextureCoords.GENERATE)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(a.is_indexed())
-        self.assertTrue(a.has_texture_coords2d())
+        self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
         b = primitives.uv_sphere_solid(3, 7)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(b.is_indexed())
-        self.assertFalse(b.has_texture_coords2d())
+        self.assertTrue(b.is_indexed)
+        self.assertEqual(b.attribute_count, 2)
 
     def test_wireframe(self):
         a = primitives.uv_sphere_wireframe(6, 8)
         self.assertEqual(a.primitive, MeshPrimitive.LINES)
-        self.assertTrue(a.is_indexed())
+        self.assertTrue(a.is_indexed)

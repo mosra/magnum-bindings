@@ -29,8 +29,7 @@
 #include <Magnum/ImageView.h>
 #include <Magnum/Trade/AbstractImporter.h>
 #include <Magnum/Trade/ImageData.h>
-#include <Magnum/Trade/MeshData2D.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Magnum/Trade/MeshData.h>
 
 #include "Corrade/Containers/Python.h"
 #include "Magnum/Python.h"
@@ -137,14 +136,6 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
         }, "View on pixel data");
 }
 
-template<class T> void meshData(py::class_<T>& c) {
-    c
-        .def_property_readonly("primitive", &T::primitive, "Primitive")
-        .def("is_indexed", &T::isIndexed, "Whether the mesh is indexed")
-        .def("has_texture_coords2d", &T::hasTextureCoords2D, "Whether the data contain any 2D texture coordinates")
-        .def("has_colors", &T::hasColors, "Whether the data contain any vertex colors");
-}
-
 /* For some reason having ...Args as the second (and not last) template
    argument does not work. So I'm listing all variants here ... which are
    exactly two, in fact. */
@@ -229,11 +220,12 @@ void trade(py::module& m) {
     /* AbstractImporter depends on this */
     py::module::import("corrade.pluginmanager");
 
-    py::class_<Trade::MeshData2D> meshData2D{m, "MeshData2D", "Two-dimensional mesh data"};
-    py::class_<Trade::MeshData3D> meshData3D{m, "MeshData3D", "Three-dimensional mesh data"};
-    meshData(meshData2D);
-    meshData(meshData3D);
-    meshData3D.def("has_normals", &Trade::MeshData3D::hasNormals, "Whether the data contain any normals");
+    py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
+        .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
+        .def_property_readonly("is_indexed", &Trade::MeshData::isIndexed, "Whether the mesh is indexed")
+        .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount)
+        .def_property_readonly("index_count", &Trade::MeshData::indexCount)
+        .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount));
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};
@@ -270,14 +262,12 @@ void trade(py::module& m) {
         .def("close", &Trade::AbstractImporter::close, "Close currently opened file")
 
         /** @todo all other data types */
-        .def_property_readonly("mesh2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh count")
-        .def_property_readonly("mesh3d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh count")
-        .def("mesh2d_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::mesh2DForName>, "Two-dimensional mesh ID for given name")
-        .def("mesh3d_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::mesh3DForName>, "Three-dimensional mesh ID for given name")
-        .def("mesh2d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::mesh2DName, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh name", py::arg("id"))
-        .def("mesh3d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::mesh3DName, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh name", py::arg("id"))
-        .def("mesh2d", checkOpenedBoundsResult<Trade::MeshData2D, &Trade::AbstractImporter::mesh2D, &Trade::AbstractImporter::mesh2DCount>, "Two-dimensional mesh", py::arg("id"))
-        .def("mesh3d", checkOpenedBoundsResult<Trade::MeshData3D, &Trade::AbstractImporter::mesh3D, &Trade::AbstractImporter::mesh3DCount>, "Three-dimensional mesh", py::arg("id"))
+        .def_property_readonly("mesh_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::meshCount>, "Mesh count")
+        .def("mesh_level_count", checkOpenedBounds<UnsignedInt, &Trade::AbstractImporter::meshLevelCount, &Trade::AbstractImporter::meshCount>, "Mesh level count", py::arg("id"))
+        .def("mesh_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::meshForName>, "Mesh ID for given name")
+        .def("mesh_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::meshName, &Trade::AbstractImporter::meshCount>, "Mesh name", py::arg("id"))
+        .def("mesh", checkOpenedBoundsResult<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshCount>, "Mesh", py::arg("id"), py::arg("level") = 0)
+        /** @todo mesh_attribute_for_name / mesh_attribute_name */
 
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
         .def_property_readonly("image2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image count")

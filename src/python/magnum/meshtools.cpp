@@ -26,8 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/MeshTools/Compile.h>
-#include <Magnum/Trade/MeshData2D.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Magnum/Trade/MeshData.h>
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
@@ -52,9 +51,7 @@ void meshtools(py::module& m) {
     corrade::enumOperators(compileFlag);
 
     m
-        .def("compile", static_cast<GL::Mesh(*)(const Trade::MeshData2D& data)>(&MeshTools::compile),
-            "Compile 2D mesh data", py::arg("mesh_data"))
-        .def("compile", [](const Trade::MeshData3D& meshData, MeshTools::CompileFlag flags) {
+        .def("compile", [](const Trade::MeshData& meshData, MeshTools::CompileFlag flags) {
             return MeshTools::compile(meshData, flags);
         }, "Compile 3D mesh data", py::arg("mesh_data"), py::arg("flags") = MeshTools::CompileFlag{});
 }
