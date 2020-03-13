@@ -193,6 +193,8 @@ class Importer(unittest.TestCase):
         with self.assertRaises(IndexError):
             importer.image1d(0)
         with self.assertRaises(IndexError):
+            importer.image2d(0, 1)
+        with self.assertRaises(IndexError):
             importer.image2d(1)
         with self.assertRaises(IndexError):
             importer.image3d(0)
@@ -216,6 +218,14 @@ class Importer(unittest.TestCase):
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+
+    def test_mesh_index_oob(self):
+        # importer refcounting tested in image2d
+        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        with self.assertRaises(IndexError):
+            importer.mesh(0, 1)
 
     def test_image2d(self):
         manager = trade.ImporterManager()

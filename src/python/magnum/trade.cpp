@@ -190,13 +190,18 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     return *std::move(out);
 }
 
-template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt, UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> R checkOpenedBoundsResult(Trade::AbstractImporter& self, UnsignedInt id, UnsignedInt level) {
+template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt, UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const, UnsignedInt(Trade::AbstractImporter::*levelBounds)(UnsignedInt)> R checkOpenedBoundsResult(Trade::AbstractImporter& self, UnsignedInt id, UnsignedInt level) {
     if(!self.isOpened()) {
         PyErr_SetString(PyExc_RuntimeError, "no file opened");
         throw py::error_already_set{};
     }
 
     if(id >= (self.*bounds)()) {
+        PyErr_SetNone(PyExc_IndexError);
+        throw py::error_already_set{};
+    }
+
+    if(level >= (self.*levelBounds)(id)) {
         PyErr_SetNone(PyExc_IndexError);
         throw py::error_already_set{};
     }
@@ -266,7 +271,7 @@ void trade(py::module& m) {
         .def("mesh_level_count", checkOpenedBounds<UnsignedInt, &Trade::AbstractImporter::meshLevelCount, &Trade::AbstractImporter::meshCount>, "Mesh level count", py::arg("id"))
         .def("mesh_for_name", checkOpened<Int, const std::string&, &Trade::AbstractImporter::meshForName>, "Mesh ID for given name")
         .def("mesh_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::meshName, &Trade::AbstractImporter::meshCount>, "Mesh name", py::arg("id"))
-        .def("mesh", checkOpenedBoundsResult<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshCount>, "Mesh", py::arg("id"), py::arg("level") = 0)
+        .def("mesh", checkOpenedBoundsResult<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshCount, &Trade::AbstractImporter::meshLevelCount>, "Mesh", py::arg("id"), py::arg("level") = 0)
         /** @todo mesh_attribute_for_name / mesh_attribute_name */
 
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
@@ -281,9 +286,9 @@ void trade(py::module& m) {
         .def("image1d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image1DName, &Trade::AbstractImporter::image1DCount>, "One-dimensional image name", py::arg("id"))
         .def("image2d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image2DName, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image name", py::arg("id"))
         .def("image3d_name", checkOpenedBounds<std::string, &Trade::AbstractImporter::image3DName, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image name", py::arg("id"))
-        .def("image1d", checkOpenedBoundsResult<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DCount>, "One-dimensional image", py::arg("id"), py::arg("level") = 0)
-        .def("image2d", checkOpenedBoundsResult<Trade::ImageData2D, &Trade::AbstractImporter::image2D, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image", py::arg("id"), py::arg("level") = 0)
-        .def("image3d", checkOpenedBoundsResult<Trade::ImageData3D, &Trade::AbstractImporter::image3D, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image", py::arg("id"), py::arg("level") = 0);
+        .def("image1d", checkOpenedBoundsResult<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DCount, &Trade::AbstractImporter::image1DLevelCount>, "One-dimensional image", py::arg("id"), py::arg("level") = 0)
+        .def("image2d", checkOpenedBoundsResult<Trade::ImageData2D, &Trade::AbstractImporter::image2D, &Trade::AbstractImporter::image2DCount, &Trade::AbstractImporter::image2DLevelCount>, "Two-dimensional image", py::arg("id"), py::arg("level") = 0)
+        .def("image3d", checkOpenedBoundsResult<Trade::ImageData3D, &Trade::AbstractImporter::image3D, &Trade::AbstractImporter::image3DCount, &Trade::AbstractImporter::image3DLevelCount>, "Three-dimensional image", py::arg("id"), py::arg("level") = 0);
 
     py::class_<PluginManager::Manager<Trade::AbstractImporter>, PluginManager::AbstractManager> importerManager{m, "ImporterManager", "Plugin manager for importer plugins"};
     corrade::manager(importerManager);
