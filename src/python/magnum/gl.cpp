@@ -340,6 +340,7 @@ void gl(py::module& m) {
             /* Public interface */
             .def_property_readonly("id", &GL::AbstractShaderProgram::id, "OpenGL program ID")
             .def("validate", &GL::AbstractShaderProgram::validate, "Validate program")
+            .def("draw", static_cast<void(GL::AbstractShaderProgram::*)(GL::Mesh&)>(&GL::AbstractShaderProgram::draw), "Draw a mesh")
             #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
             .def("dispatch_compute", &GL::AbstractShaderProgram::dispatchCompute, "Dispatch compute")
             #endif
@@ -814,9 +815,6 @@ void gl(py::module& m) {
                the mesh */
             pyObjectHolderFor<GL::PyMeshHolder>(self).buffers.emplace_back(pyObjectFromInstance(buffer));
         }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
-        .def("draw", [](GL::Mesh& self, GL::AbstractShaderProgram& shader) {
-            self.draw(shader);
-        }, "Draw the mesh")
         /** @todo more */
 
         .def_property_readonly("buffers", [](GL::Mesh& self) {

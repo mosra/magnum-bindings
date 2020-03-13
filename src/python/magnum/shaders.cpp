@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for vector arguments */
 #include <Corrade/Containers/ArrayViewStl.h>
+#include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Texture.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Matrix3.h>
@@ -42,6 +43,10 @@
 namespace magnum {
 
 namespace {
+
+template<class T> void anyShader(PyNonDestructibleClass<T, GL::AbstractShaderProgram>& c) {
+    c.def("draw", static_cast<void(GL::AbstractShaderProgram::*)(GL::Mesh&)>(&GL::AbstractShaderProgram::draw), "Draw a mesh");
+}
 
 template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::Flat<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
@@ -77,6 +82,8 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::Flat<
 
             self.bindTexture(texture);
         }, "Bind a color texture");
+
+    anyShader(c);
 }
 
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColor<dimensions>, GL::AbstractShaderProgram>& c) {
@@ -92,6 +99,8 @@ template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders
 
         .def_property("transformation_projection_matrix", nullptr, &Shaders::VertexColor<dimensions>::setTransformationProjectionMatrix,
             "Transformation and projection matrix");
+
+    anyShader(c);
 }
 
 }
@@ -260,6 +269,8 @@ void shaders(py::module& m) {
                 self.bindTextures(ambient, diffuse, specular, normal);
             }, "Bind textures", py::arg("ambient") = nullptr, py::arg("diffuse") = nullptr, py::arg("specular") = nullptr, py::arg("normal") = nullptr)
             ;
+
+        anyShader(phong);
     }
 }
 
