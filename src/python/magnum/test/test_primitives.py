@@ -48,10 +48,10 @@ class Capsule(unittest.TestCase):
         self.assertEqual(a.attribute_count, 1)
 
     def test_3d_solid(self):
-        a = primitives.capsule3d_solid(3, 3, 10, 2.0, primitives.CapsuleTextureCoords.GENERATE)
+        a = primitives.capsule3d_solid(3, 3, 10, 2.0, primitives.CapsuleFlags.TEXTURE_COORDINATES|primitives.CapsuleFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
-        self.assertEqual(a.attribute_count, 3)
+        self.assertEqual(a.attribute_count, 4)
 
         b = primitives.capsule3d_solid(3, 3, 10, 2.0)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
@@ -65,7 +65,7 @@ class Capsule(unittest.TestCase):
 
 class Circle(unittest.TestCase):
     def test_2d_solid(self):
-        a = primitives.circle2d_solid(5, primitives.CircleTextureCoords.GENERATE)
+        a = primitives.circle2d_solid(5, primitives.Circle2DFlags.TEXTURE_COORDINATES)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_FAN)
         self.assertFalse(a.is_indexed)
         self.assertEqual(a.attribute_count, 2)
@@ -81,10 +81,10 @@ class Circle(unittest.TestCase):
         self.assertFalse(a.is_indexed)
 
     def test_3d_solid(self):
-        a = primitives.circle3d_solid(5, primitives.CircleTextureCoords.GENERATE)
+        a = primitives.circle3d_solid(5, primitives.Circle3DFlags.TEXTURE_COORDINATES|primitives.Circle3DFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_FAN)
         self.assertFalse(a.is_indexed)
-        self.assertEqual(a.attribute_count, 3)
+        self.assertEqual(a.attribute_count, 4)
 
         b = primitives.circle3d_solid(5)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_FAN)
@@ -98,7 +98,7 @@ class Circle(unittest.TestCase):
 
 class Cone(unittest.TestCase):
     def test_solid(self):
-        a = primitives.cone_solid(5, 7, 7.1, primitives.ConeFlags.GENERATE_TEXTURE_COORDS|primitives.ConeFlags.CAP_END)
+        a = primitives.cone_solid(5, 7, 7.1, primitives.ConeFlags.TEXTURE_COORDINATES|primitives.ConeFlags.CAP_END)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
         self.assertEqual(a.attribute_count, 3)
@@ -142,7 +142,7 @@ class Cube(unittest.TestCase):
 
 class Cylinder(unittest.TestCase):
     def test_solid(self):
-        a = primitives.cylinder_solid(7, 12, 0.2, primitives.CylinderFlags.GENERATE_TEXTURE_COORDS|primitives.CylinderFlags.CAP_ENDS)
+        a = primitives.cylinder_solid(7, 12, 0.2, primitives.CylinderFlags.TEXTURE_COORDINATES|primitives.CylinderFlags.CAP_ENDS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
         self.assertEqual(a.attribute_count, 3)
@@ -196,9 +196,10 @@ class Gradient(unittest.TestCase):
 
 class Grid(unittest.TestCase):
     def test_solid(self):
-        a = primitives.grid3d_solid((4, 5))
+        a = primitives.grid3d_solid((4, 5), primitives.GridFlags.NORMALS|primitives.GridFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count, 3)
 
     def test_wireframe(self):
         a = primitives.grid3d_wireframe((2, 7))
@@ -234,10 +235,10 @@ class Line(unittest.TestCase):
 
 class Plane(unittest.TestCase):
     def test_solid(self):
-        a = primitives.plane_solid(primitives.PlaneTextureCoords.GENERATE)
+        a = primitives.plane_solid(primitives.PlaneFlags.TEXTURE_COORDINATES|primitives.PlaneFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
         self.assertFalse(a.is_indexed)
-        self.assertEqual(a.attribute_count, 3)
+        self.assertEqual(a.attribute_count, 4)
 
         b = primitives.plane_solid()
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLE_STRIP)
@@ -251,7 +252,7 @@ class Plane(unittest.TestCase):
 
 class Square(unittest.TestCase):
     def test_solid(self):
-        a = primitives.square_solid(primitives.SquareTextureCoords.GENERATE)
+        a = primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLE_STRIP)
         self.assertFalse(a.is_indexed)
         self.assertEqual(a.attribute_count, 2)
@@ -268,10 +269,10 @@ class Square(unittest.TestCase):
 
 class UVSphere(unittest.TestCase):
     def test_solid(self):
-        a = primitives.uv_sphere_solid(3, 7, primitives.UVSphereTextureCoords.GENERATE)
+        a = primitives.uv_sphere_solid(3, 7, primitives.UVSphereFlags.TEXTURE_COORDINATES|primitives.UVSphereFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
-        self.assertEqual(a.attribute_count, 3)
+        self.assertEqual(a.attribute_count, 4)
 
         b = primitives.uv_sphere_solid(3, 7)
         self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)

@@ -55,55 +55,77 @@ void primitives(py::module& m) {
     py::module::import("magnum.trade");
     #endif
 
-    py::enum_<Primitives::CapsuleTextureCoords>{m, "CapsuleTextureCoords", "Whether to generate capsule texture coordinates"}
-        .value("DONT_GENERATE", Primitives::CapsuleTextureCoords::DontGenerate)
-        .value("GENERATE", Primitives::CapsuleTextureCoords::Generate);
+    py::enum_<Primitives::CapsuleFlag> capsuleFlags{m, "CapsuleFlags", "Capsule flags"};
+    capsuleFlags.value("TEXTURE_COORDINATES", Primitives::CapsuleFlag::TextureCoordinates)
+        .value("TANGENTS", Primitives::CapsuleFlag::Tangents)
+        .value("NONE", Primitives::CapsuleFlag{});
+    corrade::enumOperators(capsuleFlags);
 
-    py::enum_<Primitives::CircleTextureCoords>{m, "CircleTextureCoords", "Whether to generate circle texture coordinates"}
-        .value("DONT_GENERATE", Primitives::CircleTextureCoords::DontGenerate)
-        .value("GENERATE", Primitives::CircleTextureCoords::Generate);
+    py::enum_<Primitives::Circle2DFlag> circle2DFlags{m, "Circle2DFlags", "2D circle flags"};
+    circle2DFlags.value("TEXTURE_COORDINATES", Primitives::Circle2DFlag::TextureCoordinates)
+        .value("NONE", Primitives::Circle2DFlag{});
+    corrade::enumOperators(circle2DFlags);
+
+    py::enum_<Primitives::Circle3DFlag> circle3DFlags{m, "Circle3DFlags", "3D circle flags"};
+    circle3DFlags.value("TEXTURE_COORDINATES", Primitives::Circle3DFlag::TextureCoordinates)
+        .value("TANGENTS", Primitives::Circle3DFlag::Tangents)
+        .value("NONE", Primitives::Circle3DFlag{});
+    corrade::enumOperators(circle3DFlags);
 
     py::enum_<Primitives::ConeFlag> coneFlags{m, "ConeFlags", "Cone flags"};
-    coneFlags.value("GENERATE_TEXTURE_COORDS", Primitives::ConeFlag::GenerateTextureCoords)
+    coneFlags.value("TEXTURE_COORDINATES", Primitives::ConeFlag::TextureCoordinates)
+        .value("TANGENTS", Primitives::ConeFlag::Tangents)
         .value("CAP_END", Primitives::ConeFlag::CapEnd)
         .value("NONE", Primitives::ConeFlag{});
     corrade::enumOperators(coneFlags);
 
     py::enum_<Primitives::CylinderFlag> cylinderFlags{m, "CylinderFlags", "Cylinder flags"};
-    cylinderFlags.value("GENERATE_TEXTURE_COORDS", Primitives::CylinderFlag::GenerateTextureCoords)
+    cylinderFlags.value("TEXTURE_COORDINATES", Primitives::CylinderFlag::TextureCoordinates)
         .value("CAP_ENDS", Primitives::CylinderFlag::CapEnds)
         .value("NONE", Primitives::CylinderFlag{});
     corrade::enumOperators(cylinderFlags);
 
     py::enum_<Primitives::GridFlag> gridFlags{m, "GridFlags", "Grid flags"};
-    gridFlags.value("GENERATE_TEXTURE_COORDS", Primitives::GridFlag::GenerateTextureCoords)
-        .value("GENERATE_NORMALS", Primitives::GridFlag::GenerateNormals)
+    gridFlags.value("TEXTURE_COORDINATES", Primitives::GridFlag::TextureCoordinates)
+        .value("NORMALS", Primitives::GridFlag::Normals)
+        .value("TANGENTS", Primitives::GridFlag::Tangents)
         .value("NONE", Primitives::GridFlag{});
     corrade::enumOperators(gridFlags);
 
-    py::enum_<Primitives::PlaneTextureCoords>{m, "PlaneTextureCoords", "Whether to generate plane texture coordinates"}
-        .value("DONT_GENERATE", Primitives::PlaneTextureCoords::DontGenerate)
-        .value("GENERATE", Primitives::PlaneTextureCoords::Generate);
+    py::enum_<Primitives::PlaneFlag> planeFlags{m, "PlaneFlags", "Plane flags"};
+    planeFlags.value("TEXTURE_COORDINATES", Primitives::PlaneFlag::TextureCoordinates)
+        .value("TANGENTS", Primitives::PlaneFlag::Tangents)
+        .value("NONE", Primitives::PlaneFlag{});
+    corrade::enumOperators(planeFlags);
 
-    py::enum_<Primitives::SquareTextureCoords>{m, "SquareTextureCoords", "Whether to generate square texture coordinates"}
-        .value("DONT_GENERATE", Primitives::SquareTextureCoords::DontGenerate)
-        .value("GENERATE", Primitives::SquareTextureCoords::Generate);
+    py::enum_<Primitives::SquareFlag> squareFlags{m, "SquareFlags", "Square flags"};
+    squareFlags.value("TEXTURE_COORDINATES", Primitives::SquareFlag::TextureCoordinates)
+        .value("NONE", Primitives::SquareFlag{});
+    corrade::enumOperators(squareFlags);
 
-    py::enum_<Primitives::UVSphereTextureCoords>{m, "UVSphereTextureCoords", "Whether to generate UV sphere texture coordinates"}
-        .value("DONT_GENERATE", Primitives::UVSphereTextureCoords::DontGenerate)
-        .value("GENERATE", Primitives::UVSphereTextureCoords::Generate);
+    py::enum_<Primitives::UVSphereFlag> uvSphereFlags{m, "UVSphereFlags", "UV sphere flags"};
+    uvSphereFlags.value("TEXTURE_COORDINATES", Primitives::UVSphereFlag::TextureCoordinates)
+        .value("TANGENTS", Primitives::UVSphereFlag::Tangents)
+        .value("NONE", Primitives::UVSphereFlag{});
+    corrade::enumOperators(uvSphereFlags);
 
     m
         .def("axis2d", Primitives::axis2D, "2D axis")
         .def("axis3d", Primitives::axis3D, "3D axis")
 
         .def("capsule2d_wireframe", Primitives::capsule2DWireframe, "Wireframe 2D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("half_length"))
-        .def("capsule3d_solid", Primitives::capsule3DSolid, "Solid 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"), py::arg("texture_coords") = Primitives::CapsuleTextureCoords::DontGenerate)
+        .def("capsule3d_solid", [](UnsignedInt hemisphereRings, UnsignedInt cylinderRings, UnsignedInt segments, Float halfLength, Primitives::CapsuleFlag flags) {
+            return Primitives::capsule3DSolid(hemisphereRings, cylinderRings, segments, halfLength, flags);
+        }, "Solid 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"), py::arg("flags") = Primitives::CapsuleFlag{})
         .def("capsule3d_wireframe", Primitives::capsule3DWireframe, "Wireframe 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"))
 
-        .def("circle2d_solid", Primitives::circle2DSolid, "Solid 2D circle", py::arg("segments"), py::arg("texture_coords") = Primitives::CircleTextureCoords::DontGenerate)
+        .def("circle2d_solid", [](UnsignedInt segments, Primitives::Circle2DFlag flags) {
+            return Primitives::circle2DSolid(segments, flags);
+        }, "Solid 2D circle", py::arg("segments"), py::arg("flags") = Primitives::Circle2DFlag{})
         .def("circle2d_wireframe", Primitives::circle2DWireframe, "Wireframe 2D circle", py::arg("segments"))
-        .def("circle3d_solid", Primitives::circle3DSolid, "Solid 3D circle", py::arg("segments"), py::arg("texture_coords") = Primitives::CircleTextureCoords::DontGenerate)
+        .def("circle3d_solid", [](UnsignedInt segments, Primitives::Circle3DFlag flags) {
+            return Primitives::circle3DSolid(segments, flags);
+        }, "Solid 3D circle", py::arg("segments"), py::arg("flags") = Primitives::Circle3DFlag{})
         .def("circle3d_wireframe", Primitives::circle3DWireframe, "Wireframe 3D circle", py::arg("segments"))
 
         .def("cone_solid", [](UnsignedInt rings, UnsignedInt segments, Float halfLength, Primitives::ConeFlag flags) {
@@ -132,7 +154,7 @@ void primitives(py::module& m) {
 
         .def("grid3d_solid", [](const Vector2i& subdivisions, Primitives::GridFlag flags) {
             return Primitives::grid3DSolid(subdivisions, flags);
-        }, "Solid 3D grid", py::arg("subdivisions"), py::arg("flags") = Primitives::GridFlag::GenerateNormals)
+        }, "Solid 3D grid", py::arg("subdivisions"), py::arg("flags") = Primitives::GridFlag::Normals)
         .def("grid3d_wireframe", Primitives::grid3DWireframe, "Wireframe 3D grid")
 
         .def("icosphere_solid", Primitives::icosphereSolid, py::arg("subdivisions"))
@@ -142,13 +164,19 @@ void primitives(py::module& m) {
         .def("line3d", static_cast<Trade::MeshData(*)(const Vector3&, const Vector3&)>(Primitives::line3D), "3D line", py::arg("a"), py::arg("b"))
         .def("line3d", static_cast<Trade::MeshData(*)()>(Primitives::line3D), "3D line in an identity transformation")
 
-        .def("plane_solid", Primitives::planeSolid, "Solid 3D plane", py::arg("texture_coords") = Primitives::PlaneTextureCoords::DontGenerate)
+        .def("plane_solid", [](Primitives::PlaneFlag flags) {
+            return Primitives::planeSolid(flags);
+        }, "Solid 3D plane", py::arg("flags") = Primitives::PlaneFlag{})
         .def("plane_wireframe", Primitives::planeWireframe, "Wireframe 3D plane")
 
-        .def("square_solid", Primitives::squareSolid, "Solid 2D square", py::arg("texture_coords") = Primitives::SquareTextureCoords::DontGenerate)
+        .def("square_solid", [](Primitives::SquareFlag flags) {
+            return Primitives::squareSolid(flags);
+        }, "Solid 2D square", py::arg("flags") = Primitives::SquareFlag{})
         .def("square_wireframe", Primitives::squareWireframe, "Wireframe 2D square")
 
-        .def("uv_sphere_solid", Primitives::uvSphereSolid, "Solid 3D UV sphere", py::arg("rings"), py::arg("segments"), py::arg("texture_coords") = Primitives::UVSphereTextureCoords::DontGenerate)
+        .def("uv_sphere_solid", [](UnsignedInt rings, UnsignedInt segments, Primitives::UVSphereFlag flags) {
+            return Primitives::uvSphereSolid(rings, segments, flags);
+        }, "Solid 3D UV sphere", py::arg("rings"), py::arg("segments"), py::arg("flags") = Primitives::UVSphereFlag{})
         .def("uv_sphere_wireframe", Primitives::uvSphereWireframe, "Wireframe 3D UV sphere", py::arg("rings"), py::arg("segments"));
 }
 
