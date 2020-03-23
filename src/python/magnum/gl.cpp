@@ -318,6 +318,9 @@ void gl(py::module& m) {
             }, "Compile shader");
     }
 
+    /* Mesh -- needed by AbstractShaderProgram.draw(), so defined earlier */
+    py::class_<GL::Mesh, GL::PyMeshHolder<GL::Mesh>> mesh{m, "Mesh", "Mesh"};
+
     /* Abstract shader program */
     {
         /* The original class has protected functions and a pure virtual
@@ -785,8 +788,9 @@ void gl(py::module& m) {
         #endif
         ;
 
-    py::class_<GL::Mesh, GL::PyMeshHolder<GL::Mesh>>{m, "Mesh", "Mesh"}
-        .def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
+    /* Class definition above AbstractShaderProgram, since that needs it for
+       the draw() signature */
+    mesh.def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
         .def(py::init<MeshPrimitive>(), "Constructor", py::arg("primitive"))
         .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
         .def_property("primitive", &GL::Mesh::primitive,
