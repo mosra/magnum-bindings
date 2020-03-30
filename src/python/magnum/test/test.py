@@ -261,4 +261,4 @@ class ImageView(unittest.TestCase):
             b'rgbRGB  '))
         self.assertIs(a.owner, data2)
         self.assertEqual(sys.getrefcount(data), data_refcount)
-        self.assertEqual(sys.getrefcount(data2), data_refcount + 1)
+        self.assertEqual(sys.getrefcount(data2), data2_refcount + 1)
