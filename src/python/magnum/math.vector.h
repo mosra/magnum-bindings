@@ -527,7 +527,13 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
             return Math::Color3<T>::fromHsv({Math::Deg<T>(hue), saturation, value});
         }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"))
 
+        .def_static("from_srgb", [](UnsignedInt srgb) {
+            return Math::Color3<T>::fromSrgb(srgb);
+        }, "Create linear RGB color from 24-bit sRGB representation", py::arg("srgb"))
+
         /* Accessors */
+        .def("to_srgb_int", &Math::Color3<T>::toSrgbInt,
+             "Convert to 32-bit integral sRGB representation")
         .def("to_hsv", [](Math::Color3<T>& self) {
             auto hsv = self.toHsv();
             return std::make_tuple(Degd(hsv.hue), hsv.saturation, hsv.value);
@@ -567,7 +573,17 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
             return Math::Color4<T>::fromHsv({Math::Deg<T>(hue), saturation, value}, alpha);
         }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
 
+        .def_static("from_srgb_alpha", [](UnsignedInt srgbAlpha) {
+            return Math::Color4<T>::fromSrgbAlpha(srgbAlpha);
+        }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb_alpha"))
+
+        .def_static("from_srgb", [](UnsignedInt srgb, T a) {
+            return Math::Color4<T>::fromSrgb(srgb, a);
+        }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb"), py::arg("a") = Math::Implementation::fullChannel<T>())
+
         /* Accessors */
+        .def("to_srgb_alpha_int", &Math::Color4<T>::toSrgbAlphaInt,
+             "Convert to 32-bit integral sRGB + linear alpha representation")
         .def("to_hsv", [](Math::Color4<T>& self) {
             auto hsv = self.toHsv();
             return std::make_tuple(Degd(hsv.hue), hsv.saturation, hsv.value);
