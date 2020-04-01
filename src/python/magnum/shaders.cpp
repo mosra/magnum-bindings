@@ -185,7 +185,7 @@ void shaders(py::module& m) {
                 py::arg("flags") = Shaders::Phong::Flag{},
                 py::arg("light_count") = 1)
             .def_property_readonly("flags", [](Shaders::Phong& self) {
-                return Shaders::Phong::Flag(UnsignedByte(self.flags()));
+                return Shaders::Phong::Flag(UnsignedShort(self.flags()));
             }, "Flags")
             .def_property_readonly("light_count", &Shaders::Phong::lightCount,
                 "Light count")
