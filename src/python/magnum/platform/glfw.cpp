@@ -43,15 +43,10 @@ void glfw(py::module& m) {
     struct PublicizedApplication: Platform::Application {
         explicit PublicizedApplication(const Configuration& configuration, const GLConfiguration& glConfiguration): Platform::Application{Arguments{argc, nullptr}, configuration, glConfiguration} {}
 
-        /* MSVC dies with "error C3640: a referenced or virtual member function
-           of a local class must be defined" if this is just `= 0` here. Since
-           we're overriding this method below anyway, it doesn't have to be
-           pure virtual. */
-        #ifdef _MSC_VER
-        void drawEvent() override {}
-        #else
-        void drawEvent() override = 0;
-        #endif
+        void drawEvent() override {
+            PyErr_SetString(PyExc_NotImplementedError, "the application has to provide a draw_event() method");
+            throw py::error_already_set{};
+        }
 
         void keyPressEvent(KeyEvent&) override {}
         void keyReleaseEvent(KeyEvent&) override {}
@@ -71,12 +66,12 @@ void glfw(py::module& m) {
         void drawEvent() override {
             #ifdef __clang__
             /* ugh pybind don't tell me I AM THE FIRST ON EARTH to get a
-               warning here. Why there's no PYBIND11_OVERLOAD_PURE_NAME_ARG()
+               warning here. Why there's no PYBIND11_OVERLOAD_NAME_ARG()
                variant *with* arguments and one without? */
             #pragma GCC diagnostic push
             #pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
             #endif
-            PYBIND11_OVERLOAD_PURE_NAME(
+            PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
                 "draw_event",
