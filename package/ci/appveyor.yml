@@ -53,6 +53,9 @@ install:
 - pip3 install coverage codecov
 
 - IF NOT "%BUILD_STATIC%" == "ON" set BUILD_STATIC=OFF
+# The fugly \=/ magic is to replace backward slashes with forward so CMake
+# doesn't treat those as escape characters
+- IF "%BUILD_STATIC%" == "ON" set "STATIC_PLUGIN_PATH=-DMAGNUM_PLUGINS_DIR=%APPVEYOR_BUILD_FOLDER:\=/%/deps/bin/magnum"
 
 # pybind11. Built in the CI script.
 - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\v2.3.0.zip appveyor DownloadFile https://github.com/pybind/pybind11/archive/v2.3.0.zip

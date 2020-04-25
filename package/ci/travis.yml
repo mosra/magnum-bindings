@@ -106,6 +106,7 @@ cache:
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.8; fi
 - if [ "$BUILD_STATIC" != "ON" ]; then export BUILD_STATIC=OFF; fi
+- if [ "$BUILD_STATIC" == "ON" ]; then export STATIC_PLUGIN_PATH=-DMAGNUM_PLUGINS_DIR=$HOME/deps/lib/magnum; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && ( [ "$TARGET" == "desktop" ] || [ "$TARGET" == "desktop-sanitizers" ] ); then export PLATFORM_GL_API=GLX; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TARGET" == "desktop-gles" ]; then export PLATFORM_GL_API=EGL; fi
 # Download CMake 3.4.3 to ensure we're still compatible with it (Travis has
