@@ -41,7 +41,7 @@ namespace Corrade { namespace PluginManager {
 template<class T> struct PyPluginHolder: std::unique_ptr<T> {
     explicit PyPluginHolder(T*) {
         /* Pybind needs this signature, but it should never be called */
-        CORRADE_ASSERT_UNREACHABLE();
+        CORRADE_INTERNAL_ASSERT_UNREACHABLE();
     }
 
     explicit PyPluginHolder(T* object, pybind11::object manager) noexcept: std::unique_ptr<T>{object}, manager{std::move(manager)} {}

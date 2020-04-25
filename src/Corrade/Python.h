@@ -92,7 +92,7 @@ template<template<class> class T, class U> T<U>& pyObjectHolderFor(U& obj) {
    implemented on the client side instead of patching pybind itself */
 template<class, bool> struct PyNonDestructibleBaseDeleter;
 template<class T> struct PyNonDestructibleBaseDeleter<T, false> {
-    void operator()(T*) { CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */ }
+    void operator()(T*) { CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */ }
 };
 template<class T> struct PyNonDestructibleBaseDeleter<T, true> {
     void operator()(T* ptr) { delete ptr; }

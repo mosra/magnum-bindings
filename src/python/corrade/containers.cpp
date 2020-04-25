@@ -254,25 +254,25 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView<4, const c
 /* Getting a runtime tuple index. Ugh. */
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<1, T>::Type& tuple, std::size_t i) {
     if(i == 0) return std::get<0>(tuple);
-    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<2, T>::Type& tuple, std::size_t i) {
     if(i == 0) return std::get<0>(tuple);
     if(i == 1) return std::get<1>(tuple);
-    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<3, T>::Type& tuple, std::size_t i) {
     if(i == 0) return std::get<0>(tuple);
     if(i == 1) return std::get<1>(tuple);
     if(i == 2) return std::get<2>(tuple);
-    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<4, T>::Type& tuple, std::size_t i) {
     if(i == 0) return std::get<0>(tuple);
     if(i == 1) return std::get<1>(tuple);
     if(i == 2) return std::get<2>(tuple);
     if(i == 3) return std::get<3>(tuple);
-    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 template<class T> bool stridedArrayViewBufferProtocol(T& self, Py_buffer& buffer, int flags) {

@@ -59,21 +59,21 @@ template<class U, class T> void initFromBuffer(T& out, const Py_buffer& buffer) 
 template<class T> void initFromBuffer(typename std::enable_if<std::is_floating_point<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
     if(buffer.format[0] == 'f') initFromBuffer<Float>(out, buffer);
     else if(buffer.format[0] == 'd') initFromBuffer<Double>(out, buffer);
-    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 /* Signed integral init */
 template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_signed<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
     if(buffer.format[0] == 'i') initFromBuffer<Int>(out, buffer);
     else if(buffer.format[0] == 'l') initFromBuffer<Long>(out, buffer);
-    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 /* Unsigned integral init */
 template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_unsigned<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
     if(buffer.format[0] == 'I') initFromBuffer<UnsignedInt>(out, buffer);
     else if(buffer.format[0] == 'L') initFromBuffer<UnsignedLong>(out, buffer);
-    else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+    else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 /* Things that have to be defined for both VectorN and Color so they construct
@@ -259,7 +259,7 @@ template<class T> void vector(py::module& m, py::class_<T>& c) {
             else if(name.size() == 3) return py::cast(out.xyz());
             else if(name.size() == 2) return py::cast(out.xy());
             /* this should be handled by the x/y/z/w/r/g/b/a properties instead */
-            else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+            else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
         }, "Vector swizzle")
         .def("__setattr__", [](T& self, py::str nameO, py::object valueO) {
             std::string name = py::cast<std::string>(nameO);
