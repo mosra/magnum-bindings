@@ -104,8 +104,8 @@ template<class T> void range2D(py::class_<T>& c) {
     c
         /* Constructors */
         .def(py::init([](const std::pair<std::tuple<typename T::VectorType::Type, typename T::VectorType::Type>, std::tuple<typename T::VectorType::Type, typename T::VectorType::Type>>& value) {
-            return T{{typename T::VectorType{std::get<0>(value.first), std::get<1>(value.first)},
-                      typename T::VectorType{std::get<0>(value.second), std::get<1>(value.second)}}};
+            return T{typename T::VectorType{std::get<0>(value.first), std::get<1>(value.first)},
+                      typename T::VectorType{std::get<0>(value.second), std::get<1>(value.second)}};
         }), "Construct a range from a pair of minimal and maximal coordinates")
 
         /* Properties */
@@ -176,8 +176,8 @@ template<class T> void range3D(py::class_<T>& c) {
     c
         /* Constructors */
         .def(py::init([](const std::pair<std::tuple<typename T::VectorType::Type, typename T::VectorType::Type, typename T::VectorType::Type>, std::tuple<typename T::VectorType::Type, typename T::VectorType::Type, typename T::VectorType::Type>>& value) {
-            return T{{typename T::VectorType{std::get<0>(value.first), std::get<1>(value.first), std::get<2>(value.first)},
-                      typename T::VectorType{std::get<0>(value.second), std::get<1>(value.second), std::get<2>(value.second)}}};
+            return T{typename T::VectorType{std::get<0>(value.first), std::get<1>(value.first), std::get<2>(value.first)},
+                      typename T::VectorType{std::get<0>(value.second), std::get<1>(value.second), std::get<2>(value.second)}};
         }), "Construct a range from a pair of minimal and maximal coordinates")
 
         /* Properties */
