@@ -37,6 +37,15 @@ include(CMakeDependentOption)
 
 # Libraries to build
 option(WITH_PYTHON "Build Python bindings" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
+
+if(BUILD_TESTS)
+    find_package(Corrade REQUIRED TestSuite)
+    if(CORRADE_TARGET_IOS)
+        set(CORRADE_TESTSUITE_BUNDLE_IDENTIFIER_PREFIX "cz.mosra.magnum-bindings")
+    endif()
+    enable_testing()
+endif()
 
 set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR share/cmake/MagnumBindings)
 

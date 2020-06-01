@@ -13,7 +13,7 @@ cmake .. \
     -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_INTERCONNECT=OFF \
     -DWITH_PLUGINMANAGER=ON \
-    -DWITH_TESTSUITE=OFF \
+    -DWITH_TESTSUITE=ON \
     -G Ninja
 ninja install
 cd ../..
@@ -72,8 +72,11 @@ cmake .. \
     -DCMAKE_PREFIX_PATH=$HOME/pybind11 \
     -DPYBIND11_PYTHON_VERSION=3.6 \
     -DWITH_PYTHON=ON \
+    -DBUILD_TESTS=ON \
     -G Ninja
 ninja
+
+CORRADE_TEST_COLOR=ON ctest -V
 
 # Verify the setuptools install
 cd src/python

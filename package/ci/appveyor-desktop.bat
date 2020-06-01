@@ -26,7 +26,7 @@ cmake .. ^
     -DBUILD_STATIC=%BUILD_STATIC% ^
     -DWITH_INTERCONNECT=OFF ^
     -DWITH_PLUGINMANAGER=ON ^
-    -DWITH_TESTSUITE=OFF ^
+    -DWITH_TESTSUITE=ON ^
     -DUTILITY_USE_ANSI_COLORS=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
@@ -88,15 +88,20 @@ cmake .. ^
     -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/SDL ^
     -DPYBIND11_PYTHON_VERSION=3.6 ^
     -DWITH_PYTHON=ON ^
+    -DBUILD_TESTS=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b
+
+rem Test
+set CORRADE_TEST_COLOR=ON
+ctest -V -E GLTest || exit /b
 
 rem Verify the setuptools install
 cd src/python || exit /b
 python setup.py install --root="%APPVEYOR_BUILD_FOLDER%/install" || exit /b
 
-rem Run tests & gather coverage
+rem Run python tests & gather coverage
 cd ../../../src/python/corrade || exit /b
 coverage run -m unittest -v || exit /b
 cp .coverage ../.coverage.corrade || exit /b

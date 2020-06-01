@@ -25,6 +25,7 @@ build() {
         -DCMAKE_BUILD_TYPE=Debug \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DWITH_PYTHON=ON \
+        -DBUILD_TESTS=ON \
         -G Ninja
     ninja
 }

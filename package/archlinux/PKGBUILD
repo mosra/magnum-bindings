@@ -24,11 +24,15 @@ build() {
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DWITH_PYTHON=ON \
+        -DBUILD_TESTS=ON \
         -G Ninja
     ninja
 }
 
 check() {
+    cd "$_rootdir/build"
+    CORRADE_TEST_COLOR=ON ctest --output-on-failure
+
     cd "$_rootdir/src/python/corrade"
     python -m unittest -v
 
