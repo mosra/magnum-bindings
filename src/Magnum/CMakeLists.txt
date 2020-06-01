@@ -23,6 +23,31 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# Generate version header. If Git is found and this is a Git working copy,
+# extract values from there, otherwise use just MAGNUMBINDINGS_VERSION_YEAR /
+# MONTH that are set in project root CMakeLists.
+find_package(Git)
+if(Git_FOUND)
+    # Match only tags starting with `v`, always use the long format so we have
+    # a commit hash also on a tagged version
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --match "v*" --long
+        OUTPUT_VARIABLE MAGNUMBINDINGS_VERSION_STRING
+        RESULT_VARIABLE _MAGNUMBINDINGS_VERSION_RESULT
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(MAGNUMBINDINGS_VERSION_STRING MATCHES "^v([0-9][0-9][0-9][0-9])\\.0?([0-9][0-9])-([0-9]+)-g([a-f0-9]+)$")
+        set(MAGNUMBINDINGS_VERSION_YEAR ${CMAKE_MATCH_1})
+        set(MAGNUMBINDINGS_VERSION_MONTH ${CMAKE_MATCH_2})
+        set(MAGNUMBINDINGS_VERSION_COMMIT ${CMAKE_MATCH_3})
+        set(MAGNUMBINDINGS_VERSION_HASH ${CMAKE_MATCH_4})
+    elseif(_MAGNUMBINDINGS_VERSION_RESULT EQUAL 0)
+        message(WARNING "Can't match Git version from ${MAGNUMBINDINGS_VERSION_STRING}")
+    endif()
+endif()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versionBindings.h.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
+
 if(WITH_PYTHON)
     add_custom_target(MagnumPython SOURCES Python.h)
     set_target_properties(MagnumPython PROPERTIES FOLDER "Magnum/Python")
@@ -37,4 +62,8 @@ endif()
 
 if(Magnum_SceneGraph_FOUND)
     add_subdirectory(SceneGraph)
+endif()
+
+if(BUILD_TESTS)
+    add_subdirectory(Test)
 endif()
