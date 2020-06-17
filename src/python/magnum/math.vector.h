@@ -157,7 +157,7 @@ template<class T, class ...Args> void everyVectorBuffer(py::class_<T, Args...>& 
                 throw py::error_already_set{};
             }
 
-            T out{Math::NoInit};
+            T out{NoInit};
             initFromBuffer<T>(out, buffer);
             return out;
         }), "Construct from a buffer");

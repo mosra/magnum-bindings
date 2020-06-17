@@ -123,7 +123,7 @@ template<class T, class ...Args> void everyRectangularMatrixBuffer(py::class_<T,
                 throw py::error_already_set{};
             }
 
-            T out{Math::NoInit};
+            T out{NoInit};
 
             /* Expecting just an one-letter format */
             if(buffer.format[0] == 'f' && !buffer.format[1])
