@@ -51,8 +51,8 @@ set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR share/cmake/MagnumBindings)
 
 # Library version. MAGNUMBINDINGS_VERSION_YEAR/MONTH is used in
 # src/Magnum/CMakeLists.txt to generate the versionBindings.h header.
-set(MAGNUMBINDINGS_VERSION_YEAR 2019)
-set(MAGNUMBINDINGS_VERSION_MONTH 10)
+set(MAGNUMBINDINGS_VERSION_YEAR 2020)
+set(MAGNUMBINDINGS_VERSION_MONTH 6)
 
 # A single output location. After a decade of saying NO THIS IS A NON-SOLUTION
 # TO A NON-PROBLEM I reconsidered my views and enabled this, because:
