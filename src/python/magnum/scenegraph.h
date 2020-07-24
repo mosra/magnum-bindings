@@ -29,7 +29,7 @@
 #include <Magnum/SceneGraph/Object.h>
 #include <Magnum/SceneGraph/Scene.h>
 
-#include "Magnum/SceneGraph/Python.h"
+#include "Magnum/SceneGraph/PythonBindings.h"
 
 #include "magnum/bootstrap.h"
 

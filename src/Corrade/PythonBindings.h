@@ -1,5 +1,5 @@
-#ifndef Corrade_Python_h
-#define Corrade_Python_h
+#ifndef Corrade_PythonBindings_h
+#define Corrade_PythonBindings_h
 /*
     This file is part of Magnum.
 

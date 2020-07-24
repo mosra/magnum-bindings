@@ -1,5 +1,5 @@
-#ifndef Corrade_Containers_Python_h
-#define Corrade_Containers_Python_h
+#ifndef Magnum_PythonBindings_h
+#define Magnum_PythonBindings_h
 /*
     This file is part of Magnum.
 
@@ -28,29 +28,28 @@
 #include <memory> /* :( */
 #include <pybind11/pybind11.h>
 
-namespace Corrade { namespace Containers {
+namespace Magnum {
 
-/* Stores additional stuff needed for proper refcounting of array views. Better
-   than subclassing ArrayView because then we would need to wrap it every time
-   it's exposed to Python, making 3rd party bindings unnecessarily complex. */
-template<class T> struct PyArrayViewHolder: std::unique_ptr<T> {
-    explicit PyArrayViewHolder(T* object): PyArrayViewHolder{object, pybind11::none{}} {
-        /* Array view without an owner can only be empty */
+/* Stores additional stuff needed for proper refcounting of image views. Better
+   than subclassing ImageView because then we would need to wrap it every time
+   it's exposed to Python, making 3rd party bindings unnecessarily complex */
+template<class T> struct PyImageViewHolder: std::unique_ptr<T> {
+    explicit PyImageViewHolder(T* object): PyImageViewHolder{object, pybind11::none{}} {
+        /* Image view without an owner can only be empty */
         CORRADE_INTERNAL_ASSERT(!object->data());
     }
 
-    explicit PyArrayViewHolder(T* object, pybind11::object owner): std::unique_ptr<T>{object}, owner{std::move(owner)} {}
+    explicit PyImageViewHolder(T* object, pybind11::object owner): std::unique_ptr<T>{object}, owner{std::move(owner)} {}
 
     pybind11::object owner;
 };
 
-template<class T> PyArrayViewHolder<T> pyArrayViewHolder(const T& view, pybind11::object owner) {
-    return PyArrayViewHolder<T>{new T{view}, owner};
+template<class T> PyImageViewHolder<T> pyImageViewHolder(const T& view, pybind11::object owner) {
+    return PyImageViewHolder<T>{new T{view}, owner};
 }
 
-}}
+}
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, Corrade::Containers::PyArrayViewHolder<T>)
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::PyImageViewHolder<T>)
 
 #endif
-

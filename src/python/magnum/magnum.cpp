@@ -33,9 +33,9 @@
 #include <Magnum/PixelStorage.h>
 #include <Magnum/Sampler.h>
 
-#include "Corrade/Python.h"
-#include "Corrade/Containers/Python.h"
-#include "Magnum/Python.h"
+#include "Corrade/PythonBindings.h"
+#include "Corrade/Containers/PythonBindings.h"
+#include "Magnum/PythonBindings.h"
 
 #include "magnum/bootstrap.h"
 

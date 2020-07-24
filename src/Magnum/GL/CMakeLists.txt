@@ -24,7 +24,7 @@
 #
 
 if(WITH_PYTHON)
-    add_custom_target(MagnumGLPython SOURCES Python.h)
+    add_custom_target(MagnumGLPython SOURCES PythonBindings.h)
     set_target_properties(MagnumGLPython PROPERTIES FOLDER "Magnum/Python")
-    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/GL)
+    install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/GL)
 endif()

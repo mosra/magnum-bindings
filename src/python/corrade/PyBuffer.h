@@ -29,7 +29,7 @@
 #include <Corrade/Containers/Pointer.h>
 #include <Corrade/Containers/StridedArrayView.h>
 
-#include "Corrade/Python.h"
+#include "Corrade/PythonBindings.h"
 
 #include "bootstrap.h"
 

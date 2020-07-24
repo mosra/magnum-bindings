@@ -31,8 +31,8 @@
 #include <Magnum/Trade/ImageData.h>
 #include <Magnum/Trade/MeshData.h>
 
-#include "Corrade/Containers/Python.h"
-#include "Magnum/Python.h"
+#include "Corrade/Containers/PythonBindings.h"
+#include "Magnum/PythonBindings.h"
 
 #include "corrade/pluginmanager.h"
 #include "magnum/bootstrap.h"

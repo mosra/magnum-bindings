@@ -24,7 +24,7 @@
 #
 
 if(WITH_PYTHON)
-    add_custom_target(CorradePython SOURCES Python.h)
+    add_custom_target(CorradePython SOURCES PythonBindings.h)
     set_target_properties(CorradePython PROPERTIES FOLDER "Corrade/Python")
-    install(FILES Python.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
+    install(FILES PythonBindings.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 endif()

@@ -27,7 +27,7 @@
 #include <pybind11/stl.h> /* for pluginList() and aliasList() */
 #include <Corrade/PluginManager/AbstractManager.h>
 
-#include "Corrade/Python.h"
+#include "Corrade/PythonBindings.h"
 
 #include "corrade/bootstrap.h"
 #include "corrade/EnumOperators.h"

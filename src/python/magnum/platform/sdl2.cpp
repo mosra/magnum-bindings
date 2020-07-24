@@ -26,7 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <Magnum/Platform/Sdl2Application.h>
 
-#include "Corrade/Python.h"
+#include "Corrade/PythonBindings.h"
 
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"

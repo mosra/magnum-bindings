@@ -35,7 +35,7 @@
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Shaders/VertexColor.h>
 
-#include "Corrade/Python.h"
+#include "Corrade/PythonBindings.h"
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"

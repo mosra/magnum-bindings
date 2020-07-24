@@ -28,7 +28,7 @@
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/ScopeGuard.h>
 
-#include "Corrade/Containers/Python.h"
+#include "Corrade/Containers/PythonBindings.h"
 
 #include "corrade/bootstrap.h"
 #include "corrade/PyBuffer.h"

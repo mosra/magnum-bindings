@@ -1,5 +1,5 @@
-#ifndef Magnum_Python_h
-#define Magnum_Python_h
+#ifndef Magnum_GL_PythonBindings_h
+#define Magnum_GL_PythonBindings_h
 /*
     This file is part of Magnum.
 
@@ -26,30 +26,36 @@
 */
 
 #include <memory> /* :( */
+#include <vector>
 #include <pybind11/pybind11.h>
+#include <Magnum/GL/GL.h>
 
-namespace Magnum {
+#include "Magnum/PythonBindings.h"
 
-/* Stores additional stuff needed for proper refcounting of image views. Better
-   than subclassing ImageView because then we would need to wrap it every time
-   it's exposed to Python, making 3rd party bindings unnecessarily complex */
-template<class T> struct PyImageViewHolder: std::unique_ptr<T> {
-    explicit PyImageViewHolder(T* object): PyImageViewHolder{object, pybind11::none{}} {
-        /* Image view without an owner can only be empty */
-        CORRADE_INTERNAL_ASSERT(!object->data());
-    }
+namespace Magnum { namespace GL {
 
-    explicit PyImageViewHolder(T* object, pybind11::object owner): std::unique_ptr<T>{object}, owner{std::move(owner)} {}
+/* Stores additional stuff needed for proper refcounting of buffers owned by
+   a mesh. For some reason it *has to be* templated, otherwise
+   PYBIND11_DECLARE_HOLDER_TYPE doesn't work. Ugh. */
+template<class T> struct PyMeshHolder: std::unique_ptr<T> {
+    static_assert(std::is_same<T, GL::Mesh>::value, "mesh holder has to hold a mesh");
 
-    pybind11::object owner;
+    explicit PyMeshHolder(T* object): std::unique_ptr<T>{object} {}
+
+    std::vector<pybind11::object> buffers;
 };
 
-template<class T> PyImageViewHolder<T> pyImageViewHolder(const T& view, pybind11::object owner) {
-    return PyImageViewHolder<T>{new T{view}, owner};
-}
+template<class T> struct PyFramebufferHolder: std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>> {
+    static_assert(std::is_same<T, GL::Framebuffer>::value, "framebuffer holder has to hold a framebuffer");
 
-}
+    explicit PyFramebufferHolder(T* object): std::unique_ptr<T, PyNonDestructibleBaseDeleter<T, std::is_destructible<T>::value>>{object} {}
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::PyImageViewHolder<T>)
+    std::vector<pybind11::object> attachments;
+};
+
+}}
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::GL::PyMeshHolder<T>)
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::GL::PyFramebufferHolder<T>)
 
 #endif

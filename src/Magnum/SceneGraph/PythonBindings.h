@@ -1,5 +1,5 @@
-#ifndef Magnum_SceneGraph_Python_h
-#define Magnum_SceneGraph_Python_h
+#ifndef Magnum_SceneGraph_PythonBindings_h
+#define Magnum_SceneGraph_PythonBindings_h
 /*
     This file is part of Magnum.
 

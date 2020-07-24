@@ -43,9 +43,9 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Color.h>
 
-#include "Corrade/Python.h"
-#include "Magnum/Python.h"
-#include "Magnum/GL/Python.h"
+#include "Corrade/PythonBindings.h"
+#include "Magnum/PythonBindings.h"
+#include "Magnum/GL/PythonBindings.h"
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"

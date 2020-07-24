@@ -29,7 +29,7 @@
 #include <pybind11/pybind11.h>
 #include <Corrade/PluginManager/Manager.h>
 
-#include "Corrade/Python.h"
+#include "Corrade/PythonBindings.h"
 
 #include "corrade/bootstrap.h"
 

@@ -51,9 +51,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versionBindings.h.cmake
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 
 if(WITH_PYTHON)
-    add_custom_target(MagnumPython SOURCES Python.h)
+    add_custom_target(MagnumPython SOURCES PythonBindings.h)
     set_target_properties(MagnumPython PROPERTIES FOLDER "Magnum/Python")
-    install(FILES Python.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
+    install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 endif()
 
 find_package(Magnum COMPONENTS GL SceneGraph)
