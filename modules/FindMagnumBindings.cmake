@@ -91,7 +91,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
 
         # Python bindings
         if(_component STREQUAL Python)
-            set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES Magnum/SceneGraph/Python.h)
+            set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES Magnum/SceneGraph/PythonBindings.h)
         endif()
 
         if(_component MATCHES ${_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS})
