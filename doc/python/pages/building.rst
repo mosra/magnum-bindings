@@ -70,7 +70,7 @@ Once built, install the package using ``pacman``:
 
 .. code:: sh
 
-    sudo pacman -U magnum-bindings-*.pkg.tar.xz
+    sudo pacman -U magnum-bindings-*.pkg.tar.zst
 
 `Homebrew formulas for macOS`_
 ------------------------------
