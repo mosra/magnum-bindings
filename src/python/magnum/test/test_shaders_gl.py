@@ -89,8 +89,8 @@ class Phong(GLTestCase):
         a.diffuse_color = (0.5, 1.0, 0.9)
         a.transformation_matrix = Matrix4.translation(Vector3.x_axis())
         a.projection_matrix = Matrix4.zero_init()
-        a.light_positions = [(0.5, 1.0, 0.3), Vector3()]
-        a.light_colors = [Color4(), Color4()]
+        a.light_positions = [(0.5, 1.0, 0.3, 1.0), Vector4()]
+        a.light_colors = [Color3(), Color3()]
         a.alpha_mask = 0.3
 
         texture = gl.Texture2D()

@@ -211,7 +211,7 @@ void shaders(py::module& m) {
                 &Shaders::Phong::setNormalMatrix, "Set normal matrix")
             .def_property("projection_matrix", nullptr,
                 &Shaders::Phong::setProjectionMatrix, "Set projection matrix")
-            .def_property("light_positions", nullptr, [](Shaders::Phong& self, const std::vector<Vector3>& positions) {
+            .def_property("light_positions", nullptr, [](Shaders::Phong& self, const std::vector<Vector4>& positions) {
                 if(positions.size() != self.lightCount()) {
                     PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(positions.size()));
                     throw py::error_already_set{};
@@ -219,7 +219,7 @@ void shaders(py::module& m) {
 
                 self.setLightPositions(positions);
             }, "Light positions")
-            .def_property("light_colors", nullptr, [](Shaders::Phong& self, const std::vector<Color4>& colors) {
+            .def_property("light_colors", nullptr, [](Shaders::Phong& self, const std::vector<Color3>& colors) {
                 if(colors.size() != self.lightCount()) {
                     PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(colors.size()));
                     throw py::error_already_set{};
