@@ -5,12 +5,12 @@ environment:
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    APPVEYOR_JOB_NAME: windows-gl-msvc2017
+    APPVEYOR_JOB_NAME: windows-msvc2017
     PYTHON: 36
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    APPVEYOR_JOB_NAME: windows-gl-msvc2019
+    APPVEYOR_JOB_NAME: windows-msvc2019
     PYTHON: 36
   - TARGET: desktop
     COMPILER: msvc
