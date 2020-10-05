@@ -884,10 +884,67 @@ void gl(py::module& m) {
             .value("SCISSOR_TEST", GL::Renderer::Feature::ScissorTest)
             .value("STENCIL_TEST", GL::Renderer::Feature::StencilTest);
 
+        py::enum_<GL::Renderer::BlendEquation>{renderer, "BlendEquation", "Blend Equation"}
+            .value("ADD", GL::Renderer::BlendEquation::Add)
+            .value("SUBTRACT", GL::Renderer::BlendEquation::Subtract)
+            .value("REVERSE_SUBTRACT", GL::Renderer::BlendEquation::ReverseSubtract)
+            .value("MIN", GL::Renderer::BlendEquation::Min)
+            .value("MAX", GL::Renderer::BlendEquation::Max)
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("MULTIPLY", GL::Renderer::BlendEquation::Multiply)
+            .value("SCREEN", GL::Renderer::BlendEquation::Screen)
+            .value("OVERLAY", GL::Renderer::BlendEquation::Overlay)
+            .value("DARKEN", GL::Renderer::BlendEquation::Darken)
+            .value("LIGHTEN", GL::Renderer::BlendEquation::Lighten)
+            .value("COLOR_DODGE", GL::Renderer::BlendEquation::ColorDodge)
+            .value("COLOR_BURN", GL::Renderer::BlendEquation::ColorBurn)
+            .value("HARD_LIGHT", GL::Renderer::BlendEquation::HardLight)
+            .value("SOFT_LIGHT", GL::Renderer::BlendEquation::SoftLight)
+            .value("DIFFERENCE", GL::Renderer::BlendEquation::Difference)
+            .value("EXCLUSION", GL::Renderer::BlendEquation::Exclusion)
+            .value("HSL_HUE", GL::Renderer::BlendEquation::HslHue)
+            .value("HSL_SATURATION", GL::Renderer::BlendEquation::HslSaturation)
+            .value("HSL_COLOR", GL::Renderer::BlendEquation::HslColor)
+            .value("HSL_LUMINOSITY", GL::Renderer::BlendEquation::HslLuminosity)
+            #endif
+            ;
+            
+        py::enum_<GL::Renderer::BlendFunction>{renderer, "BlendFunction", "Blend Function"}
+            .value("ZERO", GL::Renderer::BlendFunction::Zero)
+            .value("ONE", GL::Renderer::BlendFunction::One)
+            .value("CONSTANT_COLOR", GL::Renderer::BlendFunction::ConstantColor)
+            .value("ONE_MINUS_CONSTANT_COLOR", GL::Renderer::BlendFunction::OneMinusConstantColor)
+            .value("CONSTANT_ALPHA", GL::Renderer::BlendFunction::ConstantAlpha)
+            .value("ONE_MINUS_CONSTANT_ALPHA", GL::Renderer::BlendFunction::OneMinusConstantAlpha)
+            .value("SOURCE_COLOR", GL::Renderer::BlendFunction::SourceColor)
+            #ifndef MAGNUM_TARGET_GLES
+            .value("SECOND_SOURCE_COLOR", GL::Renderer::BlendFunction::SecondSourceColor)
+            #endif
+            .value("ONE_MINUS_SOURCE_COLOR", GL::Renderer::BlendFunction::OneMinusSourceColor)
+            #ifndef MAGNUM_TARGET_GLES
+            .value("ONE_MINUS_SECOND_SOURCE_COLOR", GL::Renderer::BlendFunction::OneMinusSecondSourceColor)
+            #endif
+            .value("SOURCE_ALPHA", GL::Renderer::BlendFunction::SourceAlpha)
+            .value("SOURCE_ALPHA_SATURATE", GL::Renderer::BlendFunction::SourceAlphaSaturate)
+            #ifndef MAGNUM_TARGET_GLES
+            .value("SECOND_SOURCE_ALPHA", GL::Renderer::BlendFunction::SecondSourceAlpha)
+            #endif
+            .value("ONE_MINUS_SOURCE_ALPHA", GL::Renderer::BlendFunction::OneMinusSourceAlpha)
+            #ifndef MAGNUM_TARGET_GLES
+            .value("ONE_MINUS_SECOND_SOURCE_ALPHA", GL::Renderer::BlendFunction::OneMinusSecondSourceAlpha)
+            #endif
+            .value("DESTINATION_COLOR", GL::Renderer::BlendFunction::DestinationColor)
+            .value("ONE_MINUS_DESTINATION_COLOR", GL::Renderer::BlendFunction::OneMinusDestinationColor)
+            .value("DESTINATION_ALPHA", GL::Renderer::BlendFunction::DestinationAlpha)
+            .value("ONE_MINUS_DESTINATION_ALPHA", GL::Renderer::BlendFunction::OneMinusDestinationAlpha)
+            ;           
+
         renderer
             .def_static("enable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::enable), "Enable a feature")
             .def_static("disable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::disable), "Disable a feature")
             .def_static("set_feature", static_cast<void(*)(GL::Renderer::Feature, bool)>(GL::Renderer::setFeature), "Enable or disable a feature")
+            .def_static("set_blend_equation", static_cast<void(*)(GL::Renderer::BlendEquation, GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation")
+            .def_static("set_blend_function", static_cast<void(*)(GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function")
             /** @todo indexed variants */
 
             /** @todo FFS why do I have to pass the class as first argument?! */
