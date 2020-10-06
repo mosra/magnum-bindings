@@ -847,6 +847,16 @@ void gl(py::module& m) {
             .value("BLEND_ADVANCED_COHERENT", GL::Renderer::Feature::BlendAdvancedCoherent)
             #endif
             .value("BLENDING", GL::Renderer::Feature::Blending)
+            #if !(defined(MAGNUM_TARGET_GLES2) && defined(MAGNUM_TARGET_WEBGL))
+            .value("CLIP_DISTANCE0", GL::Renderer::Feature::ClipDistance0)
+            .value("CLIP_DISTANCE1", GL::Renderer::Feature::ClipDistance1)
+            .value("CLIP_DISTANCE2", GL::Renderer::Feature::ClipDistance2)
+            .value("CLIP_DISTANCE3", GL::Renderer::Feature::ClipDistance3)
+            .value("CLIP_DISTANCE4", GL::Renderer::Feature::ClipDistance4)
+            .value("CLIP_DISTANCE5", GL::Renderer::Feature::ClipDistance5)
+            .value("CLIP_DISTANCE6", GL::Renderer::Feature::ClipDistance6)
+            .value("CLIP_DISTANCE7", GL::Renderer::Feature::ClipDistance7)
+            #endif
             #ifndef MAGNUM_TARGET_WEBGL
             .value("DEBUG_OUTPUT", GL::Renderer::Feature::DebugOutput)
             .value("DEBUG_OUTPUT_SYNCHRONOUS", GL::Renderer::Feature::DebugOutputSynchronous)
