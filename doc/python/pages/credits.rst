@@ -26,6 +26,9 @@
 Credits
 #######
 
+:ref-prefix:
+    corrade
+    magnum
 :summary: Third-party dependencies and their corresponding license information;
     people and organizations that contributed to Magnum Python Bindings.
 
@@ -67,3 +70,5 @@ involved!
     `Let us know! <https://magnum.graphics/contact/>`_
 
 -   **Cameron Egbert** (:gh:`cegbertOculus`) --- initial Windows port
+-   **Vladimir Gamalyan** (:gh:`vladimirgamalyan`) --- expanding
+    :ref:`gl.Renderer` bindings

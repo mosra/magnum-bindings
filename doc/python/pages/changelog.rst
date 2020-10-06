@@ -32,6 +32,15 @@ Changelog
 :some_directive: TODO: why can't the title below "just work" and I have to
     add some bogus content before?
 
+`Changes since 2020.06`_
+========================
+
+-   Exposed :ref:`gl.Renderer.set_blend_function()`,
+    :ref:`gl.Renderer.set_blend_equation()` and related enums (:gh:`mosra/magnum-bindings#9`)
+-   Renamed all helper ``Python.h`` headers to ``PythonBindings.h`` to avoid
+    issues with shitty IDE indexers such as Eclipse, confusing these with
+    Python's ``<Python.h>``
+
 `2020.06`_
 ==========
 
