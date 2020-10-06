@@ -946,9 +946,9 @@ void gl(py::module& m) {
             .value("ONE_MINUS_DESTINATION_ALPHA", GL::Renderer::BlendFunction::OneMinusDestinationAlpha);
 
         renderer
-            .def_static("enable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::enable), "Enable a feature")
-            .def_static("disable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::disable), "Disable a feature")
-            .def_static("set_feature", static_cast<void(*)(GL::Renderer::Feature, bool)>(GL::Renderer::setFeature), "Enable or disable a feature")
+            .def_static("enable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::enable), "Enable a feature", py::arg("feature"))
+            .def_static("disable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::disable), "Disable a feature", py::arg("feature"))
+            .def_static("set_feature", static_cast<void(*)(GL::Renderer::Feature, bool)>(GL::Renderer::setFeature), "Enable or disable a feature", py::arg("feature"), py::arg("enabled"))
             /** @todo indexed variants of enable/disable/set_feature (needs
                 deprecation of the original ones and making draw_buffer first
                 so it's consistent with the rest) */
