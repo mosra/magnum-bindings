@@ -285,6 +285,10 @@ class Renderer(GLTestCase):
     def test_error(self):
         self.assertEqual(gl.Renderer.error, gl.Renderer.Error.NO_ERROR)
 
+    def test_blend(self):
+        gl.Renderer.set_blend_equation(gl.Renderer.BlendEquation.ADD)
+        gl.Renderer.set_blend_function(gl.Renderer.BlendFunction.SOURCE_ALPHA, gl.Renderer.BlendFunction.ONE_MINUS_SOURCE_ALPHA)
+
 class Shader(GLTestCase):
     def test(self):
         if magnum.TARGET_GLES2:

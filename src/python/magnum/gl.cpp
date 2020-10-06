@@ -939,9 +939,25 @@ void gl(py::module& m) {
             .def_static("enable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::enable), "Enable a feature")
             .def_static("disable", static_cast<void(*)(GL::Renderer::Feature)>(GL::Renderer::disable), "Disable a feature")
             .def_static("set_feature", static_cast<void(*)(GL::Renderer::Feature, bool)>(GL::Renderer::setFeature), "Enable or disable a feature")
-            .def_static("set_blend_equation", static_cast<void(*)(GL::Renderer::BlendEquation, GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation")
-            .def_static("set_blend_function", static_cast<void(*)(GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function")
-            /** @todo indexed variants */
+            /** @todo indexed variants of enable/disable/set_feature (needs
+                deprecation of the original ones and making draw_buffer first
+                so it's consistent with the rest) */
+            .def_static("set_blend_equation", static_cast<void(*)(GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation", py::arg("equation"))
+            #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+            .def_static("set_blend_equation", static_cast<void(*)(UnsignedInt, GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation for given draw buffer", py::arg("draw_buffer"), py::arg("equation"))
+            #endif
+            .def_static("set_blend_equation", static_cast<void(*)(GL::Renderer::BlendEquation, GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation separately for RGB and alpha components", py::arg("rgb"), py::arg("alpha"))
+            #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+            .def_static("set_blend_equation", static_cast<void(*)(UnsignedInt, GL::Renderer::BlendEquation, GL::Renderer::BlendEquation)>(GL::Renderer::setBlendEquation), "Set blend equation for given draw buffer separately for RGB and alpha components", py::arg("draw_buffer"), py::arg("rgb"), py::arg("alpha"))
+            #endif
+            .def_static("set_blend_function", static_cast<void(*)(GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function", py::arg("source"), py::arg("destination"))
+            #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+            .def_static("set_blend_function", static_cast<void(*)(UnsignedInt, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function for given draw buffer", py::arg("draw_buffer"), py::arg("source"), py::arg("destination"))
+            #endif
+            .def_static("set_blend_function", static_cast<void(*)(GL::Renderer::BlendFunction, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function separately for RGB and alpha components", py::arg("source_rgb"), py::arg("destination_rgb"), py::arg("source_alpha"), py::arg("destination_alpha"))
+            #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+            .def_static("set_blend_function", static_cast<void(*)(UnsignedInt, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction, GL::Renderer::BlendFunction)>(GL::Renderer::setBlendFunction), "Set blend function separately for RGB and alpha components", py::arg("draw_buffer"), py::arg("source_rgb"), py::arg("destination_rgb"), py::arg("source_alpha"), py::arg("destination_alpha"))
+            #endif
 
             /** @todo FFS why do I have to pass the class as first argument?! */
             .def_property_static("clear_color", nullptr, [](py::object, const Color4& color) {
