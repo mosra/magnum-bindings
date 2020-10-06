@@ -85,13 +85,17 @@ class Phong(GLTestCase):
         self.assertEqual(c.light_count, 3)
 
     def test_uniforms_bindings(self):
-        a = shaders.Phong(shaders.Phong.Flags.ALPHA_MASK|shaders.Phong.Flags.AMBIENT_TEXTURE|shaders.Phong.Flags.DIFFUSE_TEXTURE|shaders.Phong.Flags.SPECULAR_TEXTURE|shaders.Phong.Flags.NORMAL_TEXTURE, 2)
+        a = shaders.Phong(shaders.Phong.Flags.ALPHA_MASK|shaders.Phong.Flags.AMBIENT_TEXTURE|shaders.Phong.Flags.DIFFUSE_TEXTURE|shaders.Phong.Flags.SPECULAR_TEXTURE|shaders.Phong.Flags.NORMAL_TEXTURE|shaders.Phong.Flags.TEXTURE_TRANSFORMATION, 2)
         a.diffuse_color = (0.5, 1.0, 0.9)
         a.transformation_matrix = Matrix4.translation(Vector3.x_axis())
         a.projection_matrix = Matrix4.zero_init()
         a.light_positions = [(0.5, 1.0, 0.3, 1.0), Vector4()]
         a.light_colors = [Color3(), Color3()]
+        a.light_specular_colors = [Color3(), Color3()]
+        a.light_ranges = [0.5, 100]
+        a.normal_texture_scale = 0.3
         a.alpha_mask = 0.3
+        a.texture_matrix = Matrix3()
 
         texture = gl.Texture2D()
         texture.set_storage(1, gl.TextureFormat.RGBA8, Vector2i(8))
@@ -103,12 +107,20 @@ class Phong(GLTestCase):
 
     def test_uniforms_bindings_errors(self):
         a = shaders.Phong()
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with normal texture enabled"):
+            a.normal_texture_scale = 0.3
         with self.assertRaisesRegex(AttributeError, "the shader was not created with alpha mask enabled"):
             a.alpha_mask = 0.3
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with texture transformation enabled"):
+            a.texture_matrix = Matrix3()
         with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
             a.light_positions = []
         with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
             a.light_colors = []
+        with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
+            a.light_specular_colors = []
+        with self.assertRaisesRegex(ValueError, "expected 1 items but got 0"):
+            a.light_ranges = []
 
         texture = gl.Texture2D()
         with self.assertRaisesRegex(AttributeError, "the shader was not created with ambient texture enabled"):

@@ -162,9 +162,16 @@ void shaders(py::module& m) {
         phong.attr("POSITION") = GL::DynamicAttribute{Shaders::Phong::Position{}};
         phong.attr("NORMAL") = GL::DynamicAttribute{Shaders::Phong::Normal{}};
         phong.attr("TANGENT") = GL::DynamicAttribute{Shaders::Phong::Tangent{}};
+        phong.attr("TANGENT4") = GL::DynamicAttribute{Shaders::Phong::Tangent4{}};
+        phong.attr("BITANGENT") = GL::DynamicAttribute{Shaders::Phong::Bitangent{}};
         phong.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{Shaders::Phong::TextureCoordinates{}};
         phong.attr("COLOR3") = GL::DynamicAttribute{Shaders::Phong::Color3{}};
         phong.attr("COLOR4") = GL::DynamicAttribute{Shaders::Phong::Color4{}};
+        /* TODO: OBJECT_ID attribute, once multiple FB outputs and mapDraw is
+           exposed */
+        phong.attr("TRANSFORMATION_MATRIX") = GL::DynamicAttribute{Shaders::Phong::TransformationMatrix{}};
+        phong.attr("NORMAL_MATRIX") = GL::DynamicAttribute{Shaders::Phong::NormalMatrix{}};
+        phong.attr("TEXTURE_OFFSET") = GL::DynamicAttribute{Shaders::Phong::TextureOffset{}};
 
         py::enum_<Shaders::Phong::Flag> flags{phong, "Flags", "Flags"};
 
@@ -175,8 +182,12 @@ void shaders(py::module& m) {
             .value("NORMAL_TEXTURE", Shaders::Phong::Flag::NormalTexture)
             .value("ALPHA_MASK", Shaders::Phong::Flag::AlphaMask)
             .value("VERTEX_COLOR", Shaders::Phong::Flag::VertexColor)
-            .value("NONE", Shaders::Phong::Flag{})
+            .value("BITANGENT", Shaders::Phong::Flag::Bitangent)
+            .value("TEXTURE_TRANSFORMATION", Shaders::Phong::Flag::TextureTransformation)
             /* TODO: OBJECT_ID, once multiple FB outputs and mapDraw is exposed */
+            .value("INSTANCED_TRANSFORMATION", Shaders::Phong::Flag::InstancedTransformation)
+            .value("INSTANCED_TEXTURE_OFFSET", Shaders::Phong::Flag::InstancedTextureOffset)
+            .value("NONE", Shaders::Phong::Flag{})
             ;
         corrade::enumOperators(flags);
 
@@ -197,6 +208,14 @@ void shaders(py::module& m) {
                 &Shaders::Phong::setSpecularColor, "Specular color")
             .def_property("shininess", nullptr,
                 &Shaders::Phong::setShininess, "Shininess")
+            .def_property("normal_texture_scale", nullptr, [](Shaders::Phong& self, Float scale) {
+                if(!(self.flags() & Shaders::Phong::Flag::NormalTexture)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with normal texture enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.setNormalTextureScale(scale);
+            }, "Normal texture scale")
             .def_property("alpha_mask", nullptr, [](Shaders::Phong& self, Float mask) {
                 if(!(self.flags() & Shaders::Phong::Flag::AlphaMask)) {
                     PyErr_SetString(PyExc_AttributeError, "the shader was not created with alpha mask enabled");
@@ -206,11 +225,19 @@ void shaders(py::module& m) {
                 self.setAlphaMask(mask);
             }, "Alpha mask")
             .def_property("transformation_matrix", nullptr,
-                &Shaders::Phong::setTransformationMatrix, "Set transformation matrix")
+                &Shaders::Phong::setTransformationMatrix, "Transformation matrix")
             .def_property("normal_matrix", nullptr,
-                &Shaders::Phong::setNormalMatrix, "Set normal matrix")
+                &Shaders::Phong::setNormalMatrix, "Normal matrix")
             .def_property("projection_matrix", nullptr,
-                &Shaders::Phong::setProjectionMatrix, "Set projection matrix")
+                &Shaders::Phong::setProjectionMatrix, "Projection matrix")
+            .def_property("texture_matrix", nullptr, [](Shaders::Phong& self, const Matrix3& matrix) {
+                if(!(self.flags() & Shaders::Phong::Flag::TextureTransformation)) {
+                    PyErr_SetString(PyExc_AttributeError, "the shader was not created with texture transformation enabled");
+                    throw py::error_already_set{};
+                }
+
+                self.setTextureMatrix(matrix);
+            }, "Texture matrix")
             .def_property("light_positions", nullptr, [](Shaders::Phong& self, const std::vector<Vector4>& positions) {
                 if(positions.size() != self.lightCount()) {
                     PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(positions.size()));
@@ -227,6 +254,22 @@ void shaders(py::module& m) {
 
                 self.setLightColors(colors);
             }, "Light colors")
+            .def_property("light_specular_colors", nullptr, [](Shaders::Phong& self, const std::vector<Color3>& colors) {
+                if(colors.size() != self.lightCount()) {
+                    PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(colors.size()));
+                    throw py::error_already_set{};
+                }
+
+                self.setLightSpecularColors(colors);
+            }, "Light specular colors")
+            .def_property("light_ranges", nullptr, [](Shaders::Phong& self, const std::vector<Float>& ranges) {
+                if(ranges.size() != self.lightCount()) {
+                    PyErr_Format(PyExc_ValueError, "expected %u items but got %u", self.lightCount(), UnsignedInt(ranges.size()));
+                    throw py::error_already_set{};
+                }
+
+                self.setLightRanges(ranges);
+            }, "Light ranges")
 
             .def("bind_ambient_texture", [](Shaders::Phong& self, GL::Texture2D& texture) {
                 if(!(self.flags() & Shaders::Phong::Flag::AmbientTexture)) {

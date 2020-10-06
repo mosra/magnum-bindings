@@ -63,16 +63,29 @@
     :data POSITION: Vertex position
     :data NORMAL: Normal direction
     :data TANGENT: Tangent direction
+    :data TANGENT4: Tangent direction with a bitangent sign
+    :data BITANGENT: Bitangent direction
     :data TEXTURE_COORDINATES: 2D texture coordinates
     :data COLOR3: Three-component vertex color
     :data COLOR4: Four-component vertex color
+    :data TRANSFORMATION_MATRIX: (Instanced) transformation matrix
+    :data NORMAL_MATRIX: (Instanced) normal matrix
+    :data TEXTURE_OFFSET: (Instanced) texture offset
 
+.. py:property:: magnum.shaders.Phong.normal_texture_scale
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.NORMAL_TEXTURE`
 .. py:property:: magnum.shaders.Phong.alpha_mask
     :raise AttributeError: If the shader was not created with
         :ref:`Flags.ALPHA_MASK`
+.. py:property:: magnum.shaders.Phong.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
 .. py:property:: magnum.shaders.Phong.light_positions
     :raise ValueError: If list length is different from :ref:`light_count`
 .. py:property:: magnum.shaders.Phong.light_colors
+    :raise ValueError: If list length is different from :ref:`light_count`
+.. py:property:: magnum.shaders.Phong.light_ranges
     :raise ValueError: If list length is different from :ref:`light_count`
 
 .. py:function:: magnum.shaders.Phong.bind_ambient_texture
