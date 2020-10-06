@@ -28,9 +28,9 @@
 
 .. py:function:: corrade.pluginmanager.AbstractManager.load
     :raise RuntimeError: When loading fails
-    :return: `LoadState.LOADED`, possibly combined with other flags such as
-        `LoadState.STATIC`
+    :return: :ref:`LoadState.LOADED`, possibly combined with other flags such
+        as :ref:`LoadState.STATIC`
 
 .. py:function:: corrade.pluginmanager.AbstractManager.unload
     :raise RuntimeError: When unloading fails
-    :return: Either `LoadState.NOT_LOADED` or `LoadState.STATIC`
+    :return: Either :ref:`LoadState.NOT_LOADED` or :ref:`LoadState.STATIC`

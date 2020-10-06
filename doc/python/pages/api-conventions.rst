@@ -52,12 +52,12 @@ useful in a Python setting.
 
 .. class:: m-table
 
-=================================== ============================
+=================================== ==================================
 C++                                 Python
-=================================== ============================
-:dox:`CORRADE_BUILD_MULTITHREADED`  `corrade.BUILD_MULTITHREADED`
-:dox:`MAGNUM_TARGET_GLES`           `magnum.TARGET_GLES`
-=================================== ============================
+=================================== ==================================
+:dox:`CORRADE_BUILD_MULTITHREADED`  :ref:`corrade.BUILD_MULTITHREADED`
+:dox:`MAGNUM_TARGET_GLES`           :ref:`magnum.TARGET_GLES`
+=================================== ==================================
 
 `Namespaces / modules`_
 -----------------------
@@ -67,8 +67,8 @@ C++                                 Python
 =================================== ============================
 C++                                 Python
 =================================== ============================
-:dox:`Magnum::Math`                 `magnum.math`
-:dox:`Magnum::SceneGraph`           `magnum.scenegraph`
+:dox:`Magnum::Math`                 :ref:`magnum.math`
+:dox:`Magnum::SceneGraph`           :ref:`magnum.scenegraph`
 =================================== ============================
 
 `Classes`_
@@ -79,8 +79,8 @@ C++                                 Python
 =================================== ============================
 C++                                 Python
 =================================== ============================
-:dox:`Vector2i`                     `Vector2i`
-:dox:`GL::Buffer`                   `gl.Buffer`
+:dox:`Vector2i`                     :ref:`Vector2i`
+:dox:`GL::Buffer`                   :ref:`gl.Buffer`
 =================================== ============================
 
 `Functions`_
@@ -91,10 +91,10 @@ C++                                 Python
 =============================================================== ===========
 C++                                                             Python
 =============================================================== ===========
-:dox:`Math::angle()`                                            `math.angle()`
-:dox:`Vector2::xAxis() <Math::Vector2::xAxis()>`                `Vector2.x_axis()`
-:dox:`v.isZero() <Math::Vector::isZero()>`                      `v.is_zero() <Vector3.is_zero()>`
-:dox:`m.transformVector(a) <Math::Matrix4::transformVector()>`  `m.transform_vector(a) <Matrix4.transform_vector()>`
+:dox:`Math::angle()`                                            :ref:`math.angle()`
+:dox:`Vector2::xAxis() <Math::Vector2::xAxis()>`                :ref:`Vector2.x_axis()`
+:dox:`v.isZero() <Math::Vector::isZero()>`                      :ref:`v.is_zero() <Vector3.is_zero()>`
+:dox:`m.transformVector(a) <Math::Matrix4::transformVector()>`  :ref:`m.transform_vector(a) <Matrix4.transform_vector()>`
 =============================================================== ===========
 
 `Enums`_
@@ -105,24 +105,24 @@ C++                                                             Python
 ============================================== ============================
 C++                                            Python
 ============================================== ============================
-:dox:`PixelFormat::RGB8Unorm`                  `PixelFormat.RGB8_UNORM`
-:dox:`MeshPrimitive::TriangleStrip`            `MeshPrimitive.TRIANGLE_STRIP`
+:dox:`PixelFormat::RGB8Unorm`                  :ref:`PixelFormat.RGB8_UNORM`
+:dox:`MeshPrimitive::TriangleStrip`            :ref:`MeshPrimitive.TRIANGLE_STRIP`
 ============================================== ============================
 
 `Constants`_
 ------------
 
 Apart from :dox:`Math::Constants`, which are exposed directly as members of the
-`magnum.math` submodule to mimic Python's `math`, most of the constants used
-throughout the C++ API are related to templates. Those are, where applicable,
-converted to Python builtins such as :py:`len()`.
+:ref:`magnum.math` submodule to mimic Python's :ref:`math`, most of the
+constants used throughout the C++ API are related to templates. Those are,
+where applicable, converted to Python builtins such as :py:`len()`.
 
 .. class:: m-table
 
 ============================================== ============================
 C++                                            Python
 ============================================== ============================
-:dox:`Constants::pi() <Math::Constants::pi()>` `math.pi <magnum.math.pi>`
+:dox:`Constants::pi() <Math::Constants::pi()>` :ref:`math.pi <magnum.math.pi>`
 :dox:`Math::Vector::Size`                      :py:`len(vec)`
 ============================================== ============================
 
@@ -189,14 +189,14 @@ In particular, both the C++ and the Python API is designed in a way to prevent
 too generic or confusing names in the root namespace / module and also keeping
 it relatively clean and small, without too many symbols. On the other hand, the
 subnamespaces *do* have generic names. The :dox:`GL::version()` /
-`gl.version()` API is one example --- it's tucked in a subnamespace so the
+:ref:`gl.version()` API is one example --- it's tucked in a subnamespace so the
 generic name isn't a problem, but you wouldn't find anything of similar
 genericity in the root namespace / module.
 
 An exception to this rule is exposed preprocessor definitions --- these are
 *not* pulled in when doing :py:`from magnum import *` as this would likely
-cause conflicts (in particular, `BUILD_STATIC` is defined by Corrade as well).
-Instead, you have to access them like this:
+cause conflicts (in particular, :ref:`BUILD_STATIC` is defined by Corrade as
+well). Instead, you have to access them like this:
 
 .. code:: py
 
@@ -224,9 +224,10 @@ C++ APIs that have alternative implementations (such as
     typedef SceneGraph::Object<SceneGraph::MatrixTransformation3D> Object3D;
 
 In Python, the alternate implementations are tucked in submodules (such as
-`platform.sdl2` vs. `platform.glfw`, or `scenegraph.matrix` vs.
-`scenegraph.trs`), each submodule providing the same names (such as
-`Application <platform.sdl2.Application>` or `Object3D <scenegraph.matrix.Object3D>`)
+:ref:`platform.sdl2` vs. :ref:`platform.glfw`, or :ref:`scenegraph.matrix` vs.
+:ref:`scenegraph.trs`), each submodule providing the same names (such as
+:ref:`Application <platform.sdl2.Application>` or
+:ref:`Object3D <scenegraph.matrix.Object3D>`)
 and the designed way to use them is via :py:`from ... import`:
 
 .. code:: py

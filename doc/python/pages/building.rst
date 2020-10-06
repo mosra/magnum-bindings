@@ -157,9 +157,9 @@ running them is then a matter of:
 .. block-default:: Disabling GL tests
 
     If the tests detect that one of
-    `platform.WindowlessApplication <platform.egl.WindowlessApplication>`\ s is
-    present, GL tests (suffixed with ``_gl``) will be run as well. In order to
-    disable them (for example when running on a headless CI), set the
+    :ref:`platform.WindowlessApplication <platform.egl.WindowlessApplication>`\ s
+    is present, GL tests (suffixed with ``_gl``) will be run as well. In order
+    to disable them (for example when running on a headless CI), set the
     :sh:`$MAGNUM_SKIP_GL_TESTS` environment variable to ``ON``:
 
     .. code:: sh

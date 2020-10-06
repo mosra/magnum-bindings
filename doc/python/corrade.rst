@@ -35,8 +35,6 @@
 .. doctest setup
     >>> from corrade import *
 
-.. default-role:: ref
-
 .. py:module:: corrade
     :data BUILD_STATIC: Static library build
     :data BUILD_MULTITHREADED: Multi-threaded build

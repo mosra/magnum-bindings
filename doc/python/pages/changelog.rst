@@ -38,20 +38,21 @@ Changelog
 Released 2020-06-27, tagged as
 :gh:`v2020.06 <mosra/magnum-bindings/releases/tag/v2020.06>`.
 
--   Exposed `Matrix4.cofactor()`, `Matrix4.comatrix()`, `Matrix4.adjugate()`
-    (and equivalents in other matrix sizes), and `Matrix4.normal_matrix()`
--   Exposed `gl.AbstractFramebuffer.blit()` functions and related enums
--   Exposed more keys in `platform.sdl2.Application` and
-    `platform.glfw.Application`
--   Exposed `gl.AbstractTexture.unbind()`
--   Exposed `trade.AbstractImporter.image2d_level_count()` and related APIs for
-    1D and 3D
--   Exposed `trade.MeshData` and related APIs, the previous
+-   Exposed :ref:`Matrix4.cofactor()`, :ref:`Matrix4.comatrix()`,
+    :ref:`Matrix4.adjugate()` (and equivalents in other matrix sizes), and
+    :ref:`Matrix4.normal_matrix()`
+-   Exposed :ref:`gl.AbstractFramebuffer.blit()` functions and related enums
+-   Exposed more keys in :ref:`platform.sdl2.Application` and
+    :ref:`platform.glfw.Application`
+-   Exposed :ref:`gl.AbstractTexture.unbind()`
+-   Exposed :ref:`trade.AbstractImporter.image2d_level_count()` and related
+    APIs for 1D and 3D
+-   Exposed :ref:`trade.MeshData` and related APIs, the previous
     ``trade.MeshData3D`` APIs are removed
--   Exposed new APIs and tangent support in the `primitives` library
--   `platform.sdl2.Application` and `platform.glfw.Application` now provide a
-    clear error instead of "pure virtual method call" in case ``draw_event()``
-    is not implemented
+-   Exposed new APIs and tangent support in the :ref:`primitives` library
+-   :ref:`platform.sdl2.Application` and :ref:`platform.glfw.Application` now
+    provide a clear error instead of "pure virtual method call" in case
+    ``draw_event()`` is not implemented
 -   Library version is now exposed through ``MAGNUMBINDINGS_VERSION_YEAR``,
     ``MAGNUMBINDINGS_VERSION_MONTH``, ``MAGNUMBINDINGS_VERSION_COMMIT``,
     ``MAGNUMBINDINGS_VERSION_HASH`` and ``MAGNUMBINDINGS_VERSION_STRING``

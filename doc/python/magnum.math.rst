@@ -38,7 +38,7 @@
     In the C++ API, math types are commonly used via :cpp:`typedef`\ s in the
     root namespace, only library-level generic code uses things like
     :dox:`Math::Vector<size, T> <Math::Vector>`. Since Python doesn't have
-    templates or generics, there are no generic variants in the `magnum.math`
+    templates or generics, there are no generic variants in the :ref:`magnum.math`
     module, all the concrete types are in the root module with the same names
     as in the C++ variant.
 
@@ -82,7 +82,7 @@
 
     As shown above, all math types are constructible from a (nested) tuple of
     matching type, matching the convenience of C++11 uniform initializers. As
-    another example, a function accepting a `Quaternion` will accept a
+    another example, a function accepting a :ref:`Quaternion` will accept a
     :py:`((x, y, z), w)` tuple as well, but not :py:`(x, y, z, w)`, as that is
     not convertible to a pair of a three-component vector and a scalar.
 
@@ -94,11 +94,11 @@
         Currently, doing :py:`from magnum import math` will bring in the
         Magnum's math module which at the moment *does not* contain the
         well-known Python APIs and constants. In particular, calling
-        `magnum.math.sin()` expects an explicit `Deg` / `Rad` type, while
-        Python's `math.sin()` doesn't. This will get resolved either by making
-        all Python overloads present in the same module or giving the user an
-        option whether to use Magnum math or Python math. For now, to avoid
-        confusion, do for example this:
+        :ref:`magnum.math.sin()` expects an explicit :ref:`Deg` / :ref:`Rad`
+        type, while Python's :ref:`math.sin()` doesn't. This will get resolved
+        either by making all Python overloads present in the same module or
+        giving the user an option whether to use Magnum math or Python math.
+        For now, to avoid confusion, do for example this:
 
         .. code:: pycon
 
@@ -114,8 +114,8 @@
 
     Since Python doesn't really differentiate between 32bit and 64bit doubles,
     all *scalar* functions taking or returning a floating-point type (such as
-    the `Deg` / `Rad` types, `math.pi <magnum.math.pi>` or
-    `math.sin <magnum.math.sin()>`) use the :cpp:`double` variant of the
+    the :ref:`Deg` / :ref:`Rad` types, :ref:`math.pi <magnum.math.pi>` or
+    :ref:`math.sin <magnum.math.sin()>`) use the :cpp:`double` variant of the
     underlying C++ API --- the extra arithmetic cost is negligible to the
     Python-to-C++ function call overhead.
 
@@ -128,7 +128,7 @@
     All vector classes are implicitly convertible from a tuple of correct size
     and type as well as from/to type implementing the buffer protocol, and
     these can be also converted back to lists using list comprehensions. This
-    makes them fully compatible with `numpy.ndarray`, so the following
+    makes them fully compatible with :ref:`numpy.ndarray`, so the following
     expressions are completely valid:
 
     ..
@@ -214,11 +214,11 @@
     `Static constructors and instance method / property overloads`_
     ---------------------------------------------------------------
 
-    While not common in Python, the `Matrix4.scaling()` / `Matrix4.rotation()`
-    methods mimic the C++ equivalent --- calling :py:`Matrix4.scaling(vec)`
-    will return a scaling matrix, while :py:`mat.scaling()` returns the 3x3
-    scaling part of the matrix. With `Matrix4.translation`, it's a bit more
-    involved --- calling :py:`Matrix4.translation(vec)` will return a
-    translation matrix, while :py:`mat.translation` is a read-write property
-    accessing the fourth column of the matrix. Similarly for the `Matrix3`
-    class.
+    While not common in Python, the :ref:`Matrix4.scaling()` /
+    :ref:`Matrix4.rotation()` methods mimic the C++ equivalent --- calling
+    :py:`Matrix4.scaling(vec)` will return a scaling matrix, while
+    :py:`mat.scaling()` returns the 3x3 scaling part of the matrix. With
+    :ref:`Matrix4.translation`, it's a bit more involved --- calling
+    :py:`Matrix4.translation(vec)` will return a translation matrix, while
+    :py:`mat.translation` is a read-write property accessing the fourth column
+    of the matrix. Similarly for the :ref:`Matrix3` class.
