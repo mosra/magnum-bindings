@@ -35,7 +35,7 @@ namespace {
     int argc = 0;
 }
 
-void wgl(py::module& m) {
+void wgl(py::module_& m) {
     m.doc() = "WGL-based platform integration";
 
     struct PyWindowlessApplication: Platform::WindowlessApplication {

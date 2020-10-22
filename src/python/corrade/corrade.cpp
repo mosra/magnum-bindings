@@ -118,11 +118,11 @@ PYBIND11_MODULE(_corrade, m) {
 
        These need to be defined in the order they depend on. */
     #ifdef CORRADE_BUILD_STATIC
-    py::module containers = m.def_submodule("containers");
+    py::module_ containers = m.def_submodule("containers");
     corrade::containers(containers);
 
     #ifdef Corrade_PluginManager_FOUND
-    py::module pluginmanager = m.def_submodule("pluginmanager");
+    py::module_ pluginmanager = m.def_submodule("pluginmanager");
     corrade::pluginmanager(pluginmanager);
     #endif
     #endif

@@ -34,7 +34,7 @@
 
 namespace corrade {
 
-void pluginmanager(py::module& m) {
+void pluginmanager(py::module_& m) {
     m.doc() = "Plugin management";
 
     py::enum_<PluginManager::LoadState> loadState{m, "LoadState", "Plugin load state"};

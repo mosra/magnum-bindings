@@ -35,7 +35,7 @@ namespace magnum {
 
 namespace {
 
-template<class T> void range(py::module& m, py::class_<T>& c) {
+template<class T> void range(py::module_& m, py::class_<T>& c) {
     /*
         Missing APIs:
 
@@ -318,7 +318,7 @@ template<template<class> class Type, class T, class ...Args> void convertible(py
 
 }
 
-void mathRange(py::module& root, py::module& m) {
+void mathRange(py::module_& root, py::module_& m) {
     py::class_<Range1D> range1D_{root, "Range1D", "One-dimensional float range"};
     py::class_<Range2D> range2D_{root, "Range2D", "Two-dimensional float range"};
     py::class_<Range3D> range3D_{root, "Range3D", "Three-dimensional float range"};

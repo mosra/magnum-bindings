@@ -188,7 +188,7 @@ template<class T> bool vectorBufferProtocol(T& self, Py_buffer& buffer, int flag
 }
 
 /* Things common for vectors of all sizes and types */
-template<class T> void vector(py::module& m, py::class_<T>& c) {
+template<class T> void vector(py::module_& m, py::class_<T>& c) {
     /*
         Missing APIs:
 

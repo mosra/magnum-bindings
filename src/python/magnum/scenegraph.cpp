@@ -129,7 +129,7 @@ template<UnsignedInt dimensions, class T> void camera(py::class_<SceneGraph::Cam
 
 }
 
-void scenegraph(py::module& m) {
+void scenegraph(py::module_& m) {
     m.doc() = "Scene graph library";
 
     /* Abstract objects. Returned from feature.object, so need to be registered

@@ -37,7 +37,7 @@ namespace {
     int argc = 0;
 }
 
-void glfw(py::module& m) {
+void glfw(py::module_& m) {
     m.doc() = "GLFW-based platform integration";
 
     struct PublicizedApplication: Platform::Application {

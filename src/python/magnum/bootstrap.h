@@ -26,9 +26,21 @@
 */
 
 #include <Python.h>
+#include <pybind11/detail/common.h> /* for PYBIND11_VERSION_* */
 #include <Magnum/Magnum.h>
 
-namespace pybind11 { class module; }
+namespace pybind11 {
+    /* pybind11 2.6 changes py::module to py::module_ to be compatible with C++
+       modules. In order to be forward-compatible, we use module_ everywhere
+       and define it as an alias to module on < 2.6 */
+    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+    class module_;
+    #else
+    class module;
+    typedef module module_;
+    #endif
+}
+
 namespace Magnum {}
 
 namespace magnum {
@@ -50,26 +62,26 @@ template<class T> struct PyDimensionTraits<3, T> {
     static VectorType from(const Math::Vector<3, T>& vec) { return vec; }
 };
 
-void math(py::module& root, py::module& m);
-void mathVectorFloat(py::module& root, py::module& m);
-void mathVectorIntegral(py::module& root, py::module& m);
-void mathMatrixFloat(py::module& root, PyTypeObject* metaclass);
-void mathMatrixDouble(py::module& root, PyTypeObject* metaclass);
-void mathRange(py::module& root, py::module& m);
+void math(py::module_& root, py::module_& m);
+void mathVectorFloat(py::module_& root, py::module_& m);
+void mathVectorIntegral(py::module_& root, py::module_& m);
+void mathMatrixFloat(py::module_& root, PyTypeObject* metaclass);
+void mathMatrixDouble(py::module_& root, PyTypeObject* metaclass);
+void mathRange(py::module_& root, py::module_& m);
 
-void gl(py::module& m);
-void meshtools(py::module& m);
-void primitives(py::module& m);
-void scenegraph(py::module& m);
-void shaders(py::module& m);
-void trade(py::module& m);
+void gl(py::module_& m);
+void meshtools(py::module_& m);
+void primitives(py::module_& m);
+void scenegraph(py::module_& m);
+void shaders(py::module_& m);
+void trade(py::module_& m);
 
 namespace platform {
-    void glfw(py::module& m);
-    void sdl2(py::module& m);
+    void glfw(py::module_& m);
+    void sdl2(py::module_& m);
 
-    void egl(py::module& m);
-    void glx(py::module& m);
+    void egl(py::module_& m);
+    void glx(py::module_& m);
 }
 
 }

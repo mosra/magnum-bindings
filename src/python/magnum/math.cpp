@@ -236,7 +236,7 @@ template<class U, class T, class ...Args> void convertible(py::class_<T, Args...
     c.def(py::init<U>(), "Construct from different underlying type");
 }
 
-template<class T> void quaternion(py::module& m, py::class_<T>& c) {
+template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
     /*
         Missing APIs:
 
@@ -410,7 +410,7 @@ PyTypeObject* transformationMatrixMetaclass() {
 
 }
 
-void math(py::module& root, py::module& m) {
+void math(py::module_& root, py::module_& m) {
     m.doc() = "Math library";
 
     /* Deg, Rad, Degd, Radd */

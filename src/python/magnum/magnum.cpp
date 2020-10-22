@@ -153,7 +153,7 @@ template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>&
         }), "Construct from a mutable view");
 }
 
-void magnum(py::module& m) {
+void magnum(py::module_& m) {
     m.attr("BUILD_STATIC") =
         #ifdef MAGNUM_BUILD_STATIC
         true
@@ -335,9 +335,9 @@ PYBIND11_MODULE(_magnum, m) {
     m.doc() = "Root Magnum module";
 
     /* We need ArrayView for images */
-    py::module::import("corrade.containers");
+    py::module_::import("corrade.containers");
 
-    py::module math = m.def_submodule("math");
+    py::module_ math = m.def_submodule("math");
     magnum::math(m, math);
 
     /* These need stuff from math, so need to be called after */
@@ -350,59 +350,59 @@ PYBIND11_MODULE(_magnum, m) {
        These need to be defined in the order they depend on. */
     #ifdef MAGNUM_BUILD_STATIC
     #ifdef Magnum_GL_FOUND
-    py::module gl = m.def_submodule("gl");
+    py::module_ gl = m.def_submodule("gl");
     magnum::gl(gl);
     #endif
 
     #ifdef Magnum_SceneGraph_FOUND
-    py::module scenegraph = m.def_submodule("scenegraph");
+    py::module_ scenegraph = m.def_submodule("scenegraph");
     magnum::scenegraph(scenegraph);
     #endif
 
     #ifdef Magnum_Trade_FOUND
-    py::module trade = m.def_submodule("trade");
+    py::module_ trade = m.def_submodule("trade");
     magnum::trade(trade);
     #endif
 
     #ifdef Magnum_MeshTools_FOUND
     /* Depends on trade and gl */
-    py::module meshtools = m.def_submodule("meshtools");
+    py::module_ meshtools = m.def_submodule("meshtools");
     magnum::meshtools(meshtools);
     #endif
 
     #ifdef Magnum_Primitives_FOUND
     /* Depends on trade */
-    py::module primitives = m.def_submodule("primitives");
+    py::module_ primitives = m.def_submodule("primitives");
     magnum::primitives(primitives);
     #endif
 
     #ifdef Magnum_Shaders_FOUND
     /* Depends on gl */
-    py::module shaders = m.def_submodule("shaders");
+    py::module_ shaders = m.def_submodule("shaders");
     magnum::shaders(shaders);
     #endif
 
     /* Keep the doc in sync with platform/__init__.py */
-    py::module platform = m.def_submodule("platform");
+    py::module_ platform = m.def_submodule("platform");
     platform.doc() = "Platform-specific application and context creation";
 
     #ifdef Magnum_GlfwApplication_FOUND
-    py::module glfw = platform.def_submodule("glfw");
+    py::module_ glfw = platform.def_submodule("glfw");
     magnum::platform::glfw(glfw);
     #endif
 
     #ifdef Magnum_Sdl2Application_FOUND
-    py::module sdl2 = platform.def_submodule("sdl2");
+    py::module_ sdl2 = platform.def_submodule("sdl2");
     magnum::platform::sdl2(sdl2);
     #endif
 
     #ifdef Magnum_WindowlessEglApplication_FOUND
-    py::module egl = platform.def_submodule("egl");
+    py::module_ egl = platform.def_submodule("egl");
     magnum::platform::egl(egl);
     #endif
 
     #ifdef Magnum_WindowlessGlxApplication_FOUND
-    py::module glx = platform.def_submodule("glx");
+    py::module_ glx = platform.def_submodule("glx");
     magnum::platform::glx(glx);
     #endif
     #endif

@@ -37,7 +37,7 @@ namespace {
     int argc = 0;
 }
 
-void sdl2(py::module& m) {
+void sdl2(py::module_& m) {
     m.doc() = "SDL2-based platform integration";
 
     struct PublicizedApplication: Platform::Application {

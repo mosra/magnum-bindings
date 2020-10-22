@@ -81,7 +81,7 @@ template<class T> void vectorIntegral(py::class_<T>& c) {
         .def(py::self / Float{}, "Divide an integral vector with a floating-point number");
 }
 
-template<class T> void vectorsIntegral(py::module& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
+template<class T> void vectorsIntegral(py::module_& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
     everyVector(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
     vectorIntegral<Math::Vector2<T>>(vector2_);
@@ -107,7 +107,7 @@ template<class T> void vectorsIntegralSigned(py::class_<Math::Vector2<T>>& vecto
 
 }
 
-void mathVectorIntegral(py::module& root, py::module& m) {
+void mathVectorIntegral(py::module_& root, py::module_& m) {
     py::class_<Vector2i> vector2i{root, "Vector2i", "Two-component signed integer vector", py::buffer_protocol{}};
     py::class_<Vector3i> vector3i{root, "Vector3i", "Threee-component signed integral vector", py::buffer_protocol{}};
     py::class_<Vector4i> vector4i{root, "Vector4i", "Four-component signed integral vector", py::buffer_protocol{}};

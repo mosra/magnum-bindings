@@ -46,13 +46,13 @@
 
 namespace magnum {
 
-void primitives(py::module& m) {
+void primitives(py::module_& m) {
     m.doc() = "Primitive library";
 
     #ifndef MAGNUM_BUILD_STATIC
     /* These are a part of the same module in the static build, no need to
        import (also can't import because there it's _magnum.*) */
-    py::module::import("magnum.trade");
+    py::module_::import("magnum.trade");
     #endif
 
     py::enum_<Primitives::CapsuleFlag> capsuleFlags{m, "CapsuleFlags", "Capsule flags"};

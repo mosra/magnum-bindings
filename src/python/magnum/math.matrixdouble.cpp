@@ -27,7 +27,7 @@
 
 namespace magnum {
 
-void mathMatrixDouble(py::module& root, PyTypeObject* const metaclass) {
+void mathMatrixDouble(py::module_& root, PyTypeObject* const metaclass) {
     py::class_<Matrix2x2d> matrix2x2d{root, "Matrix2x2d", "2x2 double matrix", py::buffer_protocol{}};
     py::class_<Matrix2x3d> matrix2x3d{root, "Matrix2x3d", "2x3 double matrix", py::buffer_protocol{}};
     py::class_<Matrix2x4d> matrix2x4d{root, "Matrix2x4d", "2x4 double matrix", py::buffer_protocol{}};

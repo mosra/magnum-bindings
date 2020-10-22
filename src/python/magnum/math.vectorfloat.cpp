@@ -29,7 +29,7 @@ namespace magnum {
 
 namespace {
 
-template<class T> void vectorFloat(py::module& m, py::class_<T>& c) {
+template<class T> void vectorFloat(py::module_& m, py::class_<T>& c) {
     m
         .def("angle", [](const T& a, const T& b) { return Radd(Math::angle(a, b)); },
             "Angle between normalized vectors", py::arg("normalized_a"), py::arg("normalized_b"));
@@ -52,7 +52,7 @@ template<class T> void vectorFloat(py::module& m, py::class_<T>& c) {
         }, "Vector projected onto a normalized line");
 }
 
-template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
+template<class T> void vectorsFloat(py::module_& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
     vector2_.def("aspect_ratio", static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::aspectRatio),
         "Aspect ratio");
     m.def("cross", static_cast<T(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(Math::cross),
@@ -81,7 +81,7 @@ template<class T> void vectorsFloat(py::module& m, py::class_<Math::Vector2<T>>&
 
 }
 
-void mathVectorFloat(py::module& root, py::module& m) {
+void mathVectorFloat(py::module_& root, py::module_& m) {
     py::class_<Vector2> vector2{root, "Vector2", "Two-component float vector", py::buffer_protocol{}};
     py::class_<Vector3> vector3{root, "Vector3", "Threee-component float vector", py::buffer_protocol{}};
     py::class_<Vector4> vector4{root, "Vector4", "Four-component float vector", py::buffer_protocol{}};

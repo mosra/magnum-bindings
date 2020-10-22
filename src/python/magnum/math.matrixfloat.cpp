@@ -27,7 +27,7 @@
 
 namespace magnum {
 
-void mathMatrixFloat(py::module& root, PyTypeObject* const metaclass) {
+void mathMatrixFloat(py::module_& root, PyTypeObject* const metaclass) {
     py::class_<Matrix2x2> matrix2x2{root, "Matrix2x2", "2x2 float matrix", py::buffer_protocol{}};
     py::class_<Matrix2x3> matrix2x3{root, "Matrix2x3", "2x3 float matrix", py::buffer_protocol{}};
     py::class_<Matrix2x4> matrix2x4{root, "Matrix2x4", "2x4 float matrix", py::buffer_protocol{}};

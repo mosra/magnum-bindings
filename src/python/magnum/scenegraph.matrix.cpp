@@ -30,8 +30,8 @@
 
 namespace magnum {
 
-void scenegraphMatrix(py::module& m) {
-    py::module matrix = m.def_submodule("matrix");
+void scenegraphMatrix(py::module_& m) {
+    py::module_ matrix = m.def_submodule("matrix");
     matrix.doc() = "General matrix-based scene graph implementation";
 
     py::class_<SceneGraph::Scene<SceneGraph::MatrixTransformation2D>> scene2D_{matrix, "Scene2D", "Two-dimensional scene with matrix-based transformation implementation"};

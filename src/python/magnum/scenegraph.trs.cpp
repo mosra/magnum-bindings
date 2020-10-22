@@ -50,8 +50,8 @@ template<class Transformation> void objectTrs(py::class_<SceneGraph::Object<Tran
 
 }
 
-void scenegraphTrs(py::module& m) {
-    py::module matrix = m.def_submodule("trs");
+void scenegraphTrs(py::module_& m) {
+    py::module_ matrix = m.def_submodule("trs");
     matrix.doc() = "Translation/rotation/scaling-based scene graph implementation";
 
     py::class_<SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation2D>> scene2D_{matrix, "Scene2D", "Two-dimensional scene with TRS-based transformation implementation"};

@@ -33,14 +33,14 @@
 
 namespace magnum {
 
-void meshtools(py::module& m) {
+void meshtools(py::module_& m) {
     m.doc() = "Mesh tools";
 
     #ifndef MAGNUM_BUILD_STATIC
     /* These are a part of the same module in the static build, no need to
        import (also can't import because there it's _magnum.*) */
-    py::module::import("magnum.gl");
-    py::module::import("magnum.trade");
+    py::module_::import("magnum.gl");
+    py::module_::import("magnum.trade");
     #endif
 
     py::enum_<MeshTools::CompileFlag> compileFlag{m, "CompileFlag", "Mesh compilation flags"};

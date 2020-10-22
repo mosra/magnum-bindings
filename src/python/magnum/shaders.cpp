@@ -105,13 +105,13 @@ template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders
 
 }
 
-void shaders(py::module& m) {
+void shaders(py::module_& m) {
     m.doc() = "Builtin shaders";
 
     #ifndef MAGNUM_BUILD_STATIC
     /* These are a part of the same module in the static build, no need to
        import (also can't import because there it's _magnum.*) */
-    py::module::import("magnum.gl");
+    py::module_::import("magnum.gl");
     #endif
 
     /* 2D/3D flat shader */

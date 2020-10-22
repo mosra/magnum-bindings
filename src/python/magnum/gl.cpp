@@ -238,7 +238,7 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
 
 }
 
-void gl(py::module& m) {
+void gl(py::module_& m) {
     /*
         Missing APIs:
 

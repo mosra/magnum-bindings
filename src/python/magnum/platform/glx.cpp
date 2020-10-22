@@ -35,7 +35,7 @@ namespace {
     int argc = 0;
 }
 
-void glx(py::module& m) {
+void glx(py::module_& m) {
     m.doc() = "GLX-based platform integration";
 
     struct PyWindowlessApplication: Platform::WindowlessApplication {

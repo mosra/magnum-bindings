@@ -219,11 +219,11 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
 
 }
 
-void trade(py::module& m) {
+void trade(py::module_& m) {
     m.doc() = "Data format exchange";
 
     /* AbstractImporter depends on this */
-    py::module::import("corrade.pluginmanager");
+    py::module_::import("corrade.pluginmanager");
 
     py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")

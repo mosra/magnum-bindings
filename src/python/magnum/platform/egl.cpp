@@ -35,7 +35,7 @@ namespace {
     int argc = 0;
 }
 
-void egl(py::module& m) {
+void egl(py::module_& m) {
     m.doc() = "EGL-based platform integration";
 
     struct PyWindowlessApplication: Platform::WindowlessApplication {

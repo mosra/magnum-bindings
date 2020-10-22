@@ -25,7 +25,20 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-namespace pybind11 { class module; }
+#include <pybind11/detail/common.h> /* for PYBIND11_VERSION_* */
+
+namespace pybind11 {
+    /* pybind11 2.6 changes py::module to py::module_ to be compatible with C++
+       modules. In order to be forward-compatible, we use module_ everywhere
+       and define it as an alias to module on < 2.6 */
+    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+    class module_;
+    #else
+    class module;
+    typedef module module_;
+    #endif
+}
+
 namespace Corrade {}
 
 namespace corrade {
@@ -33,8 +46,8 @@ namespace corrade {
 using namespace Corrade;
 namespace py = pybind11;
 
-void containers(py::module& m);
-void pluginmanager(py::module& m);
+void containers(py::module_& m);
+void pluginmanager(py::module_& m);
 
 }
 

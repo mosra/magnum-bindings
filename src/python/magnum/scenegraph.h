@@ -159,8 +159,8 @@ template<class Transformation> void objectReflect(py::class_<SceneGraph::Object<
         }, "Reflect the object as a local transformation");
 }
 
-void scenegraphMatrix(py::module& m);
-void scenegraphTrs(py::module& m);
+void scenegraphMatrix(py::module_& m);
+void scenegraphTrs(py::module_& m);
 
 }
 
