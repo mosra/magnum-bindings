@@ -83,7 +83,7 @@ set(magnum_trade_SRCS
 # modules
 if(NOT MAGNUM_BUILD_STATIC)
     if(Magnum_GL_FOUND)
-        pybind11_add_module(magnum_gl SYSTEM ${magnum_gl_SRCS})
+        pybind11_add_module(magnum_gl ${pybind11_add_module_SYSTEM} ${magnum_gl_SRCS})
         target_include_directories(magnum_gl PRIVATE
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
@@ -95,7 +95,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_MeshTools_FOUND)
-        pybind11_add_module(magnum_meshtools SYSTEM ${magnum_meshtools_SRCS})
+        pybind11_add_module(magnum_meshtools ${pybind11_add_module_SYSTEM} ${magnum_meshtools_SRCS})
         target_include_directories(magnum_meshtools PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_meshtools PRIVATE Magnum::MeshTools)
         set_target_properties(magnum_meshtools PROPERTIES
@@ -105,7 +105,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_Primitives_FOUND)
-        pybind11_add_module(magnum_primitives SYSTEM ${magnum_primitives_SRCS})
+        pybind11_add_module(magnum_primitives ${pybind11_add_module_SYSTEM} ${magnum_primitives_SRCS})
         target_include_directories(magnum_primitives PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_primitives PRIVATE Magnum::Primitives)
         set_target_properties(magnum_primitives PROPERTIES
@@ -115,7 +115,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_SceneGraph_FOUND)
-        pybind11_add_module(magnum_scenegraph SYSTEM ${magnum_scenegraph_SRCS})
+        pybind11_add_module(magnum_scenegraph ${pybind11_add_module_SYSTEM} ${magnum_scenegraph_SRCS})
         target_include_directories(magnum_scenegraph PRIVATE
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
@@ -127,7 +127,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_Shaders_FOUND)
-        pybind11_add_module(magnum_shaders SYSTEM ${magnum_shaders_SRCS})
+        pybind11_add_module(magnum_shaders ${pybind11_add_module_SYSTEM} ${magnum_shaders_SRCS})
         target_include_directories(magnum_shaders PRIVATE
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
@@ -139,7 +139,7 @@ if(NOT MAGNUM_BUILD_STATIC)
     endif()
 
     if(Magnum_Trade_FOUND)
-        pybind11_add_module(magnum_trade SYSTEM ${magnum_trade_SRCS})
+        pybind11_add_module(magnum_trade ${pybind11_add_module_SYSTEM} ${magnum_trade_SRCS})
         target_include_directories(magnum_trade PRIVATE
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
@@ -213,7 +213,7 @@ else()
     endif()
 endif()
 
-pybind11_add_module(magnum SYSTEM ${magnum_SRCS})
+pybind11_add_module(magnum ${pybind11_add_module_SYSTEM} ${magnum_SRCS})
 target_include_directories(magnum PRIVATE
     ${PROJECT_SOURCE_DIR}/src # SceneGraph/Python.h for static build
     ${PROJECT_SOURCE_DIR}/src/python
