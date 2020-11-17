@@ -51,7 +51,7 @@ struct Slice {
     std::ptrdiff_t step;
 };
 
-Slice calculateSlice(py::slice slice, std::size_t containerSize) {
+Slice calculateSlice(const py::slice& slice, std::size_t containerSize) {
     std::size_t size;
     std::ptrdiff_t start, stop, step;
 

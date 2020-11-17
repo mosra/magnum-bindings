@@ -110,7 +110,7 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
         .def_property("max_level", nullptr, &GL::Texture<dimensions>::setMaxLevel, "Max mip level")
         #endif
         .def_property("minification_filter", nullptr,
-            [](GL::Texture<dimensions>& self, py::object value) {
+            [](GL::Texture<dimensions>& self, const py::object& value) {
                 if(py::isinstance<SamplerFilter>(value))
                     self.setMinificationFilter(py::cast<SamplerFilter>(value));
                 else if(py::isinstance<GL::SamplerFilter>(value))
@@ -145,7 +145,7 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                 }
             }, "Minification filter")
         .def_property("magnification_filter", nullptr,
-            [](GL::Texture<dimensions>& self, py::object filter) {
+            [](GL::Texture<dimensions>& self, const py::object& filter) {
                 if(py::isinstance<SamplerFilter>(filter))
                     self.setMagnificationFilter(py::cast<SamplerFilter>(filter));
                 else if(py::isinstance<GL::SamplerFilter>(filter))
@@ -163,7 +163,7 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
         .def_property("lod_bias", nullptr, &GL::Texture<dimensions>::setLodBias, "Level-of-detail bias")
         #endif
         .def_property("wrapping", nullptr,
-            [](GL::Texture<dimensions>& self, py::object wrapping) {
+            [](GL::Texture<dimensions>& self, const py::object& wrapping) {
                 /** @todo accept two/three different values as well */
                 if(py::isinstance<SamplerWrapping>(wrapping))
                     self.setWrapping(py::cast<SamplerWrapping>(wrapping));
@@ -179,7 +179,7 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
             #ifdef MAGNUM_TARGET_GLES2
             &GL::Texture<dimensions>::setBorderColor,
             #else
-            [](GL::Texture<dimensions>& self, py::object color) {
+            [](GL::Texture<dimensions>& self, const py::object& color) {
                 if(py::isinstance<Vector3>(color))
                     self.setBorderColor(py::cast<Vector3>(color));
                 else if(py::isinstance<Vector4>(color))
