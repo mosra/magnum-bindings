@@ -36,7 +36,7 @@ Changelog
 ========================
 
 -   Exposed :ref:`gl.Renderer.set_blend_function()`,
-    :ref:`gl.Renderer.set_blend_equation()` and related enums (:gh:`mosra/magnum-bindings#9`)
+    :ref:`gl.Renderer.set_blend_equation()` and related enums (see :gh:`mosra/magnum-bindings#9`)
 -   Exposed :ref:`gl.Renderer.Feature.CLIP_DISTANCEn <gl.Renderer.Feature.CLIP_DISTANCE0>`
     values that are new since 2020.06
 -   Exposed new instancing, normal-mapping-related and lighting features in
@@ -44,6 +44,7 @@ Changelog
 -   Renamed all helper ``Python.h`` headers to ``PythonBindings.h`` to avoid
     issues with shitty IDE indexers such as Eclipse, confusing these with
     Python's ``<Python.h>``
+-   Applied minor performance fixes suggested by Clang Tidy (see :gh:`mosra/magnum-bindings#10`)
 
 `2020.06`_
 ==========
