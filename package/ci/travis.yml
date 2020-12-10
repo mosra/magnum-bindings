@@ -106,7 +106,6 @@ cache:
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.8; fi
 - if [ "$BUILD_STATIC" != "ON" ]; then export BUILD_STATIC=OFF; fi
-- if [ "$BUILD_STATIC" == "ON" ]; then export STATIC_PLUGIN_PATH=-DMAGNUM_PLUGINS_DIR=$HOME/deps/lib/magnum; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && ( [ "$TARGET" == "desktop" ] || [ "$TARGET" == "desktop-sanitizers" ] ); then export PLATFORM_GL_API=GLX; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TARGET" == "desktop-gles" ]; then export PLATFORM_GL_API=EGL; fi
 # Download CMake 3.4.3 to ensure we're still compatible with it (Travis has
@@ -144,13 +143,13 @@ install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov; fi
 
 script:
-- if [ "$TARGET" == "desktop" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/travis-desktop.sh; fi
-- if [ "$TARGET" == "desktop-gles" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/travis-desktop-gles.sh; fi
+- if [ "$TARGET" == "desktop" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/unix-desktop.sh; fi
+- if [ "$TARGET" == "desktop-gles" ] && ( [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ] ); then ./package/ci/unix-desktop-gles.sh; fi
 # Travis somehow is not able to gather all output, try to force it using this
 - sync
 
 after_success:
-# Keep in sync with package/archlinux/PKGBUILD-coverage, please
+# Keep in sync with PKGBUILD-coverage and codecov.yml, please
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --directory . --capture --output-file coverage.info > /dev/null; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" "*/src/Corrade/*" "*/src/Magnum/*" --output-file coverage.info; fi
 

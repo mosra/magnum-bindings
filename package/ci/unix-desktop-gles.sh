@@ -26,10 +26,8 @@ cmake .. \
     -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_DEPRECATED=OFF \
-    -DEGL_LIBRARY=$HOME/swiftshader/libEGL.so \
-    -DOPENGLES2_LIBRARY=$HOME/swiftshader/libGLESv2.so \
-    -DOPENGLES3_LIBRARY=$HOME/swiftshader/libGLESv2.so \
-    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader \
+    -DCMAKE_PREFIX_PATH="$HOME/swiftshader;$HOME/pybind11" \
+    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader/lib \
     -DTARGET_GLES=ON \
     -DTARGET_GLES2=$TARGET_GLES2 \
     -DWITH_AUDIO=OFF \
@@ -71,11 +69,8 @@ cmake .. \
     -DCMAKE_CXX_FLAGS="--coverage" \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=$HOME/pybind11 \
-    -DEGL_LIBRARY=$HOME/swiftshader/libEGL.so \
-    -DOPENGLES2_LIBRARY=$HOME/swiftshader/libGLESv2.so \
-    -DOPENGLES3_LIBRARY=$HOME/swiftshader/libGLESv2.so \
-    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader \
+    -DCMAKE_PREFIX_PATH="$HOME/swiftshader;$HOME/pybind11" \
+    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader/lib \
     -DPYBIND11_PYTHON_VERSION=3.6 \
     -DWITH_PYTHON=ON \
     -DBUILD_TESTS=ON \
@@ -86,7 +81,7 @@ CORRADE_TEST_COLOR=ON ctest -V
 
 # Verify the setuptools install
 cd src/python
-python3 setup.py install --root="$TRAVIS_BUILD_DIR/install" --prefix=/usr
+python3 setup.py install --root="$CIRCLE_WORKING_DIRECTORY/install" --prefix=/usr
 
 # Run tests & gather coverage
 cd ../../../src/python/corrade
@@ -99,4 +94,4 @@ cp .coverage ../.coverage.magnum
 
 # Test docstring validity
 cd ../../../doc/python
-PYTHONPATH="$TRAVIS_BUILD_DIR/build/src/python" python3 -m doctest -v *.rst
+PYTHONPATH="$CIRCLE_WORKING_DIRECTORY/build/src/python" python3 -m doctest -v *.rst

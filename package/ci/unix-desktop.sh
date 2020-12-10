@@ -27,7 +27,7 @@ cmake .. \
     -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_DEPRECATED=OFF \
-    -DBUILD_STATIC=$BUILD_STATIC $STATIC_PLUGIN_PATH \
+    -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_AUDIO=OFF \
     -DWITH_DEBUGTOOLS=OFF \
     -DWITH_GL=ON \
@@ -44,6 +44,13 @@ cmake .. \
     -DWITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=ON \
     -DWITH_ANYIMAGEIMPORTER=ON \
     -G Ninja
+
+# In case of a static build there's no way for the test to know the plugin
+# install directory so we have to hardcode it
+if [ "$BUILD_STATIC" == "ON" ]; then
+    cmake . -DMAGNUM_PLUGINS_DIR=$HOME/deps/lib/magnum
+fi
+
 ninja install
 cd ../..
 
@@ -80,7 +87,7 @@ CORRADE_TEST_COLOR=ON ctest -V
 
 # Verify the setuptools install
 cd src/python
-python3 setup.py install --root="$TRAVIS_BUILD_DIR/install" --prefix=/usr
+python3 setup.py install --root="$CIRCLE_WORKING_DIRECTORY/install" --prefix=/usr
 
 # Run tests & gather coverage
 cd ../../../src/python/corrade
@@ -93,4 +100,4 @@ cp .coverage ../.coverage.magnum
 
 # Test docstring validity
 cd ../../../doc/python
-PYTHONPATH="$TRAVIS_BUILD_DIR/build/src/python" python3 -m doctest -v *.rst
+PYTHONPATH="$CIRCLE_WORKING_DIRECTORY/build/src/python" python3 -m doctest -v *.rst
