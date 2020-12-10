@@ -75,7 +75,7 @@ cmake .. \
     -DWITH_PYTHON=ON \
     -DBUILD_TESTS=ON \
     -G Ninja
-ninja
+ninja $NINJA_JOBS
 
 CORRADE_TEST_COLOR=ON ctest -V
 

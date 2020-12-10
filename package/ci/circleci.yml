@@ -166,6 +166,8 @@ jobs:
       CMAKE_CXX_FLAGS: --coverage
       LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
       PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
     steps:
     - install-base-linux:
         extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev
@@ -185,6 +187,8 @@ jobs:
       PLATFORM_GL_API: EGL
       # STUPID yml interprets unquoted ON as a boolean
       TARGET_GLES2: "ON"
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
     steps:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev wget unzip
@@ -206,6 +210,8 @@ jobs:
       PLATFORM_GL_API: EGL
       # STUPID yml interprets unquoted OFF as a boolean
       TARGET_GLES2: "OFF"
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
     steps:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev wget unzip
@@ -228,6 +234,8 @@ jobs:
       CMAKE_CXX_FLAGS: --coverage
       LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
       PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
     steps:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev
