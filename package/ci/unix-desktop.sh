@@ -85,9 +85,10 @@ ninja $NINJA_JOBS
 
 CORRADE_TEST_COLOR=ON ctest -V
 
-# Verify the setuptools install
+# Verify the setuptools install. Not using $CIRCLE_WORKING_DIRECTORY because
+# it's ~ and that's not correctly expanded always.
 cd src/python
-python3 setup.py install --root="$CIRCLE_WORKING_DIRECTORY/install" --prefix=/usr
+python3 setup.py install --root="$(pwd)/../../install" --prefix=/usr
 
 # Run tests & gather coverage
 cd ../../../src/python/corrade
@@ -100,4 +101,6 @@ cp .coverage ../.coverage.magnum
 
 # Test docstring validity
 cd ../../../doc/python
-PYTHONPATH="$CIRCLE_WORKING_DIRECTORY/build/src/python" python3 -m doctest -v *.rst
+# I would use $CIRCLE_WORKING_DIRECTORY, but that's ~ and that's not expanded
+# here for some reason
+PYTHONPATH="$(pwd)/../../build/src/python" python3 -m doctest -v *.rst
