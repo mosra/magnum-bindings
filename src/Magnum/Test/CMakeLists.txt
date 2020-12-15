@@ -23,5 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-corrade_add_test(VersionTest VersionTest.cpp)
-target_include_directories(VersionTest PRIVATE ${PROJECT_BINARY_DIR}/src)
+# Prefixed with project name to avoid conflicts with VersionTest in Magnum and
+# related repos
+corrade_add_test(MagnumBindingsVersionTest VersionTest.cpp)
+target_include_directories(MagnumBindingsVersionTest PRIVATE ${PROJECT_BINARY_DIR}/src)
