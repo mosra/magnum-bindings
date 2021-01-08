@@ -30,14 +30,22 @@
 
 namespace Corrade {
 
-template<class T> inline pybind11::handle pyHandleFromInstance(T& obj) {
+inline pybind11::handle pyHandleFromInstance(const void* obj, const std::type_info& type) {
     /** @todo don't tell me there's no API for this either, ugh */
-    return pybind11::detail::get_object_handle(&obj, pybind11::detail::get_type_info(typeid(T)));
+    return pybind11::detail::get_object_handle(obj, pybind11::detail::get_type_info(type));
+}
+
+template<class T> inline pybind11::handle pyHandleFromInstance(T& obj) {
+    return pyHandleFromInstance(&obj, typeid(T));
+}
+
+inline pybind11::object pyObjectFromInstance(const void* obj, const std::type_info& type) {
+    /* reinterpret_borrow?! seriously?! */
+    return pybind11::reinterpret_borrow<pybind11::object>(pyHandleFromInstance(obj, type));
 }
 
 template<class T> inline pybind11::object pyObjectFromInstance(T& obj) {
-    /* reinterpret_borrow?! seriously?! */
-    return pybind11::reinterpret_borrow<pybind11::object>(pyHandleFromInstance(obj));
+    return pyObjectFromInstance(&obj, typeid(T));
 }
 
 template<class T> inline T& pyInstanceFromHandle(pybind11::handle handle) {
