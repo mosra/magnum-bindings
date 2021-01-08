@@ -25,6 +25,7 @@
 
 #include <pybind11/pybind11.h>
 #include <Magnum/Platform/WindowlessWglApplication.h>
+#include <Magnum/Platform/GLContext.h>
 
 #include "magnum/bootstrap.h"
 #include "magnum/platform/windowlessapplication.h"
@@ -68,6 +69,13 @@ void wgl(py::module_& m) {
     py::class_<PyWindowlessApplication, ApplicationHolder<PyWindowlessApplication>> windowlessWglApplication{m, "WindowlessApplication", "Windowless WGL application"};
 
     windowlessapplication(windowlessWglApplication);
+
+    /* Exposing a subclass to avoid the same type being exposed in multiple
+       (glx, egl...) modules. */
+    struct PyContext: Platform::GLContext {};
+    py::class_<PyContext> glContext{m, "Context", "WGL-specific Magnum OpenGL context"};
+
+    context(glContext);
 }
 
 }}

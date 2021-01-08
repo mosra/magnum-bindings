@@ -46,4 +46,11 @@ template<class T, class Holder> void windowlessapplication(py::class_<T, Holder>
         ;
 }
 
+template<class T> void context(py::class_<T>& c) {
+    c
+        .def(py::init())
+        /** @todo delayed creation */
+        ;
+}
+
 }}
