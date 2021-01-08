@@ -28,6 +28,7 @@
 
 #include "magnum/bootstrap.h"
 #include "magnum/platform/windowlessapplication.h"
+#include "magnum/platform/holder.h"
 
 namespace magnum { namespace platform {
 
@@ -64,7 +65,7 @@ void glx(py::module_& m) {
         virtual ~PyWindowlessApplication() {}
     };
 
-    py::class_<PyWindowlessApplication> windowlessGlxApplication{m, "WindowlessApplication", "Windowless GLX application"};
+    py::class_<PyWindowlessApplication, ApplicationHolder<PyWindowlessApplication>> windowlessGlxApplication{m, "WindowlessApplication", "Windowless GLX application"};
 
     windowlessapplication(windowlessGlxApplication);
 }

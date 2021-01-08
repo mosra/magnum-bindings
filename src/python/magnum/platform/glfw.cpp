@@ -30,6 +30,7 @@
 
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"
+#include "magnum/platform/holder.h"
 
 namespace magnum { namespace platform {
 
@@ -155,7 +156,7 @@ void glfw(py::module_& m) {
         }
     };
 
-    py::class_<PublicizedApplication, PyApplication> glfwApplication{m, "Application", "GLFW application"};
+    py::class_<PublicizedApplication, PyApplication, ApplicationHolder<PublicizedApplication>> glfwApplication{m, "Application", "GLFW application"};
     /** @todo def_property_writeonly for swap_interval */
 
     PyNonDestructibleClass<PublicizedApplication::InputEvent> inputEvent_{glfwApplication, "InputEvent", "Base for input events"};

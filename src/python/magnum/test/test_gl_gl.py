@@ -132,6 +132,29 @@ class Buffer(GLTestCase):
         a = gl.Buffer()
         a.set_data(array.array('f', [0.5, 1.2]))
 
+class Context(GLTestCase):
+    def test(self):
+        self.assertTrue(gl.Context.has_current)
+
+        # Retrieving the context should hold down the app with one more
+        # reference
+        app_refcount = sys.getrefcount(self.app)
+        current = gl.Context.current
+        self.assertEqual(sys.getrefcount(self.app), app_refcount + 1)
+        self.assertEqual(current.owner, self.app)
+
+        # Some properties
+        self.assertGreater(len(current.renderer_string), 0)
+        self.assertGreater(len(current.extension_strings), 0)
+
+        # Interestingly enough, this "just works". I thought I would need to do
+        # something extra but apparently not
+        current2 = gl.Context.current
+        self.assertTrue(id(current) == id(current2))
+
+        del current, current2
+        self.assertEqual(sys.getrefcount(self.app), app_refcount)
+
 class DefaultFramebuffer(GLTestCase):
     def test(self):
         # Using it should not crash, leak or cause double-free issues

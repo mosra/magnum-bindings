@@ -29,7 +29,7 @@
 
 namespace magnum { namespace platform {
 
-template<class T> void windowlessapplication(py::class_<T>& c) {
+template<class T, class Holder> void windowlessapplication(py::class_<T, Holder>& c) {
     py::class_<typename T::Configuration> configuration{c, "Configuration", "Configuration"};
     configuration
         .def(py::init());

@@ -31,6 +31,7 @@
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Attribute.h>
 #include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/Context.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/GL/Mesh.h>
@@ -52,6 +53,27 @@
 
 namespace magnum { namespace {
 
+/* Stores additional stuff needed for proper refcounting of applications that
+   own current context. The context itself isn't deleted, that's a
+   responsibility of the applications instead. For some reason it *has to be*
+   templated, otherwise PYBIND11_DECLARE_HOLDER_TYPE doesn't work. */
+template<class T> struct ContextHolder: std::unique_ptr<T, pybind11::nodelete> {
+    static_assert(std::is_same<T, GL::Context>::value, "context holder has to hold a context");
+
+    /* Used when instantiating a context directly */
+    explicit ContextHolder(T* object): std::unique_ptr<T, pybind11::nodelete>{object} {}
+
+    /* Used by Context.current() */
+    explicit ContextHolder(T* object, pybind11::object owner) noexcept: std::unique_ptr<T, pybind11::nodelete>{object}, owner{std::move(owner)} {}
+
+    ContextHolder(ContextHolder<T>&&) noexcept = default;
+    ContextHolder(const ContextHolder<T>&) = delete;
+    ContextHolder<T>& operator=(ContextHolder<T>&&) noexcept = default;
+    ContextHolder<T>& operator=(const ContextHolder<T>&) = default;
+
+    pybind11::object owner;
+};
+
 /* Otherwise pybind yells that `generic_type: type "Framebuffer" has a
    non-default holder type while its base "Magnum::GL::AbstractFramebuffer"
    does not` -- we're using PyFramebufferHolder for it */
@@ -61,6 +83,7 @@ template<class T> struct NonDefaultFramebufferHolder: std::unique_ptr<T, PyNonDe
 
 }}
 
+PYBIND11_DECLARE_HOLDER_TYPE(T, magnum::ContextHolder<T>)
 PYBIND11_DECLARE_HOLDER_TYPE(T, magnum::NonDefaultFramebufferHolder<T>)
 
 namespace magnum {
@@ -277,6 +300,119 @@ void gl(py::module_& m) {
         .def("version", static_cast<GL::Version(*)(Int, Int)>(GL::version), "Enum value from major and minor version number", py::arg("major"), py::arg("minor"))
         .def("version", static_cast<std::pair<Int, Int>(*)(GL::Version)>(GL::version), "Major and minor version number from enum value", py::arg("version"))
         .def("is_version_es", GL::isVersionES, "Whether given version is OpenGL ES or WebGL");
+
+    /* Context */
+    {
+        py::class_<GL::Context, ContextHolder<GL::Context>> context{m, "Context", "Magnum OpenGL context"};
+
+        py::enum_<GL::Context::Flag> contextFlag{context, "Flag", "Context flag"};
+        contextFlag
+            .value("DEBUG", GL::Context::Flag::Debug)
+            #ifndef MAGNUM_TARGET_GLES
+            .value("FORWARD_COMPATIBLE", GL::Context::Flag::ForwardCompatible)
+            #endif
+            .value("NO_ERROR", GL::Context::Flag::NoError)
+            #ifndef MAGNUM_TARGET_GLES2
+            .value("ROBUST_ACCESS", GL::Context::Flag::RobustAccess)
+            #endif
+            .value("NONE", GL::Context::Flag{});
+        corrade::enumOperators(contextFlag);
+
+        py::enum_<GL::Context::State> contextState{context, "State", "State to reset"};
+        contextState
+            .value("BUFFERS", GL::Context::State::Buffers)
+            #ifndef MAGNUM_TARGET_GLES2
+            .value("UNBIND_PIXEL_BUFFER", GL::Context::State::UnbindPixelBuffer)
+            #endif
+            .value("FRAMEBUFFERS", GL::Context::State::Framebuffers)
+            .value("MESHES", GL::Context::State::Meshes)
+            .value("MESH_VAO", GL::Context::State::MeshVao)
+            .value("BIND_SCRATCH_VAO", GL::Context::State::BindScratchVao)
+            .value("PIXEL_STORAGE", GL::Context::State::PixelStorage)
+            .value("RENDERER", GL::Context::State::Renderer)
+            .value("SHADERS", GL::Context::State::Shaders)
+            .value("TEXTURES", GL::Context::State::Textures)
+            #ifndef MAGNUM_TARGET_GLES2
+            .value("TRANSFORM_FEEDBACK", GL::Context::State::TransformFeedback)
+            #endif
+            .value("ENTER_EXTERNAL", GL::Context::State::EnterExternal)
+            .value("EXIT_EXTERNAL", GL::Context::State::ExitExternal);
+        corrade::enumOperators(contextState);
+
+        py::enum_<GL::Context::DetectedDriver> contextDetectedDriver{context, "DetectedDriver", "Detected driver"};
+        contextDetectedDriver
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("AMD", GL::Context::DetectedDriver::Amd)
+            #endif
+            #ifdef MAGNUM_TARGET_GLES
+            .value("ANGLE", GL::Context::DetectedDriver::Angle)
+            #endif
+            #ifndef MAGNUM_TARGET_WEBGL
+            .value("INTEL_WINDOWS", GL::Context::DetectedDriver::IntelWindows)
+            .value("MESA", GL::Context::DetectedDriver::Mesa)
+            .value("NVIDIA", GL::Context::DetectedDriver::NVidia)
+            .value("SVGA3D", GL::Context::DetectedDriver::Svga3D)
+            #ifdef MAGNUM_TARGET_GLES
+            .value("SWIFTSHADER", GL::Context::DetectedDriver::SwiftShader)
+            #endif
+            #endif
+            #ifdef CORRADE_TARGET_ANDROID
+            .value("ARM_MALI", GL::Context::DetectedDriver::ArmMali)
+            #endif
+            ;
+        corrade::enumOperators(contextDetectedDriver);
+
+        context
+            .def_property_readonly_static("has_current", [](py::object) {
+                return GL::Context::hasCurrent();
+            }, "Whether there is any current context")
+            .def_property_readonly_static("current", [](py::object) {
+                if(!GL::Context::hasCurrent()) {
+                    PyErr_SetString(PyExc_RuntimeError, "no current context");
+                    throw py::error_already_set{};
+                }
+
+                py::object owner = py::none{};
+                auto* glContextOwner = reinterpret_cast<std::pair<const void*, const std::type_info*>*>(py::get_shared_data("magnumGLContextOwner"));
+                if(glContextOwner && glContextOwner->first) {
+                    CORRADE_INTERNAL_ASSERT(glContextOwner->second);
+                    owner = Corrade::pyObjectFromInstance(glContextOwner->first, *glContextOwner->second);
+                }
+
+                return ContextHolder<GL::Context>{&GL::Context::current(), owner};
+            }, "Current context")
+            /** @todo context switching (needs additions to the "who owns
+                current context instance" variable -- a map?) */
+            .def_property_readonly("version", &GL::Context::version, "OpenGL version")
+            .def_property_readonly("vendor_string", &GL::Context::vendorString, "Vendor string")
+            .def_property_readonly("renderer_string", &GL::Context::rendererString, "Renderer string")
+            .def_property_readonly("version_string", &GL::Context::versionString, "Version string")
+            .def_property_readonly("shading_language_version_string", &GL::Context::shadingLanguageVersionString, "Shading language version string")
+            .def_property_readonly("shading_language_version_strings", &GL::Context::shadingLanguageVersionStrings, "Shading language version strings")
+            .def_property_readonly("extension_strings", &GL::Context::extensionStrings, "Extension strings")
+            #ifndef MAGNUM_TARGET_WEBGL
+            .def_property_readonly("flags", &GL::Context::flags, "Context flags")
+            #endif
+            /** @todo supportedExtensions() (needs Extension exposed) */
+            #ifndef MAGNUM_TARGET_GLES
+            .def_property_readonly("is_core_profile", &GL::Context::isCoreProfile, "Detect if current OpenGL context is a core profile")
+            #endif
+            .def("is_version_supported", &GL::Context::isVersionSupported, "Get supported OpenGL version", py::arg("version"))
+            /** @todo supportedVersion() (takes an initializer list, add an
+                arrayview overload */
+            /** @todo isExtensionSupported(), isExtensionDisabled() (needs
+                Extension exposed) */
+            .def("reset_state", [](GL::Context& self, GL::Context::State states) {
+                self.resetState(states);
+            }, "Reset internal state tracker", py::arg("states") = GL::Context::State{})
+            .def_property_readonly("detected_driver", [](GL::Context& self) {
+                return GL::Context::DetectedDriver(UnsignedShort(self.detectedDriver()));
+            }, "Detected driver")
+
+            .def_property_readonly("owner", [](GL::Context& self) {
+                return pyObjectHolderFor<ContextHolder>(self).owner;
+            }, "Magnum Application owning the context");
+    }
 
     /* Shader (used by AbstractShaderProgram, so needs to be before) */
     {

@@ -32,7 +32,7 @@
 
 namespace magnum { namespace platform {
 
-template<class T, class Trampoline> void application(py::class_<T, Trampoline>& c) {
+template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
     py::class_<typename T::Configuration> configuration{c, "Configuration", "Configuration"};
     configuration
         .def(py::init())

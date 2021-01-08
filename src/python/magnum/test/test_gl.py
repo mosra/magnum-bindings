@@ -36,6 +36,13 @@ class Attribute(unittest.TestCase):
         self.assertEqual(a.components, gl.Attribute.Components.TWO)
         self.assertEqual(a.data_type, gl.Attribute.DataType.FLOAT)
 
+class Context(unittest.TestCase):
+    def test_no_current(self):
+        self.assertFalse(gl.Context.has_current)
+
+        with self.assertRaisesRegex(RuntimeError, "no current context"):
+            gl.Context.current
+
 class FramebufferClear(unittest.TestCase):
     def test_ops(self):
         self.assertEqual(gl.FramebufferClear.COLOR|gl.FramebufferClear.COLOR, gl.FramebufferClear.COLOR)

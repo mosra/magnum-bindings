@@ -30,6 +30,7 @@
 
 #include "magnum/bootstrap.h"
 #include "magnum/platform/application.h"
+#include "magnum/platform/holder.h"
 
 namespace magnum { namespace platform {
 
@@ -155,7 +156,7 @@ void sdl2(py::module_& m) {
         }
     };
 
-    py::class_<PublicizedApplication, PyApplication> sdl2application{m, "Application", "SDL2 application"};
+    py::class_<PublicizedApplication, PyApplication, ApplicationHolder<PublicizedApplication>> sdl2application{m, "Application", "SDL2 application"};
     sdl2application
         .def_property("swap_interval", &PyApplication::swapInterval,
             [](PublicizedApplication& self, Int interval) {
