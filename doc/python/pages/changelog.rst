@@ -45,6 +45,10 @@ Changelog
     issues with shitty IDE indexers such as Eclipse, confusing these with
     Python's ``<Python.h>``
 -   Applied minor performance fixes suggested by Clang Tidy (see :gh:`mosra/magnum-bindings#10`)
+-   Linux and macOS builds were migrated from Travis to Circle CI
+-   The Homebrew package now uses `std_cmake_args` instead of hardcoded build
+    type and install prefix, which resolves certain build issues (see
+    :gh:`mosra/homebrew-magnum#6`)
 
 `2020.06`_
 ==========

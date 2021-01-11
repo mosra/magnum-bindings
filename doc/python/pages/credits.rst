@@ -71,5 +71,6 @@ involved!
 
 -   **Aaron Gokaslan** (:gh:`Skylion007`) --- minor performance fixes
 -   **Cameron Egbert** (:gh:`cegbertOculus`) --- initial Windows port
+-   **John Laxson** (:gh:`jlaxson`) --- Homebrew package improvements
 -   **Vladimir Gamalyan** (:gh:`vladimirgamalyan`) --- expanding
     :ref:`gl.Renderer` bindings
