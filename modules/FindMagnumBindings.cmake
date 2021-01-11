@@ -65,14 +65,30 @@ mark_as_advanced(MAGNUMBINDINGS_INCLUDE_DIR)
 
 # Component distinction (listing them explicitly to avoid mistakes with finding
 # components from other repositories)
-set(_MAGNUMBINDINGS_HEADER_ONLY_COMPONENT_LIST Python)
+set(_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS Python)
 
-# Convert components lists to regular expressions so I can use if(MATCHES).
-# TODO: Drop this once CMake 3.3 and if(IN_LIST) can be used
-foreach(_WHAT HEADER_ONLY)
-    string(REPLACE ";" "|" _MAGNUMBINDINGS_${_WHAT}_COMPONENTS "${_MAGNUMBINDINGS_${_WHAT}_COMPONENT_LIST}")
-    set(_MAGNUMBINDINGS_${_WHAT}_COMPONENTS "^(${_MAGNUMBINDINGS_${_WHAT}_COMPONENTS})$")
+# No inter-component dependencies right now
+
+# Ensure that all inter-component dependencies are specified as well
+set(_MAGNUMBINDINGS_ADDITIONAL_COMPONENTS )
+foreach(_component ${MagnumBindings_FIND_COMPONENTS})
+    # Mark the dependencies as required if the component is also required
+    if(MagnumBindings_FIND_REQUIRED_${_component})
+        foreach(_dependency ${_MAGNUMBINDINGS_${_component}_DEPENDENCIES})
+            set(MagnumBindings_FIND_REQUIRED_${_dependency} TRUE)
+        endforeach()
+    endif()
+
+    list(APPEND _MAGNUMBINDINGS_ADDITIONAL_COMPONENTS ${_MAGNUMBINDINGS_${_component}_DEPENDENCIES})
 endforeach()
+
+# Join the lists, remove duplicate components
+if(_MAGNUMBINDINGS_ADDITIONAL_COMPONENTS)
+    list(INSERT MagnumBindings_FIND_COMPONENTS 0 ${_MAGNUMBINDINGS_ADDITIONAL_COMPONENTS})
+endif()
+if(MagnumBindings_FIND_COMPONENTS)
+    list(REMOVE_DUPLICATES MagnumBindings_FIND_COMPONENTS)
+endif()
 
 # Find all components
 foreach(_component ${MagnumBindings_FIND_COMPONENTS})
@@ -85,7 +101,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
         set(MagnumBindings_${_component}_FOUND TRUE)
     else()
         # Header-only components
-        if(_component MATCHES ${_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS})
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
           add_library(MagnumBindings::${_component} INTERFACE IMPORTED)
         endif()
 
@@ -94,7 +110,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
             set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES Magnum/SceneGraph/PythonBindings.h)
         endif()
 
-        if(_component MATCHES ${_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS})
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
             # Find includes
             find_path(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR
                 NAMES ${_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES}
@@ -111,7 +127,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
         endif()
 
         # Decide if the component was found
-        if(_component MATCHES ${_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS} AND _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS AND _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
             set(MagnumBindings_${_component}_FOUND TRUE)
         else()
             set(MagnumBindings_${_component}_FOUND FALSE)
