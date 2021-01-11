@@ -66,6 +66,8 @@ mark_as_advanced(MAGNUMBINDINGS_INCLUDE_DIR)
 # Component distinction (listing them explicitly to avoid mistakes with finding
 # components from other repositories)
 set(_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS Python)
+# Nothing is enabled by default right now
+set(_MAGNUMBINDINGS_IMPLICITLY_ENABLED_COMPONENTS )
 
 # No inter-component dependencies right now
 
@@ -83,6 +85,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
 endforeach()
 
 # Join the lists, remove duplicate components
+set(_MAGNUMBINDINGS_ORIGINAL_FIND_COMPONENTS ${MagnumBindings_FIND_COMPONENTS})
 if(_MAGNUMBINDINGS_ADDITIONAL_COMPONENTS)
     list(INSERT MagnumBindings_FIND_COMPONENTS 0 ${_MAGNUMBINDINGS_ADDITIONAL_COMPONENTS})
 endif()
@@ -135,7 +138,41 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
     endif()
 endforeach()
 
+# For CMake 3.16+ with REASON_FAILURE_MESSAGE, provide additional potentially
+# useful info about the failed components.
+if(NOT CMAKE_VERSION VERSION_LESS 3.16)
+    set(_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE)
+    # Go only through the originally specified find_package() components, not
+    # the dependencies added by us afterwards
+    foreach(_component ${_MAGNUMBINDINGS_ORIGINAL_FIND_COMPONENTS})
+        if(MagnumBindings_${_component}_FOUND)
+            continue()
+        endif()
+
+        # If it's not known at all, tell the user -- it might be a new library
+        # and an old Find module, or something platform-specific.
+        if(NOT _component IN_LIST _MAGNUMBINDINGS_LIBRARY_COMPONENTS AND NOT _component IN_LIST _MAGNUMBINDINGS_PLUGIN_COMPONENTS)
+            list(APPEND _MAGNUMBINDINGS_REASON_FAILURE_MESSAGE "${_component} is not a known component on this platform.")
+        # Otherwise, if it's not among implicitly built components, hint that
+        # the user may need to enable it
+        # TODO: currently, the _FOUND variable doesn't reflect if dependencies
+        #   were found. When it will, this needs to be updated to avoid
+        #   misleading messages.
+        elseif(NOT _component IN_LIST _MAGNUMBINDINGS_IMPLICITLY_ENABLED_COMPONENTS)
+            string(TOUPPER ${_component} _COMPONENT)
+            list(APPEND _MAGNUMBINDINGS_REASON_FAILURE_MESSAGE "${_component} is not built by default. Make sure you enabled WITH_${_COMPONENT} when building Magnum Bindings")
+        # Otherwise we have no idea. Better be silent than to print something
+        # misleading.
+        else()
+        endif()
+    endforeach()
+
+    string(REPLACE ";" " " _MAGNUMBINDINGS_REASON_FAILURE_MESSAGE "${_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE}")
+    set(_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE REASON_FAILURE_MESSAGE "${_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE}")
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MagnumBindings
     REQUIRED_VARS MAGNUMBINDINGS_INCLUDE_DIR
-    HANDLE_COMPONENTS)
+    HANDLE_COMPONENTS
+    ${_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE})
