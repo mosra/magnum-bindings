@@ -15,8 +15,7 @@ class MagnumBindings < Formula
     system "mkdir build"
     cd "build" do
       system "cmake",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DCMAKE_INSTALL_PREFIX=#{prefix}",
+        *std_cmake_args,
         "-DWITH_PYTHON=ON",
         ".."
       system "cmake", "--build", "."
