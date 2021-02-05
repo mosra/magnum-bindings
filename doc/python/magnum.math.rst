@@ -192,6 +192,9 @@
     -   All vector and matrix classes implement :py:`len()`, which is used
         instead of e.g. :dox:`Math::Vector::Size`. Works on both classes
         and instances.
+    -   :dox:`Math::Matrix3::from()` / :dox:`Math::Matrix4::from()` are named
+        :ref:`Matrix3.from_()` / :ref:`Matrix4.from_()` because :py:`from` is
+        a Python keyword and thus can't be used as a name.
     -   :cpp:`Math::gather()` and :cpp:`Math::scatter()` operations are
         implemented as real swizzles:
 

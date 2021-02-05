@@ -560,7 +560,7 @@ template<class T> void matrices(
             "2D shearning matrix along the Y axis", py::arg("amount"))
         .def_static("projection", &Math::Matrix3<T>::projection,
             "2D projection matrix", py::arg("size"))
-        .def_static("from", static_cast<Math::Matrix3<T>(*)(const Math::Matrix2x2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::from),
+        .def_static("from_", static_cast<Math::Matrix3<T>(*)(const Math::Matrix2x2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::from),
             "Create a matrix from a rotation/scaling part and a translation part",
             py::arg("rotation_scaling"), py::arg("translation"))
         .def(py::init<const Math::Vector3<T>&, const Math::Vector3<T>&, const Math::Vector3<T>&>(),
@@ -760,7 +760,7 @@ Overloaded function.
             "3D off-center perspective projection matrix", py::arg("bottom_left"), py::arg("top_right"), py::arg("near"), py::arg("far"))
         .def_static("look_at", &Math::Matrix4<T>::lookAt,
             "Matrix oriented towards a specific point", py::arg("eye"), py::arg("target"), py::arg("up"))
-        .def_static("from", static_cast<Math::Matrix4<T>(*)(const Math::Matrix3x3<T>&, const Math::Vector3<T>&)>(&Math::Matrix4<T>::from),
+        .def_static("from_", static_cast<Math::Matrix4<T>(*)(const Math::Matrix3x3<T>&, const Math::Vector3<T>&)>(&Math::Matrix4<T>::from),
             "Create a matrix from a rotation/scaling part and a translation part",
             py::arg("rotation_scaling"), py::arg("translation"))
         .def(py::init<const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&, const Math::Vector4<T>&>(),

@@ -619,6 +619,22 @@ class Matrix(unittest.TestCase):
                                       Vector4(13.0, 14.0, 15.0, 16.0)))
 
     def test_static_methods(self):
+        a = Matrix3.from_(Matrix2x2((1.0, 2.0),
+                                    (4.0, 5.0)),
+                          Vector2(7.0, 8.0))
+        self.assertEqual(a, Matrix3(Vector3(1.0, 2.0, 0.0),
+                                    Vector3(4.0, 5.0, 0.0),
+                                    Vector3(7.0, 8.0, 1.0)))
+
+        a = Matrix4.from_(Matrix3x3((1.0, 2.0, 3.0),
+                                    (5.0, 6.0, 7.0),
+                                    (9.0, 10.0, 11.0)),
+                          Vector3(13.0, 14.0, 15.0))
+        self.assertEqual(a, Matrix4x4(Vector4(1.0, 2.0, 3.0, 0.0),
+                                      Vector4(5.0, 6.0, 7.0, 0.0),
+                                      Vector4(9.0, 10.0, 11.0, 0.0),
+                                      Vector4(13.0, 14.0, 15.0, 1.0)))
+
         a = Matrix3x4.from_diagonal((1.0, 2.0, 3.0))
         self.assertEqual(a.diagonal(), (1.0, 2.0, 3.0))
         self.assertEqual(a, Matrix3x4((1.0, 0.0, 0.0, 0.0),
