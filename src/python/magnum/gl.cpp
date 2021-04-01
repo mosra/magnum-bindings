@@ -1186,8 +1186,10 @@ void gl(py::module_& m) {
         .value("RGBA8", GL::TextureFormat::RGBA8)
         #endif
         #ifndef MAGNUM_TARGET_WEBGL
+        #ifndef MAGNUM_TARGET_GLES2
         .value("SR8", GL::TextureFormat::SR8)
-        #ifdef MAGNUM_TARGET_GLES
+        #endif
+        #if defined(MAGNUM_TARGET_GLES) && !defined(MAGNUM_TARGET_GLES2)
         /** @todo how to expose this one in the docs? */
         .value("SRG8", GL::TextureFormat::SRG8)
         #endif
