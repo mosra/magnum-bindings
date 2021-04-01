@@ -23,12 +23,9 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-if(WITH_PYTHON)
-    set(CorradeContainersPython_HEADERS
-        PythonBindings.h
-        StridedArrayViewPythonBindings.h)
-
-    add_custom_target(CorradeContainersPython SOURCES ${CorradeContainersPython_HEADERS})
-    set_target_properties(CorradeContainersPython PROPERTIES FOLDER "Corrade/Python")
-    install(FILES ${CorradeContainersPython_HEADERS} DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR}/Containers)
-endif()
+pybind11_add_module(test_stridedarrayview ${pybind11_add_module_SYSTEM} test_stridedarrayview.cpp)
+target_include_directories(test_stridedarrayview PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(test_stridedarrayview PRIVATE Corrade::Containers)
+set_target_properties(test_stridedarrayview PROPERTIES
+    FOLDER "python"
+    LIBRARY_OUTPUT_DIRECTORY ${output_dir})
