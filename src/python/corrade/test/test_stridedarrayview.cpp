@@ -70,8 +70,6 @@ template<class T> void container(py::class_<Container<T>>& c) {
    is released */
 extern "C" PYBIND11_EXPORT PyObject* PyInit_test_stridedarrayview();
 PYBIND11_MODULE(test_stridedarrayview, m) {
-    /* These are a part of the same module in the static build, no need to
-       import (also can't import because there it's _magnum.*) */
     py::module_::import("corrade.containers");
 
     py::class_<Container<const std::int16_t>> containers{m, "Containers"};
