@@ -29,6 +29,7 @@ import unittest
 
 from corrade import containers
 import test_stridedarrayview
+import test_optional
 
 class ArrayView(unittest.TestCase):
     def test_init(self):
@@ -900,3 +901,16 @@ class StridedArrayViewCustomType(unittest.TestCase):
 
     # mutable_vector3d and mutable_long_float tested in test_containers_numpy
     # as memoryview can't handle their types
+
+class TestOptional(unittest.TestCase):
+    def test_simple(self):
+        self.assertIsNone(test_optional.simple_type(False))
+        self.assertEqual(test_optional.simple_type(True), 5)
+        self.assertEqual(test_optional.acquire_simple_type(None), -1)
+        self.assertEqual(test_optional.acquire_simple_type(15), 15)
+
+    def test_nested(self):
+        self.assertIsNone(test_optional.nested_type(False))
+        self.assertEqual(test_optional.nested_type(True).a, 15)
+        self.assertEqual(test_optional.acquire_nested_type(None), -1)
+        self.assertEqual(test_optional.acquire_nested_type(test_optional.Foo(25)), 25)

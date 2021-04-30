@@ -55,6 +55,9 @@ Changelog
 -   The Homebrew package now uses `std_cmake_args` instead of hardcoded build
     type and install prefix, which resolves certain build issues (see
     :gh:`mosra/homebrew-magnum#6`)
+-   Added a caster for :dox:`Containers::Optional`, allowing it to be used
+    directly in function signatures and showing up on the Python side as either
+    :py:`None` or the actual value
 
 `2020.06`_
 ==========

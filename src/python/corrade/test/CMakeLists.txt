@@ -23,9 +23,11 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-pybind11_add_module(test_stridedarrayview ${pybind11_add_module_SYSTEM} test_stridedarrayview.cpp)
-target_include_directories(test_stridedarrayview PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(test_stridedarrayview PRIVATE Corrade::Containers)
-set_target_properties(test_stridedarrayview PROPERTIES
-    FOLDER "python"
-    LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+foreach(_test optional stridedarrayview)
+    pybind11_add_module(test_${_test} ${pybind11_add_module_SYSTEM} test_${_test}.cpp)
+    target_include_directories(test_${_test} PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_link_libraries(test_${_test} PRIVATE Corrade::Containers)
+    set_target_properties(test_${_test} PROPERTIES
+        FOLDER "python"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+endforeach()

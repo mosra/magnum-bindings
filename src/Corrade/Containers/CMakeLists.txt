@@ -25,6 +25,7 @@
 
 if(WITH_PYTHON)
     set(CorradeContainersPython_HEADERS
+        OptionalPythonBindings.h
         PythonBindings.h
         StridedArrayViewPythonBindings.h)
 
