@@ -35,6 +35,8 @@ Changelog
 `Changes since 2020.06`_
 ========================
 
+-   Exposed missing :ref:`Vector4` constructor from a :ref:`Vector3` and a
+    W component and :ref:`Vector3` from :ref:`Vector2` and a Z component
 -   Renamed :py:`Matrix3.from()` / :py:`Matrix4.from()` to :ref:`Matrix3.from_()`
     / :ref:`Matrix4.from_()` because :py:`from` is a Python keyword and it
     would be silly to have to write :py:`getattr(Matrix4, 'from')` just to use
