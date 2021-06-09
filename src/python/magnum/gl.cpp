@@ -495,7 +495,9 @@ void gl(py::module_& m) {
             /* Public interface */
             .def_property_readonly("id", &GL::AbstractShaderProgram::id, "OpenGL program ID")
             .def("validate", &GL::AbstractShaderProgram::validate, "Validate program")
-            .def("draw", static_cast<void(GL::AbstractShaderProgram::*)(GL::Mesh&)>(&GL::AbstractShaderProgram::draw), "Draw a mesh")
+            .def("draw", [](GL::AbstractShaderProgram& self, GL::Mesh& mesh) {
+                self.draw(mesh);
+            }, "Draw a mesh")
             #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
             .def("dispatch_compute", &GL::AbstractShaderProgram::dispatchCompute, "Dispatch compute")
             #endif

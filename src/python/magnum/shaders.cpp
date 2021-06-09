@@ -45,7 +45,9 @@ namespace magnum {
 namespace {
 
 template<class T> void anyShader(PyNonDestructibleClass<T, GL::AbstractShaderProgram>& c) {
-    c.def("draw", static_cast<void(GL::AbstractShaderProgram::*)(GL::Mesh&)>(&GL::AbstractShaderProgram::draw), "Draw a mesh");
+    c.def("draw", [](GL::AbstractShaderProgram& self, GL::Mesh& mesh) {
+        self.draw(mesh);
+    }, "Draw a mesh");
 }
 
 template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatGL<dimensions>, GL::AbstractShaderProgram>& c) {
@@ -61,7 +63,7 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
 
         /* Using lambdas to avoid method chaining getting into signatures */
         .def_property_readonly("flags", [](Shaders::FlatGL<dimensions>& self) {
-            return typename Shaders::FlatGL<dimensions>::Flag(UnsignedByte(self.flags()));
+            return typename Shaders::FlatGL<dimensions>::Flag(UnsignedShort(self.flags()));
         }, "Flags")
         .def_property("transformation_projection_matrix", nullptr, &Shaders::FlatGL<dimensions>::setTransformationProjectionMatrix,
             "Transformation and projection matrix")
@@ -196,7 +198,7 @@ void shaders(py::module_& m) {
                 py::arg("flags") = Shaders::PhongGL::Flag{},
                 py::arg("light_count") = 1)
             .def_property_readonly("flags", [](Shaders::PhongGL& self) {
-                return Shaders::PhongGL::Flag(UnsignedShort(self.flags()));
+                return Shaders::PhongGL::Flag(UnsignedInt(self.flags()));
             }, "Flags")
             .def_property_readonly("light_count", &Shaders::PhongGL::lightCount,
                 "Light count")
