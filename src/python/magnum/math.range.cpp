@@ -52,8 +52,8 @@ template<class T> void range(py::module_& m, py::class_<T>& c) {
             return T{Math::ZeroInit};
         }, "Construct a zero range")
         .def(py::init(), "Default constructor")
-        .def(py::init<typename T::VectorType, typename T::VectorType>(), "Construct a range from minimal and maximal coordiantes")
-        .def(py::init<std::pair<typename T::VectorType, typename T::VectorType>>(), "Construct a range from minimal and maximal coordiantes")
+        .def(py::init<typename T::VectorType, typename T::VectorType>(), "Construct a range from minimal and maximal coordinates")
+        .def(py::init<std::pair<typename T::VectorType, typename T::VectorType>>(), "Construct a range from minimal and maximal coordinates")
 
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")
