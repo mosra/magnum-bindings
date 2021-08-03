@@ -118,7 +118,7 @@ struct PublicizedAbstractShaderProgram: GL::AbstractShaderProgram {
     #endif
 };
 
-template<class T> void setUniform(GL::AbstractShaderProgram& self, Int location, T value) {
+template<class T> void setUniform(GL::AbstractShaderProgram& self, Int location, const T& value) {
     static_cast<PublicizedAbstractShaderProgram&>(self).setUniform(location, value);
 }
 
