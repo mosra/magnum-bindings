@@ -61,6 +61,12 @@ Changelog
     directly in function signatures and showing up on the Python side as either
     :py:`None` or the actual value
 -   Various documentation fixes (see :gh:`mosra/magnum-bindings#11`)
+-   Fixed copypaste errors in bindings for :ref:`Range2D.center_x()` /
+    :ref:`Range2D.center_y()`, :ref:`Range3D.z()`, :ref:`Range3D.center_x()` /
+    :ref:`Range2D.center_y()` / :ref:`Range2D.center_z()`
+-   Fixed a copypaste error in
+    :ref:`platform.sdl2.Application.MouseMoveEvent.relative_position` and
+    :ref:`platform.glfw.Application.MouseMoveEvent.relative_position`
 
 `2020.06`_
 ==========
