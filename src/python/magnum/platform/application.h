@@ -238,7 +238,7 @@ template<class T, class ...Args> void mouseMoveEvent(py::class_<T, Args...>& c) 
 
     c
         .def_property_readonly("position", &T::position, "Position")
-        .def_property_readonly("relative_position", &T::position, "Relative position")
+        .def_property_readonly("relative_position", &T::relativePosition, "Relative position")
         .def_property_readonly("buttons", [](T& self) {
             return typename T::Button(typename std::underlying_type<typename T::Button>::type(self.buttons()));
         }, "Mouse buttons")
