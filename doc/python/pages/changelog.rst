@@ -41,6 +41,9 @@ Changelog
     / :ref:`Matrix4.from_()` because :py:`from` is a Python keyword and it
     would be silly to have to write :py:`getattr(Matrix4, 'from')` just to use
     these APIs
+-   Exposed newly added off-center variants of
+    :ref:`Matrix4.orthographhic_projection()` and
+    :ref:`Matrix3.projection()`
 -   Exposed :ref:`gl.Renderer.set_blend_function()`,
     :ref:`gl.Renderer.set_blend_equation()` and related enums (see :gh:`mosra/magnum-bindings#9`)
 -   Exposed :ref:`gl.Renderer.Feature.CLIP_DISTANCEn <gl.Renderer.Feature.CLIP_DISTANCE0>`

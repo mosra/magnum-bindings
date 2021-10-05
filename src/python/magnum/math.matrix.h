@@ -558,8 +558,10 @@ template<class T> void matrices(
             "2D shearing matrix along the X axis", py::arg("amount"))
         .def_static("shearing_y", &Math::Matrix3<T>::shearingY,
             "2D shearning matrix along the Y axis", py::arg("amount"))
-        .def_static("projection", &Math::Matrix3<T>::projection,
+        .def_static("projection", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&)>(&Math::Matrix3<T>::projection),
             "2D projection matrix", py::arg("size"))
+        .def_static("projection", static_cast<Math::Matrix3<T>(*)(const Math::Vector2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::projection),
+            "2D off-center projection matrix", py::arg("bottom_left"), py::arg("top_right"))
         .def_static("from_", static_cast<Math::Matrix3<T>(*)(const Math::Matrix2x2<T>&, const Math::Vector2<T>&)>(&Math::Matrix3<T>::from),
             "Create a matrix from a rotation/scaling part and a translation part",
             py::arg("rotation_scaling"), py::arg("translation"))
@@ -747,8 +749,10 @@ Overloaded function.
             "3D shearning matrix along the XZ plane", py::arg("amount_x"), py::arg("amount_z"))
         .def_static("shearing_yz", &Math::Matrix4<T>::shearingYZ,
             "3D shearing matrix along the YZ plane", py::arg("amount_y"), py::arg("amount_z"))
-        .def_static("orthographic_projection", &Math::Matrix4<T>::orthographicProjection,
+        .def_static("orthographic_projection", static_cast<Math::Matrix4<T>(*)(const Math::Vector2<T>&, T, T)>(&Math::Matrix4<T>::orthographicProjection),
             "3D orthographic projection matrix", py::arg("size"), py::arg("near"), py::arg("far"))
+        .def_static("orthographic_projection", static_cast<Math::Matrix4<T>(*)(const Math::Vector2<T>&, const Math::Vector2<T>&, T, T)>(&Math::Matrix4<T>::orthographicProjection),
+            "3D off-center orthographic projection matrix", py::arg("bottom_left"), py::arg("top_right"), py::arg("near"), py::arg("far"))
         .def_static("perspective_projection",
             static_cast<Math::Matrix4<T>(*)(const Math::Vector2<T>&, T, T)>(&Math::Matrix4<T>::perspectiveProjection),
             "3D perspective projection matrix", py::arg("size"), py::arg("near"), py::arg("far"))
