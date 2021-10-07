@@ -42,8 +42,10 @@ Changelog
     would be silly to have to write :py:`getattr(Matrix4, 'from')` just to use
     these APIs
 -   Exposed newly added off-center variants of
-    :ref:`Matrix4.orthographhic_projection()` and
+    :ref:`Matrix4.orthographic_projection()` and
     :ref:`Matrix3.projection()`
+-   Exposed :ref:`gl.Context` and its platform-specific subclasses for EGL, WGL
+    and GLX
 -   Exposed :ref:`gl.Renderer.set_blend_function()`,
     :ref:`gl.Renderer.set_blend_equation()` and related enums (see :gh:`mosra/magnum-bindings#9`)
 -   Exposed :ref:`gl.Renderer.Feature.CLIP_DISTANCEn <gl.Renderer.Feature.CLIP_DISTANCE0>`
@@ -66,7 +68,7 @@ Changelog
 -   Various documentation fixes (see :gh:`mosra/magnum-bindings#11`)
 -   Fixed copypaste errors in bindings for :ref:`Range2D.center_x()` /
     :ref:`Range2D.center_y()`, :ref:`Range3D.z()`, :ref:`Range3D.center_x()` /
-    :ref:`Range2D.center_y()` / :ref:`Range2D.center_z()`
+    :ref:`Range3D.center_y()` / :ref:`Range3D.center_z()`
 -   Fixed a copypaste error in
     :ref:`platform.sdl2.Application.MouseMoveEvent.relative_position` and
     :ref:`platform.glfw.Application.MouseMoveEvent.relative_position`
