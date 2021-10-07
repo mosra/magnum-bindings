@@ -72,6 +72,9 @@ Changelog
 -   Fixed a copypaste error in
     :ref:`platform.sdl2.Application.MouseMoveEvent.relative_position` and
     :ref:`platform.glfw.Application.MouseMoveEvent.relative_position`
+-   Fixed :ref:`platform.sdl2.Application.InputEvent.Modifier` and
+    :ref:`platform.glfw.Application.InputEvent.Modifier` to behave properly
+    as flags and not just as an enum
 
 `2020.06`_
 ==========

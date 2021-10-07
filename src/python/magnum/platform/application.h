@@ -82,11 +82,13 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
 
 
 template<class T, class ...Args> void inputEvent(py::class_<T, Args...>& c) {
-    py::enum_<typename T::Modifier>{c, "Modifier", "Modifier"}
+    py::enum_<typename T::Modifier> modifiers{c, "Modifier", "Modifier"};
+    modifiers
         .value("SHIFT", T::Modifier::Shift)
         .value("CTRL", T::Modifier::Ctrl)
         .value("ALT", T::Modifier::Alt)
         .value("SUPER", T::Modifier::Super);
+    corrade::enumOperators(modifiers);
 
     c.def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
 }
