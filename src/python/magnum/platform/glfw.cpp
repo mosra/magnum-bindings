@@ -49,6 +49,12 @@ void glfw(py::module_& m) {
             throw py::error_already_set{};
         }
 
+        void exitEvent(ExitEvent& event) override {
+            /* The base implementation does this, otherwise the exit event is
+               always cancelled. It's private so we can't call it directly. */
+            event.setAccepted();
+        }
+        void viewportEvent(ViewportEvent&) override {}
         void keyPressEvent(KeyEvent&) override {}
         void keyReleaseEvent(KeyEvent&) override {}
         void mousePressEvent(MouseEvent&) override {}
@@ -63,6 +69,35 @@ void glfw(py::module_& m) {
 
     struct PyApplication: PublicizedApplication {
         using PublicizedApplication::PublicizedApplication;
+
+        /* PYBIND11_OVERLOAD_NAME() calls object_api::operator() with implicit
+           template param, which is return_value_policy::automatic_reference.
+           That later gets changed to return_value_policy::copy in
+           type_caster_base::cast() and there's no way to override that. */
+
+        void exitEvent(ExitEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "exit_event",
+                exitEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
+
+        void viewportEvent(ViewportEvent& event) override {
+            PYBIND11_OVERLOAD_NAME(
+                void,
+                PublicizedApplication,
+                "viewport_event",
+                viewportEvent,
+                /* Have to use std::ref() otherwise pybind tries to copy
+                   it and fails */
+                std::ref(event)
+            );
+        }
 
         void drawEvent() override {
             #ifdef __clang__
@@ -83,10 +118,6 @@ void glfw(py::module_& m) {
             #endif
         }
 
-        /* PYBIND11_OVERLOAD_NAME() calls object_api::operator() with implicit
-           template param, which is return_value_policy::automatic_reference.
-           That later gets changed to return_value_policy::copy in
-           type_caster_base::cast() and there's no way to override that  */
         void keyPressEvent(KeyEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
@@ -159,6 +190,8 @@ void glfw(py::module_& m) {
     py::class_<PublicizedApplication, PyApplication, ApplicationHolder<PublicizedApplication>> glfwApplication{m, "Application", "GLFW application"};
     /** @todo def_property_writeonly for swap_interval */
 
+    PyNonDestructibleClass<PublicizedApplication::ExitEvent> exitEvent_{glfwApplication, "ExitEvent", "Exit event"};
+    PyNonDestructibleClass<PublicizedApplication::ViewportEvent> viewportEvent_{glfwApplication, "ViewportEvent", "Viewport event"};
     PyNonDestructibleClass<PublicizedApplication::InputEvent> inputEvent_{glfwApplication, "InputEvent", "Base for input events"};
     py::class_<PublicizedApplication::KeyEvent, PublicizedApplication::InputEvent> keyEvent_{glfwApplication, "KeyEvent", "Key event"};
     py::class_<PublicizedApplication::MouseEvent, PublicizedApplication::InputEvent> mouseEvent_{glfwApplication, "MouseEvent", "Mouse event"};
@@ -166,6 +199,8 @@ void glfw(py::module_& m) {
     py::class_<PublicizedApplication::MouseScrollEvent, PublicizedApplication::InputEvent> mouseScrollEvent_{glfwApplication, "MouseScrollEvent", "Mouse scroll event"};
 
     application(glfwApplication);
+    exitEvent(exitEvent_);
+    viewportEvent(viewportEvent_);
     inputEvent(inputEvent_);
     keyEvent(keyEvent_);
     mouseEvent(mouseEvent_);

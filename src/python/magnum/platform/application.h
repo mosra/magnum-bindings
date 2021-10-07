@@ -34,6 +34,12 @@ namespace magnum { namespace platform {
 
 template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
     py::class_<typename T::Configuration> configuration{c, "Configuration", "Configuration"};
+
+    py::enum_<typename T::Configuration::WindowFlag> configurationWindowFlags{configuration, "WindowFlag", "WindowFlag"};
+    configurationWindowFlags
+        .value("RESIZABLE", T::Configuration::WindowFlag::Resizable);
+    corrade::enumOperators(configurationWindowFlags);
+
     configuration
         .def(py::init())
         .def_property("title", &T::Configuration::title,
@@ -43,7 +49,14 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def_property("size", &T::Configuration::size,
             [](typename T::Configuration& self, const Vector2i& size) {
                 self.setSize(size);
-            }, "Window size");
+            }, "Window size")
+        .def_property("window_flags",
+            [](typename T::Configuration& self) {
+                return typename T::Configuration::WindowFlag(typename std::underlying_type<typename T::Configuration::WindowFlag>::type(self.windowFlags()));
+            },
+            [](typename T::Configuration& self, typename T::Configuration::WindowFlag flags) {
+                self.setWindowFlags(flags);
+            }, "Window flags");
         /** @todo others */
 
     py::class_<typename T::GLConfiguration> glConfiguration{c, "GLConfiguration", "OpenGL context configuration"};
@@ -67,8 +80,9 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def("redraw", &T::redraw, "Redraw immediately")
         .def_property_readonly("window_size", &T::windowSize, "Window size")
         .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
-
         /* Event handlers */
+        .def("exit_event", &T::exitEvent, "Exit event")
+        .def("viewport_event", &T::viewportEvent, "Viewport event")
         .def("draw_event", &T::drawEvent, "Draw event")
         .def("key_press_event", &T::keyPressEvent, "Key press event")
         .def("key_release_event", &T::keyReleaseEvent, "Key release event")
@@ -76,10 +90,21 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def("mouse_release_event", &T::mouseReleaseEvent, "Mouse release event")
         .def("mouse_move_event", &T::mouseMoveEvent, "Mouse move event")
         .def("mouse_scroll_event", &T::mouseScrollEvent, "Mouse scroll event")
-        /** @todo more */
+        /** @todo mouse gesture, text input/editing event */
         ;
 }
 
+template<class T, class ...Args> void exitEvent(py::class_<T, Args...>& c) {
+    c
+        .def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
+}
+
+template<class T, class ...Args> void viewportEvent(py::class_<T, Args...>& c) {
+    c
+        .def_property_readonly("window_size", &T::windowSize, "Window size")
+        .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
+        .def_property_readonly("dpi_scaling", &T::dpiScaling, "DPI scaling");
+}
 
 template<class T, class ...Args> void inputEvent(py::class_<T, Args...>& c) {
     py::enum_<typename T::Modifier> modifiers{c, "Modifier", "Modifier"};

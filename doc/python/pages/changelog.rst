@@ -75,6 +75,11 @@ Changelog
 -   Fixed :ref:`platform.sdl2.Application.InputEvent.Modifier` and
     :ref:`platform.glfw.Application.InputEvent.Modifier` to behave properly
     as flags and not just as an enum
+-   Exposed :ref:`platform.sdl2.Application.viewport_event` and
+    :ref:`platform.glfw.Application.viewport_event` and a possibility
+    to make the window resizable on startup
+-   Exposed :ref:`platform.sdl2.Application.exit_event` and
+    :ref:`platform.glfw.Application.exit_event`
 
 `2020.06`_
 ==========
