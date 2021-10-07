@@ -407,7 +407,9 @@ void gl(py::module_& m) {
                 return std::vector<std::string>{strings.begin(), strings.end()};
             }, "Extension strings")
             #ifndef MAGNUM_TARGET_WEBGL
-            .def_property_readonly("flags", &GL::Context::flags, "Context flags")
+            .def_property_readonly("flags", [](GL::Context& self) {
+                return GL::Context::Flag(typename std::underlying_type<GL::Context::Flag>::type(self.flags()));
+            }, "Context flags")
             #endif
             /** @todo supportedExtensions() (needs Extension exposed) */
             #ifndef MAGNUM_TARGET_GLES
