@@ -80,6 +80,8 @@ Changelog
     to make the window resizable on startup
 -   Exposed :ref:`platform.sdl2.Application.exit_event` and
     :ref:`platform.glfw.Application.exit_event`
+-   Exposed :ref:`Color3.red()` and other convenience constructors (see
+    :gh:`mosra/magnum-bindings#12`)
 
 `2020.06`_
 ==========
