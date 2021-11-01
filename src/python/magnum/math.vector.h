@@ -533,6 +533,19 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
             return Math::Color3<T>::fromSrgb(srgb);
         }, "Create linear RGB color from 24-bit sRGB representation", py::arg("srgb"))
 
+        .def_static("red", &Math::Color3<T>::red,
+            "Red color", py::arg("red") = Math::Implementation::fullChannel<T>())
+        .def_static("green", &Math::Color3<T>::green,
+            "Green color", py::arg("green") = Math::Implementation::fullChannel<T>())
+        .def_static("blue", &Math::Color3<T>::blue,
+            "Blue color", py::arg("blue") = Math::Implementation::fullChannel<T>())
+        .def_static("cyan", &Math::Color3<T>::cyan,
+            "Cyan color", py::arg("red") = T(0))
+        .def_static("magenta", &Math::Color3<T>::magenta,
+            "Magenta color", py::arg("green") = T(0))
+        .def_static("yellow", &Math::Color3<T>::yellow,
+            "Yellow color", py::arg("blue") = T(0))
+
         /* Accessors */
         .def("to_srgb_int", &Math::Color3<T>::toSrgbInt,
              "Convert to 32-bit integral sRGB representation")
@@ -582,6 +595,31 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
         .def_static("from_srgb", [](UnsignedInt srgb, T a) {
             return Math::Color4<T>::fromSrgb(srgb, a);
         }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb"), py::arg("a") = Math::Implementation::fullChannel<T>())
+
+        .def_static("red", &Math::Color4<T>::red,
+            "Red color",
+            py::arg("red") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("green", &Math::Color4<T>::green,
+            "Green color",
+            py::arg("green") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("blue", &Math::Color4<T>::blue,
+            "Blue color",
+            py::arg("blue") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("cyan", &Math::Color4<T>::cyan,
+            "Cyan color",
+            py::arg("red") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("magenta", &Math::Color4<T>::magenta,
+            "Magenta color",
+            py::arg("green") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("yellow", &Math::Color4<T>::yellow,
+            "Yellow color",
+            py::arg("blue") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
 
         /* Accessors */
         .def("to_srgb_alpha_int", &Math::Color4<T>::toSrgbAlphaInt,

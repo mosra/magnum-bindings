@@ -355,6 +355,22 @@ class Color3_(unittest.TestCase):
         self.assertEqual(c2, Color3(0.5, 0.75, 1.0))
         self.assertEqual(c3, Color3(0.5, 0.75, 1.0))
 
+    def test_init_primaries(self):
+        red  = Color3.red(0.5)
+        cyan = Color3.cyan(0.5)
+        self.assertEqual(red,  Color3(0.5, 0.0, 0.0))
+        self.assertEqual(cyan, Color3(0.5, 1.0, 1.0))
+
+        green   = Color3.green(0.5)
+        magenta = Color3.magenta(0.5)
+        self.assertEqual(green,   Color3(0.0, 0.5, 0.0))
+        self.assertEqual(magenta, Color3(1.0, 0.5, 1.0))
+
+        blue   = Color3.blue(0.5)
+        yellow = Color3.yellow(0.5)
+        self.assertEqual(blue,   Color3(0.0, 0.0, 0.5))
+        self.assertEqual(yellow, Color3(1.0, 1.0, 0.5))
+
     def test_srgb(self):
         # Cross-checked with C++ tests
         a = Color3.from_srgb(0xf32a80)
@@ -408,6 +424,22 @@ class Color4_(unittest.TestCase):
         self.assertEqual(e3, Color4(0.5, 0.75, 0.875, 0.9))
         self.assertEqual(e4, Color4(0.5, 0.75, 0.875, 0.9))
         self.assertEqual(e5, Color4(0.5, 0.75, 0.875, 0.9))
+
+    def test_init_primaries(self):
+        red  = Color4.red(0.5, 0.75)
+        cyan = Color4.cyan(0.5, 0.75)
+        self.assertEqual(red,  Color4(0.5, 0.0, 0.0, 0.75))
+        self.assertEqual(cyan, Color4(0.5, 1.0, 1.0, 0.75))
+
+        green   = Color4.green(0.5, 0.75)
+        magenta = Color4.magenta(0.5, 0.75)
+        self.assertEqual(green,   Color4(0.0, 0.5, 0.0, 0.75))
+        self.assertEqual(magenta, Color4(1.0, 0.5, 1.0, 0.75))
+
+        blue   = Color4.blue(0.5, 0.75)
+        yellow = Color4.yellow(0.5, 0.75)
+        self.assertEqual(blue,   Color4(0.0, 0.0, 0.5, 0.75))
+        self.assertEqual(yellow, Color4(1.0, 1.0, 0.5, 0.75))
 
     def test_srgb(self):
         # Cross-checked with C++ tests
