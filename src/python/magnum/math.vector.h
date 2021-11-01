@@ -544,7 +544,15 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
             return Degd(self.hue());
         }, "Hue")
         .def("saturation", &Math::Color3<T>::saturation, "Saturation")
-        .def("value", &Math::Color3<T>::value, "Value");
+        .def("value", &Math::Color3<T>::value, "Value")
+
+        /* Color Convenience */
+        .def_static("red", &Math::Color3<T>::red, py::arg("red") = Math::Implementation::fullChannel<T>())
+        .def_static("green", &Math::Color3<T>::green, py::arg("green") = Math::Implementation::fullChannel<T>())
+        .def_static("blue", &Math::Color3<T>::blue, py::arg("blue") = Math::Implementation::fullChannel<T>())
+        .def_static("cyan", &Math::Color3<T>::cyan, py::arg("red") = T(0))
+        .def_static("magenta", &Math::Color3<T>::magenta, py::arg("green") = T(0))
+        .def_static("yellow", &Math::Color3<T>::yellow, py::arg("yellow") = T(0));
 }
 
 /* Needs to be separate to make it a priority over buffer protocol */
@@ -604,7 +612,27 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
         .def_property("rgb",
             static_cast<const Math::Color3<T>(Math::Color4<T>::*)() const>(&Math::Color4<T>::rgb),
             [](Math::Color4<T>& self, const Math::Color3<T>& value) { self.rgb() = value; },
-            "RGB part of the vector");
+            "RGB part of the vector")
+
+        /* Color Convenience */
+        .def_static("red", &Math::Color4<T>::red,
+            py::arg("red") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("green", &Math::Color4<T>::green,
+            py::arg("green") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("blue", &Math::Color4<T>::blue,
+            py::arg("blue") = Math::Implementation::fullChannel<T>(),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("cyan", &Math::Color4<T>::cyan,
+            py::arg("red") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("magenta", &Math::Color4<T>::magenta,
+            py::arg("green") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>())
+        .def_static("yellow", &Math::Color4<T>::yellow,
+            py::arg("yellow") = T(0),
+            py::arg("alpha") = Math::Implementation::fullChannel<T>());
 }
 
 }
