@@ -188,7 +188,12 @@ void glfw(py::module_& m) {
     };
 
     py::class_<PublicizedApplication, PyApplication, ApplicationHolder<PublicizedApplication>> glfwApplication{m, "Application", "GLFW application"};
-    /** @todo def_property_writeonly for swap_interval */
+    glfwApplication
+        .def_property("swap_interval", nullptr,
+            [](PublicizedApplication& self, Int interval) {
+                self.setSwapInterval(interval);
+            }, "Swap interval")
+        .def("main_loop_iteration", &PyApplication::mainLoopIteration, "Run one iteration of application main loop");
 
     PyNonDestructibleClass<PublicizedApplication::ExitEvent> exitEvent_{glfwApplication, "ExitEvent", "Exit event"};
     PyNonDestructibleClass<PublicizedApplication::ViewportEvent> viewportEvent_{glfwApplication, "ViewportEvent", "Viewport event"};
