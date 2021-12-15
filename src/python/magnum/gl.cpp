@@ -1301,6 +1301,16 @@ void gl(py::module_& m) {
         #ifndef MAGNUM_TARGET_GLES
         .value("RGBA12", GL::TextureFormat::RGBA12)
         #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH_COMPONENT16", GL::TextureFormat::DepthComponent16)
+        .value("DEPTH_COMPONENT24", GL::TextureFormat::DepthComponent24)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("DEPTH_COMPONENT32", GL::TextureFormat::DepthComponent32)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DEPTH_COMPONENT32F", GL::TextureFormat::DepthComponent32F)
+        #endif
         ;
         /** @todo compressed formats */
 
