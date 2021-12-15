@@ -911,7 +911,13 @@ void gl(py::module_& m) {
                before the framebuffer */
             pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
         }, "Attach renderbuffer to given buffer")
+        .def("attach_texture", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Texture2D& texture, Int level) {
+            self.attachTexture(attachment, texture, level);
 
+            /* Keep a reference to the texture to avoid it being deleted
+               before the framebuffer */
+            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(texture));
+        }, "Attach texture to given buffer")
         .def_property_readonly("attachments", [](GL::Framebuffer& self) {
             return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
         }, "Renderbuffer and texture objects referenced by the framebuffer");
