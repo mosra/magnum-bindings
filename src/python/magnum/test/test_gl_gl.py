@@ -180,6 +180,20 @@ class Framebuffer(GLTestCase):
         del framebuffer
         self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount)
 
+    def test_attach_texture(self):
+        texture = gl.Texture2D()
+        texture.set_storage(levels=1, internal_format=gl.TextureFormat.RGBA8, size=(4, 4))
+        texture_refcount = sys.getrefcount(texture)
+
+        framebuffer = gl.Framebuffer(((0, 0), (4, 4)))
+        framebuffer.attach_texture(gl.Framebuffer.ColorAttachment(0), texture, 0)
+        self.assertEqual(len(framebuffer.attachments), 1)
+        self.assertIs(framebuffer.attachments[0], texture)
+        self.assertEqual(sys.getrefcount(texture), texture_refcount + 1)
+
+        del framebuffer
+        self.assertEqual(sys.getrefcount(texture), texture_refcount)
+
     def test_read_image(self):
         renderbuffer = gl.Renderbuffer()
         renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
