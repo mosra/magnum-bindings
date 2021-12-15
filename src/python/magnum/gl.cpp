@@ -1330,8 +1330,28 @@ void gl(py::module_& m) {
         #ifndef MAGNUM_TARGET_GLES
         .value("RGBA12", GL::TextureFormat::RGBA12)
         #endif
-        ;
         /** @todo compressed formats */
+        .value("DEPTH_COMPONENT", GL::TextureFormat::DepthComponent)
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH_COMPONENT16", GL::TextureFormat::DepthComponent16)
+        .value("DEPTH_COMPONENT24", GL::TextureFormat::DepthComponent24)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("DEPTH_COMPONENT32", GL::TextureFormat::DepthComponent32)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DEPTH_COMPONENT32F", GL::TextureFormat::DepthComponent32F)
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
+        .value("STENCIL_INDEX8", GL::TextureFormat::StencilIndex8)
+        #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
+        .value("DEPTH24_STENCIL8", GL::TextureFormat::Depth24Stencil8)
+        #endif
+        #ifndef MAGNUM_TARGET_GLES2
+        .value("DEPTH32F_STENCIL8", GL::TextureFormat::Depth32FStencil8)
+        #endif
+        ;
 
     PyNonDestructibleClass<GL::AbstractTexture>{m, "AbstractTexture", "Base for textures"}
         .def_static("unbind", static_cast<void(*)(Int)>(&GL::AbstractTexture::unbind), "Unbind any texture from given texture unit")
