@@ -42,13 +42,13 @@ Credits
 
 While Magnum Python Bindings themselves don't depend on much, a lot of
 third-party components is used transitively from the Magnum C++ implementation.
-Please see the `main page <std:doc:index#license>` for license of Magnum Python
-Bindings themselves and the
+Please see the :ref:`main page <std:doc:index#license>` for license of Magnum
+Python Bindings themselves and the
 :doxygen-you-fool:`Third-party components <https://doc.magnum.graphics/magnum/credits-third-party.html>`
 page of C++ docs for a detailed overview of all used components. The list below
 uses the same color-coding scheme for easier overview:
 
-`Magnum Python Bindings <std:doc:index>`
+:ref:`Magnum Python Bindings <std:doc:index>`
     Bindings generated with :gh:`pybind11 <pybind/pybind11>`, released under a
     :label-success:`BSD-style license`
     (`license text <https://github.com/pybind/pybind11/blob/master/LICENSE>`_,
