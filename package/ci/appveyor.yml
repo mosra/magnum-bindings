@@ -39,13 +39,6 @@ environment:
     APPVEYOR_JOB_NAME: windows-gles3-msvc2019
     PYTHON: 36
 
-notifications:
-- provider: Webhook
-  url: https://webhooks.gitter.im/e/415ae90928ba0dbd3df4
-  on_build_success: false
-  on_build_failure: true
-  on_build_status_changed: true
-
 install:
 - cinst ninja
 # pip is in Scripts
