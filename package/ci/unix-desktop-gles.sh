@@ -23,11 +23,10 @@ cd magnum
 mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
-    -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_DEPRECATED=OFF \
     -DCMAKE_PREFIX_PATH="$HOME/swiftshader;$HOME/pybind11" \
-    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader/lib \
+    -DCMAKE_INSTALL_RPATH="$HOME/deps/lib;$HOME/swiftshader/lib" \
     -DTARGET_GLES=ON \
     -DTARGET_GLES2=$TARGET_GLES2 \
     -DWITH_AUDIO=OFF \
@@ -72,7 +71,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH="$HOME/swiftshader;$HOME/pybind11" \
-    -DCMAKE_INSTALL_RPATH=$HOME/swiftshader/lib \
+    -DCMAKE_INSTALL_RPATH="$HOME/deps/lib;$HOME/swiftshader/lib" \
     -DPYBIND11_PYTHON_VERSION=3.6 \
     -DWITH_PYTHON=ON \
     -DBUILD_TESTS=ON \
