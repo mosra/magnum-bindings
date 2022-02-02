@@ -48,6 +48,8 @@ Changelog
     :ref:`math <magnum.math>` library
 -   Exposed :ref:`gl.Context` and its platform-specific subclasses for EGL, WGL
     and GLX
+-   Exposed :ref:`gl.Framebuffer.attach_texture()` and missing sRGB, depth
+    and stencil :ref:`gl.TextureFormat` values (see :gh:`mosra/magnum-bindings#14`)
 -   Exposed :ref:`gl.Renderer.set_blend_function()`,
     :ref:`gl.Renderer.set_blend_equation()` and related enums (see :gh:`mosra/magnum-bindings#9`)
 -   Exposed :ref:`gl.Renderer.Feature.CLIP_DISTANCEn <gl.Renderer.Feature.CLIP_DISTANCE0>`

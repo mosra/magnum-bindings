@@ -72,7 +72,8 @@ involved!
 -   **Aaron Gokaslan** (:gh:`Skylion007`) --- minor performance and
     documentation fixes, expanding :ref:`Color3` / :ref:`Color4` bindings
 -   **Cameron Egbert** (:gh:`cegbertOculus`) --- initial Windows port
--   **James Murphy** (:gh:`mCodingLLC`) --- buildsystem fixes
+-   **James Murphy** (:gh:`mCodingLLC`) --- buildsystem fixes, expanding
+    :ref:`gl.Framebuffer` bindings
 -   **John Laxson** (:gh:`jlaxson`) --- Homebrew package improvements
 -   **Vladimir Gamalyan** (:gh:`vladimirgamalyan`) --- expanding
     :ref:`gl.Renderer` bindings
