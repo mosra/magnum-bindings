@@ -271,7 +271,7 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             "Dot product between two quaternions")
         .def("angle", [](const T& a, const T& b) {
             return Radd(Math::angle(a, b));
-        }, "Angle between normalized quaternions")
+        }, "Angle between normalized quaternions", py::arg("normalized_a"), py::arg("normalized_b"))
         .def("lerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerp),
             "Linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
         .def("lerp_shortest_path", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerpShortestPath),
