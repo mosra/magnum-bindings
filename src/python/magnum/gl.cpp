@@ -870,67 +870,6 @@ void gl(py::module_& m) {
     py::class_<GL::DefaultFramebuffer, GL::AbstractFramebuffer, NonDefaultFramebufferHolder<GL::DefaultFramebuffer>> defaultFramebuffer{m,
         "DefaultFramebuffer", "Default framebuffer"};
 
-    py::class_<GL::Framebuffer, GL::AbstractFramebuffer, GL::PyFramebufferHolder<GL::Framebuffer>> framebuffer{m,
-        "Framebuffer", "Framebuffer"};
-
-    py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
-        .def(py::init<UnsignedInt>(), "Constructor");
-
-    py::class_<GL::Framebuffer::DrawAttachment>{framebuffer, "DrawAttachment", "Draw attachment"}
-        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color attachment")
-        .def_readonly_static("NONE", &GL::Framebuffer::DrawAttachment::None, "No attachment");
-
-    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::DrawAttachment>();
-
-    py::class_<GL::Framebuffer::BufferAttachment>{framebuffer, "BufferAttachment", "Buffer attachment"}
-        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color buffer")
-        .def_readonly_static("DEPTH", &GL::Framebuffer::BufferAttachment::Depth, "Depth buffer")
-        .def_readonly_static("STENCIL", &GL::Framebuffer::BufferAttachment::Stencil, "Stencil buffer")
-        #if !defined(MAGNUM_TARGET_GLES2) || defined(MAGNUM_TARGET_WEBGL)
-        .def_readonly_static("DEPTH_STENCIL", &GL::Framebuffer::BufferAttachment::DepthStencil, "Both depth and stencil buffer")
-        #endif
-        ;
-
-    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::BufferAttachment>();
-
-    framebuffer
-        .def(py::init<const Range2Di&>(), "Constructor")
-        .def_property_readonly("id", &GL::Framebuffer::id, "OpenGL framebuffer ID")
-        /* Using lambdas to avoid method chaining getting into signatures */
-        .def("map_for_draw", [](GL::Framebuffer& self, GL::Framebuffer::DrawAttachment attachment) {
-            self.mapForDraw(attachment);
-        }, "Map shader output to an attachment")
-        /** @todo list mapForDraw (neeeds a non-initlist variant on magnum side) */
-        .def("map_for_read", [](GL::Framebuffer& self, GL::Framebuffer::ColorAttachment attachment) {
-            self.mapForRead(attachment);
-        }, "Map given color attachment for reading")
-        .def("attach_renderbuffer", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
-            self.attachRenderbuffer(attachment, renderbuffer);
-
-            /* Keep a reference to the renderbuffer to avoid it being deleted
-               before the framebuffer */
-            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
-        }, "Attach renderbuffer to given buffer", py::arg("attachment"), py::arg("renderbuffer"))
-        .def("attach_texture", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Texture2D& texture, Int level) {
-            self.attachTexture(attachment, texture, level);
-
-            /* Keep a reference to the texture to avoid it being deleted before
-               the framebuffer */
-            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(texture));
-        }, "Attach texture to given buffer", py::arg("attachment"), py::arg("texture"), py::arg("level"))
-
-        .def_property_readonly("attachments", [](GL::Framebuffer& self) {
-            return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
-        }, "Renderbuffer and texture objects referenced by the framebuffer");
-
-    /* An equivalent to this would be
-        m.attr("default_framebuffer") = &GL::defaultFramebuffer;
-       (have to use a & to make it choose return_value_policy::reference
-       instead of return_value_policy::copy), but this is more explicit ---
-       returning a raw pointer from functions makes pybind wrap it in an
-       unique_ptr, which would cause double-free / memory corruption later */
-    py::setattr(m, "default_framebuffer", py::cast(GL::defaultFramebuffer, py::return_value_policy::reference));
-
     /* Mesh */
     py::enum_<GL::MeshPrimitive>{m, "MeshPrimitive", "Mesh primitive type"}
         .value("POINTS", GL::MeshPrimitive::Points)
@@ -1365,6 +1304,69 @@ void gl(py::module_& m) {
     py::class_<GL::Texture3D, GL::AbstractTexture> texture3D{m, "Texture3D", "Three-dimensional texture"};
     texture(texture3D);
     #endif
+
+    /* Framebuffer, needs to be after textures due to attach_texture() */
+    py::class_<GL::Framebuffer, GL::AbstractFramebuffer, GL::PyFramebufferHolder<GL::Framebuffer>> framebuffer{m,
+        "Framebuffer", "Framebuffer"};
+
+    py::class_<GL::Framebuffer::ColorAttachment>{framebuffer, "ColorAttachment", "Color attachment"}
+        .def(py::init<UnsignedInt>(), "Constructor");
+
+    py::class_<GL::Framebuffer::DrawAttachment>{framebuffer, "DrawAttachment", "Draw attachment"}
+        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color attachment")
+        .def_readonly_static("NONE", &GL::Framebuffer::DrawAttachment::None, "No attachment");
+
+    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::DrawAttachment>();
+
+    py::class_<GL::Framebuffer::BufferAttachment>{framebuffer, "BufferAttachment", "Buffer attachment"}
+        .def(py::init<GL::Framebuffer::ColorAttachment>(), "Color buffer")
+        .def_readonly_static("DEPTH", &GL::Framebuffer::BufferAttachment::Depth, "Depth buffer")
+        .def_readonly_static("STENCIL", &GL::Framebuffer::BufferAttachment::Stencil, "Stencil buffer")
+        #if !defined(MAGNUM_TARGET_GLES2) || defined(MAGNUM_TARGET_WEBGL)
+        .def_readonly_static("DEPTH_STENCIL", &GL::Framebuffer::BufferAttachment::DepthStencil, "Both depth and stencil buffer")
+        #endif
+        ;
+
+    py::implicitly_convertible<GL::Framebuffer::ColorAttachment, GL::Framebuffer::BufferAttachment>();
+
+    framebuffer
+        .def(py::init<const Range2Di&>(), "Constructor")
+        .def_property_readonly("id", &GL::Framebuffer::id, "OpenGL framebuffer ID")
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def("map_for_draw", [](GL::Framebuffer& self, GL::Framebuffer::DrawAttachment attachment) {
+            self.mapForDraw(attachment);
+        }, "Map shader output to an attachment")
+        /** @todo list mapForDraw (neeeds a non-initlist variant on magnum side) */
+        .def("map_for_read", [](GL::Framebuffer& self, GL::Framebuffer::ColorAttachment attachment) {
+            self.mapForRead(attachment);
+        }, "Map given color attachment for reading")
+        .def("attach_renderbuffer", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Renderbuffer& renderbuffer) {
+            self.attachRenderbuffer(attachment, renderbuffer);
+
+            /* Keep a reference to the renderbuffer to avoid it being deleted
+               before the framebuffer */
+            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
+        }, "Attach renderbuffer to given buffer", py::arg("attachment"), py::arg("renderbuffer"))
+        .def("attach_texture", [](GL::Framebuffer& self, GL::Framebuffer::BufferAttachment attachment, GL::Texture2D& texture, Int level) {
+            self.attachTexture(attachment, texture, level);
+
+            /* Keep a reference to the texture to avoid it being deleted before
+               the framebuffer */
+            pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(texture));
+        }, "Attach texture to given buffer", py::arg("attachment"), py::arg("texture"), py::arg("level"))
+
+        .def_property_readonly("attachments", [](GL::Framebuffer& self) {
+            return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
+        }, "Renderbuffer and texture objects referenced by the framebuffer");
+
+    /* An equivalent to this would be
+        m.attr("default_framebuffer") = &GL::defaultFramebuffer;
+       (have to use a & to make it choose return_value_policy::reference
+       instead of return_value_policy::copy), but this is more explicit ---
+       returning a raw pointer from functions makes pybind wrap it in an
+       unique_ptr, which would cause double-free / memory corruption later */
+    py::setattr(m, "default_framebuffer", py::cast(GL::defaultFramebuffer, py::return_value_policy::reference));
+
 }
 
 }
