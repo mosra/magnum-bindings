@@ -166,7 +166,7 @@ class Framebuffer(GLTestCase):
         self.assertNotEqual(framebuffer.id, 0)
         self.assertEqual(len(framebuffer.attachments), 0)
 
-    def test_attach(self):
+    def test_attach_renderbuffer(self):
         renderbuffer = gl.Renderbuffer()
         renderbuffer.set_storage(gl.RenderbufferFormat.RGBA8, (4, 4))
         renderbuffer_refcount = sys.getrefcount(renderbuffer)
@@ -176,6 +176,9 @@ class Framebuffer(GLTestCase):
         self.assertEqual(len(framebuffer.attachments), 1)
         self.assertIs(framebuffer.attachments[0], renderbuffer)
         self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount + 1)
+
+        del framebuffer
+        self.assertEqual(sys.getrefcount(renderbuffer), renderbuffer_refcount)
 
     def test_read_image(self):
         renderbuffer = gl.Renderbuffer()
