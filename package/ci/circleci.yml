@@ -4,9 +4,9 @@ orbs:
   codecov: codecov/codecov@1.1.1
 
 executors:
-  ubuntu-16_04:
+  ubuntu-18_04:
     docker:
-    - image: ubuntu:xenial-20201014
+    - image: ubuntu:bionic-20220128
   xcode-10_3:
     macos:
       xcode: 10.3.0
@@ -65,7 +65,7 @@ commands:
     - run:
         name: Install CMake 3.4
         command: |
-          apt install -y wget
+          apt install -y wget libidn11
           mkdir -p $HOME/cmake && cd $HOME/cmake
           wget -nc --no-check-certificate https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz
           tar --strip-components=1 -xzf cmake-3.4.3-Linux-x86_64.tar.gz
@@ -75,6 +75,8 @@ commands:
   install-python-3_6:
     # Can't use the python3.6 docker image because there I can't install GCC
     # 4.8. Loosely based on https://gist.github.com/monkut/c4c07059444fd06f3f8661e13ccac619
+    # The deadsnakes PPA no longer supports 16.04, so this repo builds against
+    # 18.04.
     steps:
     - run:
         name: Install Python 3.6 and numpy
@@ -164,7 +166,7 @@ commands:
 
 jobs:
   linux-gl:
-    executor: ubuntu-16_04
+    executor: ubuntu-18_04
     environment:
       CMAKE_CXX_FLAGS: --coverage
       LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
@@ -183,7 +185,7 @@ jobs:
     - lcov
 
   linux-gles2:
-    executor: ubuntu-16_04
+    executor: ubuntu-18_04
     environment:
       CMAKE_CXX_FLAGS: --coverage
       LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
@@ -206,7 +208,7 @@ jobs:
     - lcov
 
   linux-gles3:
-    executor: ubuntu-16_04
+    executor: ubuntu-18_04
     environment:
       CMAKE_CXX_FLAGS: --coverage
       LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
@@ -229,7 +231,7 @@ jobs:
     - lcov
 
   linux-static:
-    executor: ubuntu-16_04
+    executor: ubuntu-18_04
     environment:
       # STUPID yml interprets unquoted ON as a boolean
       # https://stackoverflow.com/questions/53648244/specifying-the-string-value-yes-in-a-yaml-property
