@@ -89,7 +89,7 @@ const Py_ssize_t MatrixStridesDouble[][2]{
 
 namespace {
 
-template<class T> void angle(py::class_<T>& c) {
+template<class T> void angle(py::module_& m, py::class_<T>& c) {
     /*
         Missing APIs:
 
@@ -153,9 +153,28 @@ template<class T> void angle(py::class_<T>& c) {
             }, "Ratio of two values")
 
         .def("__repr__", repr<T>, "Object representation");
+
+    /* Overloads of scalar functions */
+    m
+        .def("isinf", static_cast<bool(*)(T)>(Math::isInf), "If given number is a positive or negative infinity")
+        .def("isnan", static_cast<bool(*)(T)>(Math::isNan), "If given number is a NaN")
+        .def("min", static_cast<T(*)(T, T)>(Math::min), "Minimum", py::arg("value"), py::arg("min"))
+        .def("max", static_cast<T(*)(T, T)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
+        .def("minmax", static_cast<std::pair<T, T>(*)(T, T)>(Math::minmax), "Minimum and maximum of two values")
+        .def("clamp", static_cast<T(*)(T, T, T)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
+        .def("sign", Math::sign<T>, "Sign")
+        .def("abs", static_cast<T(*)(T)>(Math::abs), "Absolute value")
+        .def("floor", static_cast<T(*)(T)>(Math::floor), "Nearest not larger integer")
+        .def("round", static_cast<T(*)(T)>(Math::round), "Round value to nearest integer")
+        .def("ceil", static_cast<T(*)(T)>(Math::ceil), "Nearest not smaller integer")
+        .def("fmod", static_cast<T(*)(T, T)>(Math::fmod), "Floating point division remainder")
+        .def("lerp", static_cast<T(*)(const T&, const T&, Double)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp", static_cast<T(*)(const T&, const T&, bool)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp_inverted", static_cast<Double(*)(T, T, T)>(Math::lerpInverted), "Inverse linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("lerp"))
+        .def("select", static_cast<T(*)(const T&, const T&, Double)>(Math::select), "Constant interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"));
 }
 
-template<class T> void boolVector(py::class_<T>& c) {
+template<class T> void boolVector(py::module_& m, py::class_<T>& c) {
     c
         /* Constructors */
         .def_static("zero_init", []() {
@@ -230,6 +249,9 @@ template<class T> void boolVector(py::class_<T>& c) {
     char lenDocstring[] = "Vector size. Returns _.";
     lenDocstring[sizeof(lenDocstring) - 3] = '0' + T::Size;
     c.def_static("__len__", []() { return int(T::Size); }, lenDocstring);
+
+    m
+        .def("lerp", Math::lerp<T::Size>, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"));
 }
 
 template<class U, class T, class ...Args> void convertible(py::class_<T, Args...>& c) {
@@ -418,8 +440,8 @@ void math(py::module_& root, py::module_& m) {
     py::class_<Radd> rad{root, "Rad", "Radians"};
     deg.def(py::init<Radd>(), "Conversion from radians");
     rad.def(py::init<Degd>(), "Conversion from degrees");
-    angle(deg);
-    angle(rad);
+    angle(m, deg);
+    angle(m, rad);
 
     /* Cyclic convertibility, so can't do that in angle() */
     py::implicitly_convertible<Radd, Degd>();
@@ -429,9 +451,9 @@ void math(py::module_& root, py::module_& m) {
     py::class_<Math::BoolVector<2>> boolVector2{root, "BoolVector2", "Two-component bool vector"};
     py::class_<Math::BoolVector<3>> boolVector3{root, "BoolVector3", "Three-component bool vector"};
     py::class_<Math::BoolVector<4>> boolVector4{root, "BoolVector4", "Four-component bool vector"};
-    boolVector(boolVector2);
-    boolVector(boolVector3);
-    boolVector(boolVector4);
+    boolVector(m, boolVector2);
+    boolVector(m, boolVector3);
+    boolVector(m, boolVector4);
 
     /* Constants. Putting them into math like Python does and as doubles, since
        Python doesn't really differentiate between 32bit and 64bit floats */
@@ -448,6 +470,12 @@ void math(py::module_& root, py::module_& m) {
 
     /* Functions */
     m
+        .def("div", [](Long x, Long y) { return Math::div(x, y); }, "Integer division with remainder", py::arg("x"), py::arg("y"))
+        /** @todo binomialCoefficient(), asserts are hard to replicate (have an
+            internal variant returning an Optional?) */
+        .def("popcount", static_cast<UnsignedInt(*)(UnsignedLong)>(Math::popcount), "Count of bits set in a number")
+
+        /* Trigonometry */
         .def("sin", [](Radd angle) { return Math::sin(angle); }, "Sine")
         .def("cos", [](Radd angle) { return Math::cos(angle); }, "Cosine")
         .def("sincos", [](Radd angle) {
@@ -456,7 +484,46 @@ void math(py::module_& root, py::module_& m) {
         .def("tan", [](Radd angle) { return Math::tan(angle); }, "Tangent")
         .def("asin", [](Double angle) { return Math::asin(angle); }, "Arc sine")
         .def("acos", [](Double angle) { return Math::acos(angle); }, "Arc cosine")
-        .def("atan", [](Double angle) { return Math::atan(angle); }, "Arc tangent");
+        .def("atan", [](Double angle) { return Math::atan(angle); }, "Arc tangent")
+
+        /* Scalar/vector functions, scalar versions. Vector versions defined
+           for each vector variant below; angle versions defined above. */
+        .def("isinf", static_cast<bool(*)(Double)>(Math::isInf), "If given number is a positive or negative infinity")
+        .def("isnan", static_cast<bool(*)(Double)>(Math::isNan), "If given number is a NaN")
+        .def("min", static_cast<Long(*)(Long, Long)>(Math::min), "Minimum", py::arg("value"), py::arg("min"))
+        .def("min", static_cast<Double(*)(Double, Double)>(Math::min), "Minimum", py::arg("value"), py::arg("min"))
+        .def("max", static_cast<Long(*)(Long, Long)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
+        .def("max", static_cast<Double(*)(Double, Double)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
+        .def("minmax", static_cast<std::pair<Long, Long>(*)(Long, Long)>(Math::minmax), "Minimum and maximum of two values")
+        .def("minmax", static_cast<std::pair<Double, Double>(*)(Double, Double)>(Math::minmax), "Minimum and maximum of two values")
+        .def("clamp", static_cast<Long(*)(Long, Long, Long)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
+        .def("clamp", static_cast<Double(*)(Double, Double, Double)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
+        .def("sign", Math::sign<Long>, "Sign")
+        .def("sign", Math::sign<Double>, "Sign")
+        .def("abs", static_cast<Long(*)(Long)>(Math::abs), "Absolute value")
+        .def("abs", static_cast<Double(*)(Double)>(Math::abs), "Absolute value")
+        .def("floor", static_cast<Double(*)(Double)>(Math::floor), "Nearest not larger integer")
+        .def("round", static_cast<Double(*)(Double)>(Math::round), "Round value to nearest integer")
+        .def("ceil", static_cast<Double(*)(Double)>(Math::ceil), "Nearest not smaller integer")
+        .def("fmod", static_cast<Double(*)(Double, Double)>(Math::fmod), "Floating point division remainder")
+        .def("lerp", static_cast<Long(*)(const Long&, const Long&, Double)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp", static_cast<Double(*)(const Double&, const Double&, Double)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp", static_cast<Long(*)(const Long&, const Long&, bool)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp", static_cast<Double(*)(const Double&, const Double&, bool)>(Math::lerp), "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp_inverted", static_cast<Double(*)(Double, Double, Double)>(Math::lerpInverted), "Inverse linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("lerp"))
+        .def("select", static_cast<Long(*)(const Long&, const Long&, Double)>(Math::select), "Constant interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("select", static_cast<Double(*)(const Double&, const Double&, Double)>(Math::select), "Constant interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("fma", static_cast<Double(*)(Double, Double, Double)>(Math::fma), "Fused multiply-add")
+
+        /* Exponential and power. These are not defined for angles as they
+           require the type to be unitless. */
+        .def("log", static_cast<UnsignedInt(*)(UnsignedInt, UnsignedInt)>(Math::log), "Integral algorithm", py::arg("base"), py::arg("number"))
+        .def("log2", static_cast<UnsignedInt(*)(UnsignedInt)>(Math::log2), "Base-2 integral algorithm")
+        .def("log", static_cast<Double(*)(Double)>(Math::log), "Natural algorithm")
+        .def("exp", static_cast<Double(*)(Double)>(Math::exp), "Natural exponential")
+        .def("pow", static_cast<Double(*)(Double, Double)>(Math::pow), "Power")
+        .def("sqrt", static_cast<Double(*)(Double)>(Math::sqrt), "Square root")
+        .def("sqrt_inverted", static_cast<Double(*)(Double)>(Math::sqrtInverted), "Square root");
 
     /* These are needed for the quaternion, so register them before. Double
        versions are called from inside these. */

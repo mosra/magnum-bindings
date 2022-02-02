@@ -44,6 +44,8 @@ Changelog
 -   Exposed newly added off-center variants of
     :ref:`Matrix4.orthographic_projection()` and
     :ref:`Matrix3.projection()`
+-   Exposed remaining vector/scalar, exponential and other functions in the
+    :ref:`math <magnum.math>` library
 -   Exposed :ref:`gl.Context` and its platform-specific subclasses for EGL, WGL
     and GLX
 -   Exposed :ref:`gl.Renderer.set_blend_function()`,

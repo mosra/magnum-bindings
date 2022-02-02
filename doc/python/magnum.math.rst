@@ -195,6 +195,10 @@
     -   :dox:`Math::Matrix3::from()` / :dox:`Math::Matrix4::from()` are named
         :ref:`Matrix3.from_()` / :ref:`Matrix4.from_()` because :py:`from` is
         a Python keyword and thus can't be used as a name.
+    -   :dox:`Math::isInf()` and :dox:`Math::isNan()` are named
+        :ref:`math.isinf() <magnum.math.isinf()>` and
+        :ref:`math.isnan() <magnum.math.isnan()>` for consistency with the
+        Python :ref:`math` module
     -   :cpp:`Math::gather()` and :cpp:`Math::scatter()` operations are
         implemented as real swizzles:
 

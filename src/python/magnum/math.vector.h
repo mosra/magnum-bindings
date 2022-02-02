@@ -198,6 +198,42 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
     */
 
     m
+        /* Lambdas in order to convert from the generic Vector<size, T> */
+        .def("min", [](const T& value, const T& min) {
+            return T{Math::min(value, min)};
+        }, "Minimum", py::arg("value"), py::arg("min"))
+        .def("min", [](const T& value, typename T::Type min) {
+            return T{Math::min(value, min)};
+        }, "Minimum", py::arg("value"), py::arg("min"))
+        .def("max", [](const T& value, const T& max) {
+            return T{Math::max(value, max)};
+        }, "Maximum", py::arg("value"), py::arg("max"))
+        .def("max", [](const T& value, typename T::Type max) {
+            return T{Math::max(value, max)};
+        }, "Maximum", py::arg("value"), py::arg("max"))
+        .def("minmax", [](const T& a, const T& b) {
+            return std::pair<T, T>{Math::minmax(a, b)};
+        }, "Minimum and maximum of two values")
+        .def("clamp", [](const T& a, const T& min, const T& max) {
+            return T{Math::clamp(a, min, max)};
+        }, "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
+        .def("clamp", [](const T& a, typename T::Type min, typename T::Type max) {
+            return T{Math::clamp(a, min, max)};
+        }, "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
+        .def("lerp", [](const T& a, const T& b, Double t) {
+            return T{Math::lerp(a, b, t)};
+        }, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        /* The BoolVector overload has to be before the bool to match first */
+        .def("lerp", [](const T& a, const T& b, Math::BoolVector<T::Size> t) {
+            return T{Math::lerp(a, b, t)};
+        }, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("lerp", [](const T& a, const T& b, bool t) {
+            return T{Math::lerp(a, b, t)};
+        }, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("select", [](const T& a, const T& b, Double t) {
+            return T{Math::select(a, b, t)};
+        }, "Constant interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+
         .def("dot", [](const T& a, const T& b) { return Math::dot(a, b); },
             "Dot product of two vectors");
 
@@ -336,6 +372,17 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
     char lenDocstring[] = "Vector size. Returns _.";
     lenDocstring[sizeof(lenDocstring) - 3] = '0' + T::Size;
     c.def_static("__len__", []() { return int(T::Size); }, lenDocstring);
+}
+
+/* Things common for vectors of all sizes and types */
+template<class T> void vectorSigned(py::module_& m, py::class_<T>&) {
+    m
+        .def("sign", [](const T& a) {
+            return T{Math::sign(a)};
+        }, "Sign")
+        .def("abs", [](const T& a) {
+            return T{Math::abs(a)};
+        }, "Absolute value");
 }
 
 template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {

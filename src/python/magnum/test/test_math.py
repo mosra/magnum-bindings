@@ -110,12 +110,116 @@ class Constants(unittest.TestCase):
 
 class Functions(unittest.TestCase):
     def test(self):
+        self.assertEqual(math.div(16, 5), (3, 1))
+        self.assertEqual(math.popcount(0xb5d194), 12)
+
+    def test_trigonometry(self):
         self.assertAlmostEqual(math.sin(Deg(45.0)), 0.7071067811865475)
         self.assertAlmostEqual(Deg(math.asin(0.7071067811865475)), Deg(45.0))
 
         sincos = math.sincos(Deg(90.0))
         self.assertAlmostEqual(sincos[0], 1.0)
         self.assertAlmostEqual(sincos[1], 0.0)
+
+    def test_scalar(self):
+        self.assertFalse(math.isinf(math.nan))
+        self.assertFalse(math.isnan(math.inf))
+        self.assertTrue(math.isinf(math.inf))
+        self.assertTrue(math.isnan(math.nan))
+
+        self.assertEqual(math.min(15.0, 3.0), 3.0)
+        self.assertEqual(math.max(15.0, 3.0), 15.0)
+        self.assertEqual(math.minmax(15.0, 3.0), (3.0, 15.0))
+        self.assertEqual(math.clamp(0.5, -1.0, 5.0), 0.5)
+
+        self.assertEqual(math.sign(-15.0), -1.0)
+        self.assertEqual(math.abs(-15.0), 15.0)
+
+        self.assertEqual(math.floor(15.3), 15.0)
+        self.assertEqual(math.ceil(15.3), 16.0)
+        self.assertEqual(math.round(15.3), 15.0)
+        self.assertEqual(math.round(15.7), 16.0)
+        self.assertAlmostEqual(math.fmod(5.1, 3.0), 2.1)
+
+        self.assertEqual(math.lerp(2.0, 5.0, 0.5), 3.5)
+        self.assertEqual(math.lerp(2.0, 5.0, False), 2.0)
+        self.assertEqual(math.lerp(2, 5, 0.5), 3)
+        self.assertEqual(math.lerp(2, 5, True), 5)
+        self.assertEqual(math.lerp_inverted(2.0, 5.0, 3.5), 0.5)
+        self.assertEqual(math.select(2.0, 5.0, 0.6), 2.0)
+        self.assertEqual(math.select(2, 5, 1.0), 5)
+
+        self.assertEqual(math.fma(2.0, 3.0, 0.75), 6.75)
+
+    def test_scalar_angle(self):
+        self.assertFalse(math.isinf(Deg(math.nan)))
+        self.assertFalse(math.isnan(Rad(math.inf)))
+        self.assertTrue(math.isinf(Deg(math.inf)))
+        self.assertTrue(math.isnan(Rad(math.nan)))
+
+        self.assertEqual(math.min(Deg(15.0), Deg(3.0)), Deg(3.0))
+        self.assertEqual(math.max(Rad(15.0), Rad(3.0)), Rad(15.0))
+        self.assertEqual(math.minmax(Deg(15.0), Deg(3.0)), (Deg(3.0), Deg(15.0)))
+        self.assertEqual(math.clamp(Rad(0.5), Rad(-1.0), Rad(5.0)), Rad(0.5))
+
+        self.assertEqual(math.sign(Deg(-15.0)), Deg(-1.0))
+        self.assertEqual(math.abs(Rad(-15.0)), Rad(15.0))
+
+        self.assertEqual(math.floor(Deg(15.3)), Deg(15.0))
+        self.assertEqual(math.ceil(Rad(15.3)), Rad(16.0))
+        self.assertEqual(math.round(Deg(15.3)), Deg(15.0))
+        self.assertEqual(math.round(Rad(15.7)), Rad(16.0))
+        self.assertAlmostEqual(math.fmod(Deg(5.1), Deg(3.0)), Deg(2.1))
+
+        self.assertEqual(math.lerp(Deg(2.0), Deg(5.0), 0.5), Deg(3.5))
+        self.assertEqual(math.lerp(Rad(2.0), Rad(5.0), False), Rad(2.0))
+        self.assertEqual(math.lerp_inverted(Deg(2.0), Deg(5.0), Deg(3.5)), 0.5)
+        self.assertEqual(math.select(Rad(2.0), Rad(5.0), 0.6), Rad(2.0))
+
+    def test_vector(self):
+        self.assertEqual(math.isinf((math.inf, math.nan)), BoolVector2(0b01))
+        self.assertEqual(math.isnan((math.inf, math.nan)), BoolVector2(0b10))
+
+        self.assertEqual(math.min((15.0, 0.5), (3.0, 1.0)), (3.0, 0.5))
+        self.assertEqual(math.min((15.0, 0.5), 3.0), (3.0, 0.5))
+
+        self.assertEqual(math.max((15.0, 0.5), (3.0, 1.0)), (15.0, 1.0))
+        self.assertEqual(math.max((15.0, 0.5), 3.0), (15.0, 3.0))
+
+        self.assertEqual(math.minmax((15.0, 0.5), (3.0, 1.0)), ((3.0, 0.5), (15.0, 1.0)))
+
+        self.assertEqual(math.clamp((0.5, 3.5), (-1.0, 1.0), (5.0, 2.0)), (0.5, 2.0))
+        self.assertEqual(math.clamp((0.5, 3.5), -1.0, 1.0), (0.5, 1.0))
+
+        self.assertEqual(math.sign((-15.0, 15.0)), (-1.0, 1.0))
+        self.assertEqual(math.abs((-15.0, 15.0)), (15.0, 15.0))
+
+        self.assertEqual(math.floor((15.3, 15.6)), (15.0, 15.0))
+        self.assertEqual(math.ceil((15.3, 15.6)), (16.0, 16.0))
+        self.assertEqual(math.round((15.3, 15.6)), (15.0, 16.0))
+        self.assertEqual(math.fmod((5.1, 1.5), (3.0, 1.0)), (2.1, 0.5))
+
+        self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), 0.5), (3.5, 1.5))
+        self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), BoolVector2(0b01)), (5.0, 1.0))
+        self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), False), (2.0, 1.0))
+        self.assertEqual(math.lerp((2, 1), (5, 2), 0.5), (3, 1))
+        self.assertEqual(math.lerp((2, 1), (5, 2), BoolVector2(0b01)), (5, 1))
+        self.assertEqual(math.lerp((2, 1), (5, 2), True), (5, 2))
+        self.assertEqual(math.lerp(BoolVector4(0b1001), BoolVector4(0b0110), BoolVector4(0b0101)), BoolVector4(0b1100))
+        self.assertEqual(math.lerp_inverted((2.0, 1.0), (5.0, 2.0), (3.5, 1.5)), (0.5, 0.5))
+        self.assertEqual(math.select((2.0, 1.0), (5.0, 2.0), 0.6), (2.0, 1.0))
+        self.assertEqual(math.select((2, 1), (5, 2), 1.0), (5, 2))
+
+        self.assertEqual(math.fma((2.0, 1.0), (3.0, 2.0), (0.75, 0.1)), (6.75, 2.1))
+
+    def test_exponential(self):
+        self.assertEqual(math.log(2, 256), 8)
+        self.assertEqual(math.log2(256), 8)
+        self.assertAlmostEqual(math.log(2.0), 0.69314718)
+        self.assertAlmostEqual(math.exp(0.69314718), 2.0)
+        self.assertAlmostEqual(math.pow(2.0, 0.5), 1.414213562)
+        self.assertAlmostEqual(math.sqrt(2.0), 1.414213562)
+        self.assertAlmostEqual(math.sqrt_inverted(2.0), 1/1.414213562)
 
 class Vector(unittest.TestCase):
     def test_init(self):

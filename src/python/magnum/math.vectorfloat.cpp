@@ -31,6 +31,32 @@ namespace {
 
 template<class T> void vectorFloat(py::module_& m, py::class_<T>& c) {
     m
+        /* Lambdas in order to convert to/from the generic Vector<size, T> */
+        .def("isinf", [](const T& a) {
+            return Math::isInf(a);
+        }, "If given number is a positive or negative infinity")
+        .def("isnan", [](const T& a) {
+            return Math::isNan(a);
+        }, "If given number is a NaN")
+        .def("floor", [](const T& a) {
+            return T{Math::floor(a)};
+        }, "Nearest not larger integer")
+        .def("round", [](const T& a) {
+            return T{Math::round(a)};
+        }, "Round value to nearest integer")
+        .def("ceil", [](const T& a) {
+            return T{Math::ceil(a)};
+        }, "Nearest not smaller integer")
+        .def("fmod", [](const T& a, const T& b) {
+            return T{Math::fmod(a, b)};
+        }, "Floating point division remainder")
+        .def("lerp_inverted", [](const T& a, const T& b, const T& t) {
+            return T{Math::lerpInverted(a, b, t)};
+        }, "Inverse linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
+        .def("fma", [](const T& a, const T& b, const T& c) {
+            return T{Math::fma(a, b, c)};
+        }, "Fused multiply-add")
+
         .def("angle", [](const T& a, const T& b) { return Radd(Math::angle(a, b)); },
             "Angle between normalized vectors", py::arg("normalized_a"), py::arg("normalized_b"));
 
@@ -60,6 +86,7 @@ template<class T> void vectorsFloat(py::module_& m, py::class_<Math::Vector2<T>>
     everyVector(vector2_);
     everyVectorSigned(vector2_);
     vector<Math::Vector2<T>>(m, vector2_);
+    vectorSigned<Math::Vector2<T>>(m, vector2_);
     vectorFloat<Math::Vector2<T>>(m, vector2_);
     vector2<T>(vector2_);
     vector2Signed<T>(vector2_);
@@ -69,12 +96,14 @@ template<class T> void vectorsFloat(py::module_& m, py::class_<Math::Vector2<T>>
     everyVector(vector3_);
     everyVectorSigned(vector3_);
     vector<Math::Vector3<T>>(m, vector3_);
+    vectorSigned<Math::Vector3<T>>(m, vector3_);
     vectorFloat<Math::Vector3<T>>(m, vector3_);
     vector3<T>(vector3_);
 
     everyVector(vector4_);
     everyVectorSigned(vector4_);
     vector<Math::Vector4<T>>(m, vector4_);
+    vectorSigned<Math::Vector4<T>>(m, vector4_);
     vectorFloat<Math::Vector4<T>>(m, vector4_);
     vector4<T>(vector4_);
 }
