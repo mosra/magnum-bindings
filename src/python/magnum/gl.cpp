@@ -1224,14 +1224,9 @@ void gl(py::module_& m) {
         #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
         .value("RGBA8", GL::TextureFormat::RGBA8)
         #endif
-        #ifndef MAGNUM_TARGET_WEBGL
-        #ifndef MAGNUM_TARGET_GLES2
+        #if !defined(MAGNUM_TARGET_WEBGL) && !defined(MAGNUM_TARGET_GLES2)
         .value("SR8", GL::TextureFormat::SR8)
-        #endif
-        #if defined(MAGNUM_TARGET_GLES) && !defined(MAGNUM_TARGET_GLES2)
-        /** @todo how to expose this one in the docs? */
         .value("SRG8", GL::TextureFormat::SRG8)
-        #endif
         #endif
         #if !defined(MAGNUM_TARGET_GLES) || defined(MAGNUM_TARGET_GLES2)
         .value("SRGB", GL::TextureFormat::SRGB)
