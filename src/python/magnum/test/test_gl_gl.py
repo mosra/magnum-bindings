@@ -278,7 +278,7 @@ class Mesh(GLTestCase):
         a.count = 15
         self.assertEqual(a.count, 15)
 
-    def test_add_buffer(self):
+    def test_add_vertex_buffer(self):
         buffer = gl.Buffer()
         buffer_refcount = sys.getrefcount(buffer)
 
@@ -288,6 +288,27 @@ class Mesh(GLTestCase):
         self.assertEqual(len(mesh.buffers), 1)
         self.assertIs(mesh.buffers[0], buffer)
         self.assertEqual(sys.getrefcount(buffer), buffer_refcount + 1)
+
+        # Deleting the mesh should decrease it again
+        del mesh
+        self.assertEqual(sys.getrefcount(buffer), buffer_refcount)
+
+    def test_set_index_buffer(self):
+        buffer = gl.Buffer()
+        buffer_refcount = sys.getrefcount(buffer)
+
+        # Adding a buffer to the mesh should increase its ref count
+        mesh = gl.Mesh()
+        mesh.set_index_buffer(buffer, 0, gl.MeshIndexType.UNSIGNED_INT)
+        self.assertEqual(len(mesh.buffers), 1)
+        self.assertIs(mesh.buffers[0], buffer)
+        self.assertEqual(sys.getrefcount(buffer), buffer_refcount + 1)
+
+        # Trying with the generic type as well
+        mesh.set_index_buffer(buffer, 0, MeshIndexType.UNSIGNED_SHORT)
+        self.assertEqual(len(mesh.buffers), 2)
+        self.assertIs(mesh.buffers[1], buffer)
+        self.assertEqual(sys.getrefcount(buffer), buffer_refcount + 2)
 
         # Deleting the mesh should decrease it again
         del mesh

@@ -944,6 +944,11 @@ void gl(py::module_& m) {
         #endif
         ;
 
+    py::enum_<GL::MeshIndexType>{m, "MeshIndexType", "Mesh index type"}
+        .value("UNSIGNED_BYTE", GL::MeshIndexType::UnsignedByte)
+        .value("UNSIGNED_SHORT", GL::MeshIndexType::UnsignedShort)
+        .value("UNSIGNED_INT", GL::MeshIndexType::UnsignedInt);
+
     /* Class definition above AbstractShaderProgram, since that needs it for
        the draw() signature */
     mesh.def(py::init<GL::MeshPrimitive>(), "Constructor", py::arg("primitive") = GL::MeshPrimitive::Triangles)
@@ -965,6 +970,14 @@ void gl(py::module_& m) {
         .def_property("count", &GL::Mesh::count, [](GL::Mesh& self, UnsignedInt count) {
             self.setCount(count);
         }, "Vertex/index count")
+        .def_property_readonly("is_indexed", &GL::Mesh::isIndexed, "Whether the mesh is indexed")
+        .def_property_readonly("index_type", [](GL::Mesh& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_RuntimeError, "the mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            return self.indexType();
+        }, "Index type")
 
         /* Using lambdas to avoid method chaining getting into signatures */
 
@@ -975,7 +988,22 @@ void gl(py::module_& m) {
                the mesh */
             pyObjectHolderFor<GL::PyMeshHolder>(self).buffers.emplace_back(pyObjectFromInstance(buffer));
         }, "Add vertex buffer", py::arg("buffer"), py::arg("offset"), py::arg("stride"), py::arg("attribute"))
-        /** @todo more */
+        /** @todo add_vertex_buffer_instanced */
+
+        .def("set_index_buffer", [](GL::Mesh& self, GL::Buffer& buffer, GLintptr offset, GL::MeshIndexType type) {
+            self.setIndexBuffer(buffer, offset, type);
+
+            /* Keep a reference to the buffer to avoid it being deleted before
+               the mesh */
+            pyObjectHolderFor<GL::PyMeshHolder>(self).buffers.emplace_back(pyObjectFromInstance(buffer));
+        }, "Set index buffer", py::arg("buffer"), py::arg("offset"), py::arg("type"))
+        .def("set_index_buffer", [](GL::Mesh& self, GL::Buffer& buffer, GLintptr offset, MeshIndexType type) {
+            self.setIndexBuffer(buffer, offset, type);
+
+            /* Keep a reference to the buffer to avoid it being deleted before
+               the mesh */
+            pyObjectHolderFor<GL::PyMeshHolder>(self).buffers.emplace_back(pyObjectFromInstance(buffer));
+        }, "Set index buffer", py::arg("buffer"), py::arg("offset"), py::arg("type"))
 
         .def_property_readonly("buffers", [](GL::Mesh& self) {
             return pyObjectHolderFor<GL::PyMeshHolder>(self).buffers;
