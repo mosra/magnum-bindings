@@ -910,7 +910,7 @@ void gl(py::module_& m) {
             /* Keep a reference to the renderbuffer to avoid it being deleted
                before the framebuffer */
             pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments.emplace_back(pyObjectFromInstance(renderbuffer));
-        }, "Attach renderbuffer to given buffer")
+        }, "Attach renderbuffer to given buffer", py::arg("attachment"), py::arg("renderbuffer"))
 
         .def_property_readonly("attachments", [](GL::Framebuffer& self) {
             return pyObjectHolderFor<GL::PyFramebufferHolder>(self).attachments;
