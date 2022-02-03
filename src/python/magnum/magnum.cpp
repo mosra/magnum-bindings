@@ -268,7 +268,14 @@ void magnum(py::module_& m) {
         .value("R32F", PixelFormat::R32F)
         .value("RG32F", PixelFormat::RG32F)
         .value("RGB32F", PixelFormat::RGB32F)
-        .value("RGBA32F", PixelFormat::RGBA32F);
+        .value("RGBA32F", PixelFormat::RGBA32F)
+        .value("DEPTH16_UNORM", PixelFormat::Depth16Unorm)
+        .value("DEPTH24_UNORM", PixelFormat::Depth24Unorm)
+        .value("DEPTH32F", PixelFormat::Depth32F)
+        .value("STENCIL8UI", PixelFormat::Stencil8UI)
+        .value("DEPTH16_UNORM_STENCIL8UI", PixelFormat::Depth16UnormStencil8UI)
+        .value("DEPTH24_UNORM_STENCIL8UI", PixelFormat::Depth24UnormStencil8UI)
+        .value("DEPTH32F_STENCIL8UI", PixelFormat::Depth32FStencil8UI);
 
     py::class_<PixelStorage>{m, "PixelStorage", "Pixel storage parameters"}
         .def(py::init(), "Default constructor")
