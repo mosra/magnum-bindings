@@ -7,37 +7,93 @@ environment:
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     APPVEYOR_JOB_NAME: windows-msvc2017
     PYTHON: 36
+    PYBIND: 2.3.0
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     APPVEYOR_JOB_NAME: windows-msvc2019
     PYTHON: 36
+    PYBIND: 2.3.0
+  - TARGET: desktop
+    COMPILER: msvc
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_JOB_NAME: windows-msvc2022
+    PYTHON: 36
+    PYBIND: 2.9.0 # first supporting MSVC 2022
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     APPVEYOR_JOB_NAME: windows-static-msvc2019
     BUILD_STATIC: ON
     PYTHON: 36
-  - TARGET: desktop-gles
-    TARGET_GLES2: ON
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    APPVEYOR_JOB_NAME: windows-gles2-msvc2017
+    PYBIND: 2.3.0
+  - TARGET: desktop
+    COMPILER: msvc
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_JOB_NAME: windows-static-msvc2022
+    BUILD_STATIC: ON
     PYTHON: 36
+    PYBIND: 2.9.0 # first supporting MSVC 2022
+  # clang-cl crashes with pybind11, "Illegal instruction" and
+  #   lld-link: warning: ignoring unknown argument '-flto'
+  #   LLVM ERROR: Associative COMDAT symbol '??0type_error@pybind11@@QEAA@PEBD@Z' does not exist.
+  # TODO: retry once their changelog says something about clang-cl being fixed
+  #- TARGET: desktop
+    #COMPILER: msvc-clang
+    #APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #APPVEYOR_JOB_NAME: windows-msvc2019-clang
+    #PYTHON: 36
+    #PYBIND: 2.7.0
+  #- TARGET: desktop
+    #COMPILER: msvc-clang
+    #APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    #APPVEYOR_JOB_NAME: windows-msvc2022-clang
+    #PYTHON: 36
+    #PYBIND: 2.9.0 # first supporting MSVC 2022
+  - TARGET: desktop
+    COMPILER: msvc
+    # Same reasoning as in Corrade for /EHsc
+    COMPILER_EXTRA: -DCMAKE_CXX_FLAGS="/permissive- /EHsc" -DMSVC_COMPATIBILITY=OFF
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    APPVEYOR_JOB_NAME: windows-conforming-msvc2019
+    PYTHON: 36
+    PYBIND: 2.3.0
+  - TARGET: desktop
+    COMPILER: msvc
+    # Not playing with fire and using /EHsc on 2022 as well
+    COMPILER_EXTRA: -DCMAKE_CXX_FLAGS="/permissive- /EHsc" -DMSVC_COMPATIBILITY=OFF
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_JOB_NAME: windows-conforming-msvc2022
+    PYTHON: 36
+    PYBIND: 2.9.0 # first supporting MSVC 2022
   - TARGET: desktop-gles
     TARGET_GLES2: ON
+    COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     APPVEYOR_JOB_NAME: windows-gles2-msvc2019
     PYTHON: 36
+    PYBIND: 2.3.0
   - TARGET: desktop-gles
-    TARGET_GLES2: OFF
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    APPVEYOR_JOB_NAME: windows-gles3-msvc2017
+    TARGET_GLES2: ON
+    COMPILER: msvc
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_JOB_NAME: windows-gles2-msvc2022
     PYTHON: 36
+    PYBIND: 2.9.0 # first supporting MSVC 2022
   - TARGET: desktop-gles
     TARGET_GLES2: OFF
+    COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     APPVEYOR_JOB_NAME: windows-gles3-msvc2019
     PYTHON: 36
+    PYBIND: 2.3.0
+  - TARGET: desktop-gles
+    TARGET_GLES2: OFF
+    COMPILER: msvc
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_JOB_NAME: windows-gles3-msvc2022
+    PYTHON: 36
+    PYBIND: 2.9.0 # first supporting MSVC 2022
 
 install:
 # Ninja. `cinst ninja` started 503ing in late November 2019 and wasn't really
@@ -55,20 +111,20 @@ install:
 - IF "%BUILD_STATIC%" == "ON" set "STATIC_PLUGIN_PATH=-DMAGNUM_PLUGINS_DIR=%APPVEYOR_BUILD_FOLDER:\=/%/deps/bin/magnum"
 
 # pybind11. Built in the CI script.
-- IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\v2.3.0.zip appveyor DownloadFile https://github.com/pybind/pybind11/archive/v2.3.0.zip
-- 7z x v2.3.0.zip
+- IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\v%PYBIND%.zip appveyor DownloadFile https://github.com/pybind/pybind11/archive/v%PYBIND%.zip
+- 7z x v%PYBIND%.zip
 
 # SDL2
-- IF "%TARGET%" == "desktop" IF "%COMPILER%" == "msvc" IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-2.0.9-VC.zip appveyor DownloadFile http://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-- IF "%TARGET%" == "desktop" IF "%COMPILER%" == "msvc" 7z x SDL2-devel-2.0.9-VC.zip && ren SDL2-2.0.9 SDL
+- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-2.0.9-VC.zip appveyor DownloadFile http://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" 7z x SDL2-devel-2.0.9-VC.zip && ren SDL2-2.0.9 SDL
 
 # GLFW
 - IF "%TARGET%" == "desktop" IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\glfw-3.2.1.bin.WIN64.zip appveyor DownloadFile https://github.com/glfw/glfw/releases/download/3.2.1/glfw-3.2.1.bin.WIN64.zip
 - IF "%TARGET%" == "desktop" 7z x glfw-3.2.1.bin.WIN64.zip && ren glfw-3.2.1.bin.WIN64 glfw && mkdir deps && mkdir deps\lib && mkdir deps\bin && mkdir deps\include && xcopy /e glfw\include\* deps\include\
-- IF "%TARGET%" == "desktop" IF "%COMPILER%" == "msvc" copy glfw\lib-vc2015\glfw3.dll deps\bin\ && copy glfw\lib-vc2015\glfw3dll.lib deps\lib\glfw3.lib
+- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" copy glfw\lib-vc2015\glfw3.dll deps\bin\ && copy glfw\lib-vc2015\glfw3dll.lib deps\lib\glfw3.lib
 
 build_script:
-- IF "%TARGET%" == "desktop" IF "%COMPILER%" == "msvc" call package\ci\appveyor-desktop.bat
+- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" call package\ci\appveyor-desktop.bat
 - IF "%TARGET%" == "desktop-gles" call package\ci\appveyor-desktop-gles.bat
 
 cache:
