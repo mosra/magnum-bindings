@@ -10,6 +10,10 @@ executors:
   xcode-10_3:
     macos:
       xcode: 10.3.0
+  # Used by the macos-gles3 build
+  xcode-11_4:
+    macos:
+      xcode: 11.4.1
 
 commands:
   install-base-linux:
@@ -266,6 +270,24 @@ jobs:
         script: unix-desktop.sh
     - lcov
 
+  macos-gles3:
+    # Using the same executor as Magnum uses for the ES3 build. 10.3 fails to
+    # load the libGLESv2.dylib due to "Symbol not found: _objc_opt_class".
+    executor: xcode-11_4
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: EGL
+      # STUPID yml interprets unquoted OFF as a boolean
+      TARGET_GLES2: "OFF"
+    steps:
+    - install-base-macos:
+        extra: sdl2 glfw wget numpy pybind11
+    - install-swiftshader-gles:
+        build: macos-10.15
+    - build:
+        script: unix-desktop-gles.sh
+    - lcov
+
   macos-static:
     # 10.2 and below has pybind11 2.2, which is just too old (we removed
     # support for that in aae98e0f02e927f993713afc154da1f3673ebb3e, July 2019)
@@ -291,4 +313,5 @@ workflows:
     - linux-gles3
     - linux-static
     - macos-gl
+    - macos-gles3
     - macos-static
