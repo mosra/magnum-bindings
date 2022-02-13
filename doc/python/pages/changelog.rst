@@ -46,6 +46,8 @@ Changelog
     :ref:`Matrix3.projection()`
 -   Exposed remaining vector/scalar, exponential and other functions in the
     :ref:`math <magnum.math>` library
+-   Exposed :ref:`Color3.from_xyz()`, :ref:`Color3.to_xyz()` and equivalent
+    APIs on :ref:`Color4`
 -   Exposed :ref:`gl.Context` and its platform-specific subclasses for EGL, WGL
     and GLX
 -   Exposed :ref:`gl.Framebuffer.attach_texture()` and missing sRGB, depth
