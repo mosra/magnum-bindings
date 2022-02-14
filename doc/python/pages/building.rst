@@ -186,10 +186,10 @@ following commands, the resulting HTML overview is located in
 `Continuous Integration`_
 =========================
 
-In ``package/ci/`` there is a ``travis.yml`` file that compiles and tests the
-bindings on Linux GCC 4.8 + CMake 3.1 and on macOS, online at
-https://travis-ci.com/mosra/magnum-bindings. For Windows there is an
-``appveyor.yml`` testing on Windows with MSVC 2017 and 2019, online at
+In ``package/ci/`` there is a ``circleci.yml`` file that compiles and tests the
+bindings on Linux GCC 4.8 + CMake 3.4 and on macOS, online at
+https://circleci.com/gh/mosra/magnum-bindings. For Windows there is an
+``appveyor.yml`` testing on Windows with MSVC, online at
 https://ci.appveyor.com/project/mosra/magnum-bindings. Code coverage for both
 the C++ bindings code and Python side is reported to
 https://codecov.io/gh/mosra/magnum-bindings.
