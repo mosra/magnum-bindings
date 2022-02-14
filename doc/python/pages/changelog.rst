@@ -62,7 +62,9 @@ Changelog
     issues with shitty IDE indexers such as Eclipse, confusing these with
     Python's ``<Python.h>``
 -   Applied minor performance fixes suggested by Clang Tidy (see :gh:`mosra/magnum-bindings#10`)
--   Linux and macOS builds were migrated from Travis to Circle CI
+    Travis banned everyone from using their CI and so all Linux and macOS
+    builds were migrated from Travis to Circle CI. See also
+    :gh:`mosra/magnum#350` and :gh:`mosra/magnum#523`.
 -   On CMake 3.16 and newer, ``FindMagnumBindings.cmake`` can provide
     additional details if some component is not found
 -   The Homebrew package now uses ``std_cmake_args`` instead of hardcoded build
