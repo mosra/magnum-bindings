@@ -25,6 +25,8 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for pluginList() and aliasList() */
+#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/PluginManager/AbstractManager.h>
 
 #include "Corrade/PythonBindings.h"
@@ -55,14 +57,38 @@ void pluginmanager(py::module_& m) {
     PyNonDestructibleClass<PluginManager::AbstractManager> manager{m, "AbstractManager", "Base for plugin managers"};
     manager.attr("VERSION") = PluginManager::AbstractManager::Version;
     manager
-        .def_property_readonly("plugin_interface", &PluginManager::AbstractManager::pluginInterface, "Plugin interface")
-        .def_property("plugin_directory", &PluginManager::AbstractManager::pluginDirectory, &PluginManager::AbstractManager::setPluginDirectory, "Plugin directory")
+        .def_property_readonly("plugin_interface", [](PluginManager::AbstractManager& self) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.pluginInterface()};
+        }, "Plugin interface")
+        .def_property("plugin_directory",
+            /** @todo drop std::string in favor of our own string caster */
+            [](PluginManager::AbstractManager& self) {
+                return std::string{self.pluginDirectory()};
+            }, [](PluginManager::AbstractManager& self, const std::string& directory) {
+                self.setPluginDirectory(directory);
+            }, "Plugin directory")
         .def("reload_plugin_directory", &PluginManager::AbstractManager::reloadPluginDirectory, "Reload plugin directory")
         /** @todo setPreferredPlugins (takes an init list) */
-        .def_property_readonly("plugin_list", &PluginManager::AbstractManager::pluginList, "List of all available plugin names")
-        .def_property_readonly("alias_list", &PluginManager::AbstractManager::aliasList, "List of all available alias names")
+        .def_property_readonly("plugin_list", [](PluginManager::AbstractManager& self) {
+            /** @todo make a generic caster for arbitrary arrays and strings */
+            std::vector<std::string> out;
+            for(Containers::StringView i: self.pluginList())
+                out.push_back(i);
+            return out;
+        }, "List of all available plugin names")
+        .def_property_readonly("alias_list", [](PluginManager::AbstractManager& self) {
+            /** @todo make a generic caster for arbitrary arrays and strings */
+            std::vector<std::string> out;
+            for(Containers::StringView i: self.aliasList())
+                out.push_back(i);
+            return out;
+        }, "List of all available alias names")
         /** @todo metadata() (figure out the ownership) */
-        .def("load_state", &PluginManager::AbstractManager::loadState, "Load state of a plugin")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("load_state", [](PluginManager::AbstractManager& self, const std::string& plugin) {
+            return self.loadState(plugin);
+        }, "Load state of a plugin")
         .def("load", [](PluginManager::AbstractManager& self, const std::string& plugin) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
