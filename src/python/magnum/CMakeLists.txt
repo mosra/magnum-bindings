@@ -23,6 +23,10 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
+# property that would have to be set on each target separately.
+set(CMAKE_FOLDER "Magnum/Python")
+
 # *Not* REQUIRED
 find_package(Magnum COMPONENTS
     GL
@@ -89,7 +93,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_gl PRIVATE Magnum::GL)
         set_target_properties(magnum_gl PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "gl"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -99,7 +102,6 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_include_directories(magnum_meshtools PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_meshtools PRIVATE Magnum::MeshTools)
         set_target_properties(magnum_meshtools PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "meshtools"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -109,7 +111,6 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_include_directories(magnum_primitives PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_primitives PRIVATE Magnum::Primitives)
         set_target_properties(magnum_primitives PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "primitives"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -121,7 +122,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
         set_target_properties(magnum_scenegraph PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "scenegraph"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -133,7 +133,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_shaders PRIVATE Magnum::Shaders)
         set_target_properties(magnum_shaders PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "shaders"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -145,7 +144,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_trade PRIVATE Magnum::Trade)
         set_target_properties(magnum_trade PROPERTIES
-            FOLDER "python"
             OUTPUT_NAME "trade"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
@@ -220,7 +218,6 @@ target_include_directories(magnum PRIVATE
     ${PROJECT_BINARY_DIR}/src/python) # for static build
 target_link_libraries(magnum PRIVATE Magnum::Magnum ${magnum_LIBS})
 set_target_properties(magnum PROPERTIES
-    FOLDER "python"
     OUTPUT_NAME "_magnum"
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 

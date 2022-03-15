@@ -23,6 +23,10 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
+# property that would have to be set on each target separately.
+set(CMAKE_FOLDER "Corrade/Python")
+
 # *Not* REQUIRED
 find_package(Corrade COMPONENTS
     PluginManager)
@@ -50,7 +54,6 @@ if(NOT CORRADE_BUILD_STATIC)
         Corrade::Containers
         Corrade::Utility)
     set_target_properties(corrade_containers PROPERTIES
-        FOLDER "python/corrade"
         OUTPUT_NAME "containers"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
 
@@ -62,7 +65,6 @@ if(NOT CORRADE_BUILD_STATIC)
         target_link_libraries(corrade_pluginmanager PRIVATE
             Corrade::PluginManager)
         set_target_properties(corrade_pluginmanager PROPERTIES
-            FOLDER "python/corrade"
             OUTPUT_NAME "pluginmanager"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
     endif()
@@ -90,7 +92,6 @@ target_include_directories(corrade PRIVATE
     ${PROJECT_BINARY_DIR}/src/python) # for static build
 target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
 set_target_properties(corrade PROPERTIES
-    FOLDER "python"
     OUTPUT_NAME "_corrade"
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 

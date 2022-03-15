@@ -23,11 +23,13 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
+# property that would have to be set on each target separately.
+set(CMAKE_FOLDER "Corrade/Python/Test")
+
 foreach(_test optional stridedarrayview)
     pybind11_add_module(test_${_test} ${pybind11_add_module_SYSTEM} test_${_test}.cpp)
     target_include_directories(test_${_test} PRIVATE ${PROJECT_SOURCE_DIR}/src)
     target_link_libraries(test_${_test} PRIVATE Corrade::Containers)
-    set_target_properties(test_${_test} PROPERTIES
-        FOLDER "python"
-        LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+    set_target_properties(test_${_test} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 endforeach()

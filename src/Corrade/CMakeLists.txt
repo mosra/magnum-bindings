@@ -23,9 +23,12 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
+# property that would have to be set on each target separately.
+set(CMAKE_FOLDER "Corrade/Python")
+
 if(WITH_PYTHON)
     add_custom_target(CorradePython SOURCES PythonBindings.h)
-    set_target_properties(CorradePython PROPERTIES FOLDER "Corrade/Python")
     install(FILES PythonBindings.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 
     add_subdirectory(Containers)

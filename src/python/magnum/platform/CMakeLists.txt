@@ -31,7 +31,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_glfw PROPERTIES
-            FOLDER "python/platform"
             OUTPUT_NAME "glfw"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
@@ -43,7 +42,6 @@ if(NOT MAGNUM_BUILD_STATIC)
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_sdl2 PROPERTIES
-            FOLDER "python/platform"
             OUTPUT_NAME "sdl2"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
@@ -53,7 +51,6 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_link_libraries(magnum_platform_egl PRIVATE Magnum::WindowlessEglApplication)
         target_include_directories(magnum_platform_egl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_egl PROPERTIES
-            FOLDER "python/platform"
             OUTPUT_NAME "egl"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
@@ -63,7 +60,6 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_link_libraries(magnum_platform_glx PRIVATE Magnum::WindowlessGlxApplication)
         target_include_directories(magnum_platform_glx PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_glx PROPERTIES
-            FOLDER "python/platform"
             OUTPUT_NAME "glx"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
@@ -73,7 +69,6 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_link_libraries(magnum_platform_wgl PRIVATE Magnum::WindowlessWglApplication)
         target_include_directories(magnum_platform_wgl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
         set_target_properties(magnum_platform_wgl PROPERTIES
-            FOLDER "python/platform"
             OUTPUT_NAME "wgl"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()

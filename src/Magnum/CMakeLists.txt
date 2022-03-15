@@ -23,6 +23,10 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
+# property that would have to be set on each target separately.
+set(CMAKE_FOLDER "Magnum/Python")
+
 # Generate version header. If Git is found and this is a Git working copy,
 # extract values from there, otherwise use just MAGNUMBINDINGS_VERSION_YEAR /
 # MONTH that are set in project root CMakeLists.
@@ -55,7 +59,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h DESTINATION ${MAGNUM
 
 if(WITH_PYTHON)
     add_custom_target(MagnumPython SOURCES PythonBindings.h)
-    set_target_properties(MagnumPython PROPERTIES FOLDER "Magnum/Python")
     install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 endif()
 
