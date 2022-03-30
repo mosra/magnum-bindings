@@ -59,7 +59,7 @@ cmake .. \
     -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_DDSIMPORTER=ON \
     -DWITH_STBIMAGEIMPORTER=ON \
-    -DWITH_TINYGLTFIMPORTER=ON \
+    -DWITH_CGLTFIMPORTER=ON \
     -G Ninja
 ninja install
 cd ../..

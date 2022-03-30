@@ -83,7 +83,7 @@ cmake .. ^
     -DBUILD_STATIC=%BUILD_STATIC% ^
     -DWITH_DDSIMPORTER=ON ^
     -DWITH_STBIMAGEIMPORTER=ON ^
-    -DWITH_TINYGLTFIMPORTER=ON ^
+    -DWITH_CGLTFIMPORTER=ON ^
     %COMPILER_EXTRA% -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b

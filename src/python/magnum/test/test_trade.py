@@ -91,7 +91,7 @@ class ImageData(unittest.TestCase):
 class MeshData(unittest.TestCase):
     def test(self):
         # The only way to get a mesh instance is through a manager
-        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         mesh = importer.mesh(0)
@@ -209,7 +209,7 @@ class Importer(unittest.TestCase):
 
     def test_mesh(self):
         # importer refcounting tested in image2d
-        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
         self.assertEqual(importer.mesh_count, 3)
         self.assertEqual(importer.mesh_level_count(0), 1)
@@ -221,7 +221,7 @@ class Importer(unittest.TestCase):
 
     def test_mesh_index_oob(self):
         # importer refcounting tested in image2d
-        importer = trade.ImporterManager().load_and_instantiate('TinyGltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         with self.assertRaises(IndexError):
