@@ -143,14 +143,14 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
    exactly two, in fact. */
 template<class R, R(Trade::AbstractImporter::*f)() const> R checkOpened(Trade::AbstractImporter& self) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
     return (self.*f)();
 }
 template<class R, class Arg1, R(Trade::AbstractImporter::*f)(Arg1)> R checkOpened(Trade::AbstractImporter& self, Arg1 arg1) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
     return (self.*f)(arg1);
@@ -158,7 +158,7 @@ template<class R, class Arg1, R(Trade::AbstractImporter::*f)(Arg1)> R checkOpene
 /** @todo drop this in favor of our own string caster */
 template<class R, R(Trade::AbstractImporter::*f)(Containers::StringView)> R checkOpenedString(Trade::AbstractImporter& self, const std::string& arg1) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
     return (self.*f)(arg1);
@@ -166,7 +166,7 @@ template<class R, R(Trade::AbstractImporter::*f)(Containers::StringView)> R chec
 
 template<class R, R(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> R checkOpenedBounds(Trade::AbstractImporter& self, UnsignedInt id) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
 
@@ -180,7 +180,7 @@ template<class R, R(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade
 /** @todo drop this in favor of our own string caster */
 template<Containers::String(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> std::string checkOpenedBoundsReturnsString(Trade::AbstractImporter& self, UnsignedInt id) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
 
@@ -194,7 +194,7 @@ template<Containers::String(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedI
 
 template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> R checkOpenedBoundsResult(Trade::AbstractImporter& self, UnsignedInt id) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
 
@@ -216,7 +216,7 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
 
 template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt, UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const, UnsignedInt(Trade::AbstractImporter::*levelBounds)(UnsignedInt)> R checkOpenedBoundsResult(Trade::AbstractImporter& self, UnsignedInt id, UnsignedInt level) {
     if(!self.isOpened()) {
-        PyErr_SetString(PyExc_RuntimeError, "no file opened");
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
     }
 

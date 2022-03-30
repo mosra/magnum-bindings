@@ -97,68 +97,72 @@
     :raise RuntimeError: If file opening fails
 
 .. py:property:: magnum.trade.AbstractImporter.mesh_count
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:function:: magnum.trade.AbstractImporter.mesh_level_count
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than :ref:`mesh_count`
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
 .. py:function:: magnum.trade.AbstractImporter.mesh_for_name
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:function:: magnum.trade.AbstractImporter.mesh_name
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than :ref:`mesh_count`
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
 .. py:function:: magnum.trade.AbstractImporter.mesh
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than :ref:`mesh_count`
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If mesh import fails
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
 
 .. py:property:: magnum.trade.AbstractImporter.image1d_count
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:property:: magnum.trade.AbstractImporter.image2d_count
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:property:: magnum.trade.AbstractImporter.image3d_count
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 
 .. py:function:: magnum.trade.AbstractImporter.image1d_level_count
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image1d_count`
 .. py:function:: magnum.trade.AbstractImporter.image2d_level_count
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image2d_count`
 .. py:function:: magnum.trade.AbstractImporter.image3d_level_count
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
 
 .. py:function:: magnum.trade.AbstractImporter.image1d_for_name
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:function:: magnum.trade.AbstractImporter.image2d_for_name
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 .. py:function:: magnum.trade.AbstractImporter.image3d_for_name
-    :raise RuntimeError: If no file is opened
+    :raise AssertionError: If no file is opened
 
 .. py:function:: magnum.trade.AbstractImporter.image1d_name
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image1d_count`
 .. py:function:: magnum.trade.AbstractImporter.image2d_name
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image2d_count`
 .. py:function:: magnum.trade.AbstractImporter.image3d_name
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
 
 .. py:function:: magnum.trade.AbstractImporter.image1d
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image1d_count`
 .. py:function:: magnum.trade.AbstractImporter.image2d
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image2d_count`
 .. py:function:: magnum.trade.AbstractImporter.image3d
-    :raise RuntimeError: If no file is opened
-    :raise ValueError: If :p:`id` is negative or not less than
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
+    :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
