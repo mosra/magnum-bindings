@@ -166,3 +166,31 @@
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
+
+.. py:class:: magnum.trade.ImageConverterManager
+    :summary: Manager for :ref:`AbstractImageConverter` plugin instances
+
+    Each plugin returned by :ref:`instantiate()` or :ref:`load_and_instantiate()`
+    references its owning :ref:`ImageConverterManager` through
+    :ref:`AbstractImageConverter.manager`, ensuring the manager is not deleted
+    before the plugin instances are.
+
+.. py:class:: magnum.trade.AbstractImageConverter
+
+    Similarly to C++, image converter plugins are loaded through
+    :ref:`ImageConverterManager`:
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: py
+
+        >>> manager = trade.ImageConverterManager()
+        >>> converter = manager.load_and_instantiate('PngImageConverter')
+
+    Unlike C++, errors in both API usage and file parsing are reported by
+    raising an exception. See particular function documentation for detailed
+    behavior.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file
+    :raise RuntimeError: If image conversion fails

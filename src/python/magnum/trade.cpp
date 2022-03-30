@@ -29,6 +29,7 @@
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Magnum/ImageView.h>
 #include <Magnum/Trade/AbstractImporter.h>
+#include <Magnum/Trade/AbstractImageConverter.h>
 #include <Magnum/Trade/ImageData.h>
 #include <Magnum/Trade/MeshData.h>
 
@@ -241,6 +242,17 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     return *std::move(out);
 }
 
+/** @todo drop std::string in favor of our own string caster */
+template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::StringView)> void checkResult(Trade::AbstractImageConverter& self, const T& image, const std::string& filename) {
+    /** @todo log redirection -- but we'd need assertions to not be part of
+        that so when it dies, the user can still see why */
+    bool out = (self.*f)(image, filename);
+    if(!out) {
+        PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+        throw py::error_already_set{};
+    }
+}
+
 }
 
 void trade(py::module_& m) {
@@ -318,6 +330,17 @@ void trade(py::module_& m) {
 
     py::class_<PluginManager::Manager<Trade::AbstractImporter>, PluginManager::AbstractManager> importerManager{m, "ImporterManager", "Manager for importer plugins"};
     corrade::manager(importerManager);
+
+    /* Image converter */
+    py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
+    abstractImageConverter
+        .def("convert_to_file", checkResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
+    corrade::plugin(abstractImageConverter);
+
+    py::class_<PluginManager::Manager<Trade::AbstractImageConverter>, PluginManager::AbstractManager> imageConverterManager{m, "ImageConverterManager", "Manager for image converter plugins"};
+    corrade::manager(imageConverterManager);
 }
 
 }

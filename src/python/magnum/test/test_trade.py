@@ -25,6 +25,7 @@
 
 import os
 import sys
+import tempfile
 import unittest
 
 from corrade import pluginmanager
@@ -265,3 +266,26 @@ class Importer(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.image2d(0)
+
+class ImageConverter(unittest.TestCase):
+    def test_image2d(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('StbImageConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.convert_to_file(image, os.path.join(tmp, "image.png"))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "image.png")))
+
+    def test_image2d_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('StbImageConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+                converter.convert_to_file(image, os.path.join(tmp, "image.hdr"))
