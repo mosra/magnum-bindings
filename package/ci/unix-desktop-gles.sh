@@ -44,6 +44,7 @@ cmake .. \
     -DWITH_VK=OFF \
     -DWITH_WINDOWLESSEGLAPPLICATION=ON \
     -DWITH_ANYIMAGEIMPORTER=ON \
+    -DWITH_ANYSCENECONVERTER=ON \
     -G Ninja
 ninja install
 cd ../..
@@ -54,10 +55,15 @@ cd magnum-plugins
 mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
-    -DCMAKE_INSTALL_RPATH=$HOME/deps/lib \
     -DCMAKE_BUILD_TYPE=Release \
+    `# StanfordSceneConverter uses MeshTools which rely on GL which looks` \
+    `# for OpenGLES. And the RPATH entry needs to be there as well,` \
+    `# otherwise it won't load.` \
+    -DCMAKE_PREFIX_PATH=$HOME/swiftshader \
+    -DCMAKE_INSTALL_RPATH="$HOME/deps/lib;$HOME/swiftshader/lib" \
     -DBUILD_STATIC=$BUILD_STATIC \
     -DWITH_DDSIMPORTER=ON \
+    -DWITH_STANFORDSCENECONVERTER=ON \
     -DWITH_STBIMAGECONVERTER=ON \
     -DWITH_STBIMAGEIMPORTER=ON \
     -DWITH_CGLTFIMPORTER=ON \

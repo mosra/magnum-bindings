@@ -289,3 +289,26 @@ class ImageConverter(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(RuntimeError, "conversion failed"):
                 converter.convert_to_file(image, os.path.join(tmp, "image.hdr"))
+
+class SceneConverter(unittest.TestCase):
+    def test_mesh(self):
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        mesh = importer.mesh(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.convert_to_file(mesh, os.path.join(tmp, "mesh.ply"))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "mesh.ply")))
+
+    def test_mesh_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        mesh = importer.mesh(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('AnySceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+                converter.convert_to_file(mesh, os.path.join(tmp, "mesh.obj"))

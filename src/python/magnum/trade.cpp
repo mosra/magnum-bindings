@@ -30,6 +30,7 @@
 #include <Magnum/ImageView.h>
 #include <Magnum/Trade/AbstractImporter.h>
 #include <Magnum/Trade/AbstractImageConverter.h>
+#include <Magnum/Trade/AbstractSceneConverter.h>
 #include <Magnum/Trade/ImageData.h>
 #include <Magnum/Trade/MeshData.h>
 
@@ -253,6 +254,17 @@ template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::
     }
 }
 
+/** @todo drop std::string in favor of our own string caster */
+template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::StringView)> void checkResult(Trade::AbstractSceneConverter& self, const T& mesh, const std::string& filename) {
+    /** @todo log redirection -- but we'd need assertions to not be part of
+        that so when it dies, the user can still see why */
+    bool out = (self.*f)(mesh, filename);
+    if(!out) {
+        PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+        throw py::error_already_set{};
+    }
+}
+
 }
 
 void trade(py::module_& m) {
@@ -341,6 +353,15 @@ void trade(py::module_& m) {
 
     py::class_<PluginManager::Manager<Trade::AbstractImageConverter>, PluginManager::AbstractManager> imageConverterManager{m, "ImageConverterManager", "Manager for image converter plugins"};
     corrade::manager(imageConverterManager);
+
+    /* Scene converter */
+    py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
+    abstractSceneConverter
+        .def("convert_to_file", checkResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
+    corrade::plugin(abstractSceneConverter);
+
+    py::class_<PluginManager::Manager<Trade::AbstractSceneConverter>, PluginManager::AbstractManager> sceneConverterManager{m, "SceneConverterManager", "Manager for scene converter plugins"};
+    corrade::manager(sceneConverterManager);
 }
 
 }

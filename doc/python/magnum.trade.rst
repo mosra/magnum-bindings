@@ -194,3 +194,31 @@
 
 .. py:function:: magnum.trade.AbstractImageConverter.convert_to_file
     :raise RuntimeError: If image conversion fails
+
+.. py:class:: magnum.trade.SceneConverterManager
+    :summary: Manager for :ref:`AbstractSceneConverter` plugin instances
+
+    Each plugin returned by :ref:`instantiate()` or :ref:`load_and_instantiate()`
+    references its owning :ref:`SceneConverterManager` through
+    :ref:`AbstractSceneConverter.manager`, ensuring the manager is not deleted
+    before the plugin instances are.
+
+.. py:class:: magnum.trade.AbstractSceneConverter
+
+    Similarly to C++, image converter plugins are loaded through
+    :ref:`SceneConverterManager`:
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: py
+
+        >>> manager = trade.SceneConverterManager()
+        >>> converter = manager.load_and_instantiate('StanfordSceneConverter')
+
+    Unlike C++, errors in both API usage and file parsing are reported by
+    raising an exception. See particular function documentation for detailed
+    behavior.
+
+.. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file
+    :raise RuntimeError: If scene conversion fails

@@ -90,7 +90,8 @@ Changelog
     :ref:`platform.glfw.Application.exit_event`
 -   Exposed :ref:`platform.glfw.Application.swap_interval` and
     :ref:`platform.glfw.Application.main_loop_iteration`
--   Exposed a basic interface of :ref:`trade.AbstractImageConverter`
+-   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
+    :ref:`trade.AbstractSceneConverter`
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
 -   Fixed issues with an in-source build (see :gh:`mosra/magnum-bindings#13`)
