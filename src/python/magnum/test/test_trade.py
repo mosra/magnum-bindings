@@ -264,4 +264,4 @@ class Importer(unittest.TestCase):
         importer.open_data(b'bla')
 
         with self.assertRaisesRegex(RuntimeError, "import failed"):
-            image = importer.image2d(0)
+            importer.image2d(0)
