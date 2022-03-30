@@ -243,8 +243,10 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     return *std::move(out);
 }
 
+/* Can't be named just checkResult() because the AbstractSceneConverter
+   overload would confuse GCC 4.8 */
 /** @todo drop std::string in favor of our own string caster */
-template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::StringView)> void checkResult(Trade::AbstractImageConverter& self, const T& image, const std::string& filename) {
+template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::StringView)> void checkImageConverterResult(Trade::AbstractImageConverter& self, const T& image, const std::string& filename) {
     /** @todo log redirection -- but we'd need assertions to not be part of
         that so when it dies, the user can still see why */
     bool out = (self.*f)(image, filename);
@@ -254,8 +256,10 @@ template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::
     }
 }
 
+/* Can't be named just checkResult() because the AbstractImageConverter
+   overload would confuse GCC 4.8 */
 /** @todo drop std::string in favor of our own string caster */
-template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::StringView)> void checkResult(Trade::AbstractSceneConverter& self, const T& mesh, const std::string& filename) {
+template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::StringView)> void checkSceneConverterResult(Trade::AbstractSceneConverter& self, const T& mesh, const std::string& filename) {
     /** @todo log redirection -- but we'd need assertions to not be part of
         that so when it dies, the user can still see why */
     bool out = (self.*f)(mesh, filename);
@@ -346,9 +350,9 @@ void trade(py::module_& m) {
     /* Image converter */
     py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
     abstractImageConverter
-        .def("convert_to_file", checkResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
-        .def("convert_to_file", checkResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
-        .def("convert_to_file", checkResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
+        .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
     corrade::plugin(abstractImageConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractImageConverter>, PluginManager::AbstractManager> imageConverterManager{m, "ImageConverterManager", "Manager for image converter plugins"};
@@ -357,7 +361,7 @@ void trade(py::module_& m) {
     /* Scene converter */
     py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
-        .def("convert_to_file", checkResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
+        .def("convert_to_file", checkSceneConverterResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
     corrade::plugin(abstractSceneConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractSceneConverter>, PluginManager::AbstractManager> sceneConverterManager{m, "SceneConverterManager", "Manager for scene converter plugins"};
