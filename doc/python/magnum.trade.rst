@@ -106,10 +106,14 @@
 .. py:function:: magnum.trade.AbstractImporter.mesh_name
     :raise AssertionError: If no file is opened
     :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
+
+.. TODO this needs distinction by parameter names, at least
+
 .. py:function:: magnum.trade.AbstractImporter.mesh
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If mesh import fails
     :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
+    :raise KeyError: If :p:`name` was not found
 
 .. py:property:: magnum.trade.AbstractImporter.image1d_count
     :raise AssertionError: If no file is opened
@@ -151,21 +155,26 @@
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
 
+.. TODO this needs distinction by parameter names, at least
+
 .. py:function:: magnum.trade.AbstractImporter.image1d
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image1d_count`
+    :raise KeyError: If :p:`name` was not found
 .. py:function:: magnum.trade.AbstractImporter.image2d
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image2d_count`
+    :raise KeyError: If :p:`name` was not found
 .. py:function:: magnum.trade.AbstractImporter.image3d
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
+    :raise KeyError: If :p:`name` was not found
 
 .. py:class:: magnum.trade.ImageConverterManager
     :summary: Manager for :ref:`AbstractImageConverter` plugin instances

@@ -227,6 +227,27 @@ class Importer(unittest.TestCase):
         with self.assertRaises(IndexError):
             importer.mesh(0, 1)
 
+    def test_mesh_by_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        mesh = importer.mesh('Non-indexed mesh')
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+
+    def test_mesh_by_name_not_found(self):
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        with self.assertRaises(KeyError):
+            importer.mesh('Nonexistent')
+
+    def test_mesh_by_name_level_oob(self):
+        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        with self.assertRaises(IndexError):
+            importer.mesh('Non-indexed mesh', 1)
+
     def test_image2d(self):
         manager = trade.ImporterManager()
         manager_refcount = sys.getrefcount(manager)
@@ -249,6 +270,8 @@ class Importer(unittest.TestCase):
         # Deleting the importer should decrease manager refcount again
         del importer
         self.assertEqual(sys.getrefcount(manager), manager_refcount)
+
+    # TODO image by name (in some gltf?)
 
     def test_image_level_oob(self):
         # importer refcounting tested in image2d
