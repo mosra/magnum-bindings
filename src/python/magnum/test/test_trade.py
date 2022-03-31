@@ -220,8 +220,7 @@ class Importer(unittest.TestCase):
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
-    def test_mesh_index_oob(self):
-        # importer refcounting tested in image2d
+    def test_mesh_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
@@ -250,6 +249,14 @@ class Importer(unittest.TestCase):
         # Deleting the importer should decrease manager refcount again
         del importer
         self.assertEqual(sys.getrefcount(manager), manager_refcount)
+
+    def test_image_level_oob(self):
+        # importer refcounting tested in image2d
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+
+        with self.assertRaises(IndexError):
+            importer.image2d(0, 1)
 
     def test_image2d_data(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
