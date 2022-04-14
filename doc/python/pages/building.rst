@@ -58,7 +58,7 @@ the source tree.
 
 .. code:: sh
 
-    git clone git://github.com/mosra/magnum-bindings && cd magnum-bindings
+    git clone https://github.com/mosra/magnum-bindings && cd magnum-bindings
     cd package/archlinux
     makepkg -fp PKGBUILD
 
@@ -108,7 +108,7 @@ snapshot as a compressed archive or use the command line:
 
 .. code:: sh
 
-    git clone git://github.com/mosra/magnum-bindings.git
+    git clone https://github.com/mosra/magnum-bindings.git
 
 Assuming a Unix-based OS, the first step is to build the native libraries. The
 bindings will be generated for all Corrade and Magnum libraries that are found,

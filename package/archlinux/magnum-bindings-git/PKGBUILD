@@ -10,7 +10,7 @@ depends=('magnum-git' 'python')
 makedepends=('cmake' 'git' 'ninja' 'pybind11')
 provides=('magnum-bindings')
 conflicts=('magnum-bindings')
-source=("git+git://github.com/mosra/magnum-bindings.git")
+source=("git+https://github.com/mosra/magnum-bindings.git")
 sha1sums=('SKIP')
 
 pkgver() {

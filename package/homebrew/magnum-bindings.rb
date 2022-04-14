@@ -4,7 +4,7 @@ class MagnumBindings < Formula
   url "https://github.com/mosra/magnum-bindings/archive/v2020.06.tar.gz"
   # wget https://github.com/mosra/magnum-bindings/archive/v2020.06.tar.gz -O - | sha256sum
   sha256 "959c703e6409ba0c2cd6c0da3a2b6190f6fac837ff69f64cbdc372e11359e7d8"
-  head "git://github.com/mosra/magnum-bindings.git"
+  head "https://github.com/mosra/magnum-bindings.git"
 
   depends_on "cmake"
   depends_on "python"
