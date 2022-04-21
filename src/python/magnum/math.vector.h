@@ -133,7 +133,7 @@ template<class T, class ...Args> void everyVectorBuffer(py::class_<T, Args...>& 
         /* Buffer protocol. If not present, implicit conversion from numpy
            arrays of non-default types somehow doesn't work. There's also the
            other part in vectorBuffer(). */
-        .def(py::init([](const py::buffer &other) {
+        .def(py::init([](const py::buffer& other) {
             /* GCC 4.8 otherwise loudly complains about missing initializers */
             Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
             if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_FORMAT|PyBUF_STRIDES) != 0)
