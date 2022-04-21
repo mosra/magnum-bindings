@@ -133,7 +133,7 @@ template<class T, class ...Args> void everyVectorBuffer(py::class_<T, Args...>& 
         /* Buffer protocol. If not present, implicit conversion from numpy
            arrays of non-default types somehow doesn't work. There's also the
            other part in vectorBuffer(). */
-        .def(py::init([](py::buffer other) {
+        .def(py::init([](const py::buffer &other) {
             /* GCC 4.8 otherwise loudly complains about missing initializers */
             Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
             if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_FORMAT|PyBUF_STRIDES) != 0)
@@ -297,7 +297,7 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
             /* this should be handled by the x/y/z/w/r/g/b/a properties instead */
             else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
         }, "Vector swizzle")
-        .def("__setattr__", [](T& self, py::str nameO, py::object valueO) {
+        .def("__setattr__", [](T& self, const py::str& nameO, const py::object& valueO) {
             std::string name = py::cast<std::string>(nameO);
             /* If the name is just one character, this is better handled by
                dedicated properties (and if not, it'll provide a better
