@@ -26,6 +26,7 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
@@ -43,6 +44,7 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
     configuration
         .def(py::init())
         .def_property("title", &T::Configuration::title,
+            /** @todo drop std::string in favor of our own string caster */
             [](typename T::Configuration& self, const std::string& title) {
                 self.setTitle(title);
             }, "Window title")
