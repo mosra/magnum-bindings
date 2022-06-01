@@ -92,7 +92,7 @@ class ImageData(unittest.TestCase):
 class MeshData(unittest.TestCase):
     def test(self):
         # The only way to get a mesh instance is through a manager
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         mesh = importer.mesh(0)
@@ -210,7 +210,7 @@ class Importer(unittest.TestCase):
 
     def test_mesh(self):
         # importer refcounting tested in image2d
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
         self.assertEqual(importer.mesh_count, 3)
         self.assertEqual(importer.mesh_level_count(0), 1)
@@ -221,28 +221,28 @@ class Importer(unittest.TestCase):
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
     def test_mesh_level_oob(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         with self.assertRaises(IndexError):
             importer.mesh(0, 1)
 
     def test_mesh_by_name(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         mesh = importer.mesh('Non-indexed mesh')
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
     def test_mesh_by_name_not_found(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         with self.assertRaises(KeyError):
             importer.mesh('Nonexistent')
 
     def test_mesh_by_name_level_oob(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
         with self.assertRaises(IndexError):
@@ -322,7 +322,7 @@ class ImageConverter(unittest.TestCase):
 
 class SceneConverter(unittest.TestCase):
     def test_mesh(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
         mesh = importer.mesh(0)
 
@@ -333,7 +333,7 @@ class SceneConverter(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(tmp, "mesh.ply")))
 
     def test_mesh_failed(self):
-        importer = trade.ImporterManager().load_and_instantiate('CgltfImporter')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
         mesh = importer.mesh(0)
 

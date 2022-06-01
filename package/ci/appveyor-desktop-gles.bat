@@ -76,10 +76,10 @@ cmake .. ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DBUILD_STATIC=%BUILD_STATIC% ^
     -DWITH_DDSIMPORTER=ON ^
+    -DWITH_GLTFIMPORTER=ON ^
     -DWITH_STANFORDSCENECONVERTER=ON ^
     -DWITH_STBIMAGECONVERTER=ON ^
     -DWITH_STBIMAGEIMPORTER=ON ^
-    -DWITH_CGLTFIMPORTER=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b
