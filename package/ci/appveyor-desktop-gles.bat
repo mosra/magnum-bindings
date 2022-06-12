@@ -92,8 +92,8 @@ cmake .. ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DPYBIND11_PYTHON_VERSION=3.6 ^
-    -DWITH_PYTHON=ON ^
-    -DBUILD_TESTS=ON ^
+    -DMAGNUM_WITH_PYTHON=ON ^
+    -DMAGNUM_BUILD_TESTS=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b

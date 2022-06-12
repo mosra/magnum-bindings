@@ -21,6 +21,10 @@ class MagnumBindings < Formula
   end
 
   def install
+    # 2020.06 has the options unprefixed, current master has them prefixed.
+    # Options not present in 2020.06 are prefixed always.
+    option_prefix = build.head? ? 'MAGNUM_' : ''
+
     system "mkdir build"
     cd "build" do
       system "cmake",
@@ -30,7 +34,7 @@ class MagnumBindings < Formula
         # of /opt/homebrew/lib which is dedicated for ARM binaries. Please
         # complain to Homebrew about this insane non-obvious filesystem layout.
         "-DCMAKE_INSTALL_NAME_DIR:STRING=#{lib}",
-        "-DWITH_PYTHON=ON",
+        "-D#{option_prefix}WITH_PYTHON=ON",
         ".."
       system "cmake", "--build", "."
       system "cmake", "--build", ".", "--target", "install"

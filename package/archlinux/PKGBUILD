@@ -23,8 +23,8 @@ build() {
     cmake .. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DWITH_PYTHON=ON \
-        -DBUILD_TESTS=ON \
+        -DMAGNUM_WITH_PYTHON=ON \
+        -DMAGNUM_BUILD_TESTS=ON \
         -G Ninja
     ninja
 }

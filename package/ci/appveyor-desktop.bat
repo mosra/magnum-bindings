@@ -100,8 +100,8 @@ cmake .. ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/SDL ^
     -DPYBIND11_PYTHON_VERSION=3.6 ^
-    -DWITH_PYTHON=ON ^
-    -DBUILD_TESTS=ON ^
+    -DMAGNUM_WITH_PYTHON=ON ^
+    -DMAGNUM_BUILD_TESTS=ON ^
     %COMPILER_EXTRA% -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b

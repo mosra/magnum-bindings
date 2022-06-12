@@ -80,8 +80,8 @@ cmake .. \
     -DCMAKE_PREFIX_PATH="$HOME/swiftshader;$HOME/pybind11" \
     -DCMAKE_INSTALL_RPATH="$HOME/deps/lib;$HOME/swiftshader/lib" \
     -DPYBIND11_PYTHON_VERSION=3.6 \
-    -DWITH_PYTHON=ON \
-    -DBUILD_TESTS=ON \
+    -DMAGNUM_WITH_PYTHON=ON \
+    -DMAGNUM_BUILD_TESTS=ON \
     -G Ninja
 ninja $NINJA_JOBS
 
