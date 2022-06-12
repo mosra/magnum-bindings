@@ -23,7 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-if(WITH_PYTHON)
+if(MAGNUM_WITH_PYTHON)
     add_custom_target(MagnumSceneGraphPython SOURCES PythonBindings.h)
     install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/SceneGraph)
 endif()

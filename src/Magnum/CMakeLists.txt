@@ -69,7 +69,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versionBindings.h.cmake
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 
-if(WITH_PYTHON)
+if(MAGNUM_WITH_PYTHON)
     add_custom_target(MagnumPython SOURCES PythonBindings.h)
     install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 endif()
@@ -84,6 +84,6 @@ if(Magnum_SceneGraph_FOUND)
     add_subdirectory(SceneGraph)
 endif()
 
-if(BUILD_TESTS)
+if(MAGNUM_BUILD_TESTS)
     add_subdirectory(Test)
 endif()

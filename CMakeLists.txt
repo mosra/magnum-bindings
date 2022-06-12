@@ -36,7 +36,8 @@ endif()
 if(POLICY CMP0071)
     cmake_policy(SET CMP0071 NEW)
 endif()
-# Superprojects can use just set(WITH_BLAH ON) without FORCE CACHE on 3.13+
+# Superprojects can use just set(MAGNUM_WITH_BLAH ON) without FORCE CACHE on
+# 3.13+
 if(POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
@@ -49,11 +50,79 @@ find_package(Magnum REQUIRED)
 
 include(CMakeDependentOption)
 
-# Libraries to build
-option(WITH_PYTHON "Build Python bindings" OFF)
-option(BUILD_TESTS "Build unit tests" OFF)
+# Options that used to be unprefixed. New options shouldn't be added to this
+# list.
+set(_MAGNUMBINDINGS_DEPRECATED_UNPREFIXED_OPTIONS
+    WITH_PYTHON
+    BUILD_TESTS)
+# If during the first run (i.e., when the variable isn't in cache yet), check
+# if any of the prefixed options are already set. If so, we assume the user is
+# already switched to the prefixed options and won't accept the deprecated
+# unprefixed options for backwards compatibility. This way it's possible for
+# projects to reuse these variables for other purposes without affecting
+# Corrade in any way.
+if(NOT DEFINED _MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS)
+    set(_MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS ON CACHE INTERNAL "")
+    foreach(option ${_MAGNUMBINDINGS_DEPRECATED_UNPREFIXED_OPTIONS})
+        if(DEFINED MAGNUM_${option})
+            set(_MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS OFF CACHE INTERNAL "")
+            break()
+        endif()
+    endforeach()
+endif()
 
-if(BUILD_TESTS)
+# Libraries to build
+option(MAGNUM_WITH_PYTHON "Build Python bindings" OFF)
+option(MAGNUM_BUILD_TESTS "Build unit tests" OFF)
+
+# Backwards compatibility for unprefixed CMake options. If the user isn't
+# explicitly using prefixed options in the first run already, accept the
+# unprefixed options, and remember this decision for subsequent runs
+if(NOT DEFINED _MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS)
+    set(_MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS ON CACHE INTERNAL "")
+endif()
+# If the user wasn't explicitly using prefixed options in the first run and the
+# MAGNUM_BUILD_DEPRECATED option is not currently disabled (which can get
+# changed subsequently), accept the unprefixed options and print a warning if
+# they're different from the prefixed ones.
+if(_MAGNUMBINDINGS_ACCEPT_DEPRECATED_UNPREFIXED_OPTIONS AND MAGNUM_BUILD_DEPRECATED)
+    set(_MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION )
+    foreach(option ${_MAGNUMBINDINGS_DEPRECATED_UNPREFIXED_OPTIONS})
+        if(DEFINED ${option})
+            # CMake has no comparison of boolean values (EQUAL returns false if
+            # comparing ON and 1 or OFF and FALSE, STREQUAL also), so we have
+            # to do it this way. Also warn only on the first encountered
+            # variable so people can fix it, reconfigure and go to the next one
+            # that warns.
+            if((${option} AND NOT MAGNUM_${option}) OR
+               (NOT ${option} AND MAGNUM_${option}) AND NOT _MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION)
+                set(_MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION ${option})
+            endif()
+            set(MAGNUM_${option} ${${option}})
+            # If variables specified on the command line don't match any
+            # options, they're kept in cache but set as UNINITIALIZED, meaning
+            # they don't appear in cmake-gui or ccmake, so there's no way to
+            # fix the warning apart from hand-enditing the CMakeCache.txt or
+            # recreating the build dir. Update their cached type to be BOOL to
+            # make them appear.
+            set(${option} ${${option}} CACHE BOOL "Deprecated, use MAGNUM_${option} instead" FORCE)
+        endif()
+    endforeach()
+
+    if(_MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION)
+        # CMake 3.5+ has deprecation warnings enabled by default (which makes
+        # sense), 3.4 not. Use a warning there instead.
+        # TODO: drop when 3.4 is not supported anymore
+        if(CMAKE_VERSION VERSION_LESS 3.5)
+            set(DEPRECATION_OR_WARNING WARNING)
+        else()
+            set(DEPRECATION_OR_WARNING DEPRECATION)
+        endif()
+        message(${DEPRECATION_OR_WARNING} "Unprefixed options such as ${_MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION} are deprecated, use MAGNUM_${_MAGNUMBINDINGS_WARN_DEPRECATED_UNPREFIXED_OPTION} instead. Delete the unprefixed variable from CMake cache or set both to the same value to silence this warning.")
+    endif()
+endif()
+
+if(MAGNUM_BUILD_TESTS)
     find_package(Corrade REQUIRED TestSuite)
     if(CORRADE_TARGET_IOS)
         set(CORRADE_TESTSUITE_BUNDLE_IDENTIFIER_PREFIX "cz.mosra.magnum-bindings")

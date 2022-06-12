@@ -42,7 +42,7 @@ set_directory_properties(PROPERTIES
 add_subdirectory(Corrade)
 add_subdirectory(Magnum)
 
-if(WITH_PYTHON)
+if(MAGNUM_WITH_PYTHON)
     add_subdirectory(python)
 endif()
 

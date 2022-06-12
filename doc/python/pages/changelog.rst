@@ -96,6 +96,10 @@ Changelog
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
 -   Fixed issues with an in-source build (see :gh:`mosra/magnum-bindings#13`)
+-   All CMake build options are now prefixed with ``MAGNUM_``. For backwards
+    compatibility, unless ``MAGNUM_BUILD_DEPRECATED`` is disabled and unless a
+    prefixed option is already set during the initial run, the unprefixed
+    options are still recognized with a warning. See also :gh:`mosra/corrade#139`.
 
 `2020.06`_
 ==========

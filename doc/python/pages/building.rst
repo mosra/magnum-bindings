@@ -119,7 +119,7 @@ default location known to CMake, add their path to ``CMAKE_PREFIX_PATH``.
 
     mkdir build && cd build
     cmake .. \
-        -DWITH_PYTHON=ON
+        -DMAGNUM_WITH_PYTHON=ON
     make
 
 Note that pybind11 compilation is quite time- and memory-hungry, so you might

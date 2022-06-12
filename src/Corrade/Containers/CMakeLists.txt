@@ -23,7 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-if(WITH_PYTHON)
+if(MAGNUM_WITH_PYTHON)
     set(CorradeContainersPython_HEADERS
         OptionalPythonBindings.h
         PythonBindings.h
