@@ -69,39 +69,39 @@ class Angle(unittest.TestCase):
     def test_repr(self):
         self.assertEqual(repr(Deg(45.3)), 'Deg(45.3)')
 
-class BoolVector(unittest.TestCase):
+class BitVector(unittest.TestCase):
     def test_init(self):
-        a = BoolVector2()
-        b = BoolVector2.zero_init()
-        c = BoolVector2(0b11)
+        a = BitVector2()
+        b = BitVector2.zero_init()
+        c = BitVector2(0b11)
         self.assertFalse(a.any())
         self.assertTrue(c.all())
-        self.assertEqual(a, BoolVector2(0b00))
-        self.assertEqual(b, BoolVector2(0b00))
-        self.assertEqual(c, BoolVector2(0b11))
+        self.assertEqual(a, BitVector2(0b00))
+        self.assertEqual(b, BitVector2(0b00))
+        self.assertEqual(c, BitVector2(0b11))
 
     def test_length(self):
-        self.assertEqual(BoolVector3.__len__(), 3)
-        #self.assertEqual(len(BoolVector3), 3) TODO: Y not?
-        self.assertEqual(len(BoolVector4()), 4)
+        self.assertEqual(BitVector3.__len__(), 3)
+        #self.assertEqual(len(BitVector3), 3) TODO: Y not?
+        self.assertEqual(len(BitVector4()), 4)
 
     def test_set_get(self):
-        a = BoolVector4(0b1010)
+        a = BitVector4(0b1010)
         self.assertEqual(a[1], 1)
 
         a[2] = True
-        self.assertEqual(a, BoolVector4(0b1110))
+        self.assertEqual(a, BitVector4(0b1110))
 
     def test_iterate(self):
-        a = [i for i in BoolVector4(0b1010)]
+        a = [i for i in BitVector4(0b1010)]
         self.assertEqual(a, [False, True, False, True])
 
     def test_ops(self):
-        a = BoolVector3(0b101) | BoolVector3(0b010)
-        self.assertEqual(a, BoolVector3(0b111))
+        a = BitVector3(0b101) | BitVector3(0b010)
+        self.assertEqual(a, BitVector3(0b111))
 
     def test_repr(self):
-        self.assertEqual(repr(BoolVector4(0b0101)), 'BoolVector(0b0101)')
+        self.assertEqual(repr(BitVector4(0b0101)), 'BitVector(0b0101)')
 
 class Constants(unittest.TestCase):
     def test(self):
@@ -177,8 +177,8 @@ class Functions(unittest.TestCase):
         self.assertEqual(math.select(Rad(2.0), Rad(5.0), 0.6), Rad(2.0))
 
     def test_vector(self):
-        self.assertEqual(math.isinf((math.inf, math.nan)), BoolVector2(0b01))
-        self.assertEqual(math.isnan((math.inf, math.nan)), BoolVector2(0b10))
+        self.assertEqual(math.isinf((math.inf, math.nan)), BitVector2(0b01))
+        self.assertEqual(math.isnan((math.inf, math.nan)), BitVector2(0b10))
 
         self.assertEqual(math.min((15.0, 0.5), (3.0, 1.0)), (3.0, 0.5))
         self.assertEqual(math.min((15.0, 0.5), 3.0), (3.0, 0.5))
@@ -200,12 +200,12 @@ class Functions(unittest.TestCase):
         self.assertEqual(math.fmod((5.1, 1.5), (3.0, 1.0)), (2.1, 0.5))
 
         self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), 0.5), (3.5, 1.5))
-        self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), BoolVector2(0b01)), (5.0, 1.0))
+        self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), BitVector2(0b01)), (5.0, 1.0))
         self.assertEqual(math.lerp((2.0, 1.0), (5.0, 2.0), False), (2.0, 1.0))
         self.assertEqual(math.lerp((2, 1), (5, 2), 0.5), (3, 1))
-        self.assertEqual(math.lerp((2, 1), (5, 2), BoolVector2(0b01)), (5, 1))
+        self.assertEqual(math.lerp((2, 1), (5, 2), BitVector2(0b01)), (5, 1))
         self.assertEqual(math.lerp((2, 1), (5, 2), True), (5, 2))
-        self.assertEqual(math.lerp(BoolVector4(0b1001), BoolVector4(0b0110), BoolVector4(0b0101)), BoolVector4(0b1100))
+        self.assertEqual(math.lerp(BitVector4(0b1001), BitVector4(0b0110), BitVector4(0b0101)), BitVector4(0b1100))
         self.assertEqual(math.lerp_inverted((2.0, 1.0), (5.0, 2.0), (3.5, 1.5)), (0.5, 0.5))
         self.assertEqual(math.select((2.0, 1.0), (5.0, 2.0), 0.6), (2.0, 1.0))
         self.assertEqual(math.select((2, 1), (5, 2), 1.0), (5, 2))

@@ -28,7 +28,7 @@
 #include <pybind11/operators.h>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Angle.h>
-#include <Magnum/Math/BoolVector.h>
+#include <Magnum/Math/BitVector.h>
 #include <Magnum/Math/Functions.h>
 #include <Magnum/Math/Quaternion.h>
 
@@ -447,10 +447,10 @@ void math(py::module_& root, py::module_& m) {
     py::implicitly_convertible<Radd, Degd>();
     py::implicitly_convertible<Degd, Radd>();
 
-    /* BoolVector */
-    py::class_<Math::BoolVector<2>> boolVector2{root, "BoolVector2", "Two-component bool vector"};
-    py::class_<Math::BoolVector<3>> boolVector3{root, "BoolVector3", "Three-component bool vector"};
-    py::class_<Math::BoolVector<4>> boolVector4{root, "BoolVector4", "Four-component bool vector"};
+    /* BitVector */
+    py::class_<Math::BitVector<2>> boolVector2{root, "BitVector2", "Two-component bool vector"};
+    py::class_<Math::BitVector<3>> boolVector3{root, "BitVector3", "Three-component bool vector"};
+    py::class_<Math::BitVector<4>> boolVector4{root, "BitVector4", "Four-component bool vector"};
     boolVector(m, boolVector2);
     boolVector(m, boolVector3);
     boolVector(m, boolVector4);

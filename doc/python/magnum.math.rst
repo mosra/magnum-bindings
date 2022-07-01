@@ -212,8 +212,8 @@
 
     -   :py:`mat[a][b] = c` on matrices doesn't do the expected thing, use
         :py:`mat[a, b] = c` instead
-    -   :cpp:`Math::BoolVector::set()` doesn't exist, use ``[]`` instead
-    -   While both boolean and bitwise operations on :cpp:`Math::BoolVector`
+    -   :cpp:`Math::BitVector::set()` doesn't exist, use ``[]`` instead
+    -   While both boolean and bitwise operations on :cpp:`Math::BitVector`
         behave the same to ensure consistency in generic code, this is not
         possible to do in Python. Here the boolean operations behave like
         if :py:`any()` was applied before doing the operation.

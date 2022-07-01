@@ -51,7 +51,7 @@ if 'scenegraph' in globals():
 __all__ = [
     'Deg', 'Rad',
 
-    'BoolVector2', 'BoolVector3', 'BoolVector4',
+    'BitVector2', 'BitVector3', 'BitVector4',
     'Vector2', 'Vector3', 'Vector4',
     'Vector2d', 'Vector3d', 'Vector4d',
     'Vector2i', 'Vector3i', 'Vector4i',

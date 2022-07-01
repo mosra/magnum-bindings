@@ -173,7 +173,7 @@ template<class T> void rectangularMatrix(py::class_<T>& c) {
         Type
         construction by slicing or expanding differently sized matrices
         row() / setRow() (function? that's ugly. property? not sure how)
-        component-wise operations (would need BoolVector6 ... BoolVector16)
+        component-wise operations (would need BitVector6 ... BitVector16)
         ij() (doesn't make sense in generic code as we don't have Matrix1)
     */
 

@@ -223,8 +223,8 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
         .def("lerp", [](const T& a, const T& b, Double t) {
             return T{Math::lerp(a, b, t)};
         }, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
-        /* The BoolVector overload has to be before the bool to match first */
-        .def("lerp", [](const T& a, const T& b, Math::BoolVector<T::Size> t) {
+        /* The BitVector overload has to be before the bool to match first */
+        .def("lerp", [](const T& a, const T& b, Math::BitVector<T::Size> t) {
             return T{Math::lerp(a, b, t)};
         }, "Linear interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"))
         .def("lerp", [](const T& a, const T& b, bool t) {
