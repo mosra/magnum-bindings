@@ -43,8 +43,11 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
 
     configuration
         .def(py::init())
-        .def_property("title", &T::Configuration::title,
+        .def_property("title",
             /** @todo drop std::string in favor of our own string caster */
+            [](typename T::Configuration& self) -> std::string {
+                return self.title();
+            },
             [](typename T::Configuration& self, const std::string& title) {
                 self.setTitle(title);
             }, "Window title")
