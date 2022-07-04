@@ -174,7 +174,7 @@ template<class T> void angle(py::module_& m, py::class_<T>& c) {
         .def("select", static_cast<T(*)(const T&, const T&, Double)>(Math::select), "Constant interpolation of two values", py::arg("a"), py::arg("b"), py::arg("t"));
 }
 
-template<class T> void boolVector(py::module_& m, py::class_<T>& c) {
+template<class T> void bitVector(py::module_& m, py::class_<T>& c) {
     c
         /* Constructors */
         .def_static("zero_init", []() {
@@ -448,12 +448,12 @@ void math(py::module_& root, py::module_& m) {
     py::implicitly_convertible<Degd, Radd>();
 
     /* BitVector */
-    py::class_<Math::BitVector<2>> boolVector2{root, "BitVector2", "Two-component bool vector"};
-    py::class_<Math::BitVector<3>> boolVector3{root, "BitVector3", "Three-component bool vector"};
-    py::class_<Math::BitVector<4>> boolVector4{root, "BitVector4", "Four-component bool vector"};
-    boolVector(m, boolVector2);
-    boolVector(m, boolVector3);
-    boolVector(m, boolVector4);
+    py::class_<Math::BitVector<2>> boolVector2{root, "BitVector2", "Two-component vector of bits"};
+    py::class_<Math::BitVector<3>> boolVector3{root, "BitVector3", "Three-component vector of bits"};
+    py::class_<Math::BitVector<4>> boolVector4{root, "BitVector4", "Four-component vector of bits"};
+    bitVector(m, boolVector2);
+    bitVector(m, boolVector3);
+    bitVector(m, boolVector4);
 
     /* Constants. Putting them into math like Python does and as doubles, since
        Python doesn't really differentiate between 32bit and 64bit floats */
