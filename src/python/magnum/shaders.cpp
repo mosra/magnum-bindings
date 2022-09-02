@@ -44,12 +44,6 @@ namespace magnum {
 
 namespace {
 
-template<class T> void anyShader(PyNonDestructibleClass<T, GL::AbstractShaderProgram>& c) {
-    c.def("draw", [](GL::AbstractShaderProgram& self, GL::Mesh& mesh) {
-        self.draw(mesh);
-    }, "Draw a mesh");
-}
-
 template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatGL<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
     c.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::TextureCoordinates{}};
@@ -84,8 +78,6 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
 
             self.bindTexture(texture);
         }, "Bind a color texture");
-
-    anyShader(c);
 }
 
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColorGL<dimensions>, GL::AbstractShaderProgram>& c) {
@@ -101,8 +93,6 @@ template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders
 
         .def_property("transformation_projection_matrix", nullptr, &Shaders::VertexColorGL<dimensions>::setTransformationProjectionMatrix,
             "Transformation and projection matrix");
-
-    anyShader(c);
 }
 
 }
@@ -314,8 +304,6 @@ void shaders(py::module_& m) {
                 self.bindTextures(ambient, diffuse, specular, normal);
             }, "Bind textures", py::arg("ambient") = nullptr, py::arg("diffuse") = nullptr, py::arg("specular") = nullptr, py::arg("normal") = nullptr)
             ;
-
-        anyShader(phongGL);
     }
 }
 
