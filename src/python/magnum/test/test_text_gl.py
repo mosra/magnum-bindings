@@ -32,6 +32,7 @@ import unittest
 from . import GLTestCase, setUpModule
 
 from corrade import pluginmanager
+import magnum
 from magnum import *
 from magnum import gl, text
 
@@ -61,6 +62,7 @@ class DistanceFieldGlyphCache(GLTestCase):
         self.assertEqual(cache.padding, (2, 2))
 
 class Renderer2D(GLTestCase):
+    @unittest.skipIf(magnum.TARGET_GLES2, "Needs OES_mapbuffer on ES2 and extension queries are not exposed to Python yet")
     def test(self):
         font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
         font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
