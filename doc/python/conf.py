@@ -103,6 +103,28 @@ magnum.shaders.PhongGL.__annotations__ = {
     'COLOR4': magnum.gl.Attribute
 }
 
+# An extremely hacky way to remove noise for shader docs. It doesn't hide
+# those, but at least puts them way down in the page, removing all docs.
+# TODO needs a better solution directly in m.css
+for shader in [magnum.shaders.FlatGL2D,
+               magnum.shaders.FlatGL3D,
+               magnum.shaders.VertexColorGL2D,
+               magnum.shaders.VertexColorGL3D,
+               magnum.shaders.PhongGL]:
+    shader.attach_shader = DoNotPrintValue()
+    shader.bind_attribute_location = DoNotPrintValue()
+    shader.bind_fragment_data_location = DoNotPrintValue()
+    shader.bind_fragment_data_location_indexed = DoNotPrintValue()
+    shader.dispatch_compute = DoNotPrintValue()
+    shader.link = DoNotPrintValue()
+    shader.retrievable_binary = DoNotPrintValue()
+    shader.separable = DoNotPrintValue()
+    shader.set_uniform_block_binding = DoNotPrintValue()
+    shader.set_uniform = DoNotPrintValue()
+    shader.uniform_block_index = DoNotPrintValue()
+    shader.uniform_location = DoNotPrintValue()
+    shader.TransformFeedbackBufferMode = DoNotPrintValue()
+
 PROJECT_TITLE = 'Magnum'
 PROJECT_SUBTITLE = 'Python docs'
 MAIN_PROJECT_URL = 'https://magnum.graphics'
