@@ -367,6 +367,11 @@ PYBIND11_MODULE(_magnum, m) {
     magnum::scenegraph(scenegraph);
     #endif
 
+    #ifdef Magnum_Text_FOUND
+    py::module_ text = m.def_submodule("text");
+    magnum::text(text);
+    #endif
+
     #ifdef Magnum_Trade_FOUND
     py::module_ trade = m.def_submodule("trade");
     magnum::trade(trade);

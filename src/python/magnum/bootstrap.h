@@ -74,6 +74,7 @@ void meshtools(py::module_& m);
 void primitives(py::module_& m);
 void scenegraph(py::module_& m);
 void shaders(py::module_& m);
+void text(py::module_& m);
 void trade(py::module_& m);
 
 namespace platform {

@@ -46,6 +46,7 @@ extension_paths = {
     'magnum.platform.glx': '${magnum_platform_glx_file}',
     'magnum.platform.glfw': '${magnum_platform_glfw_file}',
     'magnum.platform.sdl2': '${magnum_platform_sdl2_file}',
+    'magnum.text': '${magnum_text_file}',
     'magnum.trade': '${magnum_trade_file}',
 }
 

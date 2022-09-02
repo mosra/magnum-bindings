@@ -71,6 +71,7 @@ foreach(target
     magnum_platform_glx
     magnum_platform_glfw
     magnum_platform_sdl2
+    magnum_text
     magnum_trade)
     if(TARGET ${target})
         set(${target}_file $<TARGET_FILE:${target}>)

@@ -35,7 +35,7 @@ sys.modules['magnum.math'] = math
 
 # In case Magnum is built statically, the whole core project is put into
 # _magnum. Then we need to do the same as above but for all modules.
-for i in ['gl', 'meshtools', 'platform', 'primitives', 'scenegraph', 'shaders', 'trade']:
+for i in ['gl', 'meshtools', 'platform', 'primitives', 'scenegraph', 'shaders', 'text', 'trade']:
     if i in globals(): sys.modules['magnum.' + i] = globals()[i]
 
 # Platform has subpackages

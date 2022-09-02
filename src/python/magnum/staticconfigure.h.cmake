@@ -31,6 +31,7 @@
 #cmakedefine Magnum_Primitives_FOUND
 #cmakedefine Magnum_SceneGraph_FOUND
 #cmakedefine Magnum_Shaders_FOUND
+#cmakedefine Magnum_Text_FOUND
 #cmakedefine Magnum_Trade_FOUND
 
 #cmakedefine Magnum_GlfwApplication_FOUND

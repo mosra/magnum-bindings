@@ -34,6 +34,7 @@ find_package(Magnum COMPONENTS
     Primitives
     SceneGraph
     Shaders
+    Text
     Trade
 
     GlfwApplication
@@ -79,6 +80,9 @@ set(magnum_scenegraph_SRCS
 
 set(magnum_shaders_SRCS
     shaders.cpp)
+
+set(magnum_text_SRCS
+    text.cpp)
 
 set(magnum_trade_SRCS
     trade.cpp)
@@ -137,6 +141,17 @@ if(NOT MAGNUM_BUILD_STATIC)
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
 
+    if(Magnum_Text_FOUND)
+        pybind11_add_module(magnum_text ${pybind11_add_module_SYSTEM} ${magnum_text_SRCS})
+        target_include_directories(magnum_text PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_text PRIVATE Magnum::Text)
+        set_target_properties(magnum_text PROPERTIES
+            OUTPUT_NAME "text"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
     if(Magnum_Trade_FOUND)
         pybind11_add_module(magnum_trade ${pybind11_add_module_SYSTEM} ${magnum_trade_SRCS})
         target_include_directories(magnum_trade PRIVATE
@@ -178,6 +193,11 @@ else()
     if(Magnum_Shaders_FOUND)
         list(APPEND magnum_SRCS ${magnum_shaders_SRCS})
         list(APPEND magnum_LIBS Magnum::Shaders)
+    endif()
+
+    if(Magnum_Text_FOUND)
+        list(APPEND magnum_SRCS ${magnum_text_SRCS})
+        list(APPEND magnum_LIBS Magnum::Text)
     endif()
 
     if(Magnum_Trade_FOUND)
