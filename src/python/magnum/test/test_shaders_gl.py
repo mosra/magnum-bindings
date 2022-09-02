@@ -32,6 +32,33 @@ from . import GLTestCase, setUpModule
 from magnum import *
 from magnum import gl, shaders
 
+class DistanceFieldGL(GLTestCase):
+    def test_init(self):
+        a = shaders.DistanceFieldVectorGL3D()
+        self.assertEqual(a.flags, shaders.DistanceFieldVectorGL3D.Flags.NONE)
+
+        b = shaders.DistanceFieldVectorGL3D(shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        self.assertEqual(b.flags, shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+
+    def test_uniforms_bindings(self):
+        a = shaders.DistanceFieldVectorGL3D(shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        a.color = (0.5, 1.0, 0.9)
+        a.outline_color = (1.0, 0.5, 0.9, 0.3)
+        a.outline_range = (0.5, 0.8)
+        a.smoothness = 0.1
+        a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())
+        a.texture_matrix = Matrix3()
+
+        texture = gl.Texture2D()
+        texture.set_storage(1, gl.TextureFormat.R8, Vector2i(8))
+        a.bind_vector_texture(texture)
+
+    def test_uniforms_bindings_errors(self):
+        a = shaders.DistanceFieldVectorGL2D()
+
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with texture transformation enabled"):
+            a.texture_matrix = Matrix3()
+
 class FlatGL(GLTestCase):
     def test_init(self):
         a = shaders.FlatGL3D()
@@ -136,3 +163,28 @@ class PhongGL(GLTestCase):
             a.bind_normal_texture(texture)
         with self.assertRaisesRegex(AttributeError, "the shader was not created with any textures enabled"):
             a.bind_textures(diffuse=texture)
+
+class DistanceFieldGL(GLTestCase):
+    def test_init(self):
+        a = shaders.VectorGL3D()
+        self.assertEqual(a.flags, shaders.VectorGL3D.Flags.NONE)
+
+        b = shaders.VectorGL3D(shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        self.assertEqual(b.flags, shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+
+    def test_uniforms_bindings(self):
+        a = shaders.VectorGL3D(shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        a.color = (0.5, 1.0, 0.9)
+        a.background_color = (1.0, 0.5, 0.9, 0.3)
+        a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())
+        a.texture_matrix = Matrix3()
+
+        texture = gl.Texture2D()
+        texture.set_storage(1, gl.TextureFormat.R8, Vector2i(8))
+        a.bind_vector_texture(texture)
+
+    def test_uniforms_bindings_errors(self):
+        a = shaders.VectorGL2D()
+
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with texture transformation enabled"):
+            a.texture_matrix = Matrix3()

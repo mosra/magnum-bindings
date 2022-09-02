@@ -31,9 +31,11 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
+#include <Magnum/Shaders/DistanceFieldVectorGL.h>
 #include <Magnum/Shaders/FlatGL.h>
 #include <Magnum/Shaders/PhongGL.h>
 #include <Magnum/Shaders/VertexColorGL.h>
+#include <Magnum/Shaders/VectorGL.h>
 
 #include "Corrade/PythonBindings.h"
 
@@ -43,6 +45,41 @@
 namespace magnum {
 
 namespace {
+
+template<UnsignedInt dimensions> void distanceFieldVector(PyNonDestructibleClass<Shaders::DistanceFieldVectorGL<dimensions>, GL::AbstractShaderProgram>& c) {
+    /* Attributes */
+    c.attr("POSITION") = GL::DynamicAttribute{typename Shaders::DistanceFieldVectorGL<dimensions>::Position{}};
+    c.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{typename Shaders::DistanceFieldVectorGL<dimensions>::TextureCoordinates{}};
+
+    /* Methods */
+    c
+        .def(py::init<typename Shaders::DistanceFieldVectorGL<dimensions>::Flag>(), "Constructor",
+            py::arg("flags") = typename Shaders::DistanceFieldVectorGL<dimensions>::Flag{})
+
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def_property_readonly("flags", [](Shaders::DistanceFieldVectorGL<dimensions>& self) {
+            return typename Shaders::DistanceFieldVectorGL<dimensions>::Flag(UnsignedByte(self.flags()));
+        }, "Flags")
+        .def_property("transformation_projection_matrix", nullptr, &Shaders::DistanceFieldVectorGL<dimensions>::setTransformationProjectionMatrix,
+            "Transformation and projection matrix")
+        .def_property("texture_matrix", nullptr, [](Shaders::DistanceFieldVectorGL<dimensions>& self, const Matrix3& matrix) {
+            if(!(self.flags() & Shaders::DistanceFieldVectorGL<dimensions>::Flag::TextureTransformation)) {
+                PyErr_SetString(PyExc_AttributeError, "the shader was not created with texture transformation enabled");
+                throw py::error_already_set{};
+            }
+
+            self.setTextureMatrix(matrix);
+        }, "Texture matrix")
+        .def_property("color", nullptr, &Shaders::DistanceFieldVectorGL<dimensions>::setColor, "Color")
+        .def_property("outline_color", nullptr, &Shaders::DistanceFieldVectorGL<dimensions>::setOutlineColor, "Outline color")
+        .def_property("outline_range", nullptr, [](Shaders::DistanceFieldVectorGL<dimensions>& self, const std::pair<Float, Float>& startEnd) {
+            self.setOutlineRange(startEnd.first, startEnd.second);
+        }, "Outline range start and end")
+        .def_property("smoothness", nullptr, &Shaders::DistanceFieldVectorGL<dimensions>::setSmoothness, "Smoothness")
+        .def("bind_vector_texture", [](Shaders::DistanceFieldVectorGL<dimensions>& self, GL::Texture2D& texture) {
+            self.bindVectorTexture(texture);
+        }, "Bind a vector texture");
+}
 
 template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatGL<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
@@ -91,6 +128,37 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
         }, "Bind a color texture");
 }
 
+template<UnsignedInt dimensions> void vector(PyNonDestructibleClass<Shaders::VectorGL<dimensions>, GL::AbstractShaderProgram>& c) {
+    /* Attributes */
+    c.attr("POSITION") = GL::DynamicAttribute{typename Shaders::VectorGL<dimensions>::Position{}};
+    c.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{typename Shaders::VectorGL<dimensions>::TextureCoordinates{}};
+
+    /* Methods */
+    c
+        .def(py::init<typename Shaders::VectorGL<dimensions>::Flag>(), "Constructor",
+            py::arg("flags") = typename Shaders::VectorGL<dimensions>::Flag{})
+
+        /* Using lambdas to avoid method chaining getting into signatures */
+        .def_property_readonly("flags", [](Shaders::VectorGL<dimensions>& self) {
+            return typename Shaders::VectorGL<dimensions>::Flag(UnsignedByte(self.flags()));
+        }, "Flags")
+        .def_property("transformation_projection_matrix", nullptr, &Shaders::VectorGL<dimensions>::setTransformationProjectionMatrix,
+            "Transformation and projection matrix")
+        .def_property("texture_matrix", nullptr, [](Shaders::VectorGL<dimensions>& self, const Matrix3& matrix) {
+            if(!(self.flags() & Shaders::VectorGL<dimensions>::Flag::TextureTransformation)) {
+                PyErr_SetString(PyExc_AttributeError, "the shader was not created with texture transformation enabled");
+                throw py::error_already_set{};
+            }
+
+            self.setTextureMatrix(matrix);
+        }, "Texture matrix")
+        .def_property("color", nullptr, &Shaders::VectorGL<dimensions>::setColor, "Fill color")
+        .def_property("background_color", nullptr, &Shaders::VectorGL<dimensions>::setBackgroundColor, "Background color")
+        .def("bind_vector_texture", [](Shaders::VectorGL<dimensions>& self, GL::Texture2D& texture) {
+            self.bindVectorTexture(texture);
+        }, "Bind a vector texture");
+}
+
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColorGL<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
     c.attr("POSITION") = GL::DynamicAttribute{typename Shaders::VertexColorGL<dimensions>::Position{}};
@@ -117,6 +185,29 @@ void shaders(py::module_& m) {
        import (also can't import because there it's _magnum.*) */
     py::module_::import("magnum.gl");
     #endif
+
+    /* 2D/3D distance field vector shader */
+    {
+        PyNonDestructibleClass<Shaders::DistanceFieldVectorGL2D, GL::AbstractShaderProgram> distanceFieldVectorGL2D{m,
+            "DistanceFieldVectorGL2D", "2D distance field vector OpenGL shader"};
+        PyNonDestructibleClass<Shaders::DistanceFieldVectorGL3D, GL::AbstractShaderProgram> distanceFieldVectorGL3D{m,
+            "DistanceFieldVectorGL3D", "3D distance field vector OpenGL shader"};
+
+        /* The flags are currently the same type for both 2D and 3D and pybind
+           doesn't want to have a single type registered twice, so doing it
+           this way instead */
+        py::enum_<Shaders::DistanceFieldVectorGL2D::Flag> flags{distanceFieldVectorGL2D, "Flags", "Flags"};
+        flags
+            .value("TEXTURE_TRANSFORMATION", Shaders::DistanceFieldVectorGL2D::Flag::TextureTransformation)
+            .value("NONE", Shaders::DistanceFieldVectorGL2D::Flag{})
+            ;
+        distanceFieldVectorGL3D.attr("Flags") = flags;
+
+        distanceFieldVector(distanceFieldVectorGL2D);
+        distanceFieldVector(distanceFieldVectorGL3D);
+
+        corrade::enumOperators(flags);
+    }
 
     /* 2D/3D flat shader */
     {
@@ -314,6 +405,29 @@ void shaders(py::module_& m) {
                 self.bindTextures(ambient, diffuse, specular, normal);
             }, "Bind textures", py::arg("ambient") = nullptr, py::arg("diffuse") = nullptr, py::arg("specular") = nullptr, py::arg("normal") = nullptr)
             ;
+    }
+
+    /* 2D/3D vector shader */
+    {
+        PyNonDestructibleClass<Shaders::VectorGL2D, GL::AbstractShaderProgram> vectorGL2D{m,
+            "VectorGL2D", "2D vector OpenGL shader"};
+        PyNonDestructibleClass<Shaders::VectorGL3D, GL::AbstractShaderProgram> vectorGL3D{m,
+            "VectorGL3D", "3D vector OpenGL shader"};
+
+        /* The flags are currently the same type for both 2D and 3D and pybind
+           doesn't want to have a single type registered twice, so doing it
+           this way instead */
+        py::enum_<Shaders::VectorGL2D::Flag> flags{vectorGL2D, "Flags", "Flags"};
+        flags
+            .value("TEXTURE_TRANSFORMATION", Shaders::VectorGL2D::Flag::TextureTransformation)
+            .value("NONE", Shaders::VectorGL2D::Flag{})
+            ;
+        vectorGL3D.attr("Flags") = flags;
+
+        vector(vectorGL2D);
+        vector(vectorGL3D);
+
+        corrade::enumOperators(flags);
     }
 }
 

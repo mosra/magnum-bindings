@@ -23,6 +23,21 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
+.. py:class:: magnum.shaders.DistanceFieldVectorGL2D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+
+.. py:class:: magnum.shaders.DistanceFieldVectorGL3D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+
+.. py:property:: magnum.shaders.DistanceFieldVectorGL2D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
+.. py:property:: magnum.shaders.DistanceFieldVectorGL3D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
+
 .. py:class:: magnum.shaders.FlatGL2D
     :data POSITION: Vertex position
     :data TEXTURE_COORDINATES: 2D texture coordinates
@@ -115,3 +130,18 @@
     :raise AttributeError: If the shader was not created with any of
         :ref:`Flags.AMBIENT_TEXTURE`, :ref:`Flags.DIFFUSE_TEXTURE`,
         :ref:`Flags.SPECULAR_TEXTURE` or :ref:`Flags.NORMAL_TEXTURE`
+
+.. py:class:: magnum.shaders.VectorGL2D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+
+.. py:class:: magnum.shaders.VectorGL3D
+    :data POSITION: Vertex position
+    :data TEXTURE_COORDINATES: 2D texture coordinates
+
+.. py:property:: magnum.shaders.VectorGL2D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
+.. py:property:: magnum.shaders.VectorGL3D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`

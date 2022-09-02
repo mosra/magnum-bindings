@@ -72,6 +72,14 @@ magnum.__annotations__ = {
 magnum.gl.__annotations__ = {
     'default_framebuffer': magnum.gl.DefaultFramebuffer
 }
+magnum.shaders.DistanceFieldVectorGL2D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute
+}
+magnum.shaders.DistanceFieldVectorGL3D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute
+}
 magnum.shaders.FlatGL2D.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'TEXTURE_COORDINATES': magnum.gl.Attribute,
@@ -110,15 +118,27 @@ magnum.shaders.PhongGL.__annotations__ = {
     'TRANSFORMATION_MATRIX': magnum.gl.Attribute,
     'TEXTURE_OFFSET': magnum.gl.Attribute,
 }
+magnum.shaders.VectorGL2D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute
+}
+magnum.shaders.VectorGL3D.__annotations__ = {
+    'POSITION': magnum.gl.Attribute,
+    'TEXTURE_COORDINATES': magnum.gl.Attribute
+}
 
 # An extremely hacky way to remove noise for shader docs. It doesn't hide
 # those, but at least puts them way down in the page, removing all docs.
 # TODO needs a better solution directly in m.css
-for shader in [magnum.shaders.FlatGL2D,
+for shader in [magnum.shaders.DistanceFieldVectorGL2D,
+               magnum.shaders.DistanceFieldVectorGL3D,
+               magnum.shaders.FlatGL2D,
                magnum.shaders.FlatGL3D,
                magnum.shaders.VertexColorGL2D,
                magnum.shaders.VertexColorGL3D,
-               magnum.shaders.PhongGL]:
+               magnum.shaders.PhongGL,
+               magnum.shaders.VectorGL2D,
+               magnum.shaders.VectorGL3D]:
     shader.attach_shader = DoNotPrintValue()
     shader.bind_attribute_location = DoNotPrintValue()
     shader.bind_fragment_data_location = DoNotPrintValue()

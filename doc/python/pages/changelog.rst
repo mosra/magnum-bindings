@@ -60,6 +60,9 @@ Changelog
     lighting features in :ref:`shaders.PhongGL`
 -   Exposed new instancing and texture transformation features in
     :ref:`shaders.FlatGL2D` and :ref:`shaders.FlatGL3D`
+-   Exposed :ref:`shaders.DistanceFieldVectorGL2D`,
+    :ref:`shaders.DistanceFieldVectorGL3D`, :ref:`shaders.VectorGL2D` and
+    :ref:`shaders.VectorGL3D` shaders
 -   Renamed all helper ``Python.h`` headers to ``PythonBindings.h`` to avoid
     issues with shitty IDE indexers such as Eclipse, confusing these with
     Python's ``<Python.h>``
