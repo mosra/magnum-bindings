@@ -46,9 +46,12 @@ namespace {
 
 template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatGL<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
+    c.attr("POSITION") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::Position{}};
     c.attr("TEXTURE_COORDINATES") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::TextureCoordinates{}};
     c.attr("COLOR3") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::Color3{}};
     c.attr("COLOR4") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::Color4{}};
+    c.attr("TRANSFORMATION_MATRIX") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::TransformationMatrix{}};
+    c.attr("TEXTURE_OFFSET") = GL::DynamicAttribute{typename Shaders::FlatGL<dimensions>::TextureOffset{}};
 
     /* Methods */
     c
@@ -61,6 +64,14 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
         }, "Flags")
         .def_property("transformation_projection_matrix", nullptr, &Shaders::FlatGL<dimensions>::setTransformationProjectionMatrix,
             "Transformation and projection matrix")
+        .def_property("texture_matrix", nullptr, [](Shaders::FlatGL<dimensions>& self, const Matrix3& matrix) {
+            if(!(self.flags() & Shaders::FlatGL<dimensions>::Flag::TextureTransformation)) {
+                PyErr_SetString(PyExc_AttributeError, "the shader was not created with texture transformation enabled");
+                throw py::error_already_set{};
+            }
+
+            self.setTextureMatrix(matrix);
+        }, "Texture matrix")
         .def_property("color", nullptr, &Shaders::FlatGL<dimensions>::setColor, "Color")
         .def_property("alpha_mask", nullptr, [](Shaders::FlatGL<dimensions>& self, Float mask) {
             if(!(self.flags() & Shaders::FlatGL<dimensions>::Flag::AlphaMask)) {
@@ -82,6 +93,7 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
 
 template<UnsignedInt dimensions> void vertexColor(PyNonDestructibleClass<Shaders::VertexColorGL<dimensions>, GL::AbstractShaderProgram>& c) {
     /* Attributes */
+    c.attr("POSITION") = GL::DynamicAttribute{typename Shaders::VertexColorGL<dimensions>::Position{}};
     c.attr("COLOR3") = GL::DynamicAttribute{typename Shaders::VertexColorGL<dimensions>::Color3{}};
     c.attr("COLOR4") = GL::DynamicAttribute{typename Shaders::VertexColorGL<dimensions>::Color4{}};
 
@@ -111,9 +123,7 @@ void shaders(py::module_& m) {
         PyNonDestructibleClass<Shaders::FlatGL2D, GL::AbstractShaderProgram> flatGL2D{m,
             "FlatGL2D", "2D flat OpenGL shader"};
         PyNonDestructibleClass<Shaders::FlatGL3D, GL::AbstractShaderProgram> flatGL3D{m,
-            "FlatGL3D", "3D flat shader"};
-        flatGL2D.attr("POSITION") = GL::DynamicAttribute{Shaders::FlatGL2D::Position{}};
-        flatGL3D.attr("POSITION") = GL::DynamicAttribute{Shaders::FlatGL3D::Position{}};
+            "FlatGL3D", "3D flat OpenGL shader"};
 
         /* The flags are currently the same type for both 2D and 3D and pybind
            doesn't want to have a single type registered twice, so doing it
@@ -122,8 +132,11 @@ void shaders(py::module_& m) {
         flags
             .value("TEXTURED", Shaders::FlatGL2D::Flag::Textured)
             .value("ALPHA_MASK", Shaders::FlatGL2D::Flag::AlphaMask)
-            .value("VERTEX_COLOR", Shaders::FlatGL3D::Flag::AlphaMask)
-            .value("NONE", Shaders::FlatGL3D::Flag{})
+            .value("VERTEX_COLOR", Shaders::FlatGL2D::Flag::AlphaMask)
+            .value("TEXTURE_TRANSFORMATION", Shaders::FlatGL2D::Flag::TextureTransformation)
+            .value("INSTANCED_TRANSFORMATION", Shaders::FlatGL2D::Flag::InstancedTransformation)
+            .value("INSTANCED_TEXTURE_OFFSET", Shaders::FlatGL2D::Flag::InstancedTextureOffset)
+            .value("NONE", Shaders::FlatGL2D::Flag{})
             /* TODO: OBJECT_ID, once multiple FB outputs and mapDraw is exposed */
             ;
         flatGL3D.attr("Flags") = flags;
@@ -132,17 +145,14 @@ void shaders(py::module_& m) {
         flat(flatGL3D);
 
         corrade::enumOperators(flags);
-
     }
 
     /* 2D/3D vertex color shader */
     {
         PyNonDestructibleClass<Shaders::VertexColorGL2D, GL::AbstractShaderProgram> vertexColorGL2D{m,
-            "VertexColorGL2D", "2D vertex color shader"};
+            "VertexColorGL2D", "2D vertex color OpenGL shader"};
         PyNonDestructibleClass<Shaders::VertexColorGL3D, GL::AbstractShaderProgram> vertexColorGL3D{m,
-            "VertexColorGL3D", "3D vertex color shader"};
-        vertexColorGL2D.attr("POSITION") = GL::DynamicAttribute{Shaders::VertexColorGL2D::Position{}};
-        vertexColorGL3D.attr("POSITION") = GL::DynamicAttribute{Shaders::VertexColorGL3D::Position{}};
+            "VertexColorGL3D", "3D vertex color OpenGL shader"};
         vertexColor(vertexColorGL2D);
         vertexColor(vertexColorGL3D);
     }
@@ -150,7 +160,7 @@ void shaders(py::module_& m) {
     /* Phong shader */
     {
         PyNonDestructibleClass<Shaders::PhongGL, GL::AbstractShaderProgram> phongGL{m,
-            "PhongGL", "Phong shader"};
+            "PhongGL", "Phong OpenGL shader"};
         phongGL.attr("POSITION") = GL::DynamicAttribute{Shaders::PhongGL::Position{}};
         phongGL.attr("NORMAL") = GL::DynamicAttribute{Shaders::PhongGL::Normal{}};
         phongGL.attr("TANGENT") = GL::DynamicAttribute{Shaders::PhongGL::Tangent{}};

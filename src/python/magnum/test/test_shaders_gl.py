@@ -41,10 +41,11 @@ class FlatGL(GLTestCase):
         self.assertEqual(b.flags, shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK)
 
     def test_uniforms_bindings(self):
-        a = shaders.FlatGL3D(shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK)
+        a = shaders.FlatGL3D(shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK|shaders.FlatGL3D.Flags.TEXTURE_TRANSFORMATION)
         a.color = (0.5, 1.0, 0.9)
         a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())
         a.alpha_mask = 0.3
+        a.texture_matrix = Matrix3()
 
         texture = gl.Texture2D()
         texture.set_storage(1, gl.TextureFormat.RGBA8, Vector2i(8))
@@ -54,6 +55,8 @@ class FlatGL(GLTestCase):
         a = shaders.FlatGL2D()
         with self.assertRaisesRegex(AttributeError, "the shader was not created with alpha mask enabled"):
             a.alpha_mask = 0.3
+        with self.assertRaisesRegex(AttributeError, "the shader was not created with texture transformation enabled"):
+            a.texture_matrix = Matrix3()
 
         texture = gl.Texture2D()
         with self.assertRaisesRegex(AttributeError, "the shader was not created with texturing enabled"):

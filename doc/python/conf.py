@@ -76,13 +76,17 @@ magnum.shaders.FlatGL2D.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'TEXTURE_COORDINATES': magnum.gl.Attribute,
     'COLOR3': magnum.gl.Attribute,
-    'COLOR4': magnum.gl.Attribute
+    'COLOR4': magnum.gl.Attribute,
+    'TRANSFORMATION_MATRIX': magnum.gl.Attribute,
+    'TEXTURE_OFFSET': magnum.gl.Attribute,
 }
 magnum.shaders.FlatGL3D.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'TEXTURE_COORDINATES': magnum.gl.Attribute,
     'COLOR3': magnum.gl.Attribute,
-    'COLOR4': magnum.gl.Attribute
+    'COLOR4': magnum.gl.Attribute,
+    'TRANSFORMATION_MATRIX': magnum.gl.Attribute,
+    'TEXTURE_OFFSET': magnum.gl.Attribute,
 }
 magnum.shaders.VertexColorGL2D.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
@@ -98,9 +102,13 @@ magnum.shaders.PhongGL.__annotations__ = {
     'POSITION': magnum.gl.Attribute,
     'NORMAL': magnum.gl.Attribute,
     'TANGENT': magnum.gl.Attribute,
+    'TANGENT4': magnum.gl.Attribute,
+    'BITANGENT': magnum.gl.Attribute,
     'TEXTURE_COORDINATES': magnum.gl.Attribute,
     'COLOR3': magnum.gl.Attribute,
-    'COLOR4': magnum.gl.Attribute
+    'COLOR4': magnum.gl.Attribute,
+    'TRANSFORMATION_MATRIX': magnum.gl.Attribute,
+    'TEXTURE_OFFSET': magnum.gl.Attribute,
 }
 
 # An extremely hacky way to remove noise for shader docs. It doesn't hide

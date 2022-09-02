@@ -28,12 +28,23 @@
     :data TEXTURE_COORDINATES: 2D texture coordinates
     :data COLOR3: Three-component vertex color
     :data COLOR4: Four-component vertex color
+    :data TRANSFORMATION_MATRIX: (Instanced) transformation matrix
+    :data TEXTURE_OFFSET: (Instanced) texture offset
 
 .. py:class:: magnum.shaders.FlatGL3D
     :data POSITION: Vertex position
     :data TEXTURE_COORDINATES: 2D texture coordinates
     :data COLOR3: Three-component vertex color
     :data COLOR4: Four-component vertex color
+    :data TRANSFORMATION_MATRIX: (Instanced) transformation matrix
+    :data TEXTURE_OFFSET: (Instanced) texture offset
+
+.. py:property:: magnum.shaders.FlatGL2D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
+.. py:property:: magnum.shaders.FlatGL3D.texture_matrix
+    :raise AttributeError: If the shader was not created with
+        :ref:`Flags.TEXTURE_TRANSFORMATION`
 
 .. py:property:: magnum.shaders.FlatGL2D.alpha_mask
     :raise AttributeError: If the shader was not created with

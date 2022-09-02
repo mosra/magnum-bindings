@@ -56,8 +56,10 @@ Changelog
     :ref:`gl.Renderer.set_blend_equation()` and related enums (see :gh:`mosra/magnum-bindings#9`)
 -   Exposed :ref:`gl.Renderer.Feature.CLIP_DISTANCEn <gl.Renderer.Feature.CLIP_DISTANCE0>`
     values that are new since 2020.06
--   Exposed new instancing, normal-mapping-related and lighting features in
-    :ref:`shaders.PhongGL`
+-   Exposed new instancing, texture transformation, normal-mapping-related and
+    lighting features in :ref:`shaders.PhongGL`
+-   Exposed new instancing and texture transformation features in
+    :ref:`shaders.FlatGL2D` and :ref:`shaders.FlatGL3D`
 -   Renamed all helper ``Python.h`` headers to ``PythonBindings.h`` to avoid
     issues with shitty IDE indexers such as Eclipse, confusing these with
     Python's ``<Python.h>``
