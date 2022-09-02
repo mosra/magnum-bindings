@@ -326,7 +326,7 @@ void trade(py::module_& m) {
     py::class_<Trade::AbstractImporter, PluginManager::PyPluginHolder<Trade::AbstractImporter>> abstractImporter{m, "AbstractImporter", "Interface for importer plugins"};
     corrade::plugin(abstractImporter);
     abstractImporter
-        /** @todo features (once moved outside of the importer) */
+        /** @todo features */
         .def_property_readonly("is_opened", &Trade::AbstractImporter::isOpened, "Whether any file is opened")
         .def("open_data", [](Trade::AbstractImporter& self, Containers::ArrayView<const char> data) {
             /** @todo log redirection -- but we'd need assertions to not be
@@ -381,6 +381,7 @@ void trade(py::module_& m) {
     /* Image converter */
     py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
     abstractImageConverter
+        /** @todo features */
         .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
@@ -392,6 +393,7 @@ void trade(py::module_& m) {
     /* Scene converter */
     py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
+        /** @todo features */
         .def("convert_to_file", checkSceneConverterResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
     corrade::plugin(abstractSceneConverter);
 
