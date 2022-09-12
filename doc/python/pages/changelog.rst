@@ -106,6 +106,9 @@ Changelog
     compatibility, unless ``MAGNUM_BUILD_DEPRECATED`` is disabled and unless a
     prefixed option is already set during the initial run, the unprefixed
     options are still recognized with a warning. See also :gh:`mosra/corrade#139`.
+-   Added a ``MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS`` CMake option for linking
+    static plugins to the Python bindings module. See the
+    :ref:`building documentation <std:doc:building>` for more information.
 
 `2020.06`_
 ==========

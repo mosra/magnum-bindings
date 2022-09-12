@@ -73,6 +73,12 @@ endif()
 
 # Libraries to build
 option(MAGNUM_WITH_PYTHON "Build Python bindings" OFF)
+# There's no global MAGNUM_BUILD_PLUGINS_STATIC option (only exposed as
+# per-plugin define), so not checking it.
+if(MAGNUM_WITH_PYTHON AND MAGNUM_BUILD_STATIC)
+    set(MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS "" CACHE STRING "Static plugins to link to Magnum Python bindings")
+endif()
+
 option(MAGNUM_BUILD_TESTS "Build unit tests" OFF)
 
 # Backwards compatibility for unprefixed CMake options. If the user isn't

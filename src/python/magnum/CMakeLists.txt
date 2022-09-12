@@ -244,7 +244,10 @@ target_include_directories(magnum PRIVATE
     ${PROJECT_SOURCE_DIR}/src # SceneGraph/Python.h for static build
     ${PROJECT_SOURCE_DIR}/src/python
     ${PROJECT_BINARY_DIR}/src/python) # for static build
-target_link_libraries(magnum PRIVATE Magnum::Magnum ${magnum_LIBS})
+target_link_libraries(magnum PRIVATE
+    Magnum::Magnum
+    ${magnum_LIBS}
+    ${MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS})
 set_target_properties(magnum PROPERTIES
     OUTPUT_NAME "_magnum"
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})

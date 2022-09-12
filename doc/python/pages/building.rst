@@ -139,7 +139,13 @@ containing location of all built libraries for use with Python setuptools:
 
 In case Corrade or Magnum is built with :dox:`CORRADE_BUILD_STATIC` /
 :dox:`MAGNUM_BUILD_STATIC`, the corresponding bindings are compiled into a
-single dynamic module instead of one module per Corrade/Magnum library.
+single dynamic module instead of one module per Corrade/Magnum library. In this
+case, similarly to linking static plugins to Magnum's own command-line
+utilities, you can use the ``MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS`` CMake
+variable to link static plugins to the Python module, assuming Magnum, Magnum
+Plugins and Magnum Bindings are all CMake subprojects. It's a
+semicolon-separated list of existing CMake targets, for example
+``Magnum::AnyImageImporter;MagnumPlugins::StbImageImporter``.
 
 `Running unit tests`_
 ---------------------
