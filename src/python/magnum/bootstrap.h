@@ -83,6 +83,7 @@ namespace platform {
 
     void egl(py::module_& m);
     void glx(py::module_& m);
+    void wgl(py::module_& m);
 }
 
 }

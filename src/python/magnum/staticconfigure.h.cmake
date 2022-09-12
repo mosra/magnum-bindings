@@ -38,3 +38,4 @@
 #cmakedefine Magnum_Sdl2Application_FOUND
 #cmakedefine Magnum_WindowlessEglApplication_FOUND
 #cmakedefine Magnum_WindowlessGlxApplication_FOUND
+#cmakedefine Magnum_WindowlessWglApplication_FOUND
