@@ -46,6 +46,15 @@ if(NOT MAGNUM_BUILD_STATIC)
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
     endif()
 
+    if(Magnum_WindowlessCglApplication_FOUND)
+        pybind11_add_module(magnum_platform_cgl ${pybind11_add_module_SYSTEM} cgl.cpp)
+        target_link_libraries(magnum_platform_cgl PRIVATE Magnum::WindowlessCglApplication)
+        target_include_directories(magnum_platform_cgl PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        set_target_properties(magnum_platform_cgl PROPERTIES
+            OUTPUT_NAME "cgl"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum/platform)
+    endif()
+
     if(Magnum_WindowlessEglApplication_FOUND)
         pybind11_add_module(magnum_platform_egl ${pybind11_add_module_SYSTEM} egl.cpp)
         target_link_libraries(magnum_platform_egl PRIVATE Magnum::WindowlessEglApplication)

@@ -81,6 +81,7 @@ namespace platform {
     void glfw(py::module_& m);
     void sdl2(py::module_& m);
 
+    void cgl(py::module_& m);
     void egl(py::module_& m);
     void glx(py::module_& m);
     void wgl(py::module_& m);

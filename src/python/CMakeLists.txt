@@ -67,6 +67,7 @@ foreach(target
     magnum_primitives
     magnum_scenegraph
     magnum_shaders
+    magnum_platform_cgl
     magnum_platform_egl
     magnum_platform_glx
     magnum_platform_glfw

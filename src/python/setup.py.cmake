@@ -42,6 +42,7 @@ extension_paths = {
     'magnum.primitives': '${magnum_primitives_file}',
     'magnum.scenegraph': '${magnum_scenegraph_file}',
     'magnum.shaders': '${magnum_shaders_file}',
+    'magnum.platform.cgl': '${magnum_platform_cgl_file}',
     'magnum.platform.egl': '${magnum_platform_egl_file}',
     'magnum.platform.glx': '${magnum_platform_glx_file}',
     'magnum.platform.wgl': '${magnum_platform_wgl_file}',

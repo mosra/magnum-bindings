@@ -40,7 +40,7 @@ for i in ['gl', 'meshtools', 'platform', 'primitives', 'scenegraph', 'shaders', 
 
 # Platform has subpackages
 if 'platform' in globals():
-    for i in ['glfw', 'sdl2', 'glx', 'wgl', 'egl']:
+    for i in ['glfw', 'sdl2', 'cgl', 'glx', 'wgl', 'egl']:
         if hasattr(platform, i): sys.modules['magnum.platform.' + i] = getattr(platform, i)
 
 # Scenegraph has subpackages

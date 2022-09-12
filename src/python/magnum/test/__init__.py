@@ -37,12 +37,15 @@ try:
     from magnum.platform.glx import WindowlessApplication
 except ImportError:
     try:
-        from magnum.platform.wgl import WindowlessApplication
+        from magnum.platform.cgl import WindowlessApplication
     except ImportError:
         try:
-            from magnum.platform.egl import WindowlessApplication
+            from magnum.platform.wgl import WindowlessApplication
         except ImportError:
-            WindowlessApplication = None
+            try:
+                from magnum.platform.egl import WindowlessApplication
+            except ImportError:
+                WindowlessApplication = None
 
 def setUpModule():
     if os.environ.get('MAGNUM_SKIP_GL_TESTS') == 'ON':
