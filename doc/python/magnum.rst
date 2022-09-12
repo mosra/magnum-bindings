@@ -34,6 +34,7 @@
     :data TARGET_GLES: OpenGL ES target
     :data TARGET_GLES2: OpenGL ES 2.0 target
     :data TARGET_WEBGL: WebGL target
+    :data TARGET_EGL: EGL target
     :data TARGET_VK: Vulkan interoperability
 
 .. py:class:: magnum.Image1D

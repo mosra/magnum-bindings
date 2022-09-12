@@ -191,9 +191,13 @@ void magnum(py::module_& m) {
         false
         #endif
         ;
-    /* TARGET_DESKTOP_GLES, TARGET_HEADLESS skipped as they make sense only
-       on native side (affecting what the builtin utilities use), not really in
-       Python */
+    m.attr("TARGET_EGL") =
+        #ifdef MAGNUM_TARGET_EGL
+        true
+        #else
+        false
+        #endif
+        ;
     m.attr("TARGET_VK") =
         #ifdef MAGNUM_TARGET_VK
         true
