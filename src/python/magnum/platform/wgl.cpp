@@ -63,7 +63,7 @@ void wgl(py::module_& m) {
 
         /* The base doesn't have a virtual destructor because in C++ it's never
            deleted through a pointer to the base. Here we need it, though. */
-        virtual ~PyWindowlessApplication() {}
+        virtual ~PyWindowlessApplication() = default;
     };
 
     py::class_<PyWindowlessApplication, ApplicationHolder<PyWindowlessApplication>> windowlessWglApplication{m, "WindowlessApplication", "Windowless WGL application"};
