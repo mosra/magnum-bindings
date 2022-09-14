@@ -364,10 +364,10 @@ void gl(py::module_& m) {
         corrade::enumOperators(contextDetectedDriver);
 
         context
-            .def_property_readonly_static("has_current", [](py::object) {
+            .def_property_readonly_static("has_current", [](const py::object&) {
                 return GL::Context::hasCurrent();
             }, "Whether there is any current context")
-            .def_property_readonly_static("current", [](py::object) {
+            .def_property_readonly_static("current", [](const py::object&) {
                 if(!GL::Context::hasCurrent()) {
                     PyErr_SetString(PyExc_RuntimeError, "no current context");
                     throw py::error_already_set{};
@@ -901,7 +901,7 @@ void gl(py::module_& m) {
         .def(py::init<MeshPrimitive>(), "Constructor", py::arg("primitive"))
         .def_property_readonly("id", &GL::Mesh::id, "OpenGL vertex array ID")
         .def_property("primitive", &GL::Mesh::primitive,
-            [](GL::Mesh& self, py::object primitive) {
+            [](GL::Mesh& self, const py::object &primitive) {
                 if(py::isinstance<MeshPrimitive>(primitive))
                     self.setPrimitive(py::cast<MeshPrimitive>(primitive));
                 else if(py::isinstance<GL::MeshPrimitive>(primitive))
@@ -1100,10 +1100,10 @@ void gl(py::module_& m) {
             #endif
 
             /** @todo FFS why do I have to pass the class as first argument?! */
-            .def_property_static("clear_color", nullptr, [](py::object, const Color4& color) {
+            .def_property_static("clear_color", nullptr, [](const py::object&, const Color4& color) {
                 GL::Renderer::setClearColor(color);
             }, "Set clear color")
-            .def_property_readonly_static("error", [](py::object) {
+            .def_property_readonly_static("error", [](const py::object&) {
                 return GL::Renderer::error();
             }, "Error status");
     }
