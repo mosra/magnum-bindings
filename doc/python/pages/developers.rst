@@ -30,7 +30,14 @@ Developers Guide
     corrade
     magnum
 :summary: Checklists for developing new things in Magnum Python bindings
-    themselves
+    themselves.
+
+.. role:: cmake(code)
+    :language: cmake
+.. role:: cpp(code)
+    :language: c++
+.. role:: py(code)
+    :language: py
 
 `Checklist for adding / removing bindings for a library`_
 =========================================================
