@@ -45,7 +45,7 @@ template<class T> struct PyArrayViewHolder: std::unique_ptr<T> {
 };
 
 template<class T> PyArrayViewHolder<T> pyArrayViewHolder(const T& view, pybind11::object owner) {
-    return PyArrayViewHolder<T>{new T{view}, owner};
+    return PyArrayViewHolder<T>{new T{view}, std::move(owner)};
 }
 
 }}
