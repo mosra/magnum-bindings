@@ -85,6 +85,7 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def("redraw", &T::redraw, "Redraw immediately")
         .def_property_readonly("window_size", &T::windowSize, "Window size")
         .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
+        .def_property_readonly("dpi_scaling", static_cast<Vector2(T::*)() const>(&T::dpiScaling), "DPI scaling")
         /* Event handlers */
         .def("exit_event", &T::exitEvent, "Exit event")
         .def("viewport_event", &T::viewportEvent, "Viewport event")

@@ -96,6 +96,8 @@ Changelog
     to make the window resizable on startup
 -   Exposed :ref:`platform.sdl2.Application.exit_event` and
     :ref:`platform.glfw.Application.exit_event`
+-   Exposed :ref:`platform.sdl2.Application.dpi_scaling` and
+    :ref:`platform.glfw.Application.dpi_scaling`
 -   Exposed :ref:`platform.glfw.Application.swap_interval` and
     :ref:`platform.glfw.Application.main_loop_iteration`
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
