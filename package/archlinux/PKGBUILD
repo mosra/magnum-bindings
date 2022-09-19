@@ -8,6 +8,7 @@ url="https://magnum.graphics"
 license=('MIT')
 depends=('corrade' 'magnum' 'python')
 makedepends=('cmake' 'ninja' 'pybind11')
+options=(!buildflags)
 provides=('magnum-bindings-git')
 
 _rootdir=$startdir/../../
@@ -15,10 +16,6 @@ _rootdir=$startdir/../../
 build() {
     mkdir -p "$_rootdir/build"
     cd "$_rootdir/build"
-
-    # Disable optimization (saves A LOT of compilation time)
-    newcxxflags=$(echo $CXXFLAGS | sed s/-O.//g | sed s/-D_FORTIFY_SOURCE=.//g)
-    export CXXFLAGS="$newcxxflags"
 
     cmake .. \
         -DCMAKE_BUILD_TYPE=Release \
