@@ -380,7 +380,7 @@ void gl(py::module_& m) {
                     owner = Corrade::pyObjectFromInstance(glContextOwner->first, *glContextOwner->second);
                 }
 
-                return ContextHolder<GL::Context>{&GL::Context::current(), owner};
+                return ContextHolder<GL::Context>{&GL::Context::current(), std::move(owner)};
             }, "Current context")
             /** @todo context switching (needs additions to the "who owns
                 current context instance" variable -- a map?) */
