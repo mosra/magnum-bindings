@@ -66,6 +66,9 @@
 .. py:property:: magnum.trade.ImageData3D.pixels
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 
+.. py:property:: magnum.trade.MeshData.index_count
+    :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+
 .. py:class:: magnum.trade.ImporterManager
     :summary: Manager for :ref:`AbstractImporter` plugin instances
 

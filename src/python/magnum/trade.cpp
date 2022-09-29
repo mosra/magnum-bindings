@@ -314,7 +314,14 @@ void trade(py::module_& m) {
             return Containers::pyArrayViewHolder(self.vertexData(), py::cast(self));
         }, "Raw vertex data")
         .def_property_readonly("is_indexed", &Trade::MeshData::isIndexed, "Whether the mesh is indexed")
-        .def_property_readonly("index_count", &Trade::MeshData::indexCount)
+        .def_property_readonly("index_count", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+
+            return self.indexCount();
+        })
         .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount)
         .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount));
 

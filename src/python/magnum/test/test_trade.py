@@ -107,7 +107,11 @@ class MeshData(unittest.TestCase):
 
         mesh = importer.mesh(1)
         mesh_refcount = sys.getrefcount(mesh)
+        self.assertTrue(mesh.is_indexed)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+        self.assertEqual(mesh.vertex_count, 3)
+        self.assertEqual(mesh.index_count, 3)
+        self.assertEqual(mesh.attribute_count, 2)
         # TODO: test more, once it's exposed
 
         index_data = mesh.index_data
@@ -125,6 +129,21 @@ class MeshData(unittest.TestCase):
 
         del vertex_data
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+    def test_nonindexed(self):
+        # The only way to get a mesh instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+
+        mesh = importer.mesh(0)
+        self.assertFalse(mesh.is_indexed)
+
+        # Accessing the index data should be possible, they're just empty
+        self.assertEqual(len(mesh.index_data), 0)
+
+        # Accessing any other index-related info should cause an exception
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.index_count
 
 class Importer(unittest.TestCase):
     def test(self):
