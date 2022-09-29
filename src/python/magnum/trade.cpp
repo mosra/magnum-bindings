@@ -307,9 +307,15 @@ void trade(py::module_& m) {
 
     py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
+        .def_property_readonly("index_data", [](Trade::MeshData& self) {
+            return Containers::pyArrayViewHolder(self.indexData(), py::cast(self));
+        }, "Raw index data")
+        .def_property_readonly("vertex_data", [](Trade::MeshData& self) {
+            return Containers::pyArrayViewHolder(self.vertexData(), py::cast(self));
+        }, "Raw vertex data")
         .def_property_readonly("is_indexed", &Trade::MeshData::isIndexed, "Whether the mesh is indexed")
-        .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount)
         .def_property_readonly("index_count", &Trade::MeshData::indexCount)
+        .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount)
         .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount));
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};

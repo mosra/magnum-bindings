@@ -105,9 +105,26 @@ class MeshData(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
 
-        mesh = importer.mesh(0)
+        mesh = importer.mesh(1)
+        mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
         # TODO: test more, once it's exposed
+
+        index_data = mesh.index_data
+        self.assertEqual(len(index_data), 3)
+        self.assertIs(index_data.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del index_data
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        vertex_data = mesh.vertex_data
+        self.assertEqual(len(vertex_data), 72)
+        self.assertIs(vertex_data.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del vertex_data
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
 class Importer(unittest.TestCase):
     def test(self):
