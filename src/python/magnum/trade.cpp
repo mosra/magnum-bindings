@@ -129,7 +129,7 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
         }, "Image size")
         .def_property_readonly("data", [](Trade::ImageData<dimensions>& self) {
             return Containers::pyArrayViewHolder(self.data(), py::cast(self));
-        }, "Image data")
+        }, "Raw image data")
         .def_property_readonly("pixels", [](Trade::ImageData<dimensions>& self) {
             if(self.isCompressed()) {
                 PyErr_SetString(PyExc_AttributeError, "image is compressed");
@@ -321,9 +321,9 @@ void trade(py::module_& m) {
             }
 
             return self.indexCount();
-        })
-        .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount)
-        .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount));
+        }, "Index count")
+        .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount, "Vertex count")
+        .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount), "Attribute array count");
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};

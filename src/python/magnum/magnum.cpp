@@ -65,7 +65,7 @@ template<class T> void image(py::class_<T>& c) {
         }, "Image size")
         .def_property_readonly("data", [](T& self) {
             return Containers::pyArrayViewHolder(self.data(), self.data() ? py::cast(self) : py::none{});
-        }, "Image data")
+        }, "Raw image data")
         .def_property_readonly("pixels", [](T& self) {
             return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions + 1, const char>{self.pixels()}, self.data() ? py::cast(self) : py::none{});
         }, "View on pixel data");
@@ -135,7 +135,7 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
             self.setData(data);
             pyObjectHolderFor<PyImageViewHolder>(self).owner =
             pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner;
-        }, "Image data")
+        }, "Raw image data")
         .def_property_readonly("pixels", [](T& self) {
             return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions + 1, typename T::Type>{self.pixels()}, pyObjectHolderFor<PyImageViewHolder>(self).owner);
         }, "View on pixel data")
