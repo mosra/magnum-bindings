@@ -37,7 +37,9 @@ class ImageData(unittest.TestCase):
         # The only way to get an image instance is through a manager
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
+
         image = importer.image2d(0)
+        image_refcount = sys.getrefcount(image)
         self.assertFalse(image.is_compressed)
         self.assertEqual(image.storage.alignment, 1) # libPNG has 4 tho
         self.assertEqual(image.format, PixelFormat.RGB8_UNORM)
@@ -46,6 +48,14 @@ class ImageData(unittest.TestCase):
         # TODO: ugh, report as bytes, not chars
         self.assertEqual(ord(image.pixels[1, 2, 2]), 181)
         self.assertEqual(ord(image.data[9 + 6 + 2]), 181) # libPNG has 12 +
+
+        data = image.data
+        self.assertEqual(len(data), 3*3*2)
+        self.assertIs(data.owner, image)
+        self.assertEqual(sys.getrefcount(image), image_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(image), image_refcount)
 
     def test_compressed(self):
         # The only way to get an image instance is through a manager
