@@ -37,7 +37,7 @@ template<class T> struct type_caster<Corrade::Containers::Optional<T>> {
     using value_conv = make_caster<T>;
 
     template<class T_> static handle cast(T_&& src, const return_value_policy policy, const handle parent) {
-        if(!src) return none{}.inc_ref();
+        if(!src) return none{}.release();
         return value_conv::cast(*std::forward<T_>(src), return_value_policy_override<T>::policy(policy), parent);
     }
 
