@@ -45,7 +45,7 @@ template<class T> struct PyImageViewHolder: std::unique_ptr<T> {
 };
 
 template<class T> PyImageViewHolder<T> pyImageViewHolder(const T& view, pybind11::object owner) {
-    return PyImageViewHolder<T>{new T{view}, owner};
+    return PyImageViewHolder<T>{new T{view}, std::move(owner)};
 }
 
 }
