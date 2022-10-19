@@ -25,5 +25,5 @@
 
 # Prefixed with project name to avoid conflicts with VersionTest in Magnum and
 # related repos
-corrade_add_test(MagnumBindingsVersionTest VersionTest.cpp)
+corrade_add_test(MagnumBindingsVersionTest VersionTest.cpp LIBRARIES Magnum::Magnum)
 target_include_directories(MagnumBindingsVersionTest PRIVATE ${PROJECT_BINARY_DIR}/src)

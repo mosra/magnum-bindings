@@ -75,5 +75,6 @@ involved!
 -   **James Murphy** (:gh:`mCodingLLC`) --- buildsystem fixes, expanding
     :ref:`gl.Framebuffer` bindings
 -   **John Laxson** (:gh:`jlaxson`) --- Homebrew package improvements
+-   **Stanislaw Halik** (:gh:`sthalik`) --- build fixes
 -   **Vladimir Gamalyan** (:gh:`vladimirgamalyan`) --- expanding
     :ref:`gl.Renderer` bindings
