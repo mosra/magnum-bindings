@@ -77,9 +77,15 @@ Once built, install the package using ``pacman``:
 
 macOS `Homebrew <https://brew.sh>`_ formulas building the latest Git revision
 are in the ``package/homebrew`` directory. Either use the ``*.rb`` files
-directly or use the tap at https://github.com/mosra/homebrew-magnum. Right now,
-there's no stable release of Python bindings yet, so you need to install the
-latest Git revision of all Magnum projects instead:
+directly or use the tap at https://github.com/mosra/homebrew-magnum. This will
+install the latest stable version of Magnum Bindings with all its dependencies:
+
+.. code:: sh
+
+    brew install mosra/magnum/magnum-bindings
+
+But often you may want to install the latest Git revision of all Magnum
+projects instead:
 
 .. code:: sh
 
