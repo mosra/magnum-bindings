@@ -93,6 +93,11 @@ projects instead:
     brew install --HEAD mosra/magnum/magnum
     brew install --HEAD mosra/magnum/magnum-bindings
 
+    # If already installed, use the following to upgrade, in the same order
+    brew upgrade --fetch-HEAD mosra/magnum/corrade
+    brew upgrade --fetch-HEAD mosra/magnum/magnum
+    brew upgrade --fetch-HEAD mosra/magnum/magnum-bindings
+
 When installing from the ``*.rb`` files you need to install the
 :dox:`Corrade <building-corrade-packages-brew>` and
 :dox:`Magnum <building-packages-brew>` Homebrew packages first. If you want to
