@@ -134,6 +134,18 @@ if(MAGNUM_BUILD_TESTS)
         set(CORRADE_TESTSUITE_BUNDLE_IDENTIFIER_PREFIX "cz.mosra.magnum-bindings")
     endif()
     enable_testing()
+
+    # If CORRADE_TESTSUITE_TEST_TARGET is set, tests aren't built by default
+    # (in the ALL target) but instead set as dependencies of a target named
+    # after the value of CORRADE_TESTSUITE_TEST_TARGET. This is a copy of
+    # what's done in corrade_add_test(), because we also build various test
+    # libraries and plugins in addition to the test executables.
+    if(CORRADE_TESTSUITE_TEST_TARGET)
+        if(NOT TARGET ${CORRADE_TESTSUITE_TEST_TARGET})
+            add_custom_target(${CORRADE_TESTSUITE_TEST_TARGET})
+        endif()
+        set(EXCLUDE_FROM_ALL_IF_TEST_TARGET EXCLUDE_FROM_ALL)
+    endif()
 endif()
 
 set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR share/cmake/MagnumBindings)
