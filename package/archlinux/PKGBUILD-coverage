@@ -58,5 +58,3 @@ check() {
 package() {
     echo -e "Open \n    file://${_rootdir}build-coverage/coverage/index.html\n    file://${_rootdir}src/python/htmlcov/index.html\nto see the results." && false
 }
-
-# kate: hl bash
