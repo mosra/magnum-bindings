@@ -41,7 +41,7 @@ class DistanceFieldGL(GLTestCase):
         self.assertEqual(b.flags, shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
 
     def test_uniforms_bindings(self):
-        a = shaders.DistanceFieldVectorGL3D(shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        a = shaders.DistanceFieldVectorGL3D(flags=shaders.DistanceFieldVectorGL3D.Flags.TEXTURE_TRANSFORMATION)
         a.color = (0.5, 1.0, 0.9)
         a.outline_color = (1.0, 0.5, 0.9, 0.3)
         a.outline_range = (0.5, 0.8)
@@ -64,11 +64,11 @@ class FlatGL(GLTestCase):
         a = shaders.FlatGL3D()
         self.assertEqual(a.flags, shaders.FlatGL3D.Flags.NONE)
 
-        b = shaders.FlatGL3D(shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK)
+        b = shaders.FlatGL3D(flags=shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK)
         self.assertEqual(b.flags, shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK)
 
     def test_uniforms_bindings(self):
-        a = shaders.FlatGL3D(shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK|shaders.FlatGL3D.Flags.TEXTURE_TRANSFORMATION)
+        a = shaders.FlatGL3D(flags=shaders.FlatGL3D.Flags.TEXTURED|shaders.FlatGL3D.Flags.ALPHA_MASK|shaders.FlatGL3D.Flags.TEXTURE_TRANSFORMATION)
         a.color = (0.5, 1.0, 0.9)
         a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())
         a.alpha_mask = 0.3
@@ -106,16 +106,16 @@ class PhongGL(GLTestCase):
         self.assertEqual(a.flags, shaders.PhongGL.Flags.NONE)
         self.assertEqual(a.light_count, 1)
 
-        b = shaders.PhongGL(shaders.PhongGL.Flags.DIFFUSE_TEXTURE|shaders.PhongGL.Flags.ALPHA_MASK)
+        b = shaders.PhongGL(flags=shaders.PhongGL.Flags.DIFFUSE_TEXTURE|shaders.PhongGL.Flags.ALPHA_MASK)
         self.assertEqual(b.flags, shaders.PhongGL.Flags.DIFFUSE_TEXTURE|shaders.PhongGL.Flags.ALPHA_MASK)
         self.assertEqual(b.light_count, 1)
 
-        c = shaders.PhongGL(shaders.PhongGL.Flags.NONE, 3)
+        c = shaders.PhongGL(flags=shaders.PhongGL.Flags.NONE, light_count=3)
         self.assertEqual(c.flags, shaders.PhongGL.Flags.NONE)
         self.assertEqual(c.light_count, 3)
 
     def test_uniforms_bindings(self):
-        a = shaders.PhongGL(shaders.PhongGL.Flags.ALPHA_MASK|shaders.PhongGL.Flags.AMBIENT_TEXTURE|shaders.PhongGL.Flags.DIFFUSE_TEXTURE|shaders.PhongGL.Flags.SPECULAR_TEXTURE|shaders.PhongGL.Flags.NORMAL_TEXTURE|shaders.PhongGL.Flags.TEXTURE_TRANSFORMATION, 2)
+        a = shaders.PhongGL(flags=shaders.PhongGL.Flags.ALPHA_MASK|shaders.PhongGL.Flags.AMBIENT_TEXTURE|shaders.PhongGL.Flags.DIFFUSE_TEXTURE|shaders.PhongGL.Flags.SPECULAR_TEXTURE|shaders.PhongGL.Flags.NORMAL_TEXTURE|shaders.PhongGL.Flags.TEXTURE_TRANSFORMATION, light_count=2)
         a.diffuse_color = (0.5, 1.0, 0.9)
         a.transformation_matrix = Matrix4.translation(Vector3.x_axis())
         a.projection_matrix = Matrix4.zero_init()
@@ -169,11 +169,11 @@ class DistanceFieldGL(GLTestCase):
         a = shaders.VectorGL3D()
         self.assertEqual(a.flags, shaders.VectorGL3D.Flags.NONE)
 
-        b = shaders.VectorGL3D(shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        b = shaders.VectorGL3D(flags=shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
         self.assertEqual(b.flags, shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
 
     def test_uniforms_bindings(self):
-        a = shaders.VectorGL3D(shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
+        a = shaders.VectorGL3D(flags=shaders.VectorGL3D.Flags.TEXTURE_TRANSFORMATION)
         a.color = (0.5, 1.0, 0.9)
         a.background_color = (1.0, 0.5, 0.9, 0.3)
         a.transformation_projection_matrix = Matrix4.translation(Vector3.x_axis())

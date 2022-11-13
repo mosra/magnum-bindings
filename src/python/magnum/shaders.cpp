@@ -53,7 +53,13 @@ template<UnsignedInt dimensions> void distanceFieldVector(PyNonDestructibleClass
 
     /* Methods */
     c
-        .def(py::init<typename Shaders::DistanceFieldVectorGL<dimensions>::Flag>(), "Constructor",
+        .def(py::init([](typename Shaders::DistanceFieldVectorGL<dimensions>::Flag flags) {
+            return typename Shaders::DistanceFieldVectorGL<dimensions>{typename Shaders::DistanceFieldVectorGL<dimensions>::Configuration{}
+                .setFlags(flags)};
+        }), "Constructor",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
             py::arg("flags") = typename Shaders::DistanceFieldVectorGL<dimensions>::Flag{})
 
         /* Using lambdas to avoid method chaining getting into signatures */
@@ -92,7 +98,13 @@ template<UnsignedInt dimensions> void flat(PyNonDestructibleClass<Shaders::FlatG
 
     /* Methods */
     c
-        .def(py::init<typename Shaders::FlatGL<dimensions>::Flag>(), "Constructor",
+        .def(py::init([](typename Shaders::FlatGL<dimensions>::Flag flags) {
+            return typename Shaders::FlatGL<dimensions>{typename Shaders::FlatGL<dimensions>::Configuration{}
+                .setFlags(flags)};
+        }), "Constructor",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
             py::arg("flags") = typename Shaders::FlatGL<dimensions>::Flag{})
 
         /* Using lambdas to avoid method chaining getting into signatures */
@@ -135,7 +147,13 @@ template<UnsignedInt dimensions> void vector(PyNonDestructibleClass<Shaders::Vec
 
     /* Methods */
     c
-        .def(py::init<typename Shaders::VectorGL<dimensions>::Flag>(), "Constructor",
+        .def(py::init([](typename Shaders::VectorGL<dimensions>::Flag flags) {
+            return typename Shaders::VectorGL<dimensions>{typename Shaders::VectorGL<dimensions>::Configuration{}
+                .setFlags(flags)};
+        }), "Constructor",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
             py::arg("flags") = typename Shaders::VectorGL<dimensions>::Flag{})
 
         /* Using lambdas to avoid method chaining getting into signatures */
@@ -285,7 +303,14 @@ void shaders(py::module_& m) {
         corrade::enumOperators(flags);
 
         phongGL
-            .def(py::init<Shaders::PhongGL::Flag, UnsignedInt>(), "Constructor",
+            .def(py::init([](Shaders::PhongGL::Flag flags, UnsignedInt lightCount) {
+                return Shaders::PhongGL{Shaders::PhongGL::Configuration{}
+                    .setFlags(flags)
+                    .setLightCount(lightCount)};
+            }), "Constructor",
+                #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                py::kw_only{}, /* new in pybind11 2.6 */
+                #endif
                 py::arg("flags") = Shaders::PhongGL::Flag{},
                 py::arg("light_count") = 1)
             .def_property_readonly("flags", [](Shaders::PhongGL& self) {
