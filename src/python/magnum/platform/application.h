@@ -41,6 +41,8 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .value("RESIZABLE", T::Configuration::WindowFlag::Resizable);
     corrade::enumOperators(configurationWindowFlags);
 
+    /** @todo drop this in favor of named constructor arguments, that's what
+        the Configuration tries to emulate after all */
     configuration
         .def(py::init())
         .def_property("title",
