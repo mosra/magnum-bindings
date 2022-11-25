@@ -103,7 +103,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
         PyStridedArrayView<dimensions, T> slice(std::size_t begin, std::size_t end) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::slice(begin, end), format, itemsize, getitem, setitem};
         }
-        PyStridedArrayView<dimensions, T> slice(const typename StridedArrayView<dimensions, T>::Size& begin, const typename StridedArrayView<dimensions, T>::Size& end) const {
+        PyStridedArrayView<dimensions, T> slice(const Size<dimensions>& begin, const Size<dimensions>& end) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::slice(begin, end), format, itemsize, getitem, setitem};
         }
 
@@ -115,7 +115,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::every(skip), format, itemsize, getitem, setitem};
         }
 
-        PyStridedArrayView<dimensions, T> every(const typename StridedArrayView<dimensions, T>::Stride& skip) const {
+        PyStridedArrayView<dimensions, T> every(const Stride<dimensions>& skip) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::every(skip), format, itemsize, getitem, setitem};
         }
 
