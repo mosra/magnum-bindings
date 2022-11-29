@@ -70,7 +70,8 @@ Changelog
     :gh:`mosra/magnum-bindings#15`,
     :gh:`mosra/magnum-bindings#16`,
     :gh:`mosra/magnum-bindings#17`,
-    :gh:`mosra/magnum-bindings#19`)
+    :gh:`mosra/magnum-bindings#19`,
+    :gh:`mosra/magnum-bindings#20`)
     Travis banned everyone from using their CI and so all Linux and macOS
     builds were migrated from Travis to Circle CI. See also
     :gh:`mosra/magnum#350` and :gh:`mosra/magnum#523`.
