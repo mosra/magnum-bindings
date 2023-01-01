@@ -102,7 +102,12 @@ cmake --build . --target install || exit /b
 
 rem Test
 set CORRADE_TEST_COLOR=ON
-ctest -V -E GLTest || exit /b
+rem On Windows, if an assertion or other issue happens, A DIALOG WINDOWS POPS
+rem UP FROM THE CONSOLE. And then, for fucks sake, IT WAITS ENDLESSLY FOR YOU
+rem TO CLOSE IT!! Such behavior is utterly stupid in a non-interactive setting
+rem such as on this very CI, so I'm setting a timeout to 60 seconds to avoid
+rem the CI job being stuck for an hour if an assertion happens. CTest's default rem timeouts is somehow 10M seconds, which is as useful as nothing at all.
+ctest -V -E GLTest --timeout 60 || exit /b
 
 rem Verify the setuptools install
 cd src/python || exit /b
