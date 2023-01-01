@@ -184,32 +184,32 @@ template<class T> struct DimensionsTuple<3, T> { typedef std::tuple<T, T, T> Typ
 template<class T> struct DimensionsTuple<4, T> { typedef std::tuple<T, T, T, T> Type; };
 
 /* Size tuple for given dimension */
-template<unsigned dimensions> typename DimensionsTuple<dimensions, std::size_t>::Type size(Containers::StridedDimensions<dimensions, std::size_t>);
-template<> std::tuple<std::size_t> size(Containers::StridedDimensions<1, std::size_t> size) {
+template<unsigned dimensions> typename DimensionsTuple<dimensions, std::size_t>::Type size(const Containers::Size<dimensions>&);
+template<> std::tuple<std::size_t> size(const Containers::Size1D& size) {
     return std::make_tuple(size[0]);
 }
-template<> std::tuple<std::size_t, std::size_t> size(Containers::StridedDimensions<2, std::size_t> size) {
+template<> std::tuple<std::size_t, std::size_t> size(const Containers::Size2D& size) {
     return std::make_tuple(size[0], size[1]);
 }
-template<> std::tuple<std::size_t, std::size_t, std::size_t> size(Containers::StridedDimensions<3, std::size_t> size) {
+template<> std::tuple<std::size_t, std::size_t, std::size_t> size(const Containers::Size3D& size) {
     return std::make_tuple(size[0], size[1], size[2]);
 }
-template<> std::tuple<std::size_t, std::size_t, std::size_t, std::size_t> size(Containers::StridedDimensions<4, std::size_t> size) {
+template<> std::tuple<std::size_t, std::size_t, std::size_t, std::size_t> size(const Containers::Size4D& size) {
     return std::make_tuple(size[0], size[1], size[2], size[3]);
 }
 
 /* Stride tuple for given dimension */
-template<unsigned dimensions> typename DimensionsTuple<dimensions, std::ptrdiff_t>::Type stride(Containers::StridedDimensions<dimensions, std::ptrdiff_t>);
-template<> std::tuple<std::ptrdiff_t> stride(Containers::StridedDimensions<1, std::ptrdiff_t> stride) {
+template<unsigned dimensions> typename DimensionsTuple<dimensions, std::ptrdiff_t>::Type stride(const Containers::Stride<dimensions>&);
+template<> std::tuple<std::ptrdiff_t> stride(const Containers::Stride1D& stride) {
     return std::make_tuple(stride[0]);
 }
-template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t> stride(Containers::StridedDimensions<2, std::ptrdiff_t> stride) {
+template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t> stride(const Containers::Stride2D& stride) {
     return std::make_tuple(stride[0], stride[1]);
 }
-template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(Containers::StridedDimensions<3, std::ptrdiff_t> stride) {
+template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(const Containers::Stride3D& stride) {
     return std::make_tuple(stride[0], stride[1], stride[2]);
 }
-template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(Containers::StridedDimensions<4, std::ptrdiff_t> stride) {
+template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t> stride(const Containers::Stride4D& stride) {
     return std::make_tuple(stride[0], stride[1], stride[2], stride[3]);
 }
 
@@ -353,7 +353,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
 
         /* Length, size/stride tuple, dimension count and memory owning object */
         .def("__len__", [](const Containers::PyStridedArrayView<dimensions, T>& self) {
-            return Containers::StridedDimensions<dimensions, std::size_t>(self.size())[0];
+            return Containers::Size<dimensions>(self.size())[0];
         }, "View size in the top-level dimension")
         .def_property_readonly("size", [](const Containers::PyStridedArrayView<dimensions, T>& self) {
             return size<dimensions>(self.size());
@@ -378,7 +378,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
 
         /* Slicing of the top dimension */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, py::slice slice) {
-            const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, std::size_t>{self.size()}[0]);
+            const Slice calculated = calculateSlice(slice, Containers::Size<dimensions>{self.size()}[0]);
             const auto sliced = self.slice(calculated.start, calculated.stop).every(calculated.step);
             return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
@@ -404,7 +404,7 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
         /* Sub-view retrieval. Need to raise IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, std::size_t i) {
-            if(i >= Containers::StridedDimensions<dimensions, std::size_t>{self.size()}[0]) {
+            if(i >= Containers::Size<dimensions>{self.size()}[0]) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
@@ -413,9 +413,9 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
 
         /* Multi-dimensional slicing */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) {
-            Containers::StridedDimensions<dimensions, std::size_t> starts;
-            Containers::StridedDimensions<dimensions, std::size_t> stops;
-            Containers::StridedDimensions<dimensions, std::ptrdiff_t> steps;
+            Containers::Size<dimensions> starts;
+            Containers::Size<dimensions> stops;
+            Containers::Stride<dimensions> steps;
 
             bool empty = false;
             for(std::size_t i = 0; i != dimensions; ++i) {
