@@ -378,7 +378,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
 
         /* Slicing of the top dimension */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, py::slice slice) {
-            const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]);
+            const Slice calculated = calculateSlice(slice, Containers::StridedDimensions<dimensions, std::size_t>{self.size()}[0]);
             const auto sliced = self.slice(calculated.start, calculated.stop).every(calculated.step);
             return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view");
@@ -404,7 +404,7 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
         /* Sub-view retrieval. Need to raise IndexError in order to allow
            iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, std::size_t i) {
-            if(i >= Containers::StridedDimensions<dimensions, const std::size_t>{self.size()}[0]) {
+            if(i >= Containers::StridedDimensions<dimensions, std::size_t>{self.size()}[0]) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
