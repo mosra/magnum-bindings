@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for Mesh.buffers */
 #include <Corrade/Containers/ArrayView.h>
+#include <Corrade/Containers/StringIterable.h>
 #include <Corrade/Containers/StringStl.h>
 #include <Magnum/Image.h>
 #include <Magnum/ImageView.h>
@@ -454,7 +455,13 @@ void gl(py::module_& m) {
             /* Interface */
             .def_property_readonly("id", &GL::Shader::id, "OpenGL shader ID")
             .def_property_readonly("type", &GL::Shader::type, "Shader type")
-            .def_property_readonly("sources", &GL::Shader::sources, "Shader sources")
+            .def_property_readonly("sources", [](GL::Shader& self) {
+                /** @todo find a way to go directly to python's str */
+                std::vector<std::string> out;
+                for(const Containers::StringView& i: self.sources())
+                    out.push_back(i);
+                return out;
+            }, "Shader sources")
             /* Using lambdas to avoid method chaining leaking to Python */
             .def("add_source", [](GL::Shader& self, std::string source) {
                 self.addSource(std::move(source));
@@ -496,7 +503,11 @@ void gl(py::module_& m) {
 
             /* Public interface */
             .def_property_readonly("id", &GL::AbstractShaderProgram::id, "OpenGL program ID")
-            .def("validate", &GL::AbstractShaderProgram::validate, "Validate program")
+            .def("validate", [](GL::AbstractShaderProgram& self) {
+                const Containers::Pair<bool, Containers::String> out = self.validate();
+                /** @todo find a way to go directly to python's str */
+                return std::make_pair(out.first(), std::string{out.second()});
+            }, "Validate program")
             .def("draw", [](GL::AbstractShaderProgram& self, GL::Mesh& mesh) {
                 self.draw(mesh);
             }, "Draw a mesh")
