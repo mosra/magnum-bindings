@@ -122,7 +122,12 @@ PYBIND11_MODULE(test_stridedarrayview, m) {
                 setitem = [](char* item, py::handle object) {
                     *reinterpret_cast<std::pair<short, short>*>(item) = py::cast<std::pair<short, short>>(object);
                 };
-            } else throw py::attribute_error{};
+            } else {
+                /* py::attribute_error is only since 2.8.1, we're currently
+                   testing all the way back to 2.3 */
+                PyErr_SetString(PyExc_AttributeError, "");
+                throw py::error_already_set{};
+            }
 
             return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<2, char>{Containers::arrayCast<char>(self.view()), self.format.data(), itemsize, getitem, setitem}, py::cast(self));
         });
