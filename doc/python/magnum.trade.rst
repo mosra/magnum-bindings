@@ -72,6 +72,12 @@
     :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
     calling :ref:`attribute_id()` and catching an exception if not found.
 
+.. py:property:: magnum.trade.MeshData.mutable_index_data
+    :raise AttributeError: If :ref:`index_data_flags` doesn't contain
+        :ref:`DataFlag.MUTABLE`
+.. py:property:: magnum.trade.MeshData.mutable_vertex_data
+    :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
+        :ref:`DataFlag.MUTABLE`
 .. py:property:: magnum.trade.MeshData.index_count
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
 .. py:property:: magnum.trade.MeshData.index_type

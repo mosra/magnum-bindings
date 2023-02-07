@@ -39,6 +39,7 @@
 #include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 #include "Magnum/PythonBindings.h"
 
+#include "corrade/EnumOperators.h"
 #include "corrade/pluginmanager.h"
 #include "magnum/bootstrap.h"
 
@@ -306,6 +307,13 @@ void trade(py::module_& m) {
     /* AbstractImporter depends on this */
     py::module_::import("corrade.pluginmanager");
 
+    py::enum_<Trade::DataFlag> dataFlag{m, "DataFlag", "Data flag"};
+    dataFlag
+        .value("OWNED", Trade::DataFlag::Owned)
+        .value("EXTERNALLY_OWNED", Trade::DataFlag::ExternallyOwned)
+        .value("MUTABLE", Trade::DataFlag::Mutable);
+    corrade::enumOperators(dataFlag);
+
     py::enum_<Trade::MeshAttribute>{m, "MeshAttribute", "Mesh attribute name"}
         .value("POSITION", Trade::MeshAttribute::Position)
         .value("TANGENT", Trade::MeshAttribute::Tangent)
@@ -319,14 +327,34 @@ void trade(py::module_& m) {
 
     py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
+        .def_property_readonly("index_data_flags", [](Trade::MeshData& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.indexDataFlags()));
+        }, "Index data flags")
+        .def_property_readonly("vertex_data_flags", [](Trade::MeshData& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.vertexDataFlags()));
+        }, "Vertex data flags")
         .def_property_readonly("index_data", [](Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.indexData(), py::cast(self));
         }, "Raw index data")
+        .def_property_readonly("mutable_index_data", [](Trade::MeshData& self) {
+            if(!(self.indexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "mesh index data is not mutable");
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(self.mutableIndexData(), py::cast(self));
+        }, "Mutable raw index data")
         /** @todo direct access to MeshAttributeData, once making custom
             MeshData is desired */
         .def_property_readonly("vertex_data", [](Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.vertexData(), py::cast(self));
         }, "Raw vertex data")
+        .def_property_readonly("mutable_vertex_data", [](Trade::MeshData& self) {
+            if(!(self.vertexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "mesh vertex data is not mutable");
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(self.mutableVertexData(), py::cast(self));
+        }, "Mutable raw vertex data")
         .def_property_readonly("is_indexed", &Trade::MeshData::isIndexed, "Whether the mesh is indexed")
         .def_property_readonly("index_count", [](Trade::MeshData& self) {
             if(!self.isIndexed()) {

@@ -30,7 +30,7 @@ import unittest
 
 from corrade import pluginmanager
 from magnum import *
-from magnum import trade
+from magnum import primitives, trade
 
 class ImageData(unittest.TestCase):
     def test(self):
@@ -105,8 +105,9 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
 
         # Index properties
         self.assertTrue(mesh.is_indexed)
@@ -155,6 +156,13 @@ class MeshData(unittest.TestCase):
         self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
         self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
 
+    def test_index_data_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        mesh_refcount = sys.getrefcount(mesh)
+
         index_data = mesh.index_data
         self.assertEqual(len(index_data), 6)
         self.assertIs(index_data.owner, mesh)
@@ -163,6 +171,21 @@ class MeshData(unittest.TestCase):
         del index_data
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
+        mutable_index_data = mesh.mutable_index_data
+        self.assertEqual(len(mutable_index_data), 6)
+        self.assertIs(mutable_index_data.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del mutable_index_data
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+    def test_vertex_data_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        mesh_refcount = sys.getrefcount(mesh)
+
         vertex_data = mesh.vertex_data
         self.assertEqual(len(vertex_data), 84)
         self.assertIs(vertex_data.owner, mesh)
@@ -170,6 +193,60 @@ class MeshData(unittest.TestCase):
 
         del vertex_data
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        mutable_vertex_data = mesh.mutable_vertex_data
+        self.assertEqual(len(mutable_vertex_data), 84)
+        self.assertIs(mutable_vertex_data.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del mutable_vertex_data
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+    def test_mutable_index_data_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+
+        index_data = mesh.index_data
+        mutable_index_data = mesh.mutable_index_data
+        # Second index is 2, it's a 16-bit LE number
+        # TODO: ugh, report as bytes, not chars
+        self.assertEqual(ord(index_data[2]), 2)
+        self.assertEqual(ord(mutable_index_data[2]), 2)
+
+        mutable_index_data[2] = chr(76)
+        self.assertEqual(ord(index_data[2]), 76)
+
+    def test_mutable_vertex_data_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+
+        vertex_data = mesh.vertex_data
+        mutable_vertex_data = mesh.mutable_vertex_data
+        # The color attribute is at offset 20, G channel is the next byte
+        # TODO: ugh, report as bytes, not chars
+        self.assertEqual(ord(vertex_data[21]), 51)
+        self.assertEqual(ord(mutable_vertex_data[21]), 51)
+
+        mutable_vertex_data[21] = chr(76)
+        self.assertEqual(vertex_data[21], chr(76))
+
+    def test_data_access_not_mutable(self):
+        mesh = primitives.cube_solid()
+        # TODO split this once there's a mesh where only one or the other would
+        #   be true (maybe with zero-copy loading of PLYs / STLs?)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag(0))
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag(0))
+
+        with self.assertRaisesRegex(AttributeError, "mesh index data is not mutable"):
+            mesh.mutable_index_data
+        with self.assertRaisesRegex(AttributeError, "mesh vertex data is not mutable"):
+            mesh.mutable_vertex_data
 
     def test_nonindexed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
