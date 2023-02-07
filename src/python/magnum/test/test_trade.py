@@ -102,7 +102,8 @@ class ImageData(unittest.TestCase):
 class MeshData(unittest.TestCase):
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
@@ -158,7 +159,8 @@ class MeshData(unittest.TestCase):
 
     def test_index_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
@@ -181,7 +183,8 @@ class MeshData(unittest.TestCase):
 
     def test_vertex_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
@@ -204,7 +207,8 @@ class MeshData(unittest.TestCase):
 
     def test_indices_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
@@ -233,7 +237,8 @@ class MeshData(unittest.TestCase):
 
     def test_attribute_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
@@ -293,7 +298,8 @@ class MeshData(unittest.TestCase):
 
     def test_mutable_index_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
@@ -310,7 +316,8 @@ class MeshData(unittest.TestCase):
 
     def test_mutable_vertex_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.vertex_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
@@ -327,7 +334,8 @@ class MeshData(unittest.TestCase):
 
     def test_mutable_indices_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
@@ -342,7 +350,8 @@ class MeshData(unittest.TestCase):
 
     def test_mutable_attributes_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
@@ -384,7 +393,8 @@ class MeshData(unittest.TestCase):
 
     def test_nonindexed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(1)
         self.assertFalse(mesh.is_indexed)
@@ -408,7 +418,8 @@ class MeshData(unittest.TestCase):
 
     def test_attribute_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
 
@@ -464,7 +475,8 @@ class MeshData(unittest.TestCase):
 
     def test_attribute_access_array(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.attribute_id(trade.MeshAttribute.JOINT_IDS), 1)
@@ -480,7 +492,8 @@ class MeshData(unittest.TestCase):
 
     def test_attribute_access_unsupported_format(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.attribute_id(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE")), 8)
@@ -613,7 +626,8 @@ class Importer(unittest.TestCase):
         self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)))
         self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
         self.assertEqual(importer.mesh_count, 2)
         self.assertEqual(importer.mesh_level_count(0), 1)
         self.assertEqual(importer.mesh_name(0), 'Indexed mesh')
@@ -630,28 +644,32 @@ class Importer(unittest.TestCase):
 
     def test_mesh_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         with self.assertRaises(IndexError):
             importer.mesh(0, 1)
 
     def test_mesh_by_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh('Non-indexed mesh')
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
     def test_mesh_by_name_not_found(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         with self.assertRaises(KeyError):
             importer.mesh('Nonexistent')
 
     def test_mesh_by_name_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         with self.assertRaises(IndexError):
             importer.mesh('Non-indexed mesh', 1)
@@ -731,7 +749,8 @@ class ImageConverter(unittest.TestCase):
 class SceneConverter(unittest.TestCase):
     def test_mesh(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
         mesh = importer.mesh(1)
 
         converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
@@ -742,7 +761,8 @@ class SceneConverter(unittest.TestCase):
 
     def test_mesh_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        # TODO figure out a less silly way to get forward slashes on Windows
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
         mesh = importer.mesh(1)
 
         converter = trade.SceneConverterManager().load_and_instantiate('AnySceneConverter')
