@@ -104,6 +104,10 @@ Changelog
     :ref:`platform.glfw.Application.main_loop_iteration`
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
     :ref:`trade.AbstractSceneConverter`
+-   Exposed the whole interface of :ref:`trade.MeshData` including typed access
+    to index and attribute data, together with :ref:`VertexFormat`,
+    :ref:`trade.DataFlag`, :ref:`trade.AbstractImporter.mesh_attribute_name()`
+    and :ref:`trade.AbstractImporter.mesh_attribute_for_name()`
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
 -   Exposed the :ref:`text` library
