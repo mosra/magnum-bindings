@@ -130,3 +130,28 @@ class StridedArrayViewCustomType(unittest.TestCase):
             (1001, 1.125),
             (4666025, -7.5)
         ])
+
+class StridedArrayViewCustomDynamicType(unittest.TestCase):
+    def test_short_short(self):
+        a = test_stridedarrayview.MutableContainerDynamicType('hh')
+        self.assertEqual(a.view.size, (2, 3))
+        self.assertEqual(a.view.stride, (12, 4))
+        self.assertEqual(a.view.format, 'hh')
+
+        # Test that numpy understands the type and has changes reflected
+        av = np.array(a.view, copy=False)
+        av[1][0] = (22563, -17665)
+        a.view[0][1] = (15, 34)
+        a.view[1][1] = (-22, 18)
+        # Converting to a tuple, otherwise numpy always compares to False
+        self.assertEqual(tuple(av[0][1]), (15, 34))
+        self.assertEqual(tuple(av[1][0]), (22563, -17665))
+        self.assertEqual(tuple(av[1][1]), (-22, 18))
+
+        # And the other way around as well
+        self.assertEqual(a.view[0][0], (0, 0))
+        self.assertEqual(a.view[0][1], (15, 34))
+        self.assertEqual(a.view[0][2], (0, 0))
+        self.assertEqual(a.view[1][0], (22563, -17665))
+        self.assertEqual(a.view[1][1], (-22, 18))
+        self.assertEqual(a.view[1][2], (0, 0))

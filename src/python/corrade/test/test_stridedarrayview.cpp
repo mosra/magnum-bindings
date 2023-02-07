@@ -57,6 +57,17 @@ template<class T> struct Container {
     T data[3*2]{};
 };
 
+struct MutableContainerDynamicType {
+    explicit MutableContainerDynamicType(const std::string& format): format{format} {}
+
+    Containers::StridedArrayView2D<void> view() {
+        return {Containers::arrayView(data), {2, 3}, {12, 4}};
+    }
+
+    std::string format;
+    char data[3*2*4]{};
+};
+
 template<class T> void container(py::class_<Container<T>>& c) {
     c
         .def(py::init())
@@ -80,6 +91,41 @@ PYBIND11_MODULE(test_stridedarrayview, m) {
     container(mutableContaineri);
     container(mutableContainer3d);
     container(mutableContainerlf);
+
+    py::class_<MutableContainerDynamicType>{m, "MutableContainerDynamicType"}
+        .def(py::init<const std::string&>())
+        .def_property_readonly("view", [](MutableContainerDynamicType & self) {
+            std::size_t itemsize;
+            py::object(*getitem)(const char*);
+            void(*setitem)(char*, py::handle);
+            if(self.format == "f") {
+                itemsize = 4;
+                getitem = [](const char* item) {
+                    return py::cast(*reinterpret_cast<const float*>(item));
+                };
+                setitem = [](char* item, py::handle object) {
+                    *reinterpret_cast<float*>(item) = py::cast<float>(object);
+                };
+            } else if(self.format == "i") {
+                itemsize = 4;
+                getitem = [](const char* item) {
+                    return py::cast(*reinterpret_cast<const int*>(item));
+                };
+                setitem = [](char* item, py::handle object) {
+                    *reinterpret_cast<int*>(item) = py::cast<int>(object);
+                };
+            } else if(self.format == "hh") {
+                itemsize = 4;
+                getitem = [](const char* item) {
+                    return py::cast(*reinterpret_cast<const std::pair<short, short>*>(item));
+                };
+                setitem = [](char* item, py::handle object) {
+                    *reinterpret_cast<std::pair<short, short>*>(item) = py::cast<std::pair<short, short>>(object);
+                };
+            } else throw py::attribute_error{};
+
+            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<2, char>{Containers::arrayCast<char>(self.view()), self.format.data(), itemsize, getitem, setitem}, py::cast(self));
+        });
 
     m.def("get_containers", []() {
         return Container<const std::int16_t>{3, -17565, 5};

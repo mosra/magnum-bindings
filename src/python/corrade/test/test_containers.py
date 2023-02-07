@@ -902,6 +902,35 @@ class StridedArrayViewCustomType(unittest.TestCase):
     # mutable_vector3d and mutable_long_float tested in test_containers_numpy
     # as memoryview can't handle their types
 
+class StridedArrayViewCustomDynamicType(unittest.TestCase):
+    def test_float(self):
+        a = test_stridedarrayview.MutableContainerDynamicType('f')
+        self.assertEqual(a.view.size, (2, 3))
+        self.assertEqual(a.view.stride, (12, 4))
+        self.assertEqual(a.view.format, 'f')
+        a.view[0][1] = 15.0
+        a.view[1][0] = -22.0
+        self.assertEqual(a.view[0][0], 0.0)
+        self.assertEqual(a.view[0][1], 15.0)
+        self.assertEqual(a.view[0][2], 0.0)
+        self.assertEqual(a.view[1][0], -22.0)
+        self.assertEqual(a.view[1][1], 0.0)
+        self.assertEqual(a.view[1][2], 0.0)
+
+    def test_int(self):
+        a = test_stridedarrayview.MutableContainerDynamicType('i')
+        self.assertEqual(a.view.size, (2, 3))
+        self.assertEqual(a.view.stride, (12, 4))
+        self.assertEqual(a.view.format, 'i')
+        a.view[0][2] = 15
+        a.view[1][1] = -773
+        self.assertEqual(a.view[0][0], 0)
+        self.assertEqual(a.view[0][1], 0)
+        self.assertEqual(a.view[0][2], 15)
+        self.assertEqual(a.view[1][0], 0)
+        self.assertEqual(a.view[1][1], -773)
+        self.assertEqual(a.view[1][2], 0)
+
 class TestOptional(unittest.TestCase):
     def test_simple(self):
         self.assertIsNone(test_optional.simple_type(False))
