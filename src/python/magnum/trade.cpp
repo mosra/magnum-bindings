@@ -27,7 +27,10 @@
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/StridedArrayView.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
+#include <Corrade/Containers/Triple.h>
 #include <Magnum/ImageView.h>
+#include <Magnum/Math/Half.h>
+#include <Magnum/Math/Matrix4.h>
 #include <Magnum/Trade/AbstractImporter.h>
 #include <Magnum/Trade/AbstractImageConverter.h>
 #include <Magnum/Trade/AbstractSceneConverter.h>
@@ -299,6 +302,115 @@ template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::
     }
 }
 
+Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
+    switch(type) {
+        #define _c(type, string)                                            \
+            case MeshIndexType::type: return {                              \
+                string,                                                     \
+                [](const char* item) {                                      \
+                    return py::cast(*reinterpret_cast<const type*>(item));  \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<type*>(item) = py::cast<type>(object); \
+                }};
+        _c(UnsignedByte, "B")
+        _c(UnsignedShort, "H")
+        _c(UnsignedInt, "I")
+        #undef _c
+    }
+
+    return {};
+}
+
+Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForVertexFormat(const VertexFormat format) {
+    switch(format) {
+        #define _c(format, string)                                          \
+            case VertexFormat::format: return {                             \
+                string,                                                     \
+                [](const char* item) {                                      \
+                    return py::cast(*reinterpret_cast<const format*>(item)); \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<format*>(item) = py::cast<format>(object); \
+                }};
+        /* Types (such as half-floats) that need to be cast before passed
+           from/to pybind that doesn't understand the type directly */
+        #define _cc(format, castType, string)                               \
+            case VertexFormat::format: return {                             \
+                string,                                                     \
+                [](const char* item) {                                      \
+                    return py::cast(format(*reinterpret_cast<const castType*>(item))); \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<format*>(item) = format(py::cast<castType>(object)); \
+                }};
+        _c(Float,                   "f")
+        _c(Double,                  "d")
+        _cc(UnsignedByte, UnsignedInt, "B")
+        _cc(Byte, Int,              "b")
+        _cc(UnsignedShort, UnsignedInt, "H")
+        _cc(Short, Int,             "h")
+        _c(UnsignedInt,             "I")
+        _c(Int,                     "i")
+
+        _c(Vector2,                 "ff")
+        _c(Vector2d,                "dd")
+        _cc(Vector2ub, Vector2ui,   "BB")
+        _cc(Vector2b, Vector2i,     "bb")
+        _cc(Vector2us, Vector2ui,   "HH")
+        _cc(Vector2s, Vector2i,     "hh")
+        _c(Vector2ui,               "II")
+        _c(Vector2i,                "ii")
+
+        _c(Vector3,                 "fff")
+        _c(Vector3d,                "ddd")
+        _cc(Vector3ub, Vector3ui,   "BBB")
+        _cc(Vector3b, Vector3i,     "bbb")
+        _cc(Vector3us, Vector3ui,   "HHH")
+        _cc(Vector3s, Vector3i,     "hhh")
+        _c(Vector3ui,               "III")
+        _c(Vector3i,                "iii")
+
+        _c(Vector4,                 "ffff")
+        _c(Vector4d,                "dddd")
+        _cc(Vector4ub, Vector4ui,   "BBBB")
+        _cc(Vector4b, Vector4i,     "bbbb")
+        _cc(Vector4us, Vector4ui,   "HHHH")
+        _cc(Vector4s, Vector4i,     "hhhh")
+        _c(Vector4ui,               "IIII")
+        _c(Vector4i,                "iiii")
+        #undef _c
+        #undef _cc
+
+        /** @todo handle half, normalized and matrix types */
+        default:
+            return {};
+    }
+
+    return {};
+}
+
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshIndicesView(Trade::MeshData& mesh, const Containers::StridedArrayView2D<T>& data) {
+    const MeshIndexType type = mesh.indexType();
+    const std::size_t itemsize = meshIndexTypeSize(type);
+    const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForMeshIndexType(type);
+    /** @todo update this once there are plugins that can give back custom
+        index types */
+    CORRADE_INTERNAL_ASSERT(formatStringGetitemSetitem.first());
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(mesh));
+}
+
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshAttributeView(Trade::MeshData& mesh, const UnsignedInt id, const Containers::StridedArrayView2D<T>& data) {
+    const VertexFormat format = mesh.attributeFormat(id);
+    const std::size_t itemsize = vertexFormatSize(format);
+    const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForVertexFormat(format);
+    if(!formatStringGetitemSetitem.first()) {
+        PyErr_SetString(PyExc_NotImplementedError, "access to this vertex format is not implemented yet, sorry");
+        throw py::error_already_set{};
+    }
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(mesh));
+}
+
 }
 
 void trade(py::module_& m) {
@@ -384,6 +496,24 @@ void trade(py::module_& m) {
             }
             return self.indexStride();
         }, "Index stride")
+        .def_property_readonly("indices", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            return meshIndicesView(self, self.indices());
+        }, "Indices")
+        .def_property_readonly("mutable_indices", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            if(!(self.indexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "mesh index data is not mutable");
+                throw py::error_already_set{};
+            }
+            return meshIndicesView(self, self.mutableIndices());
+        }, "Mutable indices")
         .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount, "Vertex count")
         /* Has to be a function instead of a property because there's an
            overload taking a name */
@@ -463,7 +593,70 @@ void trade(py::module_& m) {
                 return self.attributeArraySize(*found);
             PyErr_SetString(PyExc_KeyError, "");
             throw py::error_already_set{};
-        }, "Array size of a named attribute", py::arg("name"), py::arg("id") = 0);
+        }, "Array size of a named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("attribute", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.attributeArraySize(id) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return meshAttributeView(self, id, self.attribute(id));
+        }, "Data for given attribute", py::arg("id"))
+        .def("mutable_attribute", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            if(!(self.vertexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "mesh vertex data is not mutable");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.attributeArraySize(id) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return meshAttributeView(self, id, self.mutableAttribute(id));
+        }, "Mutable data for given attribute", py::arg("id"))
+        .def("attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
+            if(!found) {
+                PyErr_SetString(PyExc_KeyError, "");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.attributeArraySize(*found) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return meshAttributeView(self, *found, self.attribute(*found));
+        }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("mutable_attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
+            if(!found) {
+                PyErr_SetString(PyExc_KeyError, "");
+                throw py::error_already_set{};
+            }
+            if(!(self.vertexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "mesh vertex data is not mutable");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.attributeArraySize(*found) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return meshAttributeView(self, *found, self.mutableAttribute(*found));
+        }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
+        ;
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};

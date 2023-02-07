@@ -202,6 +202,95 @@ class MeshData(unittest.TestCase):
         del mutable_vertex_data
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
+    def test_indices_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        mesh_refcount = sys.getrefcount(mesh)
+
+        indices = mesh.indices
+        self.assertEqual(indices.size, (3, ))
+        self.assertEqual(indices.stride, (2, ))
+        self.assertEqual(indices.format, 'H')
+        self.assertEqual(list(indices), [0, 2, 1])
+        self.assertIs(indices.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del indices
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        mutable_indices = mesh.mutable_indices
+        self.assertEqual(mutable_indices.size, (3, ))
+        self.assertEqual(mutable_indices.stride, (2, ))
+        self.assertEqual(mutable_indices.format, 'H')
+        self.assertEqual(list(mutable_indices), [0, 2, 1])
+        self.assertIs(mutable_indices.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del mutable_indices
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+    def test_attribute_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        mesh_refcount = sys.getrefcount(mesh)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+
+        positions = mesh.attribute(3)
+        self.assertEqual(positions.size, (3, ))
+        self.assertEqual(positions.stride, (28, ))
+        self.assertEqual(positions.format, 'fff')
+        self.assertEqual(list(positions), [
+            Vector3(-1, -1, 0.25),
+            Vector3(0, 1, 0.5),
+            Vector3(1, -1, 0.25)
+        ])
+        self.assertIs(positions.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del positions
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        object_ids = mesh.attribute(trade.MeshAttribute.OBJECT_ID)
+        self.assertEqual(object_ids.size, (3, ))
+        self.assertEqual(object_ids.stride, (28, ))
+        self.assertEqual(object_ids.format, 'I')
+        self.assertEqual(list(object_ids), [216, 16777235, 2872872013])
+        self.assertIs(object_ids.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del object_ids
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        mutable_positions = mesh.mutable_attribute(3)
+        self.assertEqual(mutable_positions.size, (3, ))
+        self.assertEqual(mutable_positions.stride, (28, ))
+        self.assertEqual(mutable_positions.format, 'fff')
+        self.assertEqual(list(mutable_positions), [
+            Vector3(-1, -1, 0.25),
+            Vector3(0, 1, 0.5),
+            Vector3(1, -1, 0.25)
+        ])
+        self.assertIs(mutable_positions.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del mutable_positions
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+        mutable_object_ids = mesh.mutable_attribute(trade.MeshAttribute.OBJECT_ID)
+        self.assertEqual(mutable_object_ids.size, (3, ))
+        self.assertEqual(mutable_object_ids.stride, (28, ))
+        self.assertEqual(mutable_object_ids.format, 'I')
+        self.assertEqual(list(mutable_object_ids), [216, 16777235, 2872872013])
+        self.assertIs(mutable_object_ids.owner, mesh)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del mutable_object_ids
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
     def test_mutable_index_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -236,6 +325,45 @@ class MeshData(unittest.TestCase):
         mutable_vertex_data[21] = chr(76)
         self.assertEqual(vertex_data[21], chr(76))
 
+    def test_mutable_indices_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+
+        indices = mesh.indices
+        mutable_indices = mesh.mutable_indices
+        self.assertEqual(indices[1], 2)
+        self.assertEqual(mutable_indices[1], 2)
+
+        mutable_indices[1] = 76
+        self.assertEqual(indices[1], 76)
+
+    def test_mutable_attributes_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+
+        positions = mesh.attribute(3)
+        mutable_positions = mesh.mutable_attribute(3)
+        self.assertEqual(positions[1], Vector3(0, 1, 0.5))
+        self.assertEqual(mutable_positions[1], Vector3(0, 1, 0.5))
+
+        mutable_positions[1] *= 2
+        self.assertEqual(positions[1], Vector3(0, 2, 1))
+
+        object_ids = mesh.attribute(trade.MeshAttribute.OBJECT_ID)
+        mutable_object_ids = mesh.mutable_attribute(trade.MeshAttribute.OBJECT_ID)
+        self.assertEqual(object_ids[1], 16777235)
+        self.assertEqual(mutable_object_ids[1], 16777235)
+
+        mutable_object_ids[1] //= 1000
+        self.assertEqual(object_ids[1], 16777)
+
     def test_data_access_not_mutable(self):
         mesh = primitives.cube_solid()
         # TODO split this once there's a mesh where only one or the other would
@@ -245,8 +373,14 @@ class MeshData(unittest.TestCase):
 
         with self.assertRaisesRegex(AttributeError, "mesh index data is not mutable"):
             mesh.mutable_index_data
+        with self.assertRaisesRegex(AttributeError, "mesh index data is not mutable"):
+            mesh.mutable_indices
         with self.assertRaisesRegex(AttributeError, "mesh vertex data is not mutable"):
             mesh.mutable_vertex_data
+        with self.assertRaisesRegex(AttributeError, "mesh vertex data is not mutable"):
+            mesh.mutable_attribute(0)
+        with self.assertRaisesRegex(AttributeError, "mesh vertex data is not mutable"):
+            mesh.mutable_attribute(trade.MeshAttribute.POSITION)
 
     def test_nonindexed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -267,6 +401,10 @@ class MeshData(unittest.TestCase):
             mesh.index_offset
         with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
             mesh.index_stride
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.indices
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.mutable_indices
 
     def test_attribute_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -287,6 +425,10 @@ class MeshData(unittest.TestCase):
             mesh.attribute_stride(mesh.attribute_count())
         with self.assertRaises(IndexError):
             mesh.attribute_array_size(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.mutable_attribute(mesh.attribute_count())
 
         # Access by nonexistent name
         with self.assertRaises(KeyError):
@@ -299,6 +441,10 @@ class MeshData(unittest.TestCase):
             mesh.attribute_stride(trade.MeshAttribute.TANGENT)
         with self.assertRaises(KeyError):
             mesh.attribute_array_size(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.attribute(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.mutable_attribute(trade.MeshAttribute.TANGENT)
 
         # Access by existing name + OOB ID
         with self.assertRaises(KeyError):
@@ -311,6 +457,42 @@ class MeshData(unittest.TestCase):
             mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
         with self.assertRaises(KeyError):
             mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+
+    def test_attribute_access_array(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.JOINT_IDS), 1)
+
+        with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
+            mesh.attribute(1)
+        with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
+            mesh.mutable_attribute(1)
+        with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
+            mesh.attribute(trade.MeshAttribute.JOINT_IDS)
+        with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
+            mesh.mutable_attribute(trade.MeshAttribute.JOINT_IDS)
+
+    def test_attribute_access_unsupported_format(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.attribute_id(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE")), 8)
+
+        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+            mesh.attribute(8)
+        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+            mesh.mutable_attribute(8)
+        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+            mesh.attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
+        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+            mesh.mutable_attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
 class Importer(unittest.TestCase):
     def test(self):

@@ -72,6 +72,35 @@
     :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
     calling :ref:`attribute_id()` and catching an exception if not found.
 
+    `Index and attribute data access`_
+    ==================================
+
+    The class makes use of Python's dynamic nature and provides direct access
+    to index and attribute data in their concrete types via :ref:`indices` and
+    :ref:`attribute()`. The returned views point to the underlying mesh data,
+    element access coverts to a type corresponding to a particular
+    :ref:`VertexFormat` and for performance-oriented access the view implements
+    a buffer protocol with a corresponding type annotation:
+
+    ..
+        >>> from magnum import primitives, trade
+        >>> import numpy as np
+
+    .. code:: pycon
+
+        >>> mesh = primitives.cube_solid()
+        >>> list(mesh.indices)[:10]
+        [0, 1, 2, 0, 2, 3, 4, 5, 6, 4]
+        >>> list(mesh.attribute(trade.MeshAttribute.POSITION))[:3]
+        [Vector(-1, -1, 1), Vector(1, -1, 1), Vector(1, 1, 1)]
+        >>> np.array(mesh.attribute(trade.MeshAttribute.NORMAL), copy=False)[2]
+        (0., 0., 1.)
+
+    Depending on the value of :ref:`index_data_flags` / :ref:`vertex_data_flags`
+    it's also possible to access the data in a mutable way via
+    :ref:`mutable_indices` and :ref:`mutable_attribute()`, for example to
+    perform a static transformation of the mesh before passing it to OpenGL.
+
 .. py:property:: magnum.trade.MeshData.mutable_index_data
     :raise AttributeError: If :ref:`index_data_flags` doesn't contain
         :ref:`DataFlag.MUTABLE`
@@ -86,6 +115,9 @@
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
 .. py:property:: magnum.trade.MeshData.index_stride
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+.. py:property:: magnum.trade.MeshData.mutable_indices
+    :raise AttributeError: If :ref:`index_data_flags` doesn't contain
+        :ref:`DataFlag.MUTABLE`
 .. py:function:: magnum.trade.MeshData.attribute_name
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
@@ -114,6 +146,18 @@
         :ref:`attribute_count()`
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.attribute
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.mutable_attribute
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+    :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
+        :ref:`DataFlag.MUTABLE`
 
 .. py:class:: magnum.trade.ImporterManager
     :summary: Manager for :ref:`AbstractImporter` plugin instances
