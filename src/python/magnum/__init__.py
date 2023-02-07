@@ -78,7 +78,9 @@ __all__ = [
     'ImageView1D', 'ImageView2D', 'ImageView3D',
     'MutableImageView1D', 'MutableImageView2D', 'MutableImageView3D',
 
-    'SamplerFilter', 'SamplerMipmap', 'SamplerWrapping'
+    'SamplerFilter', 'SamplerMipmap', 'SamplerWrapping',
+
+    'VertexFormat'
 
     # TARGET_*, BUILD_* are omitted as `from magnum import *` would pull them
     # to globals and this would likely cause conflicts (corrade also defines

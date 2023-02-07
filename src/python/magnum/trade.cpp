@@ -35,6 +35,7 @@
 #include <Magnum/Trade/MeshData.h>
 
 #include "Corrade/Containers/PythonBindings.h"
+#include "Corrade/Containers/OptionalPythonBindings.h"
 #include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 #include "Magnum/PythonBindings.h"
 
@@ -305,11 +306,24 @@ void trade(py::module_& m) {
     /* AbstractImporter depends on this */
     py::module_::import("corrade.pluginmanager");
 
+    py::enum_<Trade::MeshAttribute>{m, "MeshAttribute", "Mesh attribute name"}
+        .value("POSITION", Trade::MeshAttribute::Position)
+        .value("TANGENT", Trade::MeshAttribute::Tangent)
+        .value("BITANGENT", Trade::MeshAttribute::Bitangent)
+        .value("NORMAL", Trade::MeshAttribute::Normal)
+        .value("TEXTURE_COORDINATES", Trade::MeshAttribute::TextureCoordinates)
+        .value("COLOR", Trade::MeshAttribute::Color)
+        .value("JOINT_IDS", Trade::MeshAttribute::JointIds)
+        .value("WEIGHTS", Trade::MeshAttribute::Weights)
+        .value("OBJECT_ID", Trade::MeshAttribute::ObjectId);
+
     py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
         .def_property_readonly("index_data", [](Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.indexData(), py::cast(self));
         }, "Raw index data")
+        /** @todo direct access to MeshAttributeData, once making custom
+            MeshData is desired */
         .def_property_readonly("vertex_data", [](Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.vertexData(), py::cast(self));
         }, "Raw vertex data")
@@ -319,11 +333,109 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
-
             return self.indexCount();
         }, "Index count")
+        .def_property_readonly("index_type", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            return self.indexType();
+        }, "Index type")
+        .def_property_readonly("index_offset", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            return self.indexOffset();
+        }, "Index offset")
+        .def_property_readonly("index_stride", [](Trade::MeshData& self) {
+            if(!self.isIndexed()) {
+                PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
+                throw py::error_already_set{};
+            }
+            return self.indexStride();
+        }, "Index stride")
         .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount, "Vertex count")
-        .def_property_readonly("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount), "Attribute array count");
+        /* Has to be a function instead of a property because there's an
+           overload taking a name */
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount), "Attribute array count")
+        /** @todo direct access to MeshAttributeData, once making custom
+            MeshData is desired */
+        .def("attribute_name", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeName(id);
+        }, "Attribute name", py::arg("id"))
+        .def("attribute_id", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeId(id);
+        }, "Attribute ID in a set of attributes of the same name", py::arg("id"))
+        .def("attribute_format", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeFormat(id);
+        }, "Attribute format", py::arg("id"))
+        .def("attribute_offset", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeOffset(id);
+        }, "Attribute offset", py::arg("id"))
+        .def("attribute_stride", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeStride(id);
+        }, "Attribute stride", py::arg("id"))
+        .def("attribute_array_size", [](Trade::MeshData& self, UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_SetString(PyExc_IndexError, "");
+                throw py::error_already_set{};
+            }
+            return self.attributeArraySize(id);
+        }, "Attribute array size", py::arg("id"))
+        .def("has_attribute", &Trade::MeshData::hasAttribute, "Whether the mesh has given attribute", py::arg("name"))
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"))
+        .def("attribute_id", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+                return *found;
+            PyErr_SetString(PyExc_KeyError, "");
+            throw py::error_already_set{};
+        }, "Absolute ID of a named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("attribute_format", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+                return self.attributeFormat(*found);
+            PyErr_SetString(PyExc_KeyError, "");
+            throw py::error_already_set{};
+        }, "Format of a named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("attribute_offset", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+                return self.attributeOffset(*found);
+            PyErr_SetString(PyExc_KeyError, "");
+            throw py::error_already_set{};
+        }, "Offset of a named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("attribute_stride", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+                return self.attributeStride(*found);
+            PyErr_SetString(PyExc_KeyError, "");
+            throw py::error_already_set{};
+        }, "Stride of a named attribute", py::arg("name"), py::arg("id") = 0)
+        .def("attribute_array_size", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+                return self.attributeArraySize(*found);
+            PyErr_SetString(PyExc_KeyError, "");
+            throw py::error_already_set{};
+        }, "Array size of a named attribute", py::arg("name"), py::arg("id") = 0);
 
     py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};
@@ -367,7 +479,19 @@ void trade(py::module_& m) {
         .def("mesh_name", checkOpenedBoundsReturnsString<&Trade::AbstractImporter::meshName, &Trade::AbstractImporter::meshCount>, "Mesh name", py::arg("id"))
         .def("mesh", checkOpenedBoundsResult<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshCount, &Trade::AbstractImporter::meshLevelCount>, "Mesh", py::arg("id"), py::arg("level") = 0)
         .def("mesh", checkOpenedBoundsResultString<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshForName, &Trade::AbstractImporter::meshLevelCount>, "Mesh", py::arg("name"), py::arg("level") = 0)
-        /** @todo mesh_attribute_for_name / mesh_attribute_name */
+        /** @todo drop std::string in favor of our own string caster */
+        .def("mesh_attribute_for_name", [](Trade::AbstractImporter& self, const std::string& name) -> Containers::Optional<Trade::MeshAttribute> {
+            const Trade::MeshAttribute attribute = self.meshAttributeForName(name);
+            if(attribute == Trade::MeshAttribute{})
+                return {};
+            return attribute;
+        }, "Mesh attribute for given name", py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("mesh_attribute_name", [](Trade::AbstractImporter& self, Trade::MeshAttribute name) -> Containers::Optional<std::string> {
+            if(const Containers::String attribute = self.meshAttributeName(name))
+                return std::string{attribute};
+            return {};
+        }, "String name for given mesh attribute", py::arg("name"))
 
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
         .def_property_readonly("image2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image count")

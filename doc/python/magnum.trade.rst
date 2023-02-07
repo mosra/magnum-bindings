@@ -66,8 +66,48 @@
 .. py:property:: magnum.trade.ImageData3D.pixels
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 
+.. py:class:: magnum.trade.MeshData
+
+    Compared to the C++ API, there's no
+    :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
+    calling :ref:`attribute_id()` and catching an exception if not found.
+
 .. py:property:: magnum.trade.MeshData.index_count
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+.. py:property:: magnum.trade.MeshData.index_type
+    :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+.. py:property:: magnum.trade.MeshData.index_offset
+    :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+.. py:property:: magnum.trade.MeshData.index_stride
+    :raise AttributeError: If :ref:`is_indexed` is :py:`False`
+.. py:function:: magnum.trade.MeshData.attribute_name
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_id
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.attribute_format
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.attribute_offset
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.attribute_stride
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
+.. py:function:: magnum.trade.MeshData.attribute_array_size
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+    :raise KeyError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`name`
 
 .. py:class:: magnum.trade.ImporterManager
     :summary: Manager for :ref:`AbstractImporter` plugin instances

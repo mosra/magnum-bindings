@@ -101,21 +101,62 @@ class ImageData(unittest.TestCase):
 
 class MeshData(unittest.TestCase):
     def test(self):
-        # The only way to get a mesh instance is through a manager
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        mesh = importer.mesh(1)
+        mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
-        self.assertTrue(mesh.is_indexed)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
-        self.assertEqual(mesh.vertex_count, 3)
+
+        # Index properties
+        self.assertTrue(mesh.is_indexed)
         self.assertEqual(mesh.index_count, 3)
-        self.assertEqual(mesh.attribute_count, 2)
-        # TODO: test more, once it's exposed
+        self.assertEqual(mesh.index_type, MeshIndexType.UNSIGNED_SHORT)
+        self.assertEqual(mesh.index_offset, 0)
+        self.assertEqual(mesh.index_stride, 2)
+
+        self.assertEqual(mesh.vertex_count, 3)
+
+        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
+        # backwards compatibility to reduce useless attribute count
+        self.assertEqual(mesh.attribute_count(), 10)
+
+        # Attribute properties by ID
+        self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
+        # Custom attribute
+        # TODO better API for custom IDs?
+        self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute(32768 + 9))
+        self.assertEqual(mesh.attribute_id(3), 0)
+        # Attribute 5 is the second TEXTURE_COORDINATES attribute
+        self.assertEqual(mesh.attribute_id(5), 1)
+        self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
+        self.assertEqual(mesh.attribute_format(9), VertexFormat.UNSIGNED_INT)
+        self.assertEqual(mesh.attribute_offset(0), 20)
+        self.assertEqual(mesh.attribute_offset(3), 0)
+        self.assertEqual(mesh.attribute_stride(2), 28)
+        self.assertEqual(mesh.attribute_array_size(0), 0)
+        # Attribute 1 is JOINT_IDS
+        self.assertEqual(mesh.attribute_array_size(1), 4)
+
+        # Attribute properties by name
+        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
+        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
+        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 5)
+        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
+        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
+        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
+        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
+        self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
+        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
+        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
 
         index_data = mesh.index_data
-        self.assertEqual(len(index_data), 3)
+        self.assertEqual(len(index_data), 6)
         self.assertIs(index_data.owner, mesh)
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
 
@@ -123,7 +164,7 @@ class MeshData(unittest.TestCase):
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
         vertex_data = mesh.vertex_data
-        self.assertEqual(len(vertex_data), 72)
+        self.assertEqual(len(vertex_data), 84)
         self.assertIs(vertex_data.owner, mesh)
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
 
@@ -131,11 +172,10 @@ class MeshData(unittest.TestCase):
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
     def test_nonindexed(self):
-        # The only way to get a mesh instance is through a manager
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        mesh = importer.mesh(0)
+        mesh = importer.mesh(1)
         self.assertFalse(mesh.is_indexed)
 
         # Accessing the index data should be possible, they're just empty
@@ -144,6 +184,56 @@ class MeshData(unittest.TestCase):
         # Accessing any other index-related info should cause an exception
         with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
             mesh.index_count
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.index_type
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.index_offset
+        with self.assertRaisesRegex(AttributeError, "mesh is not indexed"):
+            mesh.index_stride
+
+    def test_attribute_oob(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+
+        # Access by OOB ID
+        with self.assertRaises(IndexError):
+            mesh.attribute_name(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute_id(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute_format(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute_offset(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute_stride(mesh.attribute_count())
+        with self.assertRaises(IndexError):
+            mesh.attribute_array_size(mesh.attribute_count())
+
+        # Access by nonexistent name
+        with self.assertRaises(KeyError):
+            mesh.attribute_id(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.attribute_format(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.attribute_offset(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.attribute_stride(trade.MeshAttribute.TANGENT)
+        with self.assertRaises(KeyError):
+            mesh.attribute_array_size(trade.MeshAttribute.TANGENT)
+
+        # Access by existing name + OOB ID
+        with self.assertRaises(KeyError):
+            mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+        with self.assertRaises(KeyError):
+            mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
 
 class Importer(unittest.TestCase):
     def test(self):
@@ -257,39 +347,52 @@ class Importer(unittest.TestCase):
     def test_mesh(self):
         # importer refcounting tested in image2d
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
-        self.assertEqual(importer.mesh_count, 3)
+
+        # Asking for custom mesh attribute names should work even if not
+        # opened, returns None
+        # TODO better API for custom IDs?
+        self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)))
+        self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
+
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        self.assertEqual(importer.mesh_count, 2)
         self.assertEqual(importer.mesh_level_count(0), 1)
-        self.assertEqual(importer.mesh_name(0), 'Non-indexed mesh')
-        self.assertEqual(importer.mesh_for_name('Non-indexed mesh'), 0)
+        self.assertEqual(importer.mesh_name(0), 'Indexed mesh')
+        self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
+
+        # It should work after opening
+        self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)), "_CUSTOM_ATTRIBUTE")
+        # TODO better API for custom IDs?
+        self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 9))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+        self.assertTrue(mesh.has_attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE")))
 
     def test_mesh_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         with self.assertRaises(IndexError):
             importer.mesh(0, 1)
 
     def test_mesh_by_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh('Non-indexed mesh')
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
     def test_mesh_by_name_not_found(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         with self.assertRaises(KeyError):
             importer.mesh('Nonexistent')
 
     def test_mesh_by_name_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         with self.assertRaises(IndexError):
             importer.mesh('Non-indexed mesh', 1)
@@ -369,8 +472,8 @@ class ImageConverter(unittest.TestCase):
 class SceneConverter(unittest.TestCase):
     def test_mesh(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
-        mesh = importer.mesh(0)
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh(1)
 
         converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
 
@@ -380,8 +483,8 @@ class SceneConverter(unittest.TestCase):
 
     def test_mesh_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.glb'))
-        mesh = importer.mesh(0)
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh(1)
 
         converter = trade.SceneConverterManager().load_and_instantiate('AnySceneConverter')
 

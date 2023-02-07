@@ -1,0 +1,19 @@
+type = '<xx3H 3f2f4BI 3f2f4BI 3f2f4BI'
+input = [
+    # 16-bit indices, with a two-byte padding before (thus 8 bytes in total)
+    0, 2, 1,
+
+    # interleaved:
+    # - positions as 32-bit floats, aliased together with first texture coord
+    #   with joint weights,
+    # - texture coords as floats,
+    # - normalized three-component 8-bit colors aliased with four-component
+    #   joint IDs,
+    # - one byte padding for alignment,
+    # - 32-bit integer object IDs
+    -1.0, -1.0, 0.25,  0.1, 0.2,  255, 51, 102, 3,  216,
+     0.0,  1.0, 0.50,  0.3, 0.4,  51, 102, 255, 0,  16777235,
+     1.0, -1.0, 0.25,  0.5, 0.6,  103, 255, 51, 7,  2872872013
+]
+
+# kate: hl python
