@@ -31,6 +31,7 @@ import unittest
 from corrade import pluginmanager
 from magnum import *
 from magnum import primitives, trade
+import magnum
 
 class ImageData(unittest.TestCase):
     def test(self):
@@ -120,42 +121,79 @@ class MeshData(unittest.TestCase):
         self.assertEqual(mesh.vertex_count, 3)
 
         # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
-        # backwards compatibility to reduce useless attribute count
-        self.assertEqual(mesh.attribute_count(), 10)
+        # backwards compatibility to avoid this mess
+        if magnum.BUILD_DEPRECATED:
+            self.assertEqual(mesh.attribute_count(), 10)
 
-        # Attribute properties by ID
-        self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
-        # Custom attribute
-        # TODO better API for custom IDs?
-        self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute(32768 + 9))
-        self.assertEqual(mesh.attribute_id(3), 0)
-        # Attribute 5 is the second TEXTURE_COORDINATES attribute
-        self.assertEqual(mesh.attribute_id(5), 1)
-        self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
-        self.assertEqual(mesh.attribute_format(9), VertexFormat.UNSIGNED_INT)
-        self.assertEqual(mesh.attribute_offset(0), 20)
-        self.assertEqual(mesh.attribute_offset(3), 0)
-        self.assertEqual(mesh.attribute_stride(2), 28)
-        self.assertEqual(mesh.attribute_array_size(0), 0)
-        # Attribute 1 is JOINT_IDS
-        self.assertEqual(mesh.attribute_array_size(1), 4)
+            # Attribute properties by ID
+            self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
+            # Custom attribute
+            # TODO better API for custom IDs?
+            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute(32768 + 9))
+            self.assertEqual(mesh.attribute_id(3), 0)
+            # Attribute 5 is the second TEXTURE_COORDINATES attribute
+            self.assertEqual(mesh.attribute_id(5), 1)
+            self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
+            self.assertEqual(mesh.attribute_format(9), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_offset(0), 20)
+            self.assertEqual(mesh.attribute_offset(3), 0)
+            self.assertEqual(mesh.attribute_stride(2), 28)
+            self.assertEqual(mesh.attribute_array_size(0), 0)
+            # Attribute 1 is JOINT_IDS
+            self.assertEqual(mesh.attribute_array_size(1), 4)
 
-        # Attribute properties by name
-        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
-        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
-        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
-        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
-        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
-        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 5)
-        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
-        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
-        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
-        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
-        self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
-        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
-        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
+            # Attribute properties by name
+            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
+            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
+            self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
+            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 5)
+            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
+            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
+            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
+            self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
+            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
+            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
+        else:
+            self.assertEqual(mesh.attribute_count(), 8)
+
+            # Attribute properties by ID
+            self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
+            # Custom attribute
+            # TODO better API for custom IDs?
+            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute(32768 + 7))
+            self.assertEqual(mesh.attribute_id(2), 0)
+            # Attribute 4 is the second TEXTURE_COORDINATES attribute
+            self.assertEqual(mesh.attribute_id(4), 1)
+            self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
+            self.assertEqual(mesh.attribute_format(7), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_offset(0), 20)
+            self.assertEqual(mesh.attribute_offset(2), 0)
+            self.assertEqual(mesh.attribute_stride(3), 28)
+            self.assertEqual(mesh.attribute_array_size(0), 0)
+            # Attribute 1 is JOINT_IDS
+            self.assertEqual(mesh.attribute_array_size(1), 4)
+
+            # Attribute properties by name
+            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
+            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
+            self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
+            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
+            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 2)
+            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 4)
+            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
+            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
+            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
+            self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
+            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
+            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
 
     def test_index_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -242,9 +280,9 @@ class MeshData(unittest.TestCase):
 
         mesh = importer.mesh(0)
         mesh_refcount = sys.getrefcount(mesh)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+        position_id = mesh.attribute_id(trade.MeshAttribute.POSITION)
 
-        positions = mesh.attribute(3)
+        positions = mesh.attribute(position_id)
         self.assertEqual(positions.size, (3, ))
         self.assertEqual(positions.stride, (28, ))
         self.assertEqual(positions.format, 'fff')
@@ -270,7 +308,7 @@ class MeshData(unittest.TestCase):
         del object_ids
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
-        mutable_positions = mesh.mutable_attribute(3)
+        mutable_positions = mesh.mutable_attribute(position_id)
         self.assertEqual(mutable_positions.size, (3, ))
         self.assertEqual(mutable_positions.stride, (28, ))
         self.assertEqual(mutable_positions.format, 'fff')
@@ -355,10 +393,10 @@ class MeshData(unittest.TestCase):
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
+        position_id = mesh.attribute_id(trade.MeshAttribute.POSITION)
 
-        positions = mesh.attribute(3)
-        mutable_positions = mesh.mutable_attribute(3)
+        positions = mesh.attribute(position_id)
+        mutable_positions = mesh.mutable_attribute(position_id)
         self.assertEqual(positions[1], Vector3(0, 1, 0.5))
         self.assertEqual(mutable_positions[1], Vector3(0, 1, 0.5))
 
@@ -479,12 +517,12 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.JOINT_IDS), 1)
+        joint_ids_id = mesh.attribute_id(trade.MeshAttribute.JOINT_IDS)
 
         with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
-            mesh.attribute(1)
+            mesh.attribute(joint_ids_id)
         with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
-            mesh.mutable_attribute(1)
+            mesh.mutable_attribute(joint_ids_id)
         with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
             mesh.attribute(trade.MeshAttribute.JOINT_IDS)
         with self.assertRaisesRegex(NotImplementedError, "array attributes not implemented yet, sorry"):
@@ -496,12 +534,12 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf').replace('\\', '/'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.attribute_id(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE")), 8)
+        custom_attribute_id = mesh.attribute_id(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
-            mesh.attribute(8)
+            mesh.attribute(custom_attribute_id)
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
-            mesh.mutable_attribute(8)
+            mesh.mutable_attribute(custom_attribute_id)
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
             mesh.attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
@@ -623,7 +661,12 @@ class Importer(unittest.TestCase):
         # Asking for custom mesh attribute names should work even if not
         # opened, returns None
         # TODO better API for custom IDs?
-        self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)))
+        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
+        # backwards compatibility to avoid this mess
+        if magnum.BUILD_DEPRECATED:
+            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)))
+        else:
+            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 7)))
         self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
         # TODO figure out a less silly way to get forward slashes on Windows
@@ -634,9 +677,15 @@ class Importer(unittest.TestCase):
         self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
 
         # It should work after opening
-        self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)), "_CUSTOM_ATTRIBUTE")
         # TODO better API for custom IDs?
-        self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 9))
+        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
+        # backwards compatibility to avoid this mess
+        if magnum.BUILD_DEPRECATED:
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)), "_CUSTOM_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 9))
+        else:
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 7)), "_CUSTOM_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 7))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
