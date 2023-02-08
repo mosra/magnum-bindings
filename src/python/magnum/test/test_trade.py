@@ -785,8 +785,6 @@ class Importer(unittest.TestCase):
         del importer
         self.assertEqual(sys.getrefcount(manager), manager_refcount)
 
-    # TODO image by name (in some gltf?)
-
     def test_image_level_oob(self):
         # importer refcounting tested in image2d
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
@@ -794,6 +792,20 @@ class Importer(unittest.TestCase):
 
         with self.assertRaises(IndexError):
             importer.image2d(0, 1)
+
+    def test_image2d_by_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
+
+        image = importer.image2d('A named image')
+        self.assertEqual(image.size, Vector2i(3, 2))
+
+    def test_image2d_by_name_not_found(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
+
+        with self.assertRaises(KeyError):
+            importer.image2d('Nonexistent')
 
     def test_image2d_data(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
@@ -805,11 +817,13 @@ class Importer(unittest.TestCase):
         self.assertEqual(image.size, Vector2i(3, 2))
 
     def test_image2d_failed(self):
-        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
-        importer.open_data(b'bla')
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
 
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.image2d(0)
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.image2d('A broken image')
 
 class ImageConverter(unittest.TestCase):
     def test_image2d(self):
