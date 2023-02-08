@@ -88,9 +88,7 @@
 
 .. py:class:: magnum.trade.MeshData
 
-    Compared to the C++ API, there's no
-    :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
-    calling :ref:`attribute_id()` and catching an exception if not found.
+    :TODO: remove this line once m.css stops ignoring first caption on a page
 
     `Index and attribute data access`_
     ==================================
@@ -141,11 +139,17 @@
 .. py:function:: magnum.trade.MeshData.attribute_name
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+
 .. py:function:: magnum.trade.MeshData.attribute_id
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
+
+    Compared to the C++ API, there's no
+    :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
+    calling :ref:`attribute_id()` and catching an exception if not found.
+
 .. py:function:: magnum.trade.MeshData.attribute_format
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
