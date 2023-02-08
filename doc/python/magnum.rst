@@ -29,6 +29,7 @@
     >>> from magnum import *
 
 .. py:module:: magnum
+    :data BUILD_DEPRECATED: Build with deprecated features enabled
     :data BUILD_STATIC: Static library build
     :data TARGET_GL: OpenGL interoperability
     :data TARGET_GLES: OpenGL ES target

@@ -35,6 +35,10 @@ Changelog
 `Changes since 2020.06`_
 ========================
 
+-   Exposed the :ref:`corrade.BUILD_DEPRECATED` and
+    :ref:`magnum.BUILD_DEPRECATED` constants, as some features may work
+    differently depending on these being enabled or not and it's useful to be
+    able to query this
 -   Exposed missing :ref:`Vector4` constructor from a :ref:`Vector3` and a
     W component and :ref:`Vector3` from :ref:`Vector2` and a Z component
 -   Renamed :py:`Matrix3.from()` / :py:`Matrix4.from()` to :ref:`Matrix3.from_()`

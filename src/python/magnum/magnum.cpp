@@ -156,6 +156,13 @@ template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>&
 }
 
 void magnum(py::module_& m) {
+    m.attr("BUILD_DEPRECATED") =
+        #ifdef MAGNUM_BUILD_DEPRECATED
+        true
+        #else
+        false
+        #endif
+        ;
     m.attr("BUILD_STATIC") =
         #ifdef MAGNUM_BUILD_STATIC
         true

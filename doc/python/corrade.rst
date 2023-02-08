@@ -36,6 +36,7 @@
     >>> from corrade import *
 
 .. py:module:: corrade
+    :data BUILD_DEPRECATED: Build with deprecated features enabled
     :data BUILD_STATIC: Static library build
     :data BUILD_MULTITHREADED: Multi-threaded build
     :data TARGET_UNIX: Unix target

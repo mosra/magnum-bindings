@@ -39,6 +39,13 @@ namespace py = pybind11;
 extern "C" PYBIND11_EXPORT PyObject* PyInit__corrade();
 PYBIND11_MODULE(_corrade, m) {
     m.doc() = "Root Corrade module";
+    m.attr("BUILD_DEPRECATED") =
+        #ifdef CORRADE_BUILD_DEPRECATED
+        true
+        #else
+        false
+        #endif
+        ;
     m.attr("BUILD_STATIC") =
         #ifdef CORRADE_BUILD_STATIC
         true
