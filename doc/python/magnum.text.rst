@@ -53,6 +53,11 @@
 .. py:function:: magnum.text.AbstractFont.open_file
     :raise RuntimeError: If file opening fails
 
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Text::AbstractFont::openFile()`, which expects forward slashes as
+    directory separators on all platforms.
+
 .. py:property:: magnum.text.AbstractFont.size
     :raise AssertionError: If no file is opened
 .. py:property:: magnum.text.AbstractFont.ascent

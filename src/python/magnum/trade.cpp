@@ -46,6 +46,13 @@
 #include "corrade/pluginmanager.h"
 #include "magnum/bootstrap.h"
 
+#ifdef CORRADE_TARGET_WINDOWS
+/* To allow people to conveniently use Python's os.path, we need to convert
+   backslashes to forward slashes as all Corrade and Magnum APIs expect
+   forward */
+#include <Corrade/Utility/Path.h>
+#endif
+
 namespace magnum {
 
 namespace {
@@ -282,7 +289,16 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
 template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::StringView)> void checkImageConverterResult(Trade::AbstractImageConverter& self, const T& image, const std::string& filename) {
     /** @todo log redirection -- but we'd need assertions to not be part of
         that so when it dies, the user can still see why */
-    bool out = (self.*f)(image, filename);
+    bool out = (self.*f)(image,
+        #ifdef CORRADE_TARGET_WINDOWS
+        /* To allow people to conveniently use Python's os.path, we need to
+           convert backslashes to forward slashes as all Corrade and Magnum
+           APIs expect forward */
+        Utility::Path::fromNativeSeparators(filename)
+        #else
+        filename
+        #endif
+    );
     if(!out) {
         PyErr_SetString(PyExc_RuntimeError, "conversion failed");
         throw py::error_already_set{};
@@ -295,7 +311,16 @@ template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::
 template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::StringView)> void checkSceneConverterResult(Trade::AbstractSceneConverter& self, const T& mesh, const std::string& filename) {
     /** @todo log redirection -- but we'd need assertions to not be part of
         that so when it dies, the user can still see why */
-    bool out = (self.*f)(mesh, filename);
+    bool out = (self.*f)(mesh,
+        #ifdef CORRADE_TARGET_WINDOWS
+        /* To allow people to conveniently use Python's os.path, we need to
+           convert backslashes to forward slashes as all Corrade and Magnum
+           APIs expect forward */
+        Utility::Path::fromNativeSeparators(filename)
+        #else
+        filename
+        #endif
+    );
     if(!out) {
         PyErr_SetString(PyExc_RuntimeError, "conversion failed");
         throw py::error_already_set{};
@@ -691,7 +716,16 @@ void trade(py::module_& m) {
         .def("open_file", [](Trade::AbstractImporter& self, const std::string& filename) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
-            if(self.openFile(filename)) return;
+            if(self.openFile(
+                #ifdef CORRADE_TARGET_WINDOWS
+                /* To allow people to conveniently use Python's os.path, we
+                   need to convert backslashes to forward slashes as all
+                   Corrade and Magnum APIs expect forward */
+                Utility::Path::fromNativeSeparators(filename)
+                #else
+                filename
+                #endif
+            )) return;
 
             PyErr_Format(PyExc_RuntimeError, "opening %s failed", filename.data());
             throw py::error_already_set{};

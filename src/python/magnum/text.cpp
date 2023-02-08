@@ -33,6 +33,13 @@
 #include "corrade/pluginmanager.h"
 #include "magnum/bootstrap.h"
 
+#ifdef CORRADE_TARGET_WINDOWS
+/* To allow people to conveniently use Python's os.path, we need to convert
+   backslashes to forward slashes as all Corrade and Magnum APIs expect
+   forward */
+#include <Corrade/Utility/Path.h>
+#endif
+
 namespace magnum {
 
 namespace {
@@ -109,7 +116,16 @@ void text(py::module_& m) {
         .def("open_file", [](Text::AbstractFont& self, const std::string& filename, Float size) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
-            if(self.openFile(filename, size)) return;
+            if(self.openFile(
+                #ifdef CORRADE_TARGET_WINDOWS
+                /* To allow people to conveniently use Python's os.path, we
+                   need to convert backslashes to forward slashes as all
+                   Corrade and Magnum APIs expect forward */
+                Utility::Path::fromNativeSeparators(filename)
+                #else
+                filename
+                #endif
+                , size)) return;
 
             PyErr_Format(PyExc_RuntimeError, "opening %s failed", filename.data());
             throw py::error_already_set{};

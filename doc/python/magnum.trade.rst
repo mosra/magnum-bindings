@@ -189,6 +189,11 @@
 .. py:function:: magnum.trade.AbstractImporter.open_file
     :raise RuntimeError: If file opening fails
 
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImporter::openFile()`, which expects forward slashes
+    as directory separators on all platforms.
+
 .. py:property:: magnum.trade.AbstractImporter.mesh_count
     :raise AssertionError: If no file is opened
 .. py:function:: magnum.trade.AbstractImporter.mesh_level_count
@@ -297,6 +302,11 @@
 .. py:function:: magnum.trade.AbstractImageConverter.convert_to_file
     :raise RuntimeError: If image conversion fails
 
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
 .. py:class:: magnum.trade.SceneConverterManager
     :summary: Manager for :ref:`AbstractSceneConverter` plugin instances
 
@@ -324,3 +334,8 @@
 
 .. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file
     :raise RuntimeError: If scene conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractSceneConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
