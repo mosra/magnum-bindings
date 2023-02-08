@@ -605,6 +605,8 @@ class Importer(unittest.TestCase):
 
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.mesh('')
 
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d_count
@@ -637,9 +639,15 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.image1d('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image2d(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.image2d('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image3d(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.image3d('')
 
     def test_index_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
