@@ -481,6 +481,12 @@ class Color3_(unittest.TestCase):
         self.assertEqual(a, Color3(0.896269, 0.0231534, 0.215861))
         self.assertEqual(a.to_srgb_int(), 0xf32a80)
 
+    def test_linear_rgb(self):
+        # Cross-checked with C++ tests
+        a = Color3.from_linear_rgb_int(0xf32a80)
+        self.assertEqual(a, Color3(0.952941, 0.164706, 0.501961))
+        self.assertEqual(a.to_linear_rgb_int(), 0xf32a80)
+
     def test_hsv(self):
         a = Color3.from_hsv(Deg(230.0), 0.749, 0.427)
         self.assertEqual(a, Color3(0.107177, 0.160481, 0.427))
@@ -552,6 +558,13 @@ class Color4_(unittest.TestCase):
 
         self.assertEqual(a.to_srgb_alpha_int(), 0xf32a80ff)
 
+    def test_linear_rgb(self):
+        # Cross-checked with C++ tests
+        a = Color4.from_linear_rgb_int(0xf32a80)
+        self.assertEqual(a, Color4(0.952941, 0.164706, 0.501961, 1.0))
+
+        self.assertEqual(a.to_linear_rgba_int(), 0xf32a80ff)
+
     def test_srgb_alpha(self):
         # Cross-checked with C++ tests
         a = Color4.from_srgb_int(0xf32a80, a=0.137255)
@@ -560,6 +573,15 @@ class Color4_(unittest.TestCase):
         self.assertEqual(b, Color4(0.896269, 0.0231534, 0.215861, 0.137255))
 
         self.assertEqual(a.to_srgb_alpha_int(), 0xf32a8023)
+
+    def test_linear_rgba(self):
+        # Cross-checked with C++ tests
+        a = Color4.from_linear_rgb_int(0xf32a80, a=0.137255)
+        b = Color4.from_linear_rgba_int(0xf32a8023)
+        self.assertEqual(a, Color4(0.952941, 0.164706, 0.501961, 0.137255))
+        self.assertEqual(b, Color4(0.952941, 0.164706, 0.501961, 0.137255))
+
+        self.assertEqual(a.to_linear_rgba_int(), 0xf32a8023)
 
     def test_hsv(self):
         a = Color4.from_hsv(Deg(230.0), 0.749, 0.427, 0.95)

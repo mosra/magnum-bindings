@@ -578,6 +578,9 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
         .def_static("from_srgb_int", [](UnsignedInt srgb) {
             return Math::Color3<T>::fromSrgbInt(srgb);
         }, "Create linear RGB color from 24-bit sRGB representation", py::arg("srgb"))
+        .def_static("from_linear_rgb_int", [](UnsignedInt linear) {
+            return Math::Color3<T>::fromLinearRgbInt(linear);
+        }, "Create linear RGB color from 24-bit linear representation", py::arg("linear"))
         .def_static("from_xyz", &Color3::fromXyz,
             "Create RGB color from CIE XYZ representation", py::arg("xyz"))
 
@@ -605,7 +608,9 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
         .def("saturation", &Math::Color3<T>::saturation, "Saturation")
         .def("value", &Math::Color3<T>::value, "Value")
         .def("to_srgb_int", &Math::Color3<T>::toSrgbInt,
-             "Convert to 32-bit integral sRGB representation")
+             "Convert to 24-bit integral sRGB representation")
+        .def("to_linear_rgb_int", &Math::Color3<T>::toLinearRgbInt,
+             "Convert to 24-bit integral linear RGB representation")
         .def("to_xyz", &Math::Color3<T>::toXyz,
              "Convert to CIE XYZ representation");
 }
@@ -641,9 +646,15 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
         .def_static("from_srgb_alpha_int", [](UnsignedInt srgbAlpha) {
             return Math::Color4<T>::fromSrgbAlphaInt(srgbAlpha);
         }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb_alpha"))
+        .def_static("from_linear_rgba_int", [](UnsignedInt linear) {
+            return Math::Color4<T>::fromLinearRgbaInt(linear);
+        }, "Create linear RGBA color from 32-bit linear representation", py::arg("linear"))
         .def_static("from_srgb_int", [](UnsignedInt srgb, T a) {
             return Math::Color4<T>::fromSrgbInt(srgb, a);
-        }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb"), py::arg("a") = Math::Implementation::fullChannel<T>())
+        }, "Create linear RGBA color from 32-bit sRGB + alpha representation", py::arg("srgb"), py::arg("a") = Math::Implementation::fullChannel<T>())
+        .def_static("from_linear_rgb_int", [](UnsignedInt linear, T a) {
+            return Math::Color4<T>::fromLinearRgbInt(linear, a);
+        }, "Create linear RGBA color from 24-bit linear RGB + alpha representation", py::arg("linear"), py::arg("a") = Math::Implementation::fullChannel<T>())
         .def_static("from_xyz", &Color4::fromXyz,
             "Create RGBA color from CIE XYZ representation", py::arg("xyz"), py::arg("a") = Math::Implementation::fullChannel<T>())
 
@@ -684,6 +695,8 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
         .def("value", &Math::Color4<T>::value, "Value")
         .def("to_srgb_alpha_int", &Math::Color4<T>::toSrgbAlphaInt,
              "Convert to 32-bit integral sRGB + linear alpha representation")
+        .def("to_linear_rgba_int", &Math::Color4<T>::toLinearRgbaInt,
+             "Convert to 32-bit integral linear RGBa representation")
         .def("to_xyz", &Math::Color4<T>::toXyz,
              "Convert to CIE XYZ representation")
 
