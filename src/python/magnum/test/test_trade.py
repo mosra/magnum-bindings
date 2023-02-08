@@ -101,6 +101,46 @@ class ImageData(unittest.TestCase):
             mutable_view = MutableImageView2D(image)
 
 class MeshData(unittest.TestCase):
+    def test_custom_attribute(self):
+        # Creating a custom attribute
+        a = trade.MeshAttribute.CUSTOM(17)
+        self.assertTrue(a.is_custom)
+        self.assertEqual(a.value, 32768 + 17)
+        self.assertEqual(a.custom_value, 17)
+        self.assertEqual(a.name, "CUSTOM(17)")
+        self.assertEqual(str(a), "MeshAttribute.CUSTOM(17)")
+        self.assertEqual(repr(a), "<MeshAttribute.CUSTOM(17): 32785>")
+
+        # Lowest possible custom value, test that it's correctly recognized as
+        # custom by all APIs
+        zero = trade.MeshAttribute.CUSTOM(0)
+        self.assertTrue(zero.is_custom)
+        self.assertEqual(zero.value, 32768)
+        self.assertEqual(zero.custom_value, 0)
+        self.assertEqual(zero.name, "CUSTOM(0)")
+        self.assertEqual(str(zero), "MeshAttribute.CUSTOM(0)")
+        self.assertEqual(repr(zero), "<MeshAttribute.CUSTOM(0): 32768>")
+
+        # Largest possible custom value
+        largest = trade.MeshAttribute.CUSTOM(32767)
+        self.assertTrue(largest.is_custom)
+        self.assertEqual(largest.value, 65535)
+        self.assertEqual(largest.custom_value, 32767)
+
+        # Creating a custom attribute with a value that won't fit
+        with self.assertRaisesRegex(ValueError, "custom value too large"):
+            trade.MeshAttribute.CUSTOM(32768)
+
+        # Accessing properties on builtin values should still work as expected
+        b = trade.MeshAttribute.BITANGENT
+        self.assertFalse(b.is_custom)
+        self.assertEqual(b.value, 3)
+        with self.assertRaisesRegex(AttributeError, "not a custom value"):
+            b.custom_value
+        self.assertEqual(b.name, "BITANGENT")
+        self.assertEqual(str(b), "MeshAttribute.BITANGENT")
+        self.assertEqual(repr(b), "<MeshAttribute.BITANGENT: 3>")
+
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -127,8 +167,7 @@ class MeshData(unittest.TestCase):
             # Attribute properties by ID
             self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
             # Custom attribute
-            # TODO better API for custom IDs?
-            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute(32768 + 9))
+            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute.CUSTOM(9))
             self.assertEqual(mesh.attribute_id(3), 0)
             # Attribute 5 is the second TEXTURE_COORDINATES attribute
             self.assertEqual(mesh.attribute_id(5), 1)
@@ -163,8 +202,7 @@ class MeshData(unittest.TestCase):
             # Attribute properties by ID
             self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
             # Custom attribute
-            # TODO better API for custom IDs?
-            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute(32768 + 7))
+            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute.CUSTOM(7))
             self.assertEqual(mesh.attribute_id(2), 0)
             # Attribute 4 is the second TEXTURE_COORDINATES attribute
             self.assertEqual(mesh.attribute_id(4), 1)
@@ -647,13 +685,12 @@ class Importer(unittest.TestCase):
 
         # Asking for custom mesh attribute names should work even if not
         # opened, returns None
-        # TODO better API for custom IDs?
         # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
         # backwards compatibility to avoid this mess
         if magnum.BUILD_DEPRECATED:
-            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)))
+            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(9)))
         else:
-            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 7)))
+            self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(7)))
         self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -663,15 +700,14 @@ class Importer(unittest.TestCase):
         self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
 
         # It should work after opening
-        # TODO better API for custom IDs?
         # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
         # backwards compatibility to avoid this mess
         if magnum.BUILD_DEPRECATED:
-            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 9)), "_CUSTOM_ATTRIBUTE")
-            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 9))
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(9)), "_CUSTOM_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(9))
         else:
-            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute(32768 + 7)), "_CUSTOM_ATTRIBUTE")
-            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute(32768 + 7))
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(7)), "_CUSTOM_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(7))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)

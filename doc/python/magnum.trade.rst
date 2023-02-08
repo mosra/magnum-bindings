@@ -66,6 +66,26 @@
 .. py:property:: magnum.trade.ImageData3D.pixels
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 
+.. py:enum:: magnum.trade.MeshAttribute
+
+    The equivalent to C++ :dox:`Trade::meshAttributeCustom()` is creating an
+    enum value using a ``CUSTOM()`` named constructor. The ``is_custom``
+    property then matches :dox:`Trade::isMeshAttributeCustom()` and you can
+    retrieve the custom ID again with a ``custom_value`` property.
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: pycon
+
+        >>> attribute = trade.MeshAttribute.CUSTOM(17)
+        >>> attribute.name
+        'CUSTOM(17)'
+        >>> attribute.is_custom
+        True
+        >>> attribute.custom_value
+        17
+
 .. py:class:: magnum.trade.MeshData
 
     Compared to the C++ API, there's no

@@ -57,6 +57,66 @@ namespace magnum {
 
 namespace {
 
+/* Adapted from pybind11's base_enum internals -- if enum_name returns ???,
+   replace it with CUSTOM(id) */
+template<class T, typename std::underlying_type<T>::type baseCustomValue> inline py::str enumWithCustomValuesName(const py::object& arg) {
+    py::str name = py::detail::enum_name(arg);
+    /* Haha what the hell is this comparison */
+    if(std::string{name} == "???")
+        return py::str("CUSTOM({})").format(typename std::underlying_type<T>::type(py::int_(arg)) - baseCustomValue);
+    return name;
+}
+
+/* Not using the meshAttributeCustom() etc helpers as it would be too painful
+   to pass them all, and I'd need to make my own handling of the OOB cases
+   anyway */
+template<class T, typename std::underlying_type<T>::type baseCustomValue> void enumWithCustomValues(py::enum_<T>& enum_) {
+    static_assert(!typename std::underlying_type<T>::type(baseCustomValue << 1),
+        "base custom value expected to be a single highest bit");
+
+    enum_
+        .def("CUSTOM", [](typename std::underlying_type<T>::type value) {
+            /* Assuming the base custom value is a single highest bit, the
+               custom value should not have the same bit set (or, in other
+               words, should be smaller) */
+            if(baseCustomValue & value) {
+                PyErr_SetString(PyExc_ValueError, "custom value too large");
+                throw py::error_already_set{};
+            }
+            return T(baseCustomValue + value);
+        })
+        .def_property_readonly("is_custom", [](T value) {
+            return typename std::underlying_type<T>::type(value) >= baseCustomValue;
+        })
+        .def_property_readonly("custom_value", [](T value) {
+            if(typename std::underlying_type<T>::type(value) < baseCustomValue) {
+                PyErr_SetString(PyExc_AttributeError, "not a custom value");
+                throw py::error_already_set{};
+            }
+            return typename std::underlying_type<T>::type(value) - baseCustomValue;
+        });
+
+    /* Adapted from pybind11's base_enum internals, just calling our
+       customEnumName instead of py::detail::enum_name */
+    enum_.attr("__repr__") = py::cpp_function(
+        [](const py::object& arg) -> py::str {
+            py::handle type = py::type::handle_of(arg);
+            py::object type_name = type.attr("__name__");
+            return py::str("<{}.{}: {}>")
+                .format(std::move(type_name), enumWithCustomValuesName<T, baseCustomValue>(arg), py::int_(arg));
+            },
+        py::name("__repr__"),
+        py::is_method(enum_));
+    enum_.attr("name") = py::handle(reinterpret_cast<PyObject*>(&PyProperty_Type))(py::cpp_function(&enumWithCustomValuesName<T, baseCustomValue>, py::name("name"), py::is_method(enum_)));
+    enum_.attr("__str__") = py::cpp_function(
+        [](const py::object& arg) -> py::str {
+            py::object type_name = py::type::handle_of(arg).attr("__name__");
+            return pybind11::str("{}.{}").format(std::move(type_name), enumWithCustomValuesName<T, baseCustomValue>(arg));
+        },
+        py::name("name"),
+        py::is_method(enum_));
+}
+
 template<UnsignedInt dimensions, class T> PyObject* implicitlyConvertibleToImageView(PyObject* obj, PyTypeObject*) {
     py::detail::make_caster<Trade::ImageData<dimensions>> caster;
     if(!caster.load(obj, false)) {
@@ -451,7 +511,8 @@ void trade(py::module_& m) {
         .value("MUTABLE", Trade::DataFlag::Mutable);
     corrade::enumOperators(dataFlag);
 
-    py::enum_<Trade::MeshAttribute>{m, "MeshAttribute", "Mesh attribute name"}
+    py::enum_<Trade::MeshAttribute> meshAttribute{m, "MeshAttribute", "Mesh attribute name"};
+    meshAttribute
         .value("POSITION", Trade::MeshAttribute::Position)
         .value("TANGENT", Trade::MeshAttribute::Tangent)
         .value("BITANGENT", Trade::MeshAttribute::Bitangent)
@@ -461,6 +522,7 @@ void trade(py::module_& m) {
         .value("JOINT_IDS", Trade::MeshAttribute::JointIds)
         .value("WEIGHTS", Trade::MeshAttribute::Weights)
         .value("OBJECT_ID", Trade::MeshAttribute::ObjectId);
+    enumWithCustomValues<Trade::MeshAttribute, Trade::Implementation::MeshAttributeCustom>(meshAttribute);
 
     py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
@@ -751,7 +813,7 @@ void trade(py::module_& m) {
             if(const Containers::String attribute = self.meshAttributeName(name))
                 return std::string{attribute};
             return {};
-        }, "String name for given mesh attribute", py::arg("name"))
+        }, "String name for given custom mesh attribute", py::arg("name"))
 
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
         .def_property_readonly("image2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image count")
