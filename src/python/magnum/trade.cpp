@@ -432,13 +432,15 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                 [](char* item, py::handle object) {                         \
                     *reinterpret_cast<type*>(item) = py::cast<type>(object); \
                 }};
+        /* LCOV_EXCL_START */
         _c(UnsignedByte, "B")
         _c(UnsignedShort, "H")
         _c(UnsignedInt, "I")
+        /* LCOV_EXCL_STOP */
         #undef _c
     }
 
-    return {};
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForVertexFormat(const VertexFormat format) {
@@ -463,6 +465,7 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                 [](char* item, py::handle object) {                         \
                     *reinterpret_cast<format*>(item) = format(py::cast<castType>(object)); \
                 }};
+        /* LCOV_EXCL_START */
         _c(Float,                   "f")
         _c(Double,                  "d")
         _cc(UnsignedByte, UnsignedInt, "B")
@@ -498,6 +501,7 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         _cc(Vector4s, Vector4i,     "hhhh")
         _c(Vector4ui,               "IIII")
         _c(Vector4i,                "iiii")
+        /* LCOV_EXCL_STOP */
         #undef _c
         #undef _cc
 
@@ -505,8 +509,6 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         default:
             return {};
     }
-
-    return {};
 }
 
 template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshIndicesView(Trade::MeshData& mesh, const Containers::StridedArrayView2D<T>& data) {
