@@ -30,6 +30,14 @@
           }
         }
       ]
+    },
+    {
+      "name": "A broken mesh",
+      "primitives": [
+        {
+          "mode": 666
+        }
+      ]
     }
   ],
   "accessors": [

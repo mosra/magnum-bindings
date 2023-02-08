@@ -706,7 +706,7 @@ class Importer(unittest.TestCase):
         self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
-        self.assertEqual(importer.mesh_count, 2)
+        self.assertEqual(importer.mesh_count, 3)
         self.assertEqual(importer.mesh_level_count(0), 1)
         self.assertEqual(importer.mesh_name(0), 'Indexed mesh')
         self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
@@ -752,6 +752,15 @@ class Importer(unittest.TestCase):
 
         with self.assertRaises(IndexError):
             importer.mesh('Non-indexed mesh', 1)
+
+    def test_mesh_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.mesh(2)
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.mesh('A broken mesh')
 
     def test_image2d(self):
         manager = trade.ImporterManager()
