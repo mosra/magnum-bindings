@@ -286,7 +286,7 @@ template<class R, R(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade
     return (self.*f)(id);
 }
 /** @todo drop this in favor of our own string caster */
-template<Containers::String(Trade::AbstractImporter::*f)(UnsignedInt), UnsignedInt(Trade::AbstractImporter::*bounds)() const> std::string checkOpenedBoundsReturnsString(Trade::AbstractImporter& self, UnsignedInt id) {
+template<class R, Containers::String(Trade::AbstractImporter::*f)(R), R(Trade::AbstractImporter::*bounds)() const> std::string checkOpenedBoundsReturnsString(Trade::AbstractImporter& self, R id) {
     if(!self.isOpened()) {
         PyErr_SetString(PyExc_AssertionError, "no file opened");
         throw py::error_already_set{};
@@ -832,7 +832,7 @@ void trade(py::module_& m) {
         .def_property_readonly("mesh_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::meshCount>, "Mesh count")
         .def("mesh_level_count", checkOpenedBounds<UnsignedInt, &Trade::AbstractImporter::meshLevelCount, &Trade::AbstractImporter::meshCount>, "Mesh level count", py::arg("id"))
         .def("mesh_for_name", checkOpenedString<Int, &Trade::AbstractImporter::meshForName>, "Mesh ID for given name", py::arg("name"))
-        .def("mesh_name", checkOpenedBoundsReturnsString<&Trade::AbstractImporter::meshName, &Trade::AbstractImporter::meshCount>, "Mesh name", py::arg("id"))
+        .def("mesh_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::meshName, &Trade::AbstractImporter::meshCount>, "Mesh name", py::arg("id"))
         .def("mesh", checkOpenedBoundsResult<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshCount, &Trade::AbstractImporter::meshLevelCount>, "Mesh", py::arg("id"), py::arg("level") = 0)
         .def("mesh", checkOpenedBoundsResultString<Trade::MeshData, &Trade::AbstractImporter::mesh, &Trade::AbstractImporter::meshForName, &Trade::AbstractImporter::meshLevelCount>, "Mesh for given name", py::arg("name"), py::arg("level") = 0)
         /** @todo drop std::string in favor of our own string caster */
@@ -858,9 +858,9 @@ void trade(py::module_& m) {
         .def("image1d_for_name", checkOpenedString<Int, &Trade::AbstractImporter::image1DForName>, "One-dimensional image ID for given name", py::arg("name"))
         .def("image2d_for_name", checkOpenedString<Int, &Trade::AbstractImporter::image2DForName>, "Two-dimensional image ID for given name", py::arg("name"))
         .def("image3d_for_name", checkOpenedString<Int, &Trade::AbstractImporter::image3DForName>, "Three-dimensional image ID for given name", py::arg("name"))
-        .def("image1d_name", checkOpenedBoundsReturnsString<&Trade::AbstractImporter::image1DName, &Trade::AbstractImporter::image1DCount>, "One-dimensional image name", py::arg("id"))
-        .def("image2d_name", checkOpenedBoundsReturnsString<&Trade::AbstractImporter::image2DName, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image name", py::arg("id"))
-        .def("image3d_name", checkOpenedBoundsReturnsString< &Trade::AbstractImporter::image3DName, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image name", py::arg("id"))
+        .def("image1d_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::image1DName, &Trade::AbstractImporter::image1DCount>, "One-dimensional image name", py::arg("id"))
+        .def("image2d_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::image2DName, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image name", py::arg("id"))
+        .def("image3d_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::image3DName, &Trade::AbstractImporter::image3DCount>, "Three-dimensional image name", py::arg("id"))
         .def("image1d", checkOpenedBoundsResult<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DCount, &Trade::AbstractImporter::image1DLevelCount>, "One-dimensional image", py::arg("id"), py::arg("level") = 0)
         .def("image1d", checkOpenedBoundsResultString<Trade::ImageData1D, &Trade::AbstractImporter::image1D, &Trade::AbstractImporter::image1DForName, &Trade::AbstractImporter::image1DLevelCount>, "One-dimensional image for given name", py::arg("name"), py::arg("level") = 0)
         .def("image2d", checkOpenedBoundsResult<Trade::ImageData2D, &Trade::AbstractImporter::image2D, &Trade::AbstractImporter::image2DCount, &Trade::AbstractImporter::image2DLevelCount>, "Two-dimensional image", py::arg("id"), py::arg("level") = 0)
