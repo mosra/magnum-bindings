@@ -575,8 +575,8 @@ template<class T> void color3(py::class_<Math::Color3<T>, Math::Vector3<T>>& c) 
         .def_static("from_hsv", [](Degd hue, typename Math::Color3<T>::FloatingPointType saturation, typename Math::Color3<T>::FloatingPointType value) {
             return Math::Color3<T>::fromHsv({Math::Deg<T>(hue), saturation, value});
         }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"))
-        .def_static("from_srgb", [](UnsignedInt srgb) {
-            return Math::Color3<T>::fromSrgb(srgb);
+        .def_static("from_srgb_int", [](UnsignedInt srgb) {
+            return Math::Color3<T>::fromSrgbInt(srgb);
         }, "Create linear RGB color from 24-bit sRGB representation", py::arg("srgb"))
         .def_static("from_xyz", &Color3::fromXyz,
             "Create RGB color from CIE XYZ representation", py::arg("xyz"))
@@ -638,11 +638,11 @@ template<class T> void color4(py::class_<Math::Color4<T>, Math::Vector4<T>>& c) 
             return Math::Color4<T>::fromHsv({Math::Deg<T>(hue), saturation, value}, alpha);
         }, "Create RGB color from HSV representation", py::arg("hue"), py::arg("saturation"), py::arg("value"), py::arg("alpha") = Math::Implementation::fullChannel<T>())
 
-        .def_static("from_srgb_alpha", [](UnsignedInt srgbAlpha) {
-            return Math::Color4<T>::fromSrgbAlpha(srgbAlpha);
+        .def_static("from_srgb_alpha_int", [](UnsignedInt srgbAlpha) {
+            return Math::Color4<T>::fromSrgbAlphaInt(srgbAlpha);
         }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb_alpha"))
-        .def_static("from_srgb", [](UnsignedInt srgb, T a) {
-            return Math::Color4<T>::fromSrgb(srgb, a);
+        .def_static("from_srgb_int", [](UnsignedInt srgb, T a) {
+            return Math::Color4<T>::fromSrgbInt(srgb, a);
         }, "Create linear RGBA color from 32-bit sRGB a alpha representation", py::arg("srgb"), py::arg("a") = Math::Implementation::fullChannel<T>())
         .def_static("from_xyz", &Color4::fromXyz,
             "Create RGBA color from CIE XYZ representation", py::arg("xyz"), py::arg("a") = Math::Implementation::fullChannel<T>())

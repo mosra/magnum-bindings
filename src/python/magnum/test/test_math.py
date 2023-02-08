@@ -477,7 +477,7 @@ class Color3_(unittest.TestCase):
 
     def test_srgb(self):
         # Cross-checked with C++ tests
-        a = Color3.from_srgb(0xf32a80)
+        a = Color3.from_srgb_int(0xf32a80)
         self.assertEqual(a, Color3(0.896269, 0.0231534, 0.215861))
         self.assertEqual(a.to_srgb_int(), 0xf32a80)
 
@@ -547,15 +547,15 @@ class Color4_(unittest.TestCase):
 
     def test_srgb(self):
         # Cross-checked with C++ tests
-        a = Color4.from_srgb(0xf32a80)
+        a = Color4.from_srgb_int(0xf32a80)
         self.assertEqual(a, Color4(0.896269, 0.0231534, 0.215861, 1.0))
 
         self.assertEqual(a.to_srgb_alpha_int(), 0xf32a80ff)
 
     def test_srgb_alpha(self):
         # Cross-checked with C++ tests
-        a = Color4.from_srgb(0xf32a80, a=0.137255)
-        b = Color4.from_srgb_alpha(0xf32a8023)
+        a = Color4.from_srgb_int(0xf32a80, a=0.137255)
+        b = Color4.from_srgb_alpha_int(0xf32a8023)
         self.assertEqual(a, Color4(0.896269, 0.0231534, 0.215861, 0.137255))
         self.assertEqual(b, Color4(0.896269, 0.0231534, 0.215861, 0.137255))
 
