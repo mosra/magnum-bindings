@@ -60,7 +60,21 @@ namespace {
 /* Adapted from pybind11's base_enum internals -- if enum_name returns ???,
    replace it with CUSTOM(id) */
 template<class T, typename std::underlying_type<T>::type baseCustomValue> inline py::str enumWithCustomValuesName(const py::object& arg) {
+    /* The enum_name helper is only since pybind11 2.6, before it's inline:
+        https://github.com/pybind/pybind11/commit/5e6ec496522b313e34af3de91f6c0565f68e3552 */
+    /** @todo remove once support for < 2.6 is dropped */
+    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
     py::str name = py::detail::enum_name(arg);
+    #else
+    py::str name = "???";
+    py::dict entries = arg.get_type().attr("__entries");
+    for(auto kv: entries) {
+        if(py::handle(kv.second[py::int_(0)]).equal(arg)) {
+            name = py::str(kv.first);
+            break;
+        }
+    }
+    #endif
     /* Haha what the hell is this comparison */
     if(std::string{name} == "???")
         return py::str("CUSTOM({})").format(typename std::underlying_type<T>::type(py::int_(arg)) - baseCustomValue);
@@ -100,7 +114,17 @@ template<class T, typename std::underlying_type<T>::type baseCustomValue> void e
        customEnumName instead of py::detail::enum_name */
     enum_.attr("__repr__") = py::cpp_function(
         [](const py::object& arg) -> py::str {
-            py::handle type = py::type::handle_of(arg);
+            py::handle type =
+                /* handle_of(arg) is only since pybind11 2.6, before it's
+                   arg.get_type():
+                    https://github.com/pybind/pybind11/commit/41aa92601ebce548290f6a9efcd66e64216bf972 */
+                /** @todo remove once support for < 2.6 is dropped */
+                #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                py::type::handle_of(arg)
+                #else
+                arg.get_type()
+                #endif
+                ;
             py::object type_name = type.attr("__name__");
             return py::str("<{}.{}: {}>")
                 .format(std::move(type_name), enumWithCustomValuesName<T, baseCustomValue>(arg), py::int_(arg));
@@ -110,7 +134,17 @@ template<class T, typename std::underlying_type<T>::type baseCustomValue> void e
     enum_.attr("name") = py::handle(reinterpret_cast<PyObject*>(&PyProperty_Type))(py::cpp_function(&enumWithCustomValuesName<T, baseCustomValue>, py::name("name"), py::is_method(enum_)));
     enum_.attr("__str__") = py::cpp_function(
         [](const py::object& arg) -> py::str {
-            py::object type_name = py::type::handle_of(arg).attr("__name__");
+            py::object type_name =
+                /* handle_of(arg) is only since pybind11 2.6, before it's
+                   arg.get_type():
+                    https://github.com/pybind/pybind11/commit/41aa92601ebce548290f6a9efcd66e64216bf972 */
+                /** @todo remove once support for < 2.6 is dropped */
+                #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                py::type::handle_of(arg)
+                #else
+                arg.get_type()
+                #endif
+                .attr("__name__");
             return pybind11::str("{}.{}").format(std::move(type_name), enumWithCustomValuesName<T, baseCustomValue>(arg));
         },
         py::name("name"),
