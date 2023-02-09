@@ -105,7 +105,8 @@ class MeshData(unittest.TestCase):
         # Creating a custom attribute
         a = trade.MeshAttribute.CUSTOM(17)
         self.assertTrue(a.is_custom)
-        self.assertEqual(a.value, 32768 + 17)
+        if hasattr(a, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(a.value, 32768 + 17)
         self.assertEqual(a.custom_value, 17)
         self.assertEqual(a.name, "CUSTOM(17)")
         self.assertEqual(str(a), "MeshAttribute.CUSTOM(17)")
@@ -115,7 +116,8 @@ class MeshData(unittest.TestCase):
         # custom by all APIs
         zero = trade.MeshAttribute.CUSTOM(0)
         self.assertTrue(zero.is_custom)
-        self.assertEqual(zero.value, 32768)
+        if hasattr(zero, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(zero.value, 32768)
         self.assertEqual(zero.custom_value, 0)
         self.assertEqual(zero.name, "CUSTOM(0)")
         self.assertEqual(str(zero), "MeshAttribute.CUSTOM(0)")
@@ -124,7 +126,8 @@ class MeshData(unittest.TestCase):
         # Largest possible custom value
         largest = trade.MeshAttribute.CUSTOM(32767)
         self.assertTrue(largest.is_custom)
-        self.assertEqual(largest.value, 65535)
+        if hasattr(largest, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(largest.value, 65535)
         self.assertEqual(largest.custom_value, 32767)
 
         # Creating a custom attribute with a value that won't fit
@@ -134,7 +137,8 @@ class MeshData(unittest.TestCase):
         # Accessing properties on builtin values should still work as expected
         b = trade.MeshAttribute.BITANGENT
         self.assertFalse(b.is_custom)
-        self.assertEqual(b.value, 3)
+        if hasattr(b, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(b.value, 3)
         with self.assertRaisesRegex(AttributeError, "not a custom value"):
             b.custom_value
         self.assertEqual(b.name, "BITANGENT")
