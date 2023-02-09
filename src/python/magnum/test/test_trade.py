@@ -166,17 +166,17 @@ class MeshData(unittest.TestCase):
         # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
         # backwards compatibility to avoid this mess
         if magnum.BUILD_DEPRECATED:
-            self.assertEqual(mesh.attribute_count(), 10)
+            self.assertEqual(mesh.attribute_count(), 11)
 
             # Attribute properties by ID
             self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
             # Custom attribute
-            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute.CUSTOM(9))
+            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute.CUSTOM(10))
             self.assertEqual(mesh.attribute_id(3), 0)
             # Attribute 5 is the second TEXTURE_COORDINATES attribute
             self.assertEqual(mesh.attribute_id(5), 1)
             self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(9), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_format(10), VertexFormat.UNSIGNED_INT)
             self.assertEqual(mesh.attribute_offset(0), 20)
             self.assertEqual(mesh.attribute_offset(3), 0)
             self.assertEqual(mesh.attribute_stride(2), 28)
@@ -201,17 +201,17 @@ class MeshData(unittest.TestCase):
             self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
             self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
         else:
-            self.assertEqual(mesh.attribute_count(), 8)
+            self.assertEqual(mesh.attribute_count(), 9)
 
             # Attribute properties by ID
             self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
             # Custom attribute
-            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute.CUSTOM(7))
+            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute.CUSTOM(8))
             self.assertEqual(mesh.attribute_id(2), 0)
             # Attribute 4 is the second TEXTURE_COORDINATES attribute
             self.assertEqual(mesh.attribute_id(4), 1)
             self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(7), VertexFormat.UNSIGNED_INT)
+            self.assertEqual(mesh.attribute_format(8), VertexFormat.UNSIGNED_INT)
             self.assertEqual(mesh.attribute_offset(0), 20)
             self.assertEqual(mesh.attribute_offset(2), 0)
             self.assertEqual(mesh.attribute_stride(3), 28)
@@ -444,6 +444,23 @@ class MeshData(unittest.TestCase):
         mutable_object_ids[1] //= 1000
         self.assertEqual(object_ids[1], 16777)
 
+    def test_packed_attribute_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        packed_attribute = importer.mesh_attribute_for_name("_CUSTOM_PACKED_ATTRIBUTE")
+        self.assertEqual(mesh.attribute_format(packed_attribute), VertexFormat.VECTOR3UB)
+
+        packed = mesh.attribute(packed_attribute)
+        mutable_packed = mesh.mutable_attribute(packed_attribute)
+        self.assertEqual(packed[1], Vector3i(51, 102, 255))
+        self.assertEqual(mutable_packed[1], Vector3i(51, 102, 255))
+
+        mutable_packed[1] -= Vector3i(12, 56, 200)
+        self.assertEqual(packed[1], Vector3(39, 46, 55))
+
     def test_data_access_not_mutable(self):
         mesh = primitives.cube_solid()
         # TODO split this once there's a mesh where only one or the other would
@@ -561,18 +578,20 @@ class MeshData(unittest.TestCase):
     def test_attribute_access_unsupported_format(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        custom_attribute = importer.mesh_attribute_for_name("_CUSTOM_MATRIX_ATTRIBUTE");
+        self.assertIsNotNone(custom_attribute)
 
         mesh = importer.mesh(0)
-        custom_attribute_id = mesh.attribute_id(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
+        custom_attribute_id = mesh.attribute_id(custom_attribute)
 
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
             mesh.attribute(custom_attribute_id)
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
             mesh.mutable_attribute(custom_attribute_id)
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
-            mesh.attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
+            mesh.attribute(custom_attribute)
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
-            mesh.mutable_attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
+            mesh.mutable_attribute(custom_attribute)
 
 class SceneData(unittest.TestCase):
     def test_custom_field(self):
@@ -939,15 +958,15 @@ class Importer(unittest.TestCase):
         # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
         # backwards compatibility to avoid this mess
         if magnum.BUILD_DEPRECATED:
-            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(9)), "_CUSTOM_ATTRIBUTE")
-            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(9))
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(10)), "_CUSTOM_MATRIX_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_MATRIX_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(10))
         else:
-            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(7)), "_CUSTOM_ATTRIBUTE")
-            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(7))
+            self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(8)), "_CUSTOM_MATRIX_ATTRIBUTE")
+            self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_MATRIX_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(8))
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
-        self.assertTrue(mesh.has_attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE")))
+        self.assertTrue(mesh.has_attribute(importer.mesh_attribute_for_name("_CUSTOM_MATRIX_ATTRIBUTE")))
 
     def test_mesh_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')

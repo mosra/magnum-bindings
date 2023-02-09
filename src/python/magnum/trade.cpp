@@ -484,7 +484,7 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
             case VertexFormat::format: return {                             \
                 string,                                                     \
                 [](const char* item) {                                      \
-                    return py::cast(format(*reinterpret_cast<const castType*>(item))); \
+                    return py::cast(castType(*reinterpret_cast<const format*>(item))); \
                 },                                                          \
                 [](char* item, py::handle object) {                         \
                     *reinterpret_cast<format*>(item) = format(py::cast<castType>(object)); \

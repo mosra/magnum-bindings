@@ -15,7 +15,8 @@
             "TEXCOORD_1": 2,
             "JOINTS_0": 5,
             "WEIGHTS_0": 6,
-            "_CUSTOM_ATTRIBUTE": 7
+            "_CUSTOM_PACKED_ATTRIBUTE": 7,
+            "_CUSTOM_MATRIX_ATTRIBUTE": 8
           },
           "indices": 0
         }
@@ -89,6 +90,13 @@
       "componentType": 5126,
       "count": 3,
       "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 20,
+      "componentType": 5121,
+      "count": 3,
+      "type": "VEC3"
     },
     {
       "bufferView": 1,
