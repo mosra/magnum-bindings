@@ -574,6 +574,162 @@ class MeshData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
             mesh.mutable_attribute(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
+class SceneData(unittest.TestCase):
+    def test_custom_field(self):
+        # Creating a custom attribute
+        a = trade.SceneField.CUSTOM(17)
+        self.assertTrue(a.is_custom)
+        if hasattr(a, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(a.value, 0x80000000 + 17)
+        self.assertEqual(a.custom_value, 17)
+        self.assertEqual(a.name, "CUSTOM(17)")
+        self.assertEqual(str(a), "SceneField.CUSTOM(17)")
+        self.assertEqual(repr(a), "<SceneField.CUSTOM(17): 2147483665>")
+
+        # Lowest possible custom value, test that it's correctly recognized as
+        # custom by all APIs
+        zero = trade.SceneField.CUSTOM(0)
+        self.assertTrue(zero.is_custom)
+        if hasattr(zero, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(zero.value, 0x80000000)
+        self.assertEqual(zero.custom_value, 0)
+        self.assertEqual(zero.name, "CUSTOM(0)")
+        self.assertEqual(str(zero), "SceneField.CUSTOM(0)")
+        self.assertEqual(repr(zero), "<SceneField.CUSTOM(0): 2147483648>")
+
+        # Largest possible custom value
+        largest = trade.SceneField.CUSTOM(0x7fffffff)
+        self.assertTrue(largest.is_custom)
+        if hasattr(largest, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(largest.value, 0xffffffff)
+        self.assertEqual(largest.custom_value, 0x7fffffff)
+
+        # Creating a custom attribute with a value that won't fit
+        with self.assertRaisesRegex(ValueError, "custom value too large"):
+            trade.SceneField.CUSTOM(0x80000000)
+
+        # Accessing properties on builtin values should still work as expected
+        b = trade.SceneField.SKIN
+        self.assertFalse(b.is_custom)
+        if hasattr(b, 'value'): # only since pybind11 2.6.2
+            self.assertEqual(b.value, 10)
+        with self.assertRaisesRegex(AttributeError, "not a custom value"):
+            b.custom_value
+        self.assertEqual(b.name, "SKIN")
+        self.assertEqual(str(b), "SceneField.SKIN")
+        self.assertEqual(repr(b), "<SceneField.SKIN: 10>")
+
+    def test(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.mapping_type, trade.SceneMappingType.UNSIGNED_INT)
+        self.assertEqual(scene.mapping_bound, 4)
+        self.assertEqual(scene.field_count, 7)
+        # TODO add some array extras once supported to have this different from
+        #   the mapping bound
+        self.assertEqual(scene.field_size_bound, 4)
+        self.assertFalse(scene.is_2d)
+        self.assertTrue(scene.is_3d)
+
+        # Field properties by ID
+        self.assertEqual(scene.field_name(2), trade.SceneField.TRANSFORMATION)
+        self.assertEqual(scene.field_name(6), trade.SceneField.CUSTOM(1))
+        # TODO some field flags in glTF please?
+        self.assertEqual(scene.field_flags(2), trade.SceneFieldFlag(0))
+        self.assertEqual(scene.field_type(2), trade.SceneFieldType.MATRIX4X4)
+        self.assertEqual(scene.field_size(3), 3)
+        # TODO add some array extras once supported to have this non-zero for
+        #   some fields
+        self.assertEqual(scene.field_array_size(2), 0)
+        self.assertTrue(scene.has_field_object(2, 3))
+        self.assertFalse(scene.has_field_object(4, 1))
+        self.assertEqual(scene.field_object_offset(2, 3), 2)
+        self.assertEqual(scene.field_object_offset(2, 3, 1), 2)
+
+        # Field properties by name
+        self.assertEqual(scene.field_id(trade.SceneField.CUSTOM(0)), 5)
+        self.assertTrue(scene.has_field(trade.SceneField.IMPORTER_STATE))
+        self.assertFalse(scene.has_field(trade.SceneField.SKIN))
+        self.assertTrue(scene.has_field_object(trade.SceneField.TRANSFORMATION, 3))
+        self.assertFalse(scene.has_field_object(trade.SceneField.CAMERA, 1))
+        self.assertEqual(scene.field_object_offset(trade.SceneField.TRANSFORMATION, 3), 2)
+        self.assertEqual(scene.field_object_offset(trade.SceneField.TRANSFORMATION, 3, 1), 2)
+        # TODO some field flags in glTF please?
+        self.assertEqual(scene.field_flags(trade.SceneField.PARENT), trade.SceneFieldFlag(0))
+        self.assertEqual(scene.field_type(6), trade.SceneFieldType.STRING_OFFSET32)
+        self.assertEqual(scene.field_size(trade.SceneField.CUSTOM(0)), 1)
+        # TODO add some array extras once supported to have this non-zero for
+        #   some fields
+        self.assertEqual(scene.field_array_size(trade.SceneField.TRANSLATION), 0)
+
+    def test_field_oob(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+
+        # Access by OOB field ID
+        with self.assertRaises(IndexError):
+            scene.field_name(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.field_flags(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.field_type(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.field_size(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.field_array_size(scene.field_count)
+        with self.assertRaisesRegex(IndexError, "field out of range"):
+            scene.has_field_object(scene.field_count, 0)
+        with self.assertRaisesRegex(IndexError, "field out of range"):
+            scene.field_object_offset(scene.field_count, 0)
+
+        # Access by nonexistent field name
+        with self.assertRaises(KeyError):
+            scene.field_id(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.field_flags(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.field_type(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.field_size(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.field_array_size(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.has_field_object(trade.SceneField.SCALING, 0)
+        with self.assertRaises(KeyError):
+            scene.field_object_offset(trade.SceneField.SCALING, 0)
+
+        # OOB object ID
+        with self.assertRaisesRegex(IndexError, "object out of range"):
+            scene.has_field_object(0, 4) # PARENT
+        with self.assertRaisesRegex(IndexError, "object out of range"):
+            scene.has_field_object(trade.SceneField.PARENT, 4)
+        with self.assertRaisesRegex(IndexError, "object out of range"):
+            scene.field_object_offset(0, 4) # PARENT
+        with self.assertRaisesRegex(IndexError, "object out of range"):
+            scene.field_object_offset(trade.SceneField.PARENT, 4)
+
+        # Lookup error
+        with self.assertRaises(LookupError):
+            scene.field_object_offset(4, 1) # CAMERA
+        with self.assertRaises(LookupError):
+            scene.field_object_offset(trade.SceneField.CAMERA, 1)
+
+        # Lookup error due to field offset being at the end
+        with self.assertRaises(LookupError):
+            scene.field_object_offset(0, 1, scene.field_size(0)) # PARENT
+        with self.assertRaises(LookupError):
+            scene.field_object_offset(trade.SceneField.PARENT, 1, scene.field_size(trade.SceneField.PARENT))
+
+        # OOB field offset (offset == size is allowed, tested above)
+        with self.assertRaisesRegex(IndexError, "offset out of range"):
+            scene.field_object_offset(0, 1, scene.field_size(0) + 1) # PARENT
+        with self.assertRaisesRegex(IndexError, "offset out of range"):
+            scene.field_object_offset(trade.SceneField.PARENT, 1, scene.field_size(trade.SceneField.PARENT) + 1)
+
 class Importer(unittest.TestCase):
     def test(self):
         manager = trade.ImporterManager()
@@ -591,6 +747,25 @@ class Importer(unittest.TestCase):
     def test_no_file_opened(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertFalse(importer.is_opened)
+
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.default_scene
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.scene_count
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.object_count
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.scene_for_name('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.object_for_name('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.scene_name(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.object_name(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.scene(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.scene('')
 
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh_count
@@ -647,6 +822,13 @@ class Importer(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
 
         with self.assertRaises(IndexError):
+            importer.scene_name(0)
+        with self.assertRaises(IndexError):
+            importer.object_name(0)
+        with self.assertRaises(IndexError):
+            importer.scene(0)
+
+        with self.assertRaises(IndexError):
             importer.mesh_level_count(0)
         with self.assertRaises(IndexError):
             importer.mesh_name(0)
@@ -683,6 +865,55 @@ class Importer(unittest.TestCase):
             importer.open_file('nonexistent.png')
         with self.assertRaisesRegex(RuntimeError, "opening data failed"):
             importer.open_data(b'')
+
+    def test_scene(self):
+        # importer refcounting tested in image2d
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+
+        # Asking for custom scene field names should work even if not opened,
+        # returns None
+        self.assertIsNone(importer.scene_field_name(trade.SceneField.CUSTOM(1)))
+        self.assertIsNone(importer.scene_field_for_name('aString'))
+
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+        self.assertEqual(importer.default_scene, 1)
+        self.assertEqual(importer.scene_count, 3)
+        self.assertEqual(importer.scene_name(1), "A default scene that's empty")
+        self.assertEqual(importer.scene_for_name("A default scene that's empty"), 1)
+        self.assertEqual(importer.object_count, 5)
+        self.assertEqual(importer.object_name(2), "Camera node")
+        self.assertEqual(importer.object_for_name("Camera node"), 2)
+
+        # It should work after opening
+        self.assertEqual(importer.scene_field_name(trade.SceneField.CUSTOM(1)), 'aString')
+        self.assertEqual(importer.scene_field_for_name('aString'), trade.SceneField.CUSTOM(1))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.field_count, 7)
+        self.assertTrue(scene.has_field(importer.scene_field_for_name('aString')))
+
+    def test_scene_by_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene("A scene")
+        self.assertEqual(scene.field_count, 7)
+
+    def test_scebne_by_name_not_found(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        with self.assertRaises(KeyError):
+            importer.scene('Nonexistent')
+
+    def test_scene_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.scene(2)
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.scene("A broken scene")
 
     def test_mesh(self):
         # importer refcounting tested in image2d

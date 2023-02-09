@@ -183,6 +183,63 @@
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlag.MUTABLE`
 
+.. py:enum:: magnum.trade.SceneField
+
+    The equivalent to C++ :dox:`Trade::sceneFieldCustom()` is creating an enum
+    value using a ``CUSTOM()`` named constructor. The ``is_custom``
+    property then matches :dox:`Trade::isSceneFieldCustom()` and you can
+    retrieve the custom ID again with a ``custom_value`` property.
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: pycon
+
+        >>> attribute = trade.SceneField.CUSTOM(17)
+        >>> attribute.name
+        'CUSTOM(17)'
+        >>> attribute.is_custom
+        True
+        >>> attribute.custom_value
+        17
+
+.. py:function:: magnum.trade.SceneData.field_name
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.field_flags
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.field_type
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.field_size
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.field_array_size
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.field_id
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.field_object_offset
+    :raise IndexError: If :p:`field_id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`field_name` does not exist
+    :raise IndexError: If :p:`object` is negative or not less than
+        :ref:`mapping_bound`
+    :raise IndexError: If :p:`offset` is negative or larger than
+        :ref:`field_size()` for given field
+    :raise LookupError: If :p:`object` is not found
+.. py:function:: magnum.trade.SceneData.has_field_object
+    :raise IndexError: If :p:`field_id` is negative or not less than
+        :ref:`field_count`
+    :raise KeyError: If :p:`field_name` does not exist
+    :raise IndexError: If :p:`object` is negative or not less than
+        :ref:`mapping_bound`
+
 .. py:class:: magnum.trade.ImporterManager
     :summary: Manager for :ref:`AbstractImporter` plugin instances
 
@@ -217,6 +274,31 @@
     all backslashes in :p:`filename` to forward slashes before passing it to
     :dox:`Trade::AbstractImporter::openFile()`, which expects forward slashes
     as directory separators on all platforms.
+
+.. py:property:: magnum.trade.AbstractImporter.default_scene
+    :raise AssertionError: If no file is opened
+.. py:property:: magnum.trade.AbstractImporter.scene_count
+    :raise AssertionError: If no file is opened
+.. py:property:: magnum.trade.AbstractImporter.object_count
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.scene_for_name
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.object_for_name
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.scene_name
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`scene_count`
+.. py:function:: magnum.trade.AbstractImporter.object_name
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`object_count`
+
+.. TODO this needs distinction by parameter names, at least
+
+.. py:function:: magnum.trade.AbstractImporter.scene
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If scene import fails
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`scene`
+    :raise KeyError: If :p:`name` was not found
 
 .. py:property:: magnum.trade.AbstractImporter.mesh_count
     :raise AssertionError: If no file is opened

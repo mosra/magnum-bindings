@@ -1,0 +1,71 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "cameras": [
+    {
+      "type": "orthographic",
+      "orthographic": {
+        "xmag": 1.0,
+        "ymag": 1.0,
+        "znear": 0.1,
+        "zfar": 100.0
+      }
+    },
+    {
+      "type": "perspective",
+      "perspective": {
+        "yfov": 0.6108652,
+        "znear": 0.1,
+        "zfar": 100.0
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "translation": [7, 8, 9]
+    },
+    {
+      "name": "Translated node",
+      "translation": [1, 2, 3]
+    },
+    {
+      "name": "Camera node",
+      "matrix": [
+        1, 0, 0, 0,
+        0, 3, 0, 0,
+        0, 0, 2, 0,
+        0, 0, 0, 1
+      ],
+      "camera": 1,
+      "extras": {
+        "aNumber": 5,
+        "aString": "hello!"
+      },
+      "children": [3]
+    },
+    {
+      "camera": 0,
+      "translation": [4, 5, 6],
+      "children": [0]
+    },
+    {
+      "name": "A broken node",
+      "mesh": 666
+    }
+  ],
+  "scenes": [
+    {
+      "name": "A scene",
+      "nodes": [1, 2]
+    },
+    {
+      "name": "A default scene that's empty"
+    },
+    {
+      "name": "A broken scene",
+      "nodes": [4]
+    }
+  ],
+  "scene": 1
+}

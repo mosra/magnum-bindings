@@ -36,6 +36,7 @@
 #include <Magnum/Trade/AbstractSceneConverter.h>
 #include <Magnum/Trade/ImageData.h>
 #include <Magnum/Trade/MeshData.h>
+#include <Magnum/Trade/SceneData.h>
 
 #include "Corrade/Containers/PythonBindings.h"
 #include "Corrade/Containers/OptionalPythonBindings.h"
@@ -308,6 +309,29 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
 
     if(id >= (self.*bounds)()) {
         PyErr_SetNone(PyExc_IndexError);
+        throw py::error_already_set{};
+    }
+
+    /** @todo log redirection -- but we'd need assertions to not be part of
+        that so when it dies, the user can still see why */
+    Containers::Optional<R> out = (self.*f)(id);
+    if(!out) {
+        PyErr_SetString(PyExc_RuntimeError, "import failed");
+        throw py::error_already_set{};
+    }
+
+    return *std::move(out);
+}
+/** @todo drop std::string in favor of our own string caster */
+template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedInt), Int(Trade::AbstractImporter::*indexForName)(Containers::StringView)> R checkOpenedBoundsResultString(Trade::AbstractImporter& self, const std::string& name) {
+    if(!self.isOpened()) {
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
+        throw py::error_already_set{};
+    }
+
+    const Int id = (self.*indexForName)(name);
+    if(id == -1) {
+        PyErr_SetNone(PyExc_KeyError);
         throw py::error_already_set{};
     }
 
@@ -793,6 +817,294 @@ void trade(py::module_& m) {
     imageData(imageData2D);
     imageData(imageData3D);
 
+    py::enum_<Trade::SceneMappingType>{m, "SceneMappingType", "Scene object mapping type"}
+        .value("UNSIGNED_BYTE", Trade::SceneMappingType::UnsignedByte)
+        .value("UNSIGNED_SHORT", Trade::SceneMappingType::UnsignedShort)
+        .value("UNSIGNED_INT", Trade::SceneMappingType::UnsignedInt)
+        .value("UNSIGNED_LONG", Trade::SceneMappingType::UnsignedLong);
+
+    py::enum_<Trade::SceneField> sceneField{m, "SceneField", "Scene field name"};
+    sceneField
+        .value("PARENT", Trade::SceneField::Parent)
+        .value("TRANSFORMATION", Trade::SceneField::Transformation)
+        .value("TRANSLATION", Trade::SceneField::Translation)
+        .value("ROTATION", Trade::SceneField::Rotation)
+        .value("SCALING", Trade::SceneField::Scaling)
+        .value("MESH", Trade::SceneField::Mesh)
+        .value("MESH_MATERIAL", Trade::SceneField::MeshMaterial)
+        .value("LIGHT", Trade::SceneField::Light)
+        .value("CAMERA", Trade::SceneField::Camera)
+        .value("SKIN", Trade::SceneField::Skin)
+        .value("IMPORTER_STATE", Trade::SceneField::ImporterState);
+    enumWithCustomValues<Trade::SceneField, Trade::Implementation::SceneFieldCustom>(sceneField);
+
+    py::enum_<Trade::SceneFieldType>{m, "SceneFieldType", "Scene field type"}
+        .value("FLOAT", Trade::SceneFieldType::Float)
+        .value("HALF", Trade::SceneFieldType::Half)
+        .value("DOUBLE", Trade::SceneFieldType::Double)
+        .value("UNSIGNED_BYTE", Trade::SceneFieldType::UnsignedByte)
+        .value("BYTE", Trade::SceneFieldType::Byte)
+        .value("UNSIGNED_SHORT", Trade::SceneFieldType::UnsignedShort)
+        .value("SHORT", Trade::SceneFieldType::Short)
+        .value("UNSIGNED_INT", Trade::SceneFieldType::UnsignedInt)
+        .value("INT", Trade::SceneFieldType::Int)
+        .value("UNSIGNED_LONG", Trade::SceneFieldType::UnsignedLong)
+        .value("LONG", Trade::SceneFieldType::Long)
+        .value("VECTOR2", Trade::SceneFieldType::Vector2)
+        .value("VECTOR2H", Trade::SceneFieldType::Vector2h)
+        .value("VECTOR2D", Trade::SceneFieldType::Vector2d)
+        .value("VECTOR2UB", Trade::SceneFieldType::Vector2ub)
+        .value("VECTOR2B", Trade::SceneFieldType::Vector2b)
+        .value("VECTOR2US", Trade::SceneFieldType::Vector2us)
+        .value("VECTOR2S", Trade::SceneFieldType::Vector2s)
+        .value("VECTOR2UI", Trade::SceneFieldType::Vector2ui)
+        .value("VECTOR2I", Trade::SceneFieldType::Vector2i)
+        .value("VECTOR3", Trade::SceneFieldType::Vector3)
+        .value("VECTOR3H", Trade::SceneFieldType::Vector3h)
+        .value("VECTOR3D", Trade::SceneFieldType::Vector3d)
+        .value("VECTOR3UB", Trade::SceneFieldType::Vector3ub)
+        .value("VECTOR3B", Trade::SceneFieldType::Vector3b)
+        .value("VECTOR3US", Trade::SceneFieldType::Vector3us)
+        .value("VECTOR3S", Trade::SceneFieldType::Vector3s)
+        .value("VECTOR3UI", Trade::SceneFieldType::Vector3ui)
+        .value("VECTOR3I", Trade::SceneFieldType::Vector3i)
+        .value("VECTOR4", Trade::SceneFieldType::Vector4)
+        .value("VECTOR4H", Trade::SceneFieldType::Vector4h)
+        .value("VECTOR4D", Trade::SceneFieldType::Vector4d)
+        .value("VECTOR4UB", Trade::SceneFieldType::Vector4ub)
+        .value("VECTOR4B", Trade::SceneFieldType::Vector4b)
+        .value("VECTOR4US", Trade::SceneFieldType::Vector4us)
+        .value("VECTOR4S", Trade::SceneFieldType::Vector4s)
+        .value("VECTOR4UI", Trade::SceneFieldType::Vector4ui)
+        .value("VECTOR4I", Trade::SceneFieldType::Vector4i)
+        .value("MATRIX2X2", Trade::SceneFieldType::Matrix2x2)
+        .value("MATRIX2X2H", Trade::SceneFieldType::Matrix2x2h)
+        .value("MATRIX2X2D", Trade::SceneFieldType::Matrix2x2d)
+        .value("MATRIX2X3", Trade::SceneFieldType::Matrix2x3)
+        .value("MATRIX2X3H", Trade::SceneFieldType::Matrix2x3h)
+        .value("MATRIX2X3D", Trade::SceneFieldType::Matrix2x3d)
+        .value("MATRIX2X4", Trade::SceneFieldType::Matrix2x4)
+        .value("MATRIX2X4H", Trade::SceneFieldType::Matrix2x4h)
+        .value("MATRIX2X4D", Trade::SceneFieldType::Matrix2x4d)
+        .value("MATRIX3X2", Trade::SceneFieldType::Matrix3x2)
+        .value("MATRIX3X2H", Trade::SceneFieldType::Matrix3x2h)
+        .value("MATRIX3X2D", Trade::SceneFieldType::Matrix3x2d)
+        .value("MATRIX3X3", Trade::SceneFieldType::Matrix3x3)
+        .value("MATRIX3X3H", Trade::SceneFieldType::Matrix3x3h)
+        .value("MATRIX3X3D", Trade::SceneFieldType::Matrix3x3d)
+        .value("MATRIX3X4", Trade::SceneFieldType::Matrix3x4)
+        .value("MATRIX3X4H", Trade::SceneFieldType::Matrix3x4h)
+        .value("MATRIX3X4D", Trade::SceneFieldType::Matrix3x4d)
+        .value("MATRIX4X2", Trade::SceneFieldType::Matrix4x2)
+        .value("MATRIX4X2H", Trade::SceneFieldType::Matrix4x2h)
+        .value("MATRIX4X2D", Trade::SceneFieldType::Matrix4x2d)
+        .value("MATRIX4X3", Trade::SceneFieldType::Matrix4x3)
+        .value("MATRIX4X3H", Trade::SceneFieldType::Matrix4x3h)
+        .value("MATRIX4X3D", Trade::SceneFieldType::Matrix4x3d)
+        .value("MATRIX4X4", Trade::SceneFieldType::Matrix4x4)
+        .value("MATRIX4X4H", Trade::SceneFieldType::Matrix4x4h)
+        .value("MATRIX4X4D", Trade::SceneFieldType::Matrix4x4d)
+        .value("RANGE1D", Trade::SceneFieldType::Range1D)
+        .value("RANGE1DH", Trade::SceneFieldType::Range1Dh)
+        .value("RANGE1DD", Trade::SceneFieldType::Range1Dd)
+        .value("RANGE1DI", Trade::SceneFieldType::Range1Di)
+        .value("RANGE2D", Trade::SceneFieldType::Range2D)
+        .value("RANGE2DH", Trade::SceneFieldType::Range2Dh)
+        .value("RANGE2DD", Trade::SceneFieldType::Range2Dd)
+        .value("RANGE2DI", Trade::SceneFieldType::Range2Di)
+        .value("RANGE3D", Trade::SceneFieldType::Range3D)
+        .value("RANGE3DH", Trade::SceneFieldType::Range3Dh)
+        .value("RANGE3DD", Trade::SceneFieldType::Range3Dd)
+        .value("RANGE3DI", Trade::SceneFieldType::Range3Di)
+        .value("COMPLEX", Trade::SceneFieldType::Complex)
+        .value("COMPLEXD", Trade::SceneFieldType::Complexd)
+        .value("DUAL_COMPLEX", Trade::SceneFieldType::DualComplex)
+        .value("DUAL_COMPLEXD", Trade::SceneFieldType::DualComplexd)
+        .value("QUATERNION", Trade::SceneFieldType::Quaternion)
+        .value("QUATERNIOND", Trade::SceneFieldType::Quaterniond)
+        .value("DUAL_QUATERNION", Trade::SceneFieldType::DualQuaternion)
+        .value("DUAL_QUATERNIOND", Trade::SceneFieldType::DualQuaterniond)
+        .value("DEG", Trade::SceneFieldType::Deg)
+        .value("DEGH", Trade::SceneFieldType::Degh)
+        .value("DEGD", Trade::SceneFieldType::Degd)
+        .value("RAD", Trade::SceneFieldType::Rad)
+        .value("RADH", Trade::SceneFieldType::Radh)
+        .value("RADD", Trade::SceneFieldType::Radd)
+        .value("POINTER", Trade::SceneFieldType::Pointer)
+        .value("MUTABLE_POINTER", Trade::SceneFieldType::MutablePointer)
+        .value("STRING_OFFSET32", Trade::SceneFieldType::StringOffset32)
+        .value("STRING_OFFSET8", Trade::SceneFieldType::StringOffset8)
+        .value("STRING_OFFSET16", Trade::SceneFieldType::StringOffset16)
+        .value("STRING_OFFSET64", Trade::SceneFieldType::StringOffset64)
+        .value("STRING_RANGE32", Trade::SceneFieldType::StringRange32)
+        .value("STRING_RANGE8", Trade::SceneFieldType::StringRange8)
+        .value("STRING_RANGE16", Trade::SceneFieldType::StringRange16)
+        .value("STRING_RANGE64", Trade::SceneFieldType::StringRange64)
+        .value("STRING_RANGE_NULL_TERMINATED32", Trade::SceneFieldType::StringRangeNullTerminated32)
+        .value("STRING_RANGE_NULL_TERMINATED8", Trade::SceneFieldType::StringRangeNullTerminated8)
+        .value("STRING_RANGE_NULL_TERMINATED16", Trade::SceneFieldType::StringRangeNullTerminated16)
+        .value("STRING_RANGE_NULL_TERMINATED64", Trade::SceneFieldType::StringRangeNullTerminated64);
+
+    py::enum_<Trade::SceneFieldFlag> sceneFieldFlag{m, "SceneFieldFlag", "Scene field flag"};
+    sceneFieldFlag
+        .value("OFFSET_ONLY", Trade::SceneFieldFlag::OffsetOnly)
+        .value("ORDERED_MAPPING", Trade::SceneFieldFlag::OrderedMapping)
+        .value("IMPLICIT_MAPPING", Trade::SceneFieldFlag::ImplicitMapping)
+        .value("NULL_TERMINATED_STRING", Trade::SceneFieldFlag::NullTerminatedString);
+    corrade::enumOperators(sceneFieldFlag);
+
+    py::class_<Trade::SceneData>{m, "SceneData", "Scene data"}
+        .def_property_readonly("mapping_type", &Trade::SceneData::mappingType, "Type used for object mapping")
+        .def_property_readonly("mapping_bound", &Trade::SceneData::mappingBound, "Object mapping bound")
+        .def_property_readonly("field_count", &Trade::SceneData::fieldCount, "Field count")
+        .def_property_readonly("field_size_bound", &Trade::SceneData::fieldSizeBound, "Field size bound")
+        .def_property_readonly("is_2d", &Trade::SceneData::is2D, "Whether the scene is two-dimensional")
+        .def_property_readonly("is_3d", &Trade::SceneData::is3D, "Whether the scene is three-dimensional")
+
+        /* IMPORTANT: due to yet-uninvestigated pybind11 platform-specific
+           behavioral differences the following overloads need to have the
+           SceneField overload *before* the UnsignedInt overload, otherwise
+           the integer overload gets picked even if an enum is passed from
+           Python, causing massive suffering */
+        .def("field_name", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self.fieldName(id);
+        }, "Field name", py::arg("id"))
+        .def("field_flags", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            return Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(self.fieldFlags(*foundField)));
+        }, "Flags of a named field", py::arg("name"))
+        .def("field_flags", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(self.fieldFlags(id)));
+        }, "Field flags", py::arg("id"))
+        .def("field_type", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            return self.fieldType(*foundField);
+        }, "Type of a named field", py::arg("name"))
+        .def("field_type", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self.fieldType(id);
+        }, "Field type", py::arg("id"))
+        .def("field_size", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            return self.fieldSize(*foundField);
+        }, "Number of entries in a named field", py::arg("name"))
+        .def("field_size", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self.fieldSize(id);
+        }, "Number of entries in a field", py::arg("id"))
+        .def("field_array_size", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            return self.fieldArraySize(*foundField);
+        }, "Array size of a named field", py::arg("name"))
+        .def("field_array_size", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self.fieldArraySize(id);
+        }, "Field array size", py::arg("id"))
+        .def("field_id", [](Trade::SceneData& self, Trade::SceneField name) {
+            if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name))
+                return *found;
+            PyErr_SetNone(PyExc_KeyError);
+            throw py::error_already_set{};
+        }, "Absolute ID of a named field", py::arg("name"))
+        .def("has_field", &Trade::SceneData::hasField, "Whether the scene has given field")
+        .def("field_object_offset", [](Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object, std::size_t offset) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            if(object >= self.mappingBound()) {
+                PyErr_SetString(PyExc_IndexError, "object out of range");
+                throw py::error_already_set{};
+            }
+            if(offset >= self.fieldSize(*foundField)) {
+                PyErr_SetString(PyExc_IndexError, "offset out of range");
+                throw py::error_already_set{};
+            }
+            const Containers::Optional<std::size_t> found = self.findFieldObjectOffset(*foundField, object, offset);
+            if(!found) {
+                PyErr_SetNone(PyExc_LookupError);
+                throw py::error_already_set{};
+            }
+            return *found;
+        }, "Offset of an object in given name field", py::arg("field_name"), py::arg("object"), py::arg("offset") = 0)
+        .def("field_object_offset", [](Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object, std::size_t offset) {
+            if(fieldId >= self.fieldCount()) {
+                PyErr_SetString(PyExc_IndexError, "field out of range");
+                throw py::error_already_set{};
+            }
+            if(object >= self.mappingBound()) {
+                PyErr_SetString(PyExc_IndexError, "object out of range");
+                throw py::error_already_set{};
+            }
+            if(offset >= self.fieldSize(fieldId)) {
+                PyErr_SetString(PyExc_IndexError, "offset out of range");
+                throw py::error_already_set{};
+            }
+            const Containers::Optional<std::size_t> found = self.findFieldObjectOffset(fieldId, object, offset);
+            if(!found) {
+                PyErr_SetNone(PyExc_LookupError);
+                throw py::error_already_set{};
+            }
+            return *found;
+        }, "Offset of an object in given field", py::arg("field_id"), py::arg("object"), py::arg("offset") = 0)
+        .def("has_field_object", [](Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object) {
+            const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName);
+            if(!foundField) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            if(object >= self.mappingBound()) {
+                PyErr_SetString(PyExc_IndexError, "object out of range");
+                throw py::error_already_set{};
+            }
+            return self.hasFieldObject(*foundField, object);
+        }, "Whether a scene field has given object", py::arg("field_name"), py::arg("object"))
+        .def("has_field_object", [](Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object) {
+            if(fieldId >= self.fieldCount()) {
+                PyErr_SetString(PyExc_IndexError, "field out of range");
+                throw py::error_already_set{};
+            }
+            if(object >= self.mappingBound()) {
+                PyErr_SetString(PyExc_IndexError, "object out of range");
+                throw py::error_already_set{};
+            }
+            return self.hasFieldObject(fieldId, object);
+        }, "Whether a scene field has given object", py::arg("field_id"), py::arg("object"));
+
     /* Importer. Skipping file callbacks and openState as those operate with
        void*. Leaving the name as AbstractImporter (instead of Importer) to
        avoid needless name differences and because in the future there *might*
@@ -829,6 +1141,29 @@ void trade(py::module_& m) {
             throw py::error_already_set{};
         }, "Open a file", py::arg("filename"))
         .def("close", &Trade::AbstractImporter::close, "Close currently opened file")
+
+        .def_property_readonly("default_scene", checkOpened<Int, &Trade::AbstractImporter::defaultScene>, "Default scene")
+        .def_property_readonly("scene_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::sceneCount>, "Scene count")
+        .def_property_readonly("object_count", checkOpened<UnsignedLong, &Trade::AbstractImporter::objectCount>, "Object count")
+        .def("scene_for_name", checkOpenedString<Int, &Trade::AbstractImporter::sceneForName>, "Scene ID for given name", py::arg("name"))
+        .def("object_for_name", checkOpenedString<Long, &Trade::AbstractImporter::objectForName>, "Object ID for given name", py::arg("name"))
+        .def("scene_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::sceneName, &Trade::AbstractImporter::sceneCount>, "Scene name", py::arg("id"))
+        .def("object_name", checkOpenedBoundsReturnsString<UnsignedLong, &Trade::AbstractImporter::objectName, &Trade::AbstractImporter::objectCount>, "Scene name", py::arg("id"))
+        .def("scene", checkOpenedBoundsResult<Trade::SceneData, &Trade::AbstractImporter::scene, &Trade::AbstractImporter::sceneCount>, "Scene", py::arg("id"))
+        .def("scene", checkOpenedBoundsResultString<Trade::SceneData, &Trade::AbstractImporter::scene, &Trade::AbstractImporter::sceneForName>, "Scene for given name", py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("scene_field_for_name", [](Trade::AbstractImporter& self, const std::string& name) -> Containers::Optional<Trade::SceneField> {
+            const Trade::SceneField field = self.sceneFieldForName(name);
+            if(field == Trade::SceneField{})
+                return {};
+            return field;
+        }, "Scene field for given name", py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("scene_field_name", [](Trade::AbstractImporter& self, Trade::SceneField name) -> Containers::Optional<std::string> {
+            if(const Containers::String field = self.sceneFieldName(name))
+                return std::string{field};
+            return {};
+        }, "String name for given custom scene field", py::arg("name"))
 
         /** @todo all other data types */
         .def_property_readonly("mesh_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::meshCount>, "Mesh count")
