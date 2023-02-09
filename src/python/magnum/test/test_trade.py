@@ -596,13 +596,10 @@ class Importer(unittest.TestCase):
             importer.mesh_count
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh_level_count(0)
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh_for_name('')
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh_name(0)
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.mesh(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
@@ -614,28 +611,24 @@ class Importer(unittest.TestCase):
             importer.image2d_count
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image3d_count
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d_level_count(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image2d_level_count(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image3d_level_count(0)
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d_for_name('')
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image2d_for_name('')
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image3d_for_name('')
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d_name(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image2d_name(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image3d_name(0)
-
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
