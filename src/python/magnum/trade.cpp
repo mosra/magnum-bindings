@@ -492,10 +492,10 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         /* LCOV_EXCL_START */
         _c(Float,                   "f")
         _c(Double,                  "d")
-        _cc(UnsignedByte, UnsignedInt, "B")
-        _cc(Byte, Int,              "b")
-        _cc(UnsignedShort, UnsignedInt, "H")
-        _cc(Short, Int,             "h")
+        _c(UnsignedByte,            "B")
+        _c(Byte,                    "b")
+        _c(UnsignedShort,           "H")
+        _c(Short,                   "h")
         _c(UnsignedInt,             "I")
         _c(Int,                     "i")
 
