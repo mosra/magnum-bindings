@@ -791,7 +791,7 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return meshAttributeView(self, *found, self.mutableAttribute(*found));
-        }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Mutable data for given named attribute", py::arg("name"), py::arg("id") = 0)
         .def("mutable_attribute", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
