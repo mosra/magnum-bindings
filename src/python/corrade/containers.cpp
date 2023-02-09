@@ -77,7 +77,7 @@ template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int f
     buffer.buf = const_cast<typename std::decay<typename T::Type>::type*>(self.data());
     buffer.readonly = std::is_const<typename T::Type>::value;
     if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
-        buffer.format = const_cast<char*>(Containers::Implementation::formatString<typename std::decay<typename T::Type>::type>());
+        buffer.format = const_cast<char*>(Containers::Implementation::pythonFormatString<typename std::decay<typename T::Type>::type>());
     if(flags != PyBUF_SIMPLE) {
         /* The view is immutable (can't change its size after it has been
            constructed), so referencing the size directly is okay */

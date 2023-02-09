@@ -32,10 +32,10 @@
 #include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 
 namespace Corrade { namespace Containers { namespace Implementation {
-    template<> constexpr const char* formatString<std::array<double, 3>>() {
+    template<> constexpr const char* pythonFormatString<std::array<double, 3>>() {
         return "ddd";
     }
-    template<> constexpr const char* formatString<std::pair<std::uint64_t, float>>() {
+    template<> constexpr const char* pythonFormatString<std::pair<std::uint64_t, float>>() {
         return "Qf";
     }
 }}}

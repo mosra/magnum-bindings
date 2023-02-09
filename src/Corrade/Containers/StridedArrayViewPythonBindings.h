@@ -34,26 +34,26 @@ namespace Implementation {
 
 /* For maintainability please keep in the same order as
    https://docs.python.org/3/library/struct.html#format-characters */
-template<class T> constexpr const char* formatString() {
+template<class T> constexpr const char* pythonFormatString() {
     static_assert(sizeof(T) == 0, "format string unknown for this type, supply it explicitly");
     return {};
 }
 /* Representing bytes as unsigned. Not using 'c' because then it behaves
    differently from bytes/bytearray, where you can do `a[0] = ord('A')`. */
-template<> constexpr const char* formatString<char>() { return "B"; }
-template<> constexpr const char* formatString<std::int8_t>() { return "b"; }
-template<> constexpr const char* formatString<std::uint8_t>() { return "B"; }
-template<> constexpr const char* formatString<std::int16_t>() { return "h"; }
-template<> constexpr const char* formatString<std::uint16_t>() { return "H"; }
-template<> constexpr const char* formatString<std::int32_t>() { return "i"; }
-template<> constexpr const char* formatString<std::uint32_t>() { return "I"; }
+template<> constexpr const char* pythonFormatString<char>() { return "B"; }
+template<> constexpr const char* pythonFormatString<std::int8_t>() { return "b"; }
+template<> constexpr const char* pythonFormatString<std::uint8_t>() { return "B"; }
+template<> constexpr const char* pythonFormatString<std::int16_t>() { return "h"; }
+template<> constexpr const char* pythonFormatString<std::uint16_t>() { return "H"; }
+template<> constexpr const char* pythonFormatString<std::int32_t>() { return "i"; }
+template<> constexpr const char* pythonFormatString<std::uint32_t>() { return "I"; }
 /* *not* l / L, that's 4 bytes in Python */
-template<> constexpr const char* formatString<std::int64_t>() { return "q"; }
-template<> constexpr const char* formatString<std::uint64_t>() { return "Q"; }
+template<> constexpr const char* pythonFormatString<std::int64_t>() { return "q"; }
+template<> constexpr const char* pythonFormatString<std::uint64_t>() { return "Q"; }
 /** @todo how to represent std::size_t? conflicts with uint32_t/uint64_t above */
 /** @todo half? take from Magnum? */
-template<> constexpr const char* formatString<float>() { return "f"; }
-template<> constexpr const char* formatString<double>() { return "d"; }
+template<> constexpr const char* pythonFormatString<float>() { return "f"; }
+template<> constexpr const char* pythonFormatString<double>() { return "d"; }
 
 template<class T, class U> struct PyStridedArrayViewSetItem;
 template<class U> struct PyStridedArrayViewSetItem<const char, U> {
@@ -77,7 +77,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
            format, choosing bytes for safety. */
         /*implicit*/ PyStridedArrayView(): format{"B"}, getitem{} {}
 
-        template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view): PyStridedArrayView{view, Implementation::formatString<typename std::decay<U>::type>(), sizeof(U)} {}
+        template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view): PyStridedArrayView{view, Implementation::pythonFormatString<typename std::decay<U>::type>(), sizeof(U)} {}
 
         template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view, const char* format, std::size_t itemsize): PyStridedArrayView<dimensions, T>{
             arrayCast<T>(view),
