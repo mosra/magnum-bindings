@@ -329,12 +329,12 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     }
 
     if(id >= (self.*bounds)()) {
-        PyErr_SetNone(PyExc_IndexError);
+        PyErr_SetString(PyExc_IndexError, "ID out of bounds");
         throw py::error_already_set{};
     }
 
     if(level >= (self.*levelBounds)(id)) {
-        PyErr_SetNone(PyExc_IndexError);
+        PyErr_SetString(PyExc_IndexError, "level out of bounds");
         throw py::error_already_set{};
     }
 
@@ -362,7 +362,7 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
     }
 
     if(level >= (self.*levelBounds)(id)) {
-        PyErr_SetNone(PyExc_IndexError);
+        PyErr_SetString(PyExc_IndexError, "level out of bounds");
         throw py::error_already_set{};
     }
 
