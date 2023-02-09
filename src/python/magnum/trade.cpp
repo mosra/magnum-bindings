@@ -653,7 +653,7 @@ void trade(py::module_& m) {
            Python, causing massive suffering */
         .def("attribute_name", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeName(id);
@@ -661,12 +661,12 @@ void trade(py::module_& m) {
         .def("attribute_id", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
                 return *found;
-            PyErr_SetString(PyExc_KeyError, "");
+            PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
         }, "Absolute ID of a named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute_id", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeId(id);
@@ -674,12 +674,12 @@ void trade(py::module_& m) {
         .def("attribute_format", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
                 return self.attributeFormat(*found);
-            PyErr_SetString(PyExc_KeyError, "");
+            PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
         }, "Format of a named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute_format", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeFormat(id);
@@ -687,12 +687,12 @@ void trade(py::module_& m) {
         .def("attribute_offset", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
                 return self.attributeOffset(*found);
-            PyErr_SetString(PyExc_KeyError, "");
+            PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
         }, "Offset of a named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute_offset", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeOffset(id);
@@ -700,12 +700,12 @@ void trade(py::module_& m) {
         .def("attribute_stride", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
                 return self.attributeStride(*found);
-            PyErr_SetString(PyExc_KeyError, "");
+            PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
         }, "Stride of a named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute_stride", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeStride(id);
@@ -713,12 +713,12 @@ void trade(py::module_& m) {
         .def("attribute_array_size", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
                 return self.attributeArraySize(*found);
-            PyErr_SetString(PyExc_KeyError, "");
+            PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
         }, "Array size of a named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute_array_size", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             return self.attributeArraySize(id);
@@ -726,7 +726,7 @@ void trade(py::module_& m) {
         .def("attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
             if(!found) {
-                PyErr_SetString(PyExc_KeyError, "");
+                PyErr_SetNone(PyExc_KeyError);
                 throw py::error_already_set{};
             }
             /** @todo handle arrays (return a 2D view, and especially annotate
@@ -739,7 +739,7 @@ void trade(py::module_& m) {
         }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
         .def("attribute", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             /** @todo handle arrays (return a 2D view, and especially annotate
@@ -753,7 +753,7 @@ void trade(py::module_& m) {
         .def("mutable_attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
             const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
             if(!found) {
-                PyErr_SetString(PyExc_KeyError, "");
+                PyErr_SetNone(PyExc_KeyError);
                 throw py::error_already_set{};
             }
             if(!(self.vertexDataFlags() & Trade::DataFlag::Mutable)) {
@@ -770,7 +770,7 @@ void trade(py::module_& m) {
         }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
         .def("mutable_attribute", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
-                PyErr_SetString(PyExc_IndexError, "");
+                PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
             if(!(self.vertexDataFlags() & Trade::DataFlag::Mutable)) {
