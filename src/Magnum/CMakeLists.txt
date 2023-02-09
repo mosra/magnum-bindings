@@ -70,8 +70,11 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versionBindings.h.cmake
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/versionBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 
 if(MAGNUM_WITH_PYTHON)
-    add_custom_target(MagnumPython SOURCES PythonBindings.h)
-    install(FILES PythonBindings.h DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
+    set(MagnumPython_SRCS
+        PythonBindings.h
+        StridedArrayViewPythonBindings.h)
+    add_custom_target(MagnumPython SOURCES ${MagnumPython_SRCS})
+    install(FILES ${MagnumPython_SRCS} DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
 endif()
 
 find_package(Magnum COMPONENTS GL SceneGraph)

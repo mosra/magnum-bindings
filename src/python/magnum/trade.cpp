@@ -40,8 +40,8 @@
 
 #include "Corrade/Containers/PythonBindings.h"
 #include "Corrade/Containers/OptionalPythonBindings.h"
-#include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 #include "Magnum/PythonBindings.h"
+#include "Magnum/StridedArrayViewPythonBindings.h"
 
 #include "corrade/EnumOperators.h"
 #include "corrade/pluginmanager.h"
@@ -447,9 +447,9 @@ template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::
 
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
     switch(type) {
-        #define _c(type, string)                                            \
+        #define _c(type)                                                    \
             case MeshIndexType::type: return {                              \
-                string,                                                     \
+                Containers::Implementation::pythonFormatString<type>(),     \
                 [](const char* item) {                                      \
                     return py::cast(*reinterpret_cast<const type*>(item));  \
                 },                                                          \
@@ -457,9 +457,9 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                     *reinterpret_cast<type*>(item) = py::cast<type>(object); \
                 }};
         /* LCOV_EXCL_START */
-        _c(UnsignedByte, "B")
-        _c(UnsignedShort, "H")
-        _c(UnsignedInt, "I")
+        _c(UnsignedByte)
+        _c(UnsignedShort)
+        _c(UnsignedInt)
         /* LCOV_EXCL_STOP */
         #undef _c
     }
@@ -469,9 +469,9 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
 
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForVertexFormat(const VertexFormat format) {
     switch(format) {
-        #define _c(format, string)                                          \
+        #define _c(format)                                                  \
             case VertexFormat::format: return {                             \
-                string,                                                     \
+                Containers::Implementation::pythonFormatString<format>(),   \
                 [](const char* item) {                                      \
                     return py::cast(*reinterpret_cast<const format*>(item)); \
                 },                                                          \
@@ -480,9 +480,9 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                 }};
         /* Types (such as half-floats) that need to be cast before passed
            from/to pybind that doesn't understand the type directly */
-        #define _cc(format, castType, string)                               \
+        #define _cc(format, castType)                                       \
             case VertexFormat::format: return {                             \
-                string,                                                     \
+                Containers::Implementation::pythonFormatString<format>(),   \
                 [](const char* item) {                                      \
                     return py::cast(castType(*reinterpret_cast<const format*>(item))); \
                 },                                                          \
@@ -490,41 +490,41 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                     *reinterpret_cast<format*>(item) = format(py::cast<castType>(object)); \
                 }};
         /* LCOV_EXCL_START */
-        _c(Float,                   "f")
-        _c(Double,                  "d")
-        _c(UnsignedByte,            "B")
-        _c(Byte,                    "b")
-        _c(UnsignedShort,           "H")
-        _c(Short,                   "h")
-        _c(UnsignedInt,             "I")
-        _c(Int,                     "i")
+        _c(Float)
+        _c(Double)
+        _c(UnsignedByte)
+        _c(Byte)
+        _c(UnsignedShort)
+        _c(Short)
+        _c(UnsignedInt)
+        _c(Int)
 
-        _c(Vector2,                 "ff")
-        _c(Vector2d,                "dd")
-        _cc(Vector2ub, Vector2ui,   "BB")
-        _cc(Vector2b, Vector2i,     "bb")
-        _cc(Vector2us, Vector2ui,   "HH")
-        _cc(Vector2s, Vector2i,     "hh")
-        _c(Vector2ui,               "II")
-        _c(Vector2i,                "ii")
+        _c(Vector2)
+        _c(Vector2d)
+        _cc(Vector2ub, Vector2ui)
+        _cc(Vector2b, Vector2i)
+        _cc(Vector2us, Vector2ui)
+        _cc(Vector2s, Vector2i)
+        _c(Vector2ui)
+        _c(Vector2i)
 
-        _c(Vector3,                 "fff")
-        _c(Vector3d,                "ddd")
-        _cc(Vector3ub, Vector3ui,   "BBB")
-        _cc(Vector3b, Vector3i,     "bbb")
-        _cc(Vector3us, Vector3ui,   "HHH")
-        _cc(Vector3s, Vector3i,     "hhh")
-        _c(Vector3ui,               "III")
-        _c(Vector3i,                "iii")
+        _c(Vector3)
+        _c(Vector3d)
+        _cc(Vector3ub, Vector3ui)
+        _cc(Vector3b, Vector3i)
+        _cc(Vector3us, Vector3ui)
+        _cc(Vector3s, Vector3i)
+        _c(Vector3ui)
+        _c(Vector3i)
 
-        _c(Vector4,                 "ffff")
-        _c(Vector4d,                "dddd")
-        _cc(Vector4ub, Vector4ui,   "BBBB")
-        _cc(Vector4b, Vector4i,     "bbbb")
-        _cc(Vector4us, Vector4ui,   "HHHH")
-        _cc(Vector4s, Vector4i,     "hhhh")
-        _c(Vector4ui,               "IIII")
-        _c(Vector4i,                "iiii")
+        _c(Vector4)
+        _c(Vector4d)
+        _cc(Vector4ub, Vector4ui)
+        _cc(Vector4b, Vector4i)
+        _cc(Vector4us, Vector4ui)
+        _cc(Vector4s, Vector4i)
+        _c(Vector4ui)
+        _c(Vector4i)
         /* LCOV_EXCL_STOP */
         #undef _c
         #undef _cc

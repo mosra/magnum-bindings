@@ -112,7 +112,7 @@
         >>> list(mesh.attribute(trade.MeshAttribute.POSITION))[:3]
         [Vector(-1, -1, 1), Vector(1, -1, 1), Vector(1, 1, 1)]
         >>> np.array(mesh.attribute(trade.MeshAttribute.NORMAL), copy=False)[2]
-        (0., 0., 1.)
+        array([0., 0., 1.], dtype=float32)
 
     Depending on the value of :ref:`index_data_flags` / :ref:`vertex_data_flags`
     it's also possible to access the data in a mutable way via

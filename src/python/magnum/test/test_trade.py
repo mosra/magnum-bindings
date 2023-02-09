@@ -322,7 +322,7 @@ class MeshData(unittest.TestCase):
         positions = mesh.attribute(position_id)
         self.assertEqual(positions.size, (3, ))
         self.assertEqual(positions.stride, (28, ))
-        self.assertEqual(positions.format, 'fff')
+        self.assertEqual(positions.format, '3f')
         self.assertEqual(list(positions), [
             Vector3(-1, -1, 0.25),
             Vector3(0, 1, 0.5),
@@ -348,7 +348,7 @@ class MeshData(unittest.TestCase):
         mutable_positions = mesh.mutable_attribute(position_id)
         self.assertEqual(mutable_positions.size, (3, ))
         self.assertEqual(mutable_positions.stride, (28, ))
-        self.assertEqual(mutable_positions.format, 'fff')
+        self.assertEqual(mutable_positions.format, '3f')
         self.assertEqual(list(mutable_positions), [
             Vector3(-1, -1, 0.25),
             Vector3(0, 1, 0.5),
