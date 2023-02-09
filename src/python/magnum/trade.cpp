@@ -29,8 +29,8 @@
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/Containers/Triple.h>
 #include <Magnum/ImageView.h>
-#include <Magnum/Math/Half.h>
 #include <Magnum/Math/Matrix4.h>
+#include <Magnum/Math/Packing.h>
 #include <Magnum/Trade/AbstractImporter.h>
 #include <Magnum/Trade/AbstractImageConverter.h>
 #include <Magnum/Trade/AbstractSceneConverter.h>
@@ -489,47 +489,75 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
                 [](char* item, py::handle object) {                         \
                     *reinterpret_cast<format*>(item) = format(py::cast<castType>(object)); \
                 }};
+        /* Normalized types that need to be packed/unpacked before passed
+           from/to pybind */
+        #define _cNormalized(format, unpackType)                            \
+            case VertexFormat::format ## Normalized: return {               \
+                Containers::Implementation::pythonFormatString<format>(),   \
+                [](const char* item) {                                      \
+                    return py::cast(Math::unpack<unpackType>(*reinterpret_cast<const format*>(item))); \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<format*>(item) = Math::pack<format>(py::cast<unpackType>(object)); \
+                }};
         /* LCOV_EXCL_START */
         _c(Float)
         _c(Double)
         _c(UnsignedByte)
+        _cNormalized(UnsignedByte, Float)
         _c(Byte)
+        _cNormalized(Byte, Float)
         _c(UnsignedShort)
+        _cNormalized(UnsignedShort, Float)
         _c(Short)
+        _cNormalized(Short, Float)
         _c(UnsignedInt)
         _c(Int)
 
         _c(Vector2)
         _c(Vector2d)
         _cc(Vector2ub, Vector2ui)
+        _cNormalized(Vector2ub, Vector2)
         _cc(Vector2b, Vector2i)
+        _cNormalized(Vector2b, Vector2)
         _cc(Vector2us, Vector2ui)
+        _cNormalized(Vector2us, Vector2)
         _cc(Vector2s, Vector2i)
+        _cNormalized(Vector2s, Vector2)
         _c(Vector2ui)
         _c(Vector2i)
 
         _c(Vector3)
         _c(Vector3d)
         _cc(Vector3ub, Vector3ui)
+        _cNormalized(Vector3ub, Vector3)
         _cc(Vector3b, Vector3i)
+        _cNormalized(Vector3b, Vector3)
         _cc(Vector3us, Vector3ui)
+        _cNormalized(Vector3us, Vector3)
         _cc(Vector3s, Vector3i)
+        _cNormalized(Vector3s, Vector3)
         _c(Vector3ui)
         _c(Vector3i)
 
         _c(Vector4)
         _c(Vector4d)
         _cc(Vector4ub, Vector4ui)
+        _cNormalized(Vector4ub, Vector4)
         _cc(Vector4b, Vector4i)
+        _cNormalized(Vector4b, Vector4)
         _cc(Vector4us, Vector4ui)
+        _cNormalized(Vector4us, Vector4)
         _cc(Vector4s, Vector4i)
+        _cNormalized(Vector4s, Vector4)
         _c(Vector4ui)
         _c(Vector4i)
         /* LCOV_EXCL_STOP */
         #undef _c
         #undef _cc
+        #undef _cNormalized
 
-        /** @todo handle half, normalized and matrix types */
+        /** @todo handle half and matrix types */
         default:
             return {};
     }

@@ -119,6 +119,13 @@
     :ref:`mutable_indices` and :ref:`mutable_attribute()`, for example to
     perform a static transformation of the mesh before passing it to OpenGL.
 
+    Normalized formats (such as :ref:`VertexFormat.VECTOR3UB_NORMALIZED`) are
+    unpacked to a corresponding floating-point representation in element access
+    and packed from a floating-point representation in mutable acess. The type
+    annotation is however still matching the original type (such as :py:`'3B'`
+    in this case), so code consuming these via the buffer protocol needs to
+    handle the normalization explicitly if needed.
+
 .. py:property:: magnum.trade.MeshData.mutable_index_data
     :raise AttributeError: If :ref:`index_data_flags` doesn't contain
         :ref:`DataFlag.MUTABLE`

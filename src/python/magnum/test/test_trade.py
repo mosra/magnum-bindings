@@ -461,6 +461,23 @@ class MeshData(unittest.TestCase):
         mutable_packed[1] -= Vector3i(12, 56, 200)
         self.assertEqual(packed[1], Vector3(39, 46, 55))
 
+    def test_normalized_attribute_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+
+        mesh = importer.mesh(0)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
+
+        normalized = mesh.attribute(trade.MeshAttribute.COLOR)
+        mutable_normalized = mesh.mutable_attribute(trade.MeshAttribute.COLOR)
+        self.assertEqual(normalized[1], Vector3(0.2, 0.4, 1))
+        self.assertEqual(mutable_normalized[1], Vector3(0.2, 0.4, 1))
+
+        mutable_normalized[1] *= 0.5
+        # Rounding errors are expected
+        self.assertEqual(normalized[1], Vector3(0.101961, 0.2, 0.501961))
+
     def test_data_access_not_mutable(self):
         mesh = primitives.cube_solid()
         # TODO split this once there's a mesh where only one or the other would
