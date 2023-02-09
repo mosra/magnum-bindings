@@ -700,6 +700,188 @@ class SceneData(unittest.TestCase):
         #   some fields
         self.assertEqual(scene.field_array_size(trade.SceneField.TRANSLATION), 0)
 
+    def test_mapping_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+        translation_id = scene.field_id(trade.SceneField.TRANSLATION)
+
+        translations = scene.mapping(translation_id)
+        self.assertEqual(translations.size, (3, ))
+        self.assertEqual(translations.stride, (4, ))
+        self.assertEqual(translations.format, 'I')
+        self.assertEqual(list(translations), [1, 3, 0])
+        self.assertIs(translations.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del translations
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        cameras = scene.mapping(trade.SceneField.CAMERA)
+        self.assertEqual(cameras.size, (2, ))
+        self.assertEqual(cameras.stride, (4, ))
+        self.assertEqual(cameras.format, 'I')
+        self.assertEqual(list(cameras), [2, 3])
+        self.assertIs(cameras.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del cameras
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        mutable_translations = scene.mutable_mapping(translation_id)
+        self.assertEqual(mutable_translations.size, (3, ))
+        self.assertEqual(mutable_translations.stride, (4, ))
+        self.assertEqual(mutable_translations.format, 'I')
+        self.assertEqual(list(mutable_translations), [1, 3, 0])
+        self.assertIs(mutable_translations.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del mutable_translations
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        mutable_cameras = scene.mutable_mapping(trade.SceneField.CAMERA)
+        self.assertEqual(mutable_cameras.size, (2, ))
+        self.assertEqual(mutable_cameras.stride, (4, ))
+        self.assertEqual(mutable_cameras.format, 'I')
+        self.assertEqual(list(mutable_cameras), [2, 3])
+        self.assertIs(mutable_cameras.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del mutable_cameras
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_field_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+        translation_id = scene.field_id(trade.SceneField.TRANSLATION)
+
+        translations = scene.field(translation_id)
+        self.assertEqual(translations.size, (3, ))
+        self.assertEqual(translations.stride, (12, ))
+        self.assertEqual(translations.format, '3f')
+        self.assertEqual(list(translations), [
+            Vector3(1, 2, 3),
+            Vector3(4, 5, 6),
+            Vector3(7, 8, 9)
+        ])
+        self.assertIs(translations.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del translations
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        cameras = scene.field(trade.SceneField.CAMERA)
+        self.assertEqual(cameras.size, (2, ))
+        self.assertEqual(cameras.stride, (4, ))
+        self.assertEqual(cameras.format, 'I')
+        self.assertEqual(list(cameras), [1, 0])
+        self.assertIs(cameras.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del cameras
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        mutable_translations = scene.mutable_field(translation_id)
+        self.assertEqual(mutable_translations.size, (3, ))
+        self.assertEqual(mutable_translations.stride, (12, ))
+        self.assertEqual(mutable_translations.format, '3f')
+        self.assertEqual(list(mutable_translations), [
+            Vector3(1, 2, 3),
+            Vector3(4, 5, 6),
+            Vector3(7, 8, 9)
+        ])
+        self.assertIs(mutable_translations.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del mutable_translations
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        mutable_cameras = scene.mutable_field(trade.SceneField.CAMERA)
+        self.assertEqual(mutable_cameras.size, (2, ))
+        self.assertEqual(mutable_cameras.stride, (4, ))
+        self.assertEqual(mutable_cameras.format, 'I')
+        self.assertEqual(list(mutable_cameras), [1, 0])
+        self.assertIs(mutable_cameras.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del mutable_cameras
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_mutable_mapping_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        translation_id = scene.field_id(trade.SceneField.TRANSLATION)
+
+        translations = scene.mapping(translation_id)
+        mutable_translations = scene.mutable_mapping(translation_id)
+        self.assertEqual(translations[1], 3)
+        self.assertEqual(mutable_translations[1], 3)
+
+        mutable_translations[1] = 776
+        self.assertEqual(translations[1], 776)
+
+        cameras = scene.mapping(trade.SceneField.CAMERA)
+        mutable_cameras = scene.mutable_mapping(trade.SceneField.CAMERA)
+        self.assertEqual(cameras[1], 3)
+        self.assertEqual(mutable_cameras[1], 3)
+
+        mutable_cameras[1] = 13378
+        self.assertEqual(cameras[1], 13378)
+
+    def test_mutable_field_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        translation_id = scene.field_id(trade.SceneField.TRANSLATION)
+
+        translations = scene.field(translation_id)
+        mutable_translations = scene.mutable_field(translation_id)
+        self.assertEqual(translations[1], Vector3(4, 5, 6))
+        self.assertEqual(mutable_translations[1], Vector3(4, 5, 6))
+
+        mutable_translations[1] *= 0.5
+        self.assertEqual(translations[1], Vector3(2, 2.5, 3))
+
+        cameras = scene.field(trade.SceneField.CAMERA)
+        mutable_cameras = scene.mutable_field(trade.SceneField.CAMERA)
+        self.assertEqual(cameras[1], 0)
+        self.assertEqual(mutable_cameras[1], 0)
+
+        mutable_cameras[1] = 13378
+        self.assertEqual(cameras[1], 13378)
+
+    def test_pointer_field_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+
+        pointer = scene.field(trade.SceneField.IMPORTER_STATE)
+        mutable_pointer = scene.mutable_field(trade.SceneField.IMPORTER_STATE)
+        self.assertEqual(pointer.format, 'P')
+        self.assertEqual(mutable_pointer.format, 'P')
+        self.assertNotEqual(pointer[1], 0x0)
+        self.assertEqual(mutable_pointer[1], pointer[1])
+
+        mutable_pointer[1] = 0xdeadbeef
+        self.assertEqual(pointer[1], 0xdeadbeef)
+
+    def test_data_access_not_mutable(self):
+        pass
+        # TODO implement once there's a way to get immutable SceneData, either
+        #   by "deserializing" a binary blob or via some SceneTools API
+
     def test_field_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
@@ -721,6 +903,14 @@ class SceneData(unittest.TestCase):
             scene.has_field_object(scene.field_count, 0)
         with self.assertRaisesRegex(IndexError, "field out of range"):
             scene.field_object_offset(scene.field_count, 0)
+        with self.assertRaises(IndexError):
+            scene.mapping(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.mutable_mapping(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.field(scene.field_count)
+        with self.assertRaises(IndexError):
+            scene.mutable_field(scene.field_count)
 
         # Access by nonexistent field name
         with self.assertRaises(KeyError):
@@ -737,6 +927,14 @@ class SceneData(unittest.TestCase):
             scene.has_field_object(trade.SceneField.SCALING, 0)
         with self.assertRaises(KeyError):
             scene.field_object_offset(trade.SceneField.SCALING, 0)
+        with self.assertRaises(KeyError):
+            scene.mapping(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.mutable_mapping(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.field(trade.SceneField.SCALING)
+        with self.assertRaises(KeyError):
+            scene.mutable_field(trade.SceneField.SCALING)
 
         # OOB object ID
         with self.assertRaisesRegex(IndexError, "object out of range"):
@@ -765,6 +963,29 @@ class SceneData(unittest.TestCase):
             scene.field_object_offset(0, 1, scene.field_size(0) + 1) # PARENT
         with self.assertRaisesRegex(IndexError, "offset out of range"):
             scene.field_object_offset(trade.SceneField.PARENT, 1, scene.field_size(trade.SceneField.PARENT) + 1)
+
+    def test_field_access_array(self):
+        pass
+        # TODO implement once there's some importer that gives back arrays
+        #   (gltf? not sure)
+
+    def test_field_access_unsupported_type(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+        string_field = importer.scene_field_for_name('aString')
+        self.assertIsNotNone(string_field)
+
+        scene = importer.scene(0)
+        string_field_id = scene.field_id(string_field)
+
+        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+            scene.field(string_field_id)
+        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+            scene.mutable_field(string_field_id)
+        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+            scene.field(string_field)
+        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+            scene.mutable_field(string_field)
 
 class Importer(unittest.TestCase):
     def test(self):

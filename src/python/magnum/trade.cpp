@@ -29,8 +29,13 @@
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/Containers/Triple.h>
 #include <Magnum/ImageView.h>
+#include <Magnum/Math/Complex.h>
+#include <Magnum/Math/DualComplex.h>
 #include <Magnum/Math/Matrix4.h>
 #include <Magnum/Math/Packing.h>
+#include <Magnum/Math/Quaternion.h>
+#include <Magnum/Math/DualQuaternion.h>
+#include <Magnum/Math/Range.h>
 #include <Magnum/Trade/AbstractImporter.h>
 #include <Magnum/Trade/AbstractImageConverter.h>
 #include <Magnum/Trade/AbstractSceneConverter.h>
@@ -584,6 +589,201 @@ template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1
     return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(mesh));
 }
 
+Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForSceneMappingType(const Trade::SceneMappingType type) {
+    switch(type) {
+        #define _c(type)                                                    \
+            case Trade::SceneMappingType::type: return {                    \
+                Containers::Implementation::pythonFormatString<type>(),     \
+                [](const char* item) {                                      \
+                    return py::cast(*reinterpret_cast<const type*>(item));  \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<type*>(item) = py::cast<type>(object); \
+                }};
+        /* LCOV_EXCL_START */
+        _c(UnsignedByte)
+        _c(UnsignedShort)
+        _c(UnsignedInt)
+        _c(UnsignedLong)
+        /* LCOV_EXCL_STOP */
+        #undef _c
+    }
+
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForSceneFieldType(const Trade::SceneFieldType type) {
+    switch(type) {
+        #define _ctf(typeEnum, type, format)                                \
+            case Trade::SceneFieldType::typeEnum: return {                  \
+                format,                                                     \
+                [](const char* item) {                                      \
+                    return py::cast(*reinterpret_cast<type const*>(item));  \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<type*>(item) = py::cast<type>(object); \
+                }};
+        #define _c(type) _ctf(type, type, Containers::Implementation::pythonFormatString<type>())
+        /* Types (such as half-floats) that need to be cast before passed
+           from/to pybind that doesn't understand the type directly */
+        #define _cc(type, castType)                                         \
+            case Trade::SceneFieldType::type: return {                      \
+                Containers::Implementation::pythonFormatString<type>(),     \
+                [](const char* item) {                                      \
+                    return py::cast(castType(*reinterpret_cast<const type*>(item))); \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<type*>(item) = type(py::cast<castType>(object)); \
+                }};
+        /* LCOV_EXCL_START */
+        _c(Float)
+        _c(Double)
+        _c(UnsignedByte)
+        _c(Byte)
+        _c(UnsignedShort)
+        _c(Short)
+        _c(UnsignedInt)
+        _c(Int)
+        _c(UnsignedLong)
+        _c(Long)
+
+        _c(Vector2)
+        _c(Vector2d)
+        _cc(Vector2ub, Vector2ui)
+        _cc(Vector2b, Vector2i)
+        _cc(Vector2us, Vector2ui)
+        _cc(Vector2s, Vector2i)
+        _c(Vector2ui)
+        _c(Vector2i)
+        _c(Vector3)
+        _c(Vector3d)
+        _cc(Vector3ub, Vector3ui)
+        _cc(Vector3b, Vector3i)
+        _cc(Vector3us, Vector3ui)
+        _cc(Vector3s, Vector3i)
+        _c(Vector3ui)
+        _c(Vector3i)
+        _c(Vector4)
+        _c(Vector4d)
+        _cc(Vector4ub, Vector4ui)
+        _cc(Vector4b, Vector4i)
+        _cc(Vector4us, Vector4ui)
+        _cc(Vector4s, Vector4i)
+        _c(Vector4ui)
+        _c(Vector4i)
+
+        _c(Matrix2x2)
+        _c(Matrix2x2d)
+        _c(Matrix2x3)
+        _c(Matrix2x3d)
+        _c(Matrix2x4)
+        _c(Matrix2x4d)
+        _c(Matrix3x2)
+        _c(Matrix3x2d)
+        _c(Matrix3x3)
+        _c(Matrix3x3d)
+        _c(Matrix3x4)
+        _c(Matrix3x4d)
+        _c(Matrix4x2)
+        _c(Matrix4x2d)
+        _c(Matrix4x3)
+        _c(Matrix4x3d)
+        _c(Matrix4x4)
+        _c(Matrix4x4d)
+
+        _c(Range1D)
+        _c(Range1Dd)
+        _c(Range1Di)
+        _c(Range2D)
+        _c(Range2Dd)
+        _c(Range2Di)
+        _c(Range3D)
+        _c(Range3Dd)
+        _c(Range3Di)
+
+        _c(Complex)
+        _c(Complexd)
+        _c(DualComplex)
+        _c(DualComplexd)
+        _c(Quaternion)
+        _c(Quaterniond)
+        _c(DualQuaternion)
+        _c(DualQuaterniond)
+
+        _c(Deg)
+        _c(Degd)
+        _c(Rad)
+        _c(Radd)
+
+        /* I see very little reason for accessing these from Python but
+           nevertheless, one never knows when it will be useful */
+        /** @todo passing them through as void* makes them a capsule object in
+            Python, is that useful for anything? and the P type is useless for
+            numpy ("'P' is not a valid PEP 3118 buffer format string") */
+        _ctf(Pointer, std::size_t, "P")
+        _ctf(MutablePointer, std::size_t, "P")
+        /* LCOV_EXCL_STOP */
+        #undef _c
+        #undef _cc
+
+        /** @todo handle these once there's something to test with */
+        case Trade::SceneFieldType::Half:
+        case Trade::SceneFieldType::Vector2h:
+        case Trade::SceneFieldType::Vector3h:
+        case Trade::SceneFieldType::Vector4h:
+        case Trade::SceneFieldType::Matrix2x2h:
+        case Trade::SceneFieldType::Matrix2x3h:
+        case Trade::SceneFieldType::Matrix2x4h:
+        case Trade::SceneFieldType::Matrix3x2h:
+        case Trade::SceneFieldType::Matrix3x3h:
+        case Trade::SceneFieldType::Matrix3x4h:
+        case Trade::SceneFieldType::Matrix4x2h:
+        case Trade::SceneFieldType::Matrix4x3h:
+        case Trade::SceneFieldType::Matrix4x4h:
+        case Trade::SceneFieldType::Range1Dh:
+        case Trade::SceneFieldType::Range2Dh:
+        case Trade::SceneFieldType::Range3Dh:
+        case Trade::SceneFieldType::Degh:
+        case Trade::SceneFieldType::Radh:
+        /** @todo handle these once StringIterable is exposed */
+        case Trade::SceneFieldType::StringOffset8:
+        case Trade::SceneFieldType::StringOffset16:
+        case Trade::SceneFieldType::StringOffset32:
+        case Trade::SceneFieldType::StringOffset64:
+        case Trade::SceneFieldType::StringRange8:
+        case Trade::SceneFieldType::StringRange16:
+        case Trade::SceneFieldType::StringRange32:
+        case Trade::SceneFieldType::StringRange64:
+        case Trade::SceneFieldType::StringRangeNullTerminated8:
+        case Trade::SceneFieldType::StringRangeNullTerminated16:
+        case Trade::SceneFieldType::StringRangeNullTerminated32:
+        case Trade::SceneFieldType::StringRangeNullTerminated64:
+            return {};
+    }
+
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneMappingView(Trade::SceneData& scene, const Containers::StridedArrayView2D<T>& data) {
+    const Trade::SceneMappingType type = scene.mappingType();
+    const std::size_t itemsize = Trade::sceneMappingTypeSize(type);
+    const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForSceneMappingType(type);
+    /* We support all mapping types */
+    CORRADE_INTERNAL_ASSERT(formatStringGetitemSetitem.first());
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(scene));
+}
+
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneFieldView(Trade::SceneData& scene, const UnsignedInt id, const Containers::StridedArrayView2D<T>& data) {
+    const Trade::SceneFieldType type = scene.fieldType(id);
+    const std::size_t itemsize = Trade::sceneFieldTypeSize(type);
+    const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForSceneFieldType(type);
+    if(!formatStringGetitemSetitem.first()) {
+        PyErr_SetString(PyExc_NotImplementedError, "access to this scene field type is not implemented yet, sorry");
+        throw py::error_already_set{};
+    }
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(scene));
+}
+
 }
 
 void trade(py::module_& m) {
@@ -982,6 +1182,11 @@ void trade(py::module_& m) {
     corrade::enumOperators(sceneFieldFlag);
 
     py::class_<Trade::SceneData>{m, "SceneData", "Scene data"}
+        .def_property_readonly("data_flags", [](Trade::SceneData& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.dataFlags()));
+        }, "Data flags")
+        /** @todo expose raw data at all? compared to meshes there's no use
+            case like being able to pass raw memory to the GPU ... yet */
         .def_property_readonly("mapping_type", &Trade::SceneData::mappingType, "Type used for object mapping")
         .def_property_readonly("mapping_bound", &Trade::SceneData::mappingBound, "Object mapping bound")
         .def_property_readonly("field_count", &Trade::SceneData::fieldCount, "Field count")
@@ -1131,7 +1336,107 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return self.hasFieldObject(fieldId, object);
-        }, "Whether a scene field has given object", py::arg("field_id"), py::arg("object"));
+        }, "Whether a scene field has given object", py::arg("field_id"), py::arg("object"))
+        .def("mapping", [](Trade::SceneData& self, Trade::SceneField name) {
+            const Containers::Optional<UnsignedInt> found = self.findFieldId(name);
+            if(!found) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            return sceneMappingView(self, self.mapping(*found));
+        }, "Object mapping data for given named field", py::arg("name"))
+        .def("mapping", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return sceneMappingView(self, self.mapping(id));
+        }, "Object mapping data for given field", py::arg("name"))
+        .def("mutable_mapping", [](Trade::SceneData& self, Trade::SceneField name) {
+            const Containers::Optional<UnsignedInt> found = self.findFieldId(name);
+            if(!found) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
+                throw py::error_already_set{};
+            }
+            return sceneMappingView(self, self.mutableMapping(*found));
+        }, "Mutable object mapping data for given named field", py::arg("name"))
+        .def("mutable_mapping", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
+                throw py::error_already_set{};
+            }
+            return sceneMappingView(self, self.mutableMapping(id));
+        }, "Mutable object mapping data for given field", py::arg("name"))
+        .def("field", [](Trade::SceneData& self, Trade::SceneField name) {
+            const Containers::Optional<UnsignedInt> found = self.findFieldId(name);
+            if(!found) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.fieldArraySize(*found) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return sceneFieldView(self, *found, self.field(*found));
+        }, "Data for given named field", py::arg("name"))
+        .def("field", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.fieldArraySize(id) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return sceneFieldView(self, id, self.field(id));
+        }, "Data for given field", py::arg("name"))
+        .def("mutable_field", [](Trade::SceneData& self, Trade::SceneField name) {
+            const Containers::Optional<UnsignedInt> found = self.findFieldId(name);
+            if(!found) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.fieldArraySize(*found) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return sceneFieldView(self, *found, self.mutableField(*found));
+        }, "Mutable data for given named field", py::arg("name"))
+        .def("mutable_field", [](Trade::SceneData& self, UnsignedInt id) {
+            if(id >= self.fieldCount()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
+                throw py::error_already_set{};
+            }
+            /** @todo handle arrays (return a 2D view, and especially annotate
+                the return type properly in the docs) */
+            if(self.fieldArraySize(id) != 0) {
+                PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return sceneFieldView(self, id, self.mutableField(id));
+        }, "Mutable data for given field", py::arg("name"));
 
     /* Importer. Skipping file callbacks and openState as those operate with
        void*. Leaving the name as AbstractImporter (instead of Importer) to

@@ -210,6 +210,40 @@
         >>> attribute.custom_value
         17
 
+.. py:class:: magnum.trade.SceneData
+
+    :TODO: remove this line once m.css stops ignoring first caption on a page
+
+    `Index and attribute data access`_
+    ==================================
+
+    The class makes use of Python's dynamic nature and provides direct access
+    to index and attribute data in their concrete types via :ref:`mapping()`
+    and :ref:`field()`. The returned views point to the underlying scene data,
+    element access coverts to a type corresponding to a particular
+    :ref:`SceneFieldType` and for performance-oriented access the view
+    implements a buffer protocol with a corresponding type annotation:
+
+    ..
+        >>> import os
+        >>> from magnum import trade
+        >>> importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        >>> importer.open_file('../../src/python/magnum/test/scene.gltf')
+
+    .. code:: pycon
+
+        >>> scene = importer.scene(0)
+        >>> list(scene.mapping(trade.SceneField.TRANSLATION))
+        [1, 3, 0]
+        >>> list(scene.field(trade.SceneField.TRANSLATION))
+        [Vector(1, 2, 3), Vector(4, 5, 6), Vector(7, 8, 9)]
+        >>> np.array(scene.field(trade.SceneField.TRANSLATION), copy=False)[1]
+        array([4., 5., 6.], dtype=float32)
+
+    Depending on the value of :ref:`data_flags` it's also possible to access
+    the data in a mutable way via :ref:`mutable_mapping()` and
+    :ref:`mutable_field()`.
+
 .. py:function:: magnum.trade.SceneData.field_name
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
