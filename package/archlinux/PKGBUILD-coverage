@@ -7,7 +7,7 @@ arch=('i686' 'x86_64')
 url="https://magnum.graphics"
 license=('MIT')
 depends=('corrade' 'magnum' 'python')
-makedepends=('cmake' 'ninja' 'pybind11' 'lcov')
+makedepends=('cmake' 'ninja' 'pybind11' 'lcov' 'python-coverage')
 provides=('magnum-bindings-git')
 
 _rootdir=$startdir/../../
