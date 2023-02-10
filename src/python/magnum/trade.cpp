@@ -898,11 +898,11 @@ void trade(py::module_& m) {
         .def("has_attribute", &Trade::MeshData::hasAttribute, "Whether the mesh has given attribute", py::arg("name"))
         .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"))
 
-        /* IMPORTANT: due to yet-uninvestigated pybind11 platform-specific
-           behavioral differences the following overloads need to have the
-           MeshAttribute overload *before* the UnsignedInt overload, otherwise
-           the integer overload gets picked even if an enum is passed from
-           Python, causing massive suffering */
+        /* IMPORTANT: due to pybind11 behavioral differences on (already EOL'd)
+           Python 3.7 the following overloads need to have the MeshAttribute
+           overload *before* the UnsignedInt overload, otherwise the integer
+           overload gets picked even if an enum is passed from Python, causing
+           massive suffering */
         .def("attribute_name", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1194,11 +1194,11 @@ void trade(py::module_& m) {
         .def_property_readonly("is_2d", &Trade::SceneData::is2D, "Whether the scene is two-dimensional")
         .def_property_readonly("is_3d", &Trade::SceneData::is3D, "Whether the scene is three-dimensional")
 
-        /* IMPORTANT: due to yet-uninvestigated pybind11 platform-specific
-           behavioral differences the following overloads need to have the
-           SceneField overload *before* the UnsignedInt overload, otherwise
-           the integer overload gets picked even if an enum is passed from
-           Python, causing massive suffering */
+        /* IMPORTANT: due to pybind11 behavioral differences on (already EOL'd)
+           Python 3.7 the following overloads need to have the SceneField
+           overload *before* the UnsignedInt overload, otherwise the integer
+           overload gets picked even if an enum is passed from Python, causing
+           massive suffering */
         .def("field_name", [](Trade::SceneData& self, UnsignedInt id) {
             if(id >= self.fieldCount()) {
                 PyErr_SetNone(PyExc_IndexError);
