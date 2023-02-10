@@ -214,11 +214,11 @@
 
     :TODO: remove this line once m.css stops ignoring first caption on a page
 
-    `Index and attribute data access`_
-    ==================================
+    `Field data access`_
+    ====================
 
     The class makes use of Python's dynamic nature and provides direct access
-    to index and attribute data in their concrete types via :ref:`mapping()`
+    to mapping and field data in their concrete types via :ref:`mapping()`
     and :ref:`field()`. The returned views point to the underlying scene data,
     element access coverts to a type corresponding to a particular
     :ref:`SceneFieldType` and for performance-oriented access the view
