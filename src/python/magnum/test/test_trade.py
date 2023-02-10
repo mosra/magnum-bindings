@@ -694,7 +694,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(scene.field_object_offset(trade.SceneField.TRANSFORMATION, 3, 1), 2)
         # TODO some field flags in glTF please?
         self.assertEqual(scene.field_flags(trade.SceneField.PARENT), trade.SceneFieldFlag(0))
-        self.assertEqual(scene.field_type(6), trade.SceneFieldType.STRING_OFFSET32)
+        self.assertEqual(scene.field_type(trade.SceneField.CUSTOM(1)), trade.SceneFieldType.STRING_OFFSET32)
         self.assertEqual(scene.field_size(trade.SceneField.CUSTOM(0)), 1)
         # TODO add some array extras once supported to have this non-zero for
         #   some fields
