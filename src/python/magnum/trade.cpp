@@ -726,6 +726,8 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         #undef _c
         #undef _cc
 
+        /** @todo handle this once StridedBitArrayView is exposed */
+        case Trade::SceneFieldType::Bit:
         /** @todo handle these once there's something to test with */
         case Trade::SceneFieldType::Half:
         case Trade::SceneFieldType::Vector2h:
@@ -1067,6 +1069,7 @@ void trade(py::module_& m) {
     enumWithCustomValues<Trade::SceneField, Trade::Implementation::SceneFieldCustom>(sceneField);
 
     py::enum_<Trade::SceneFieldType>{m, "SceneFieldType", "Scene field type"}
+        .value("BIT", Trade::SceneFieldType::Bit)
         .value("FLOAT", Trade::SceneFieldType::Float)
         .value("HALF", Trade::SceneFieldType::Half)
         .value("DOUBLE", Trade::SceneFieldType::Double)
