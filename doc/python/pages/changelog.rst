@@ -80,6 +80,10 @@ Changelog
     Travis banned everyone from using their CI and so all Linux and macOS
     builds were migrated from Travis to Circle CI. See also
     :gh:`mosra/magnum#350` and :gh:`mosra/magnum#523`.
+-   It's now possible to use ``<PackageName>_ROOT`` to point to install
+    locations of dependencies such as Corrade on CMake 3.12+, in addition to
+    putting them all together inside ``CMAKE_PREFIX_PATH``. See also
+    :gh:`mosra/magnum#614`.
 -   On CMake 3.16 and newer, ``FindMagnumBindings.cmake`` can provide
     additional details if some component is not found
 -   The Homebrew package now uses ``std_cmake_args`` instead of hardcoded build
