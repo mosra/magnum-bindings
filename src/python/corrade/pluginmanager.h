@@ -68,7 +68,7 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, Corrade::PluginManager::PyPluginHolder<T>)
 
 namespace corrade {
 
-template<class T> void plugin(py::class_<T, PluginManager::PyPluginHolder<T>>& c) {
+template<class T> void plugin(py::class_<T, PluginManager::PyPluginHolder<T>, PluginManager::AbstractPlugin>& c) {
     c
         .def_property_readonly("manager", [](const T& self) {
             return pyObjectHolderFor<PluginManager::PyPluginHolder>(self).manager;

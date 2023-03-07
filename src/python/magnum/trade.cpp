@@ -1445,7 +1445,7 @@ void trade(py::module_& m) {
        void*. Leaving the name as AbstractImporter (instead of Importer) to
        avoid needless name differences and because in the future there *might*
        be pure Python importers (not now tho). */
-    py::class_<Trade::AbstractImporter, PluginManager::PyPluginHolder<Trade::AbstractImporter>> abstractImporter{m, "AbstractImporter", "Interface for importer plugins"};
+    py::class_<Trade::AbstractImporter, PluginManager::PyPluginHolder<Trade::AbstractImporter>, PluginManager::AbstractPlugin> abstractImporter{m, "AbstractImporter", "Interface for importer plugins"};
     corrade::plugin(abstractImporter);
     abstractImporter
         /** @todo features */
@@ -1545,7 +1545,7 @@ void trade(py::module_& m) {
     corrade::manager(importerManager);
 
     /* Image converter */
-    py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
+    py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>, PluginManager::AbstractPlugin> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
     abstractImageConverter
         /** @todo features */
         .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
@@ -1557,7 +1557,7 @@ void trade(py::module_& m) {
     corrade::manager(imageConverterManager);
 
     /* Scene converter */
-    py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
+    py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
         /** @todo features */
         .def("convert_to_file", checkSceneConverterResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));

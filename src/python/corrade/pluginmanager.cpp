@@ -23,12 +23,15 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include "pluginmanager.h"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for pluginList() and aliasList() */
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/Containers/StringIterable.h>
 #include <Corrade/PluginManager/AbstractManager.h>
+#include <Corrade/PluginManager/AbstractPlugin.h>
 
 #include "Corrade/PythonBindings.h"
 
@@ -124,6 +127,14 @@ void pluginmanager(py::module_& m) {
 
             return state;
         }, "Unload a plugin", py::arg("plugin"));
+
+    py::class_<PluginManager::AbstractPlugin, PluginManager::PyPluginHolder<PluginManager::AbstractPlugin>>{m, "AbstractPlugin", "Base class for plugin interfaces"}
+        /* Plugin interface string, search paths, suffix, metadata file suffix
+           are meant to be overriden in subclasses */
+        .def_property_readonly("plugin", [](PluginManager::AbstractPlugin& self) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.plugin()};
+        }, "Plugin identifier string");
 }
 
 }

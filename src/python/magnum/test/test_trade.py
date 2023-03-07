@@ -988,7 +988,7 @@ class SceneData(unittest.TestCase):
             scene.mutable_field(string_field)
 
 class Importer(unittest.TestCase):
-    def test(self):
+    def test_manager(self):
         manager = trade.ImporterManager()
         self.assertIn('StbImageImporter', manager.alias_list)
         self.assertEqual(manager.load_state('StbImageImporter'), pluginmanager.LoadState.NOT_LOADED)
@@ -1000,6 +1000,10 @@ class Importer(unittest.TestCase):
             manager.load('NonexistentImporter')
         with self.assertRaisesRegex(RuntimeError, "can't unload plugin"):
             manager.unload('NonexistentImporter')
+
+    def test(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        self.assertEqual(importer.plugin, 'StbImageImporter')
 
     def test_set_preferred_plugins(self):
         manager = trade.ImporterManager()

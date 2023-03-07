@@ -101,7 +101,7 @@ void text(py::module_& m) {
         ;
 
     /* Font */
-    py::class_<Text::AbstractFont, PluginManager::PyPluginHolder<Text::AbstractFont>> abstractFont{m, "AbstractFont", "Interface for font plugins"};
+    py::class_<Text::AbstractFont, PluginManager::PyPluginHolder<Text::AbstractFont>, PluginManager::AbstractPlugin> abstractFont{m, "AbstractFont", "Interface for font plugins"};
     abstractFont
         /** @todo features */
         .def_property_readonly("is_opened", &Text::AbstractFont::isOpened, "Whether any file is opened")
