@@ -61,7 +61,7 @@ void pluginmanager(py::module_& m) {
         .def_property_readonly("plugin_interface", [](PluginManager::AbstractManager& self) {
             /** @todo drop std::string in favor of our own string caster */
             return std::string{self.pluginInterface()};
-        }, "Plugin interface")
+        }, "Plugin interface string")
         .def_property("plugin_directory",
             /** @todo drop std::string in favor of our own string caster */
             [](PluginManager::AbstractManager& self) {
@@ -101,7 +101,7 @@ void pluginmanager(py::module_& m) {
         /** @todo drop std::string in favor of our own string caster */
         .def("load_state", [](PluginManager::AbstractManager& self, const std::string& plugin) {
             return self.loadState(plugin);
-        }, "Load state of a plugin")
+        }, "Load state of a plugin", py::arg("plugin"))
         .def("load", [](PluginManager::AbstractManager& self, const std::string& plugin) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
@@ -112,7 +112,7 @@ void pluginmanager(py::module_& m) {
             }
 
             return state;
-        }, "Load a plugin")
+        }, "Load a plugin", py::arg("plugin"))
         .def("unload", [](PluginManager::AbstractManager& self, const std::string& plugin) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
@@ -123,7 +123,7 @@ void pluginmanager(py::module_& m) {
             }
 
             return state;
-        }, "Unload a plugin");
+        }, "Unload a plugin", py::arg("plugin"));
 }
 
 }
