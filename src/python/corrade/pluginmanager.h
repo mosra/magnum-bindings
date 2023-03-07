@@ -35,9 +35,9 @@
 
 namespace Corrade { namespace PluginManager {
 
-/* Stores additional stuff needed for proper refcounting of array views. Due
-   to obvious reasons we can't subclass plugins so this is the only possible
-   way. */
+/* Stores additional stuff needed for proper refcounting of plugin instances.
+   Due to obvious reasons we can't subclass plugins so this is the only
+   possible way. */
 template<class T> struct PyPluginHolder: std::unique_ptr<T> {
     explicit PyPluginHolder(T*) {
         /* Pybind needs this signature, but it should never be called */
