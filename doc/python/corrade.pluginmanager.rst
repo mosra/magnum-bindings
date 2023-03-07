@@ -34,3 +34,6 @@
 .. py:function:: corrade.pluginmanager.AbstractManager.unload
     :raise RuntimeError: When unloading fails
     :return: Either :ref:`LoadState.NOT_LOADED` or :ref:`LoadState.STATIC`
+
+.. py:function:: corrade.pluginmanager.AbstractManager.set_preferred_plugins
+    :raise KeyError: If the alias doesn't exist

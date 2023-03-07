@@ -27,6 +27,7 @@
 #include <pybind11/stl.h> /* for pluginList() and aliasList() */
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
+#include <Corrade/Containers/StringIterable.h>
 #include <Corrade/PluginManager/AbstractManager.h>
 
 #include "Corrade/PythonBindings.h"
@@ -69,7 +70,19 @@ void pluginmanager(py::module_& m) {
                 self.setPluginDirectory(directory);
             }, "Plugin directory")
         .def("reload_plugin_directory", &PluginManager::AbstractManager::reloadPluginDirectory, "Reload plugin directory")
-        /** @todo setPreferredPlugins (takes an init list) */
+        .def("set_preferred_plugins", [](PluginManager::AbstractManager& self, const std::string& alias, const std::vector<std::string>& plugins) {
+            if(self.loadState(alias) == PluginManager::LoadState::NotFound) {
+                PyErr_SetNone(PyExc_KeyError);
+                throw py::error_already_set{};
+            }
+
+            /** @todo drop all this once StringIterable can be a view on
+                std::strings */
+            Containers::Array<Containers::StringView> pluginViews{NoInit, plugins.size()};
+            for(std::size_t i = 0; i != plugins.size(); ++i)
+                pluginViews[i] = plugins[i];
+            self.setPreferredPlugins(alias, pluginViews);
+        }, "Set preferred plugins for given alias", py::arg("alias"), py::arg("plugins"))
         .def_property_readonly("plugin_list", [](PluginManager::AbstractManager& self) {
             /** @todo make a generic caster for arbitrary arrays and strings */
             std::vector<std::string> out;

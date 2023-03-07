@@ -1001,6 +1001,17 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "can't unload plugin"):
             manager.unload('NonexistentImporter')
 
+    def test_set_preferred_plugins(self):
+        manager = trade.ImporterManager()
+        # TODO test this better once we can verify it gets actually loaded
+        manager.set_preferred_plugins('TgaImporter', ['StbImageImporter', 'DevIlImageImporter'])
+        self.assertIn('StbImageImporter', manager.alias_list)
+
+    def test_set_preferred_plugins_alias_not_found(self):
+        manager = trade.ImporterManager()
+        with self.assertRaises(KeyError):
+            manager.set_preferred_plugins('ApngImporter', [])
+
     def test_no_file_opened(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertFalse(importer.is_opened)

@@ -125,6 +125,7 @@ Changelog
 -   Exposed the :ref:`text` library
 -   Exposed the minimal interface of :ref:`utility.ConfigurationGroup` and
     :ref:`utility.Configuration`
+-   Exposed :ref:`pluginmanager.AbstractManager.set_preferred_plugins()`
 -   Fixed issues with an in-source build (see :gh:`mosra/magnum-bindings#13`)
 -   All CMake build options are now prefixed with ``MAGNUM_``. For backwards
     compatibility, unless ``MAGNUM_BUILD_DEPRECATED`` is disabled and unless a
