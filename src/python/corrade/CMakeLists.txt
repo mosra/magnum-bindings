@@ -43,6 +43,9 @@ set(corrade_containers_SRCS
 set(corrade_pluginmanager_SRCS
     pluginmanager.cpp)
 
+set(corrade_utility_SRCS
+    utility.cpp)
+
 # If Corrade is not built as static, compile the sub-libraries as separate
 # modules
 if(NOT CORRADE_BUILD_STATIC)
@@ -55,6 +58,16 @@ if(NOT CORRADE_BUILD_STATIC)
         Corrade::Utility)
     set_target_properties(corrade_containers PROPERTIES
         OUTPUT_NAME "containers"
+        LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
+
+    pybind11_add_module(corrade_utility ${pybind11_add_module_SYSTEM} ${corrade_utility_SRCS})
+    target_include_directories(corrade_utility PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/src/python)
+    target_link_libraries(corrade_utility PRIVATE
+        Corrade::Utility)
+    set_target_properties(corrade_utility PROPERTIES
+        OUTPUT_NAME "utility"
         LIBRARY_OUTPUT_DIRECTORY ${output_dir}/corrade)
 
     if(Corrade_PluginManager_FOUND)
@@ -76,8 +89,12 @@ else()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/staticconfigure.h.cmake
                    ${CMAKE_CURRENT_BINARY_DIR}/staticconfigure.h)
 
-    list(APPEND corrade_SRCS ${corrade_containers_SRCS})
-    list(APPEND corrade_LIBS Corrade::Containers)
+    list(APPEND corrade_SRCS
+        ${corrade_containers_SRCS}
+        ${corrade_utility_SRCS})
+    list(APPEND corrade_LIBS
+        Corrade::Containers
+        Corrade::Utility)
 
     if(Corrade_PluginManager_FOUND)
         list(APPEND corrade_SRCS ${corrade_pluginmanager_SRCS})

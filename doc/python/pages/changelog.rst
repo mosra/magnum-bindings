@@ -123,6 +123,8 @@ Changelog
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
 -   Exposed the :ref:`text` library
+-   Exposed the minimal interface of :ref:`utility.ConfigurationGroup` and
+    :ref:`utility.Configuration`
 -   Fixed issues with an in-source build (see :gh:`mosra/magnum-bindings#13`)
 -   All CMake build options are now prefixed with ``MAGNUM_``. For backwards
     compatibility, unless ``MAGNUM_BUILD_DEPRECATED`` is disabled and unless a

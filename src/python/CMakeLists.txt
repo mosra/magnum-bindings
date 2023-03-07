@@ -62,6 +62,7 @@ add_subdirectory(magnum)
 foreach(target
     corrade_containers
     corrade_pluginmanager
+    corrade_utility
     magnum_gl
     magnum_meshtools
     magnum_primitives

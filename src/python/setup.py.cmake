@@ -36,6 +36,7 @@ extension_paths = {
     '_corrade': '$<TARGET_FILE:corrade>',
     'corrade.containers': '${corrade_containers_file}',
     'corrade.pluginmanager': '${corrade_pluginmanager_file}',
+    'corrade.utility': '${corrade_utility_file}',
     '_magnum': '$<TARGET_FILE:magnum>',
     'magnum.gl': '${magnum_gl_file}',
     'magnum.meshtools': '${magnum_meshtools_file}',

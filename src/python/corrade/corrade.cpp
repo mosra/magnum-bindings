@@ -132,5 +132,8 @@ PYBIND11_MODULE(_corrade, m) {
     py::module_ pluginmanager = m.def_submodule("pluginmanager");
     corrade::pluginmanager(pluginmanager);
     #endif
+
+    py::module_ utility = m.def_submodule("utility");
+    corrade::utility(utility);
     #endif
 }

@@ -33,7 +33,7 @@ import sys
 # _corrade. The following feels extremely hackish, but without that it wouldn't
 # be possible to do `import corrade.containers`, which is weird
 # (`from corrade import containers` works, tho, for whatever reason)
-for i in ['containers', 'pluginmanager']:
+for i in ['containers', 'pluginmanager', 'utility']:
     if i in globals(): sys.modules['corrade.' + i] = globals()[i]
 
 # Prevent all submodules being pulled in when saying `from corrade import *` --
