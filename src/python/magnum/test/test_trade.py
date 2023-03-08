@@ -1042,6 +1042,45 @@ class Importer(unittest.TestCase):
         with self.assertRaises(KeyError):
             manager.set_preferred_plugins('ApngImporter', [])
 
+    def test_metadata(self):
+        manager = trade.ImporterManager()
+        manager.set_preferred_plugins('PngImporter', ['StbImageImporter'])
+        manager_refcount = sys.getrefcount(manager)
+
+        metadata = manager.metadata('PngImporter')
+        self.assertEqual(sys.getrefcount(manager), manager_refcount + 1)
+        self.assertEqual(metadata.name, 'StbImageImporter')
+        self.assertEqual(metadata.provides, ['BmpImporter', 'GifImporter', 'HdrImporter', 'JpegImporter', 'PgmImporter', 'PicImporter', 'PngImporter', 'PpmImporter', 'PsdImporter', 'TgaImporter'])
+
+        del metadata
+        self.assertEqual(sys.getrefcount(manager), manager_refcount)
+
+        metadata = manager.metadata('GltfImporter')
+        self.assertEqual(sys.getrefcount(manager), manager_refcount + 1)
+        self.assertEqual(metadata.depends, ['AnyImageImporter'])
+
+        importer = manager.load_and_instantiate('GltfImporter')
+        importer_refcount = sys.getrefcount(importer)
+        self.assertEqual(sys.getrefcount(manager), manager_refcount + 2)
+
+        metadata = manager.metadata('AnyImageImporter')
+        # Replacing the previous metadata instance so it stays the same
+        self.assertEqual(sys.getrefcount(manager), manager_refcount + 2)
+        self.assertEqual(metadata.used_by, ['GltfImporter'])
+
+        # Retrieving metadata from the plugin instance should be the same
+        # instance
+        metadata_from_plugin = importer.metadata
+        self.assertEqual(sys.getrefcount(importer), importer_refcount + 1)
+        self.assertEqual(metadata_from_plugin.depends, ['AnyImageImporter'])
+
+        del metadata_from_plugin
+        self.assertEqual(sys.getrefcount(importer), importer_refcount)
+
+        del importer
+        del metadata
+        self.assertEqual(sys.getrefcount(manager), manager_refcount)
+
     def test_no_file_opened(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertFalse(importer.is_opened)

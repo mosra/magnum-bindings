@@ -31,6 +31,7 @@
 #include <Corrade/Containers/StringIterable.h>
 #include <Corrade/PluginManager/AbstractManager.h>
 #include <Corrade/PluginManager/AbstractPlugin.h>
+#include <Corrade/PluginManager/PluginMetadata.h>
 
 #include "Corrade/PythonBindings.h"
 
@@ -56,6 +57,12 @@ void pluginmanager(py::module_& m) {
         .value("REQUIRED", PluginManager::LoadState::Required)
         .value("USED", PluginManager::LoadState::Used);
     corrade::enumOperators(loadState);
+
+    py::class_<PluginManager::PluginMetadata>{m, "PluginMetadata", "Plugin metadata"}
+        .def_property_readonly("name", &PluginManager::PluginMetadata::name, "Plugin name")
+        .def_property_readonly("depends", &PluginManager::PluginMetadata::depends, "Plugins on which this plugin depends")
+        .def_property_readonly("used_by", &PluginManager::PluginMetadata::usedBy, "Plugins which depend on this plugin")
+        .def_property_readonly("provides", &PluginManager::PluginMetadata::provides, "Plugins which are provided by this plugin");
 
     PyNonDestructibleClass<PluginManager::AbstractManager> manager{m, "AbstractManager", "Base for plugin managers"};
     manager.attr("VERSION") = PluginManager::AbstractManager::Version;
@@ -99,7 +106,9 @@ void pluginmanager(py::module_& m) {
                 out.push_back(i);
             return out;
         }, "List of all available alias names")
-        /** @todo metadata() (figure out the ownership) */
+        .def("metadata", [](PluginManager::AbstractManager& self, const std::string& plugin) {
+            return self.metadata(plugin);
+        }, "Plugin metadata", py::arg("plugin"), py::return_value_policy::reference_internal)
         /** @todo drop std::string in favor of our own string caster */
         .def("load_state", [](PluginManager::AbstractManager& self, const std::string& plugin) {
             return self.loadState(plugin);
@@ -133,7 +142,8 @@ void pluginmanager(py::module_& m) {
         .def_property_readonly("plugin", [](PluginManager::AbstractPlugin& self) {
             /** @todo drop std::string in favor of our own string caster */
             return std::string{self.plugin()};
-        }, "Plugin identifier string");
+        }, "Plugin identifier string")
+        .def_property_readonly("metadata", &PluginManager::AbstractPlugin::metadata, "Plugin metadata", py::return_value_policy::reference_internal);
 }
 
 }
