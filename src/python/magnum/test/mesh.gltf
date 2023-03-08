@@ -39,6 +39,27 @@
           "mode": 666
         }
       ]
+    },
+    {
+      "name": "Point mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1
+          },
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "name": "Custom mesh attribute",
+      "primitives": [
+        {
+          "attributes": {
+            "_FOOBARTHINGY": 1
+          }
+        }
+      ]
     }
   ],
   "accessors": [

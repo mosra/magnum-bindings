@@ -513,3 +513,21 @@
     all backslashes in :p:`filename` to forward slashes before passing it to
     :dox:`Trade::AbstractSceneConverter::convertToFile()`, which expects
     forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractSceneConverter.begin_file
+    :raise RuntimeError: If beginning the conversion fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.end_file
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If ending the conversion fails
+
+.. py:property:: magnum.trade.AbstractSceneConverter.mesh_count
+    :raise AssertionError: If no conversion is in progress
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the data fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.set_mesh_attribute_name
+    :raise AssertionError: If no conversion is in progress
+    :raise AssertionError: If :p:`attribute` is not custom

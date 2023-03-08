@@ -1676,7 +1676,60 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_RuntimeError, "conversion failed");
                 throw py::error_already_set{};
             }
-        }, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
+        }, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"))
+        .def_property_readonly("is_converting", &Trade::AbstractSceneConverter::isConverting, "Whether any conversion is in progress")
+        .def("abort", &Trade::AbstractSceneConverter::abort, "Abort any in-progress conversion")
+        /** @todo begin/end (MeshOptimizer), begin/end data */
+        /** @todo drop std::string in favor of our own string caster */
+        .def("begin_file", [](Trade::AbstractSceneConverter& self, const std::string& filename) {
+            if(!self.beginFile(filename)) {
+                PyErr_SetString(PyExc_RuntimeError, "beginning the conversion failed");
+                throw py::error_already_set{};
+            }
+        }, "Begin converting a scene to a file", py::arg("filename"))
+        .def("end_file", [](Trade::AbstractSceneConverter& self) {
+            /** @todo this doesn't catch a mismatch (e.g., when beginData() was
+                called instead */
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(!self.endFile()) {
+                PyErr_SetString(PyExc_RuntimeError, "ending the conversion failed");
+                throw py::error_already_set{};
+            }
+        }, "End converting a scene to a file")
+        .def_property_readonly("mesh_count", [](Trade::AbstractSceneConverter& self) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            return self.meshCount();
+        }, "Count of added meshes")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("add", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& name) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(const Containers::Optional<UnsignedInt> out = self.add(mesh, name))
+                return *out;
+
+            PyErr_SetString(PyExc_RuntimeError, "adding the mesh failed");
+            throw py::error_already_set{};
+        }, "Add a mesh", py::arg("mesh"), py::arg("name") = std::string{})
+        /** @todo mesh levels */
+        .def("set_mesh_attribute_name", [](Trade::AbstractSceneConverter& self, const Trade::MeshAttribute attribute, const std::string& name) {
+            if(!Trade::isMeshAttributeCustom(attribute)) {
+                PyErr_SetString(PyExc_AssertionError, "not a custom attribute");
+                throw py::error_already_set{};
+            }
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            self.setMeshAttributeName(attribute, name);
+        }, "Set name of a custom mesh attribute", py::arg("attribute"), py::arg("name"));
     corrade::plugin(abstractSceneConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractSceneConverter>, PluginManager::AbstractManager> sceneConverterManager{m, "SceneConverterManager", "Manager for scene converter plugins"};

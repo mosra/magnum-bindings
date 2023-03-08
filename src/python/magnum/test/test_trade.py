@@ -1306,7 +1306,7 @@ class Importer(unittest.TestCase):
         self.assertIsNone(importer.mesh_attribute_for_name("_CUSTOM_ATTRIBUTE"))
 
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
-        self.assertEqual(importer.mesh_count, 3)
+        self.assertEqual(importer.mesh_count, 5)
         self.assertEqual(importer.mesh_level_count(0), 1)
         self.assertEqual(importer.mesh_name(0), 'Indexed mesh')
         self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
@@ -1542,3 +1542,102 @@ class SceneConverter(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(RuntimeError, "conversion failed"):
                 converter.convert_to_file(mesh, os.path.join(tmp, "mesh.obj"))
+
+    def test_batch_file(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh(1)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "mesh.ply"))
+            self.assertTrue(converter.is_converting)
+            self.assertEqual(converter.mesh_count, 0)
+
+            self.assertEqual(converter.add(mesh), 0)
+            self.assertEqual(converter.mesh_count, 1)
+
+            converter.end_file()
+            self.assertFalse(converter.is_converting)
+
+            self.assertTrue(os.path.exists(os.path.join(tmp, "mesh.ply")))
+
+    def test_batch_file_begin_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh(1)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('AnySceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "beginning the conversion failed"):
+                converter.begin_file(os.path.join(tmp, "mesh.obj"))
+
+    def test_batch_file_end_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh(1)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "mesh.ply"))
+            with self.assertRaisesRegex(RuntimeError, "ending the conversion failed"):
+                converter.end_file()
+
+    def test_batch_add_mesh_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Point mesh')
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "mesh.ply"))
+            with self.assertRaisesRegex(RuntimeError, "adding the mesh failed"):
+                converter.add(mesh)
+
+    def test_batch_set_mesh_attribute_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Custom mesh attribute')
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "mesh.gltf")
+            converter.begin_file(filename)
+            converter.set_mesh_attribute_name(importer.mesh_attribute_for_name('_FOOBARTHINGY'), '_FOOBARTHINGY')
+            converter.add(mesh)
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn('_FOOBARTHINGY', f.read())
+
+    def test_batch_set_mesh_attribute_name_not_custom(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "mesh.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(AssertionError, "not a custom attribute"):
+                converter.set_mesh_attribute_name(trade.MeshAttribute.POSITION, 'foo')
+
+    def test_batch_no_conversion_in_progress(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Custom mesh attribute')
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+        self.assertFalse(converter.is_converting)
+
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.end_file()
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.mesh_count
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add(mesh)
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.set_mesh_attribute_name(trade.MeshAttribute.CUSTOM(1), 'foobar')
