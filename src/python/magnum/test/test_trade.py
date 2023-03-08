@@ -990,7 +990,10 @@ class SceneData(unittest.TestCase):
 class Importer(unittest.TestCase):
     def test_manager(self):
         manager = trade.ImporterManager()
-        self.assertIn('StbImageImporter', manager.alias_list)
+        self.assertIn('cz.mosra.magnum.Trade.AbstractImporter', manager.plugin_interface)
+        self.assertIn('importers', manager.plugin_directory)
+        self.assertIn('StbImageImporter', manager.plugin_list)
+        self.assertIn('PngImporter', manager.alias_list)
         self.assertEqual(manager.load_state('StbImageImporter'), pluginmanager.LoadState.NOT_LOADED)
 
         self.assertTrue(manager.load('StbImageImporter') & pluginmanager.LoadState.LOADED)
@@ -1004,6 +1007,18 @@ class Importer(unittest.TestCase):
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertEqual(importer.plugin, 'StbImageImporter')
+
+    def test_set_plugin_directory(self):
+        manager = trade.ImporterManager()
+
+        plugin_directory = manager.plugin_directory
+        self.assertIn('PngImporter', manager.alias_list)
+
+        manager.plugin_directory = "/nonexistent"
+        self.assertNotIn('PngImporter', manager.alias_list)
+
+        manager.plugin_directory = plugin_directory
+        self.assertIn('PngImporter', manager.alias_list)
 
     def test_set_preferred_plugins(self):
         manager = trade.ImporterManager()
