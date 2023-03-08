@@ -1468,6 +1468,62 @@ class SceneConverter(unittest.TestCase):
     def test_mesh(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Indexed mesh')
+
+        converter_manager = converter = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('MeshOptimizerSceneConverter')
+
+        converted_mesh = converter.convert(mesh)
+        self.assertEqual(converted_mesh.index_count, mesh.index_count)
+
+    def test_mesh_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Non-indexed mesh')
+
+        converter_manager = converter = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('MeshOptimizerSceneConverter')
+
+        with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+            converted_mesh = converter.convert(mesh)
+
+    def test_mesh_in_place(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Indexed mesh')
+
+        converter_manager = converter = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('MeshOptimizerSceneConverter')
+
+        converter.convert_in_place(mesh)
+        self.assertEqual(mesh.index_count, 3)
+
+    def test_mesh_in_place_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
+        mesh = importer.mesh('Non-indexed mesh')
+
+        converter_manager = converter = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('MeshOptimizerSceneConverter')
+
+        with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+            converter.convert_in_place(mesh)
+
+    def test_mesh_to_file(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
         mesh = importer.mesh(1)
 
         converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
@@ -1476,7 +1532,7 @@ class SceneConverter(unittest.TestCase):
             converter.convert_to_file(mesh, os.path.join(tmp, "mesh.ply"))
             self.assertTrue(os.path.exists(os.path.join(tmp, "mesh.ply")))
 
-    def test_mesh_failed(self):
+    def test_mesh_to_file_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
         mesh = importer.mesh(1)

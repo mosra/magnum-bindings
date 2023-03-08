@@ -1640,6 +1640,24 @@ void trade(py::module_& m) {
         }, [](Trade::AbstractSceneConverter& self, Trade::SceneConverterFlag flags) {
             self.setFlags(flags);
         }, "Converter flags")
+        .def("convert", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh) {
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            Containers::Optional<Trade::MeshData> out = self.convert(mesh);
+            if(!out) {
+                PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+                throw py::error_already_set{};
+            }
+            return out;
+        }, "Convert a mesh", py::arg("mesh"))
+        .def("convert_in_place", [](Trade::AbstractSceneConverter& self, Trade::MeshData& mesh) {
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            if(!self.convertInPlace(mesh)) {
+                PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+                throw py::error_already_set{};
+            }
+        }, "Convert a mesh", py::arg("mesh"))
         /** @todo drop std::string in favor of our own string caster */
         .def("convert_to_file", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& filename) {
             /** @todo log redirection -- but we'd need assertions to not be

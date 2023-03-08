@@ -500,8 +500,14 @@
     raising an exception. See particular function documentation for detailed
     behavior.
 
+.. py:function:: magnum.trade.AbstractSceneConverter.convert
+    :raise RuntimeError: If conversion fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.convert_in_place
+    :raise RuntimeError: If conversion fails
+
 .. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file
-    :raise RuntimeError: If scene conversion fails
+    :raise RuntimeError: If conversion fails
 
     For compatibility with :ref:`os.path`, on Windows this function converts
     all backslashes in :p:`filename` to forward slashes before passing it to

@@ -12,6 +12,9 @@ rem currently disabled -- https://github.com/catchorg/Catch2/issues/1113
 if "%COMPILER%" == "msvc-clang" if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2022" set COMPILER_EXTRA=-DCMAKE_CXX_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/clang-cl.exe" -DCMAKE_LINKER="C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/lld-link.exe" -DCMAKE_CXX_FLAGS="-m64 /EHsc"
 if "%COMPILER%" == "msvc-clang" if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2019" set COMPILER_EXTRA=-DCMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-cl.exe" -DCMAKE_LINKER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/lld-link.exe" -DCMAKE_CXX_FLAGS="-m64 /EHsc"
 
+set EXCEPT_MSVC2017=ON
+IF "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" set EXCEPT_MSVC2017=OFF
+
 rem Build pybind11. Downloaded in the appveyor.yml script.
 cd pybind11-%PYBIND% || exit /b
 mkdir -p build && cd build || exit /b
@@ -85,6 +88,7 @@ cmake .. ^
     -DMAGNUM_BUILD_STATIC=%BUILD_STATIC% ^
     -DMAGNUM_WITH_DDSIMPORTER=ON ^
     -DMAGNUM_WITH_GLTFIMPORTER=ON ^
+    -DMAGNUM_WITH_MESHOPTIMIZERSCENECONVERTER=%EXCEPT_MSVC2017% ^
     -DMAGNUM_WITH_STANFORDSCENECONVERTER=ON ^
     -DMAGNUM_WITH_STBIMAGECONVERTER=ON ^
     -DMAGNUM_WITH_STBIMAGEIMPORTER=ON ^
