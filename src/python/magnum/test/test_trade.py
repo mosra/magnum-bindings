@@ -24,6 +24,7 @@
 #
 
 import os
+import platform
 import sys
 import tempfile
 import unittest
@@ -1005,7 +1006,17 @@ class Importer(unittest.TestCase):
             manager.unload('NonexistentImporter')
 
     def test(self):
-        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        manager = trade.ImporterManager()
+
+        self.assertIn('cz.mosra.magnum.Trade.AbstractImporter', trade.AbstractImporter.plugin_interface)
+        self.assertIn(manager.plugin_directory, trade.AbstractImporter.plugin_search_paths)
+        if platform.system() == 'Windows':
+            self.assertEqual(trade.AbstractImporter.plugin_suffix, '.dll')
+        else:
+            self.assertEqual(trade.AbstractImporter.plugin_suffix, '.so')
+        self.assertEqual(trade.AbstractImporter.plugin_metadata_suffix, '.conf')
+
+        importer = manager.load_and_instantiate('StbImageImporter')
         self.assertEqual(importer.plugin, 'StbImageImporter')
 
     def test_set_plugin_directory(self):

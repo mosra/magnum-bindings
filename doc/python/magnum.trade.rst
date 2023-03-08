@@ -289,7 +289,14 @@
     :ref:`AbstractImporter.manager`, ensuring the manager is not deleted before
     the plugin instances are.
 
+.. TODO couldn't the plugin_interface etc. docs be parsed from pybind's docs?
+    repeating them for every plugin is annoying
+
 .. py:class:: magnum.trade.AbstractImporter
+    :data plugin_interface: Plugin interface string
+    :data plugin_search_paths: Plugin search paths
+    :data plugin_suffix: Plugin suffix
+    :data plugin_metadata_suffix: Plugin metadata suffix
 
     Similarly to C++, importer plugins are loaded through :ref:`ImporterManager`:
 
@@ -429,7 +436,14 @@
     :ref:`AbstractImageConverter.manager`, ensuring the manager is not deleted
     before the plugin instances are.
 
+.. TODO couldn't the plugin_interface etc. docs be parsed from pybind's docs?
+    repeating them for every plugin is annoying
+
 .. py:class:: magnum.trade.AbstractImageConverter
+    :data plugin_interface: Plugin interface string
+    :data plugin_search_paths: Plugin search paths
+    :data plugin_suffix: Plugin suffix
+    :data plugin_metadata_suffix: Plugin metadata suffix
 
     Similarly to C++, image converter plugins are loaded through
     :ref:`ImageConverterManager`:
@@ -462,7 +476,14 @@
     :ref:`AbstractSceneConverter.manager`, ensuring the manager is not deleted
     before the plugin instances are.
 
+.. TODO couldn't the plugin_interface etc. docs be parsed from pybind's docs?
+    repeating them for every plugin is annoying
+
 .. py:class:: magnum.trade.AbstractSceneConverter
+    :data plugin_interface: Plugin interface string
+    :data plugin_search_paths: Plugin search paths
+    :data plugin_suffix: Plugin suffix
+    :data plugin_metadata_suffix: Plugin metadata suffix
 
     Similarly to C++, image converter plugins are loaded through
     :ref:`SceneConverterManager`:

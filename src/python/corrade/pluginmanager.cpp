@@ -27,7 +27,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for pluginList() and aliasList() */
-#include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/Containers/StringIterable.h>
 #include <Corrade/PluginManager/AbstractManager.h>

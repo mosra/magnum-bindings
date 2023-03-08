@@ -31,7 +31,14 @@
     :ref:`AbstractFont.manager`, ensuring the manager is not deleted before the
     plugin instances are.
 
+.. TODO couldn't the plugin_interface etc. docs be parsed from pybind's docs?
+    repeating them for every plugin is annoying
+
 .. py:class:: magnum.text.AbstractFont
+    :data plugin_interface: Plugin interface string
+    :data plugin_search_paths: Plugin search paths
+    :data plugin_suffix: Plugin suffix
+    :data plugin_metadata_suffix: Plugin metadata suffix
 
     Similarly to C++, font plugins are loaded through :ref:`FontManager`:
 

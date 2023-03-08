@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import List
 
 # TODO make this less brittle
 sys.path = [os.path.join(os.path.dirname(__file__), '../../build/src/python/')] + sys.path
@@ -51,6 +52,25 @@ magnum.TARGET_GLES2 = DoNotPrintValue()
 magnum.TARGET_WEBGL = DoNotPrintValue()
 magnum.TARGET_EGL = DoNotPrintValue()
 magnum.TARGET_VK = DoNotPrintValue()
+
+# TODO ugh... can this be expressed directly in pybind? and the docs parsed
+#   from it so i don't need to repeat them in docs/*.rst files?
+for i in [magnum.text.AbstractFont,
+          magnum.trade.AbstractImporter,
+          magnum.trade.AbstractImageConverter,
+          magnum.trade.AbstractSceneConverter]:
+    i.__annotations__ = {
+        'plugin_interface': str,
+        'plugin_search_paths': List[str],
+        'plugin_suffix': str,
+        'plugin_metadata_suffix': str
+    }
+
+    # Don't show the values. Without delattr() first it complains that the
+    # attribute can't be set
+    for key in i.__annotations__:
+        delattr(i, key)
+        setattr(i, key, DoNotPrintValue())
 
 # TODO ugh... can this be expressed directly in pybind?
 corrade.__annotations__ = {

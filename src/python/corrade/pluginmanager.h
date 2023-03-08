@@ -27,6 +27,9 @@
 
 #include <memory> /* :( */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h> /** @todo remove once I can return Array<String> directly */
+#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/PluginManager/Manager.h>
 
 #include "Corrade/PythonBindings.h"
@@ -70,6 +73,27 @@ namespace corrade {
 
 template<class T> void plugin(py::class_<T, PluginManager::PyPluginHolder<T>, PluginManager::AbstractPlugin>& c) {
     c
+        .def_property_readonly_static("plugin_interface", [](const py::object&) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{T::pluginInterface()};
+        }, "Plugin interface string")
+        .def_property_readonly_static("plugin_search_paths", [](const py::object&) {
+            /** @todo drop std::string in favor of our own string caster */
+            std::vector<std::string> out;
+            for(auto&& i: T::pluginSearchPaths())
+                out.push_back(i);
+            return out;
+        }, "Plugin search paths")
+        .def_property_readonly_static("plugin_suffix", [](const py::object&) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{T::pluginSuffix()};
+        }, "Plugin binary suffix")
+        .def_property_readonly_static("plugin_metadata_suffix", [](const py::object&) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{T::pluginMetadataSuffix()};
+        }, "Plugin metadata file suffix")
+        /** @todo plugin interface string, search paths, suffix, metadata file
+            suffix (all are static properties) */
         .def_property_readonly("manager", [](const T& self) {
             return pyObjectHolderFor<PluginManager::PyPluginHolder>(self).manager;
         }, "Manager owning this plugin instance");
