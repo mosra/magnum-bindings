@@ -128,10 +128,10 @@
 
 .. py:property:: magnum.trade.MeshData.mutable_index_data
     :raise AttributeError: If :ref:`index_data_flags` doesn't contain
-        :ref:`DataFlag.MUTABLE`
+        :ref:`DataFlags.MUTABLE`
 .. py:property:: magnum.trade.MeshData.mutable_vertex_data
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
-        :ref:`DataFlag.MUTABLE`
+        :ref:`DataFlags.MUTABLE`
 .. py:property:: magnum.trade.MeshData.index_count
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
 .. py:property:: magnum.trade.MeshData.index_type
@@ -142,7 +142,7 @@
     :raise AttributeError: If :ref:`is_indexed` is :py:`False`
 .. py:property:: magnum.trade.MeshData.mutable_indices
     :raise AttributeError: If :ref:`index_data_flags` doesn't contain
-        :ref:`DataFlag.MUTABLE`
+        :ref:`DataFlags.MUTABLE`
 .. py:function:: magnum.trade.MeshData.attribute_name
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
@@ -188,7 +188,7 @@
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
-        :ref:`DataFlag.MUTABLE`
+        :ref:`DataFlags.MUTABLE`
 
 .. py:enum:: magnum.trade.SceneField
 

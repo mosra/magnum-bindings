@@ -100,6 +100,9 @@ C++                                                             Python
 `Enums`_
 --------
 
+Custom construction helpers for enums are converted to functions directly on
+the Python enum class.
+
 .. class:: m-table
 
 ============================================== ============================
@@ -107,6 +110,24 @@ C++                                            Python
 ============================================== ============================
 :dox:`PixelFormat::RGB8Unorm`                  :ref:`PixelFormat.RGB8_UNORM`
 :dox:`MeshPrimitive::TriangleStrip`            :ref:`MeshPrimitive.TRIANGLE_STRIP`
+:dox:`Trade::meshAttributeCustom()`            :ref:`trade.MeshAttribute.CUSTOM() <trade.MeshAttribute>`
+:dox:`Trade::isMeshAttributeCustom()`          :ref:`trade.MeshAttribute.is_custom <trade.MeshAttribute>`
+============================================== ============================
+
+`Enum sets`_
+------------
+
+Compared to C++, there's just one enum type with a plural name, and it contains
+both the values and binary operators. Additionally, there's an explicit
+``NONE`` value for an empty set.
+
+.. class:: m-table
+
+============================================== ============================
+C++                                            Python
+============================================== ============================
+:dox:`Trade::DataFlag::Mutable`                :ref:`trade.DataFlags.MUTABLE`
+:dox:`Trade::DataFlags{} <Trade::DataFlags>`   :ref:`trade.DataFlags.NONE`
 ============================================== ============================
 
 `Constants`_

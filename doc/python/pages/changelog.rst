@@ -115,7 +115,7 @@ Changelog
     :ref:`trade.AbstractSceneConverter`
 -   Exposed the whole interface of :ref:`trade.MeshData` including typed access
     to index and attribute data, together with :ref:`VertexFormat`,
-    :ref:`trade.DataFlag`, :ref:`trade.AbstractImporter.mesh_attribute_name()`
+    :ref:`trade.DataFlags`, :ref:`trade.AbstractImporter.mesh_attribute_name()`
     and :ref:`trade.AbstractImporter.mesh_attribute_for_name()`
 -   Exposed the whole interface of :ref:`trade.SceneData` including typed
     access to mapping and field data, together with

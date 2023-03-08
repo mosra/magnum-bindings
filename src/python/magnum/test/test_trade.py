@@ -152,8 +152,8 @@ class MeshData(unittest.TestCase):
 
         mesh = importer.mesh(0)
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
-        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
         # Index properties
         self.assertTrue(mesh.is_indexed)
@@ -377,7 +377,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
         index_data = mesh.index_data
         mutable_index_data = mesh.mutable_index_data
@@ -394,7 +394,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
         vertex_data = mesh.vertex_data
         mutable_vertex_data = mesh.mutable_vertex_data
@@ -411,7 +411,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
         indices = mesh.indices
         mutable_indices = mesh.mutable_indices
@@ -426,7 +426,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         position_id = mesh.attribute_id(trade.MeshAttribute.POSITION)
 
         positions = mesh.attribute(position_id)
@@ -450,7 +450,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         packed_attribute = importer.mesh_attribute_for_name("_CUSTOM_PACKED_ATTRIBUTE")
         self.assertEqual(mesh.attribute_format(packed_attribute), VertexFormat.VECTOR3UB)
 
@@ -467,7 +467,7 @@ class MeshData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
 
         normalized = mesh.attribute(trade.MeshAttribute.COLOR)
@@ -483,8 +483,8 @@ class MeshData(unittest.TestCase):
         mesh = primitives.cube_solid()
         # TODO split this once there's a mesh where only one or the other would
         #   be true (maybe with zero-copy loading of PLYs / STLs?)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlag(0))
-        self.assertEqual(mesh.vertex_data_flags, trade.DataFlag(0))
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.NONE)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.NONE)
 
         with self.assertRaisesRegex(AttributeError, "mesh index data is not mutable"):
             mesh.mutable_index_data
@@ -674,7 +674,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(scene.field_name(2), trade.SceneField.TRANSFORMATION)
         self.assertEqual(scene.field_name(6), trade.SceneField.CUSTOM(1))
         # TODO some field flags in glTF please?
-        self.assertEqual(scene.field_flags(2), trade.SceneFieldFlag(0))
+        self.assertEqual(scene.field_flags(2), trade.SceneFieldFlags.NONE)
         self.assertEqual(scene.field_type(2), trade.SceneFieldType.MATRIX4X4)
         self.assertEqual(scene.field_size(3), 3)
         # TODO add some array extras once supported to have this non-zero for
@@ -694,7 +694,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(scene.field_object_offset(trade.SceneField.TRANSFORMATION, 3), 2)
         self.assertEqual(scene.field_object_offset(trade.SceneField.TRANSFORMATION, 3, 1), 2)
         # TODO some field flags in glTF please?
-        self.assertEqual(scene.field_flags(trade.SceneField.PARENT), trade.SceneFieldFlag(0))
+        self.assertEqual(scene.field_flags(trade.SceneField.PARENT), trade.SceneFieldFlags.NONE)
         self.assertEqual(scene.field_type(trade.SceneField.CUSTOM(1)), trade.SceneFieldType.STRING_OFFSET32)
         self.assertEqual(scene.field_size(trade.SceneField.CUSTOM(0)), 1)
         # TODO add some array extras once supported to have this non-zero for
@@ -818,7 +818,7 @@ class SceneData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
         scene = importer.scene(0)
-        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(scene.data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         translation_id = scene.field_id(trade.SceneField.TRANSLATION)
 
         translations = scene.mapping(translation_id)
@@ -842,7 +842,7 @@ class SceneData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
         scene = importer.scene(0)
-        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(scene.data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         translation_id = scene.field_id(trade.SceneField.TRANSLATION)
 
         translations = scene.field(translation_id)
@@ -866,7 +866,7 @@ class SceneData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
         scene = importer.scene(0)
-        self.assertEqual(scene.data_flags, trade.DataFlag.OWNED|trade.DataFlag.MUTABLE)
+        self.assertEqual(scene.data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
         pointer = scene.field(trade.SceneField.IMPORTER_STATE)
         mutable_pointer = scene.mutable_field(trade.SceneField.IMPORTER_STATE)

@@ -772,11 +772,12 @@ void trade(py::module_& m) {
     /* AbstractImporter depends on this */
     py::module_::import("corrade.pluginmanager");
 
-    py::enum_<Trade::DataFlag> dataFlag{m, "DataFlag", "Data flag"};
+    py::enum_<Trade::DataFlag> dataFlag{m, "DataFlags", "Data flags"};
     dataFlag
         .value("OWNED", Trade::DataFlag::Owned)
         .value("EXTERNALLY_OWNED", Trade::DataFlag::ExternallyOwned)
-        .value("MUTABLE", Trade::DataFlag::Mutable);
+        .value("MUTABLE", Trade::DataFlag::Mutable)
+        .value("NONE", Trade::DataFlag{});
     corrade::enumOperators(dataFlag);
 
     py::enum_<Trade::MeshAttribute> meshAttribute{m, "MeshAttribute", "Mesh attribute name"};
@@ -1154,12 +1155,13 @@ void trade(py::module_& m) {
         .value("STRING_RANGE_NULL_TERMINATED16", Trade::SceneFieldType::StringRangeNullTerminated16)
         .value("STRING_RANGE_NULL_TERMINATED64", Trade::SceneFieldType::StringRangeNullTerminated64);
 
-    py::enum_<Trade::SceneFieldFlag> sceneFieldFlag{m, "SceneFieldFlag", "Scene field flag"};
+    py::enum_<Trade::SceneFieldFlag> sceneFieldFlag{m, "SceneFieldFlags", "Scene field flags"};
     sceneFieldFlag
         .value("OFFSET_ONLY", Trade::SceneFieldFlag::OffsetOnly)
         .value("ORDERED_MAPPING", Trade::SceneFieldFlag::OrderedMapping)
         .value("IMPLICIT_MAPPING", Trade::SceneFieldFlag::ImplicitMapping)
-        .value("NULL_TERMINATED_STRING", Trade::SceneFieldFlag::NullTerminatedString);
+        .value("NULL_TERMINATED_STRING", Trade::SceneFieldFlag::NullTerminatedString)
+        .value("NONE", Trade::SceneFieldFlag{});
     corrade::enumOperators(sceneFieldFlag);
 
     py::class_<Trade::SceneData>{m, "SceneData", "Scene data"}
