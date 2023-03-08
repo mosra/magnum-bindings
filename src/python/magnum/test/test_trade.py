@@ -1018,6 +1018,11 @@ class Importer(unittest.TestCase):
 
         importer = manager.load_and_instantiate('StbImageImporter')
         self.assertEqual(importer.plugin, 'StbImageImporter')
+        self.assertEqual(importer.features, trade.ImporterFeatures.OPEN_DATA)
+        self.assertEqual(importer.flags, trade.ImporterFlags.NONE)
+
+        importer.flags = trade.ImporterFlags.VERBOSE
+        self.assertEqual(importer.flags, trade.ImporterFlags.VERBOSE)
 
     def test_set_plugin_directory(self):
         manager = trade.ImporterManager()
@@ -1421,6 +1426,14 @@ class Importer(unittest.TestCase):
             importer.image2d('A broken image')
 
 class ImageConverter(unittest.TestCase):
+    def test(self):
+        converter = trade.ImageConverterManager().load_and_instantiate('StbImageConverter')
+        self.assertEqual(converter.features, trade.ImageConverterFeatures.CONVERT2D_TO_FILE|trade.ImageConverterFeatures.CONVERT2D_TO_DATA)
+        self.assertEqual(converter.flags, trade.ImageConverterFlags.NONE)
+
+        converter.flags = trade.ImageConverterFlags.VERBOSE
+        self.assertEqual(converter.flags, trade.ImageConverterFlags.VERBOSE)
+
     def test_image2d(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
@@ -1444,6 +1457,14 @@ class ImageConverter(unittest.TestCase):
                 converter.convert_to_file(image, os.path.join(tmp, "image.hdr"))
 
 class SceneConverter(unittest.TestCase):
+    def test(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+        self.assertEqual(converter.features, trade.SceneConverterFeatures.CONVERT_MESH_TO_FILE|trade.SceneConverterFeatures.CONVERT_MESH_TO_DATA)
+        self.assertEqual(converter.flags, trade.SceneConverterFlags.NONE)
+
+        converter.flags = trade.SceneConverterFlags.VERBOSE
+        self.assertEqual(converter.flags, trade.SceneConverterFlags.VERBOSE)
+
     def test_mesh(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))

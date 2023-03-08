@@ -1425,10 +1425,31 @@ void trade(py::module_& m) {
        void*. Leaving the name as AbstractImporter (instead of Importer) to
        avoid needless name differences and because in the future there *might*
        be pure Python importers (not now tho). */
+    py::enum_<Trade::ImporterFeature> importerFeatures{m, "ImporterFeatures", "Features supported by an image converter"};
+    importerFeatures
+        .value("OPEN_DATA", Trade::ImporterFeature::OpenData)
+        .value("OPEN_STATE", Trade::ImporterFeature::OpenState)
+        .value("FILE_CALLBACK", Trade::ImporterFeature::FileCallback)
+        .value("NONE", Trade::ImporterFeature{});
+    corrade::enumOperators(importerFeatures);
+
+    py::enum_<Trade::ImporterFlag> importerFlags{m, "ImporterFlags", "Importer flags"};
+    importerFlags
+        .value("VERBOSE", Trade::ImporterFlag::Verbose)
+        .value("NONE", Trade::ImporterFlag{});
+    corrade::enumOperators(importerFlags);
+
     py::class_<Trade::AbstractImporter, PluginManager::PyPluginHolder<Trade::AbstractImporter>, PluginManager::AbstractPlugin> abstractImporter{m, "AbstractImporter", "Interface for importer plugins"};
     corrade::plugin(abstractImporter);
     abstractImporter
-        /** @todo features */
+        .def_property_readonly("features", [](Trade::AbstractImporter& self) {
+            return Trade::ImporterFeature(Containers::enumCastUnderlyingType(self.features()));
+        }, "Features supported by this importer")
+        .def_property("flags", [](Trade::AbstractImporter& self) {
+            return Trade::ImporterFlag(Containers::enumCastUnderlyingType(self.flags()));
+        }, [](Trade::AbstractImporter& self, Trade::ImporterFlag flags) {
+            self.setFlags(flags);
+        }, "Importer flags")
         .def_property_readonly("is_opened", &Trade::AbstractImporter::isOpened, "Whether any file is opened")
         .def("open_data", [](Trade::AbstractImporter& self, Containers::ArrayView<const char> data) {
             /** @todo log redirection -- but we'd need assertions to not be
@@ -1525,9 +1546,46 @@ void trade(py::module_& m) {
     corrade::manager(importerManager);
 
     /* Image converter */
+    py::enum_<Trade::ImageConverterFeature> imageConverterFeatures{m, "ImageConverterFeatures", "Features supported by an image converter"};
+    imageConverterFeatures
+        .value("CONVERT1D", Trade::ImageConverterFeature::Convert1D)
+        .value("CONVERT2D", Trade::ImageConverterFeature::Convert2D)
+        .value("CONVERT3D", Trade::ImageConverterFeature::Convert3D)
+        .value("CONVERT_COMPRESSED1D", Trade::ImageConverterFeature::ConvertCompressed1D)
+        .value("CONVERT_COMPRESSED2D", Trade::ImageConverterFeature::ConvertCompressed2D)
+        .value("CONVERT_COMPRESSED3D", Trade::ImageConverterFeature::ConvertCompressed3D)
+        .value("CONVERT1D_TO_FILE", Trade::ImageConverterFeature::Convert1DToFile)
+        .value("CONVERT2D_TO_FILE", Trade::ImageConverterFeature::Convert2DToFile)
+        .value("CONVERT3D_TO_FILE", Trade::ImageConverterFeature::Convert3DToFile)
+        .value("CONVERT_COMPRESSED1D_TO_FILE", Trade::ImageConverterFeature::ConvertCompressed1DToFile)
+        .value("CONVERT_COMPRESSED2D_TO_FILE", Trade::ImageConverterFeature::ConvertCompressed2DToFile)
+        .value("CONVERT_COMPRESSED3D_TO_FILE", Trade::ImageConverterFeature::ConvertCompressed3DToFile)
+        .value("CONVERT1D_TO_DATA", Trade::ImageConverterFeature::Convert1DToData)
+        .value("CONVERT2D_TO_DATA", Trade::ImageConverterFeature::Convert2DToData)
+        .value("CONVERT3D_TO_DATA", Trade::ImageConverterFeature::Convert3DToData)
+        .value("CONVERT_COMPRESSED1D_TO_DATA", Trade::ImageConverterFeature::ConvertCompressed1DToData)
+        .value("CONVERT_COMPRESSED2D_TO_DATA", Trade::ImageConverterFeature::ConvertCompressed2DToData)
+        .value("CONVERT_COMPRESSED3D_TO_DATA", Trade::ImageConverterFeature::ConvertCompressed3DToData)
+        .value("LEVELS", Trade::ImageConverterFeature::Levels)
+        .value("NONE", Trade::ImageConverterFeature{});
+    corrade::enumOperators(imageConverterFeatures);
+
+    py::enum_<Trade::ImageConverterFlag> imageConverterFlags{m, "ImageConverterFlags", "Image converter flags"};
+    imageConverterFlags
+        .value("VERBOSE", Trade::ImageConverterFlag::Verbose)
+        .value("NONE", Trade::ImageConverterFlag{});
+    corrade::enumOperators(imageConverterFlags);
+
     py::class_<Trade::AbstractImageConverter, PluginManager::PyPluginHolder<Trade::AbstractImageConverter>, PluginManager::AbstractPlugin> abstractImageConverter{m, "AbstractImageConverter", "Interface for image converter plugins"};
     abstractImageConverter
-        /** @todo features */
+        .def_property_readonly("features", [](Trade::AbstractImageConverter& self) {
+            return Trade::ImageConverterFeature(Containers::enumCastUnderlyingType(self.features()));
+        }, "Features supported by this converter")
+        .def_property("flags", [](Trade::AbstractImageConverter& self) {
+            return Trade::ImageConverterFlag(Containers::enumCastUnderlyingType(self.flags()));
+        }, [](Trade::AbstractImageConverter& self, Trade::ImageConverterFlag flags) {
+            self.setFlags(flags);
+        }, "Converter flags")
         .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
@@ -1537,9 +1595,51 @@ void trade(py::module_& m) {
     corrade::manager(imageConverterManager);
 
     /* Scene converter */
+    py::enum_<Trade::SceneConverterFeature> sceneConverterFeatures{m, "SceneConverterFeatures", "Features supported by a scene converter"};
+    sceneConverterFeatures
+        .value("CONVERT_MESH", Trade::SceneConverterFeature::ConvertMesh)
+        .value("CONVERT_MESH_IN_PLACE", Trade::SceneConverterFeature::ConvertMeshInPlace)
+        .value("CONVERT_MESH_TO_FILE", Trade::SceneConverterFeature::ConvertMeshToFile)
+        .value("CONVERT_MESH_TO_DATA", Trade::SceneConverterFeature::ConvertMeshToData)
+        .value("CONVERT_MULTIPLE", Trade::SceneConverterFeature::ConvertMultiple)
+        .value("CONVERT_MULTIPLE_TO_FILE", Trade::SceneConverterFeature::ConvertMultipleToFile)
+        .value("CONVERT_MULTIPLE_TO_DATA", Trade::SceneConverterFeature::ConvertMultipleToData)
+        .value("ADD_SCENES", Trade::SceneConverterFeature::AddScenes)
+        .value("ADD_ANIMATIONS", Trade::SceneConverterFeature::AddAnimations)
+        .value("ADD_LIGHTS", Trade::SceneConverterFeature::AddLights)
+        .value("ADD_CAMERAS", Trade::SceneConverterFeature::AddCameras)
+        .value("ADD_SKINS2D", Trade::SceneConverterFeature::AddSkins2D)
+        .value("ADD_SKINS3D", Trade::SceneConverterFeature::AddSkins3D)
+        .value("ADD_MESHES", Trade::SceneConverterFeature::AddMeshes)
+        .value("ADD_MATERIALS", Trade::SceneConverterFeature::AddMaterials)
+        .value("ADD_TEXTURES", Trade::SceneConverterFeature::AddTextures)
+        .value("ADD_IMAGES1D", Trade::SceneConverterFeature::AddImages1D)
+        .value("ADD_IMAGES2D", Trade::SceneConverterFeature::AddImages2D)
+        .value("ADD_IMAGES3D", Trade::SceneConverterFeature::AddImages3D)
+        .value("ADD_COMPRESSED_IMAGES1D", Trade::SceneConverterFeature::AddCompressedImages1D)
+        .value("ADD_COMPRESSED_IMAGES2D", Trade::SceneConverterFeature::AddCompressedImages2D)
+        .value("ADD_COMPRESSED_IMAGES3D", Trade::SceneConverterFeature::AddCompressedImages3D)
+        .value("MESH_LEVELS", Trade::SceneConverterFeature::MeshLevels)
+        .value("IMAGE_LEVELS", Trade::SceneConverterFeature::ImageLevels)
+        .value("NONE", Trade::SceneConverterFeature{});
+    corrade::enumOperators(sceneConverterFeatures);
+
+    py::enum_<Trade::SceneConverterFlag> sceneConverterFlags{m, "SceneConverterFlags", "Scene converter flags"};
+    sceneConverterFlags
+        .value("VERBOSE", Trade::SceneConverterFlag::Verbose)
+        .value("NONE", Trade::SceneConverterFlag{});
+    corrade::enumOperators(sceneConverterFlags);
+
     py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
-        /** @todo features */
+        .def_property_readonly("features", [](Trade::AbstractSceneConverter& self) {
+            return Trade::SceneConverterFeature(Containers::enumCastUnderlyingType(self.features()));
+        }, "Features supported by this converter")
+        .def_property("flags", [](Trade::AbstractSceneConverter& self) {
+            return Trade::SceneConverterFlag(Containers::enumCastUnderlyingType(self.flags()));
+        }, [](Trade::AbstractSceneConverter& self, Trade::SceneConverterFlag flags) {
+            self.setFlags(flags);
+        }, "Converter flags")
         /** @todo drop std::string in favor of our own string caster */
         .def("convert_to_file", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& filename) {
             /** @todo log redirection -- but we'd need assertions to not be

@@ -111,6 +111,8 @@ Changelog
     :ref:`platform.glfw.Application.dpi_scaling`
 -   Exposed :ref:`platform.glfw.Application.swap_interval` and
     :ref:`platform.glfw.Application.main_loop_iteration`
+-   Exposed :ref:`trade.AbstractImporter.features` and
+    :ref:`trade.AbstractImporter.flags` and corresponding enums
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
     :ref:`trade.AbstractSceneConverter`
 -   Exposed the whole interface of :ref:`trade.MeshData` including typed access
