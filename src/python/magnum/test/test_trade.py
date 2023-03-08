@@ -1081,6 +1081,40 @@ class Importer(unittest.TestCase):
         del metadata
         self.assertEqual(sys.getrefcount(manager), manager_refcount)
 
+    def test_configuration(self):
+        manager = trade.ImporterManager()
+
+        metadata = manager.metadata('StbImageImporter')
+        metadata_refcount = sys.getrefcount(metadata)
+
+        # Setting the value from initial configuration should make the plugin
+        # inherit that
+        initial_configuration = metadata.configuration
+        self.assertEqual(sys.getrefcount(metadata), metadata_refcount + 1)
+        self.assertEqual(initial_configuration['forceChannelCount'], '0')
+        initial_configuration['forceChannelCount'] = '7'
+
+        del initial_configuration
+        self.assertEqual(sys.getrefcount(metadata), metadata_refcount)
+
+        importer = manager.load_and_instantiate('StbImageImporter')
+        importer_refcount = sys.getrefcount(importer)
+
+        configuration = importer.configuration
+        self.assertEqual(sys.getrefcount(importer), importer_refcount + 1)
+        self.assertEqual(configuration['forceChannelCount'], '7')
+
+        configuration['forceChannelCount'] = '2'
+
+        del configuration
+        self.assertEqual(sys.getrefcount(importer), importer_refcount)
+
+        # Verify the config change is actually used and not being done on some
+        # copy that gets thrown away
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+        self.assertEqual(image.format, PixelFormat.RG8_UNORM) # not RGB8
+
     def test_no_file_opened(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         self.assertFalse(importer.is_opened)

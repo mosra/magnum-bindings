@@ -32,6 +32,7 @@
 #include <Corrade/PluginManager/AbstractManager.h>
 #include <Corrade/PluginManager/AbstractPlugin.h>
 #include <Corrade/PluginManager/PluginMetadata.h>
+#include <Corrade/Utility/ConfigurationGroup.h>
 
 #include "Corrade/PythonBindings.h"
 
@@ -42,6 +43,13 @@ namespace corrade {
 
 void pluginmanager(py::module_& m) {
     m.doc() = "Plugin management";
+
+    #ifndef CORRADE_BUILD_STATIC
+    /* Need ConfigurationGroup from there. These are a part of the same module
+       in the static build, no need to import (also can't import because there
+       it's _corrade.*) */
+    py::module_::import("corrade.utility");
+    #endif
 
     py::enum_<PluginManager::LoadState> loadState{m, "LoadState", "Plugin load state"};
     loadState
@@ -62,7 +70,9 @@ void pluginmanager(py::module_& m) {
         .def_property_readonly("name", &PluginManager::PluginMetadata::name, "Plugin name")
         .def_property_readonly("depends", &PluginManager::PluginMetadata::depends, "Plugins on which this plugin depends")
         .def_property_readonly("used_by", &PluginManager::PluginMetadata::usedBy, "Plugins which depend on this plugin")
-        .def_property_readonly("provides", &PluginManager::PluginMetadata::provides, "Plugins which are provided by this plugin");
+        .def_property_readonly("provides", &PluginManager::PluginMetadata::provides, "Plugins which are provided by this plugin")
+        /** @todo data? no plugin uses this at the moment */
+        .def_property_readonly("configuration", static_cast<Utility::ConfigurationGroup&(PluginManager::PluginMetadata::*)()>(&PluginManager::PluginMetadata::configuration), "Initial plugin-specific configuration", py::return_value_policy::reference_internal);
 
     PyNonDestructibleClass<PluginManager::AbstractManager> manager{m, "AbstractManager", "Base for plugin managers"};
     manager.attr("VERSION") = PluginManager::AbstractManager::Version;
@@ -143,7 +153,8 @@ void pluginmanager(py::module_& m) {
             /** @todo drop std::string in favor of our own string caster */
             return std::string{self.plugin()};
         }, "Plugin identifier string")
-        .def_property_readonly("metadata", &PluginManager::AbstractPlugin::metadata, "Plugin metadata", py::return_value_policy::reference_internal);
+        .def_property_readonly("metadata", &PluginManager::AbstractPlugin::metadata, "Plugin metadata", py::return_value_policy::reference_internal)
+        .def_property_readonly("configuration", static_cast<Utility::ConfigurationGroup&(PluginManager::AbstractPlugin::*)()>(&PluginManager::AbstractPlugin::configuration), "Plugin-specific configuration", py::return_value_policy::reference_internal);
 }
 
 }

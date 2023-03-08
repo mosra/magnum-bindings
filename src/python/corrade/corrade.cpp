@@ -128,12 +128,14 @@ PYBIND11_MODULE(_corrade, m) {
     py::module_ containers = m.def_submodule("containers");
     corrade::containers(containers);
 
+    py::module_ utility = m.def_submodule("utility");
+    corrade::utility(utility);
+
+    /* PluginManager needs Utility::ConfigurationGroup, needs to be defined
+       after */
     #ifdef Corrade_PluginManager_FOUND
     py::module_ pluginmanager = m.def_submodule("pluginmanager");
     corrade::pluginmanager(pluginmanager);
     #endif
-
-    py::module_ utility = m.def_submodule("utility");
-    corrade::utility(utility);
     #endif
 }
