@@ -1270,7 +1270,7 @@ class Importer(unittest.TestCase):
         scene = importer.scene("A scene")
         self.assertEqual(scene.field_count, 7)
 
-    def test_scebne_by_name_not_found(self):
+    def test_scene_by_name_not_found(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
