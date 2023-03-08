@@ -476,6 +476,12 @@
     :ref:`AbstractSceneConverter.manager`, ensuring the manager is not deleted
     before the plugin instances are.
 
+.. py:enum:: magnum.trade.SceneContents
+
+    The equivalent to C++ :dox:`Trade::sceneContentsFor()` is creating an enum
+    value using a ``FOR()`` named constructor, passing either an
+    :ref:`AbstractSceneConverter` or an opened :ref:`AbstractImporter` to it.
+
 .. TODO couldn't the plugin_interface etc. docs be parsed from pybind's docs?
     repeating them for every plugin is annoying
 
@@ -531,3 +537,11 @@
 .. py:function:: magnum.trade.AbstractSceneConverter.set_mesh_attribute_name
     :raise AssertionError: If no conversion is in progress
     :raise AssertionError: If :p:`attribute` is not custom
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add_importer_contents
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the importer contents fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add_supported_importer_contents
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the importer contents fails

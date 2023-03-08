@@ -1457,6 +1457,27 @@ class ImageConverter(unittest.TestCase):
                 converter.convert_to_file(image, os.path.join(tmp, "image.hdr"))
 
 class SceneConverter(unittest.TestCase):
+    def test_scenecontents_for_importer(self):
+        # Silly, yes, but don't want to enable StanfordImporter just for this
+        # test case
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+
+        self.assertEqual(trade.SceneContents.FOR(importer), trade.SceneContents.IMAGES2D|trade.SceneContents.NAMES)
+
+    def test_scenecontents_for_importer_not_opened(self):
+        # Silly, yes, but don't want to enable StanfordImporter just for this
+        # test case
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            trade.SceneContents.FOR(importer)
+
+    def test_scenecontents_for_converter(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        self.assertEqual(trade.SceneContents.FOR(converter), trade.SceneContents.MESHES|trade.SceneContents.NAMES)
+
     def test(self):
         converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
         self.assertEqual(converter.features, trade.SceneConverterFeatures.CONVERT_MESH_TO_FILE|trade.SceneConverterFeatures.CONVERT_MESH_TO_DATA)
@@ -1625,6 +1646,70 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "not a custom attribute"):
                 converter.set_mesh_attribute_name(trade.MeshAttribute.POSITION, 'foo')
 
+    def test_batch_add_importer_contents(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "two-meshes.gltf")
+            converter.begin_file(filename)
+            self.assertEqual(converter.mesh_count, 0)
+
+            # Nothing like that in the file
+            converter.add_importer_contents(importer, trade.SceneContents.SCENES|trade.SceneContents.CAMERAS)
+            self.assertEqual(converter.mesh_count, 0)
+
+            converter.add_importer_contents(importer)
+            self.assertEqual(converter.mesh_count, 2)
+
+    def test_batch_add_importer_contents_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "two-meshes.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(RuntimeError, "adding importer contents failed"):
+                converter.add_importer_contents(importer)
+
+    def test_batch_add_supported_importer_contents(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "two-meshes.gltf")
+            converter.begin_file(filename)
+            self.assertEqual(converter.mesh_count, 0)
+
+            # Nothing like that in the file
+            converter.add_supported_importer_contents(importer, trade.SceneContents.MESHES)
+            self.assertEqual(converter.mesh_count, 0)
+
+            # It contains cameras, nodes and scenes, none of which is supported
+            # by the converter
+            converter.add_supported_importer_contents(importer)
+            self.assertEqual(converter.mesh_count, 0)
+
+    def test_batch_add_supported_importer_contents_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "two-meshes.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(RuntimeError, "adding importer contents failed"):
+                converter.add_supported_importer_contents(importer)
+
     def test_batch_no_conversion_in_progress(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -1641,3 +1726,7 @@ class SceneConverter(unittest.TestCase):
             converter.add(mesh)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.set_mesh_attribute_name(trade.MeshAttribute.CUSTOM(1), 'foobar')
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add_importer_contents(importer)
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add_supported_importer_contents(importer)

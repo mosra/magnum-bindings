@@ -1,0 +1,89 @@
+{
+  "asset": {
+    "version": "2.0",
+    "note": "same as meshes.gltf, just with no errors, no custom attribs, no attribs that aren't valid glTF and no skinning attribs either"
+  },
+  "meshes": [
+    {
+      "name": "Indexed mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "TEXCOORD_0": 2,
+            "COLOR": 3,
+            "TEXCOORD_1": 2
+          },
+          "indices": 0
+        }
+      ]
+    },
+    {
+      "name": "Non-indexed mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1
+          }
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 2,
+      "componentType": 5123,
+      "count": 3,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 12,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 20,
+      "componentType": 5121,
+      "normalized": true,
+      "count": 3,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 24,
+      "componentType": 5125,
+      "count": 3,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 8,
+      "byteLength": 84,
+      "byteStride": 28
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 92,
+      "uri": "mesh.bin"
+    }
+  ]
+}
+

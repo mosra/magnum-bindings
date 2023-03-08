@@ -1630,6 +1630,36 @@ void trade(py::module_& m) {
         .value("NONE", Trade::SceneConverterFlag{});
     corrade::enumOperators(sceneConverterFlags);
 
+    py::enum_<Trade::SceneContent> sceneContents{m, "SceneContents", "Scene contents"};
+    sceneContents
+        .value("SCENES", Trade::SceneContent::Scenes)
+        .value("ANIMATIONS", Trade::SceneContent::Animations)
+        .value("LIGHTS", Trade::SceneContent::Lights)
+        .value("CAMERAS", Trade::SceneContent::Cameras)
+        .value("SKINS2D", Trade::SceneContent::Skins2D)
+        .value("SKINS3D", Trade::SceneContent::Skins3D)
+        .value("MESHES", Trade::SceneContent::Meshes)
+        .value("MATERIALS", Trade::SceneContent::Materials)
+        .value("TEXTURES", Trade::SceneContent::Textures)
+        .value("IMAGES1D", Trade::SceneContent::Images1D)
+        .value("IMAGES2D", Trade::SceneContent::Images2D)
+        .value("IMAGES3D", Trade::SceneContent::Images3D)
+        .value("MESH_LEVELS", Trade::SceneContent::MeshLevels)
+        .value("IMAGE_LEVELS", Trade::SceneContent::ImageLevels)
+        .value("NAMES", Trade::SceneContent::Names)
+        .value("ALL", Trade::SceneContent(Containers::enumCastUnderlyingType(~Trade::SceneContent{})))
+        .def("FOR", [](Trade::AbstractImporter& importer) {
+            if(!importer.isOpened()) {
+                PyErr_SetString(PyExc_AssertionError, "no file opened");
+                throw py::error_already_set{};
+            }
+            return Trade::SceneContent(Containers::enumCastUnderlyingType(Trade::sceneContentsFor(importer)));
+        })
+        .def("FOR", [](Trade::AbstractSceneConverter& converter) {
+            return Trade::SceneContent(Containers::enumCastUnderlyingType(Trade::sceneContentsFor(converter)));
+        });
+    corrade::enumOperators(sceneContents);
+
     py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
         .def_property_readonly("features", [](Trade::AbstractSceneConverter& self) {
@@ -1729,7 +1759,31 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             self.setMeshAttributeName(attribute, name);
-        }, "Set name of a custom mesh attribute", py::arg("attribute"), py::arg("name"));
+        }, "Set name of a custom mesh attribute", py::arg("attribute"), py::arg("name"))
+        .def("add_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            /** @todo check if contents present in the file are supported? or
+                make that a runtime failure in Magnum for easier use? */
+            if(!self.addImporterContents(importer, contents)) {
+                PyErr_SetString(PyExc_RuntimeError, "adding importer contents failed");
+                throw py::error_already_set{};
+            }
+        }, "Add importer contents", py::arg("importer"), py::arg("contents") = Trade::SceneContent(Containers::enumCastUnderlyingType(~Trade::SceneContent{})))
+        .def("add_supported_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            /** @todo check if contents present in the file are supported? or
+                make that a runtime failure in Magnum for easier use? */
+            if(!self.addSupportedImporterContents(importer, contents)) {
+                PyErr_SetString(PyExc_RuntimeError, "adding importer contents failed");
+                throw py::error_already_set{};
+            }
+        }, "Add supported importer contents", py::arg("importer"), py::arg("contents") = Trade::SceneContent(Containers::enumCastUnderlyingType(~Trade::SceneContent{})));
     corrade::plugin(abstractSceneConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractSceneConverter>, PluginManager::AbstractManager> sceneConverterManager{m, "SceneConverterManager", "Manager for scene converter plugins"};
