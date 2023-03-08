@@ -428,28 +428,6 @@ template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::
     }
 }
 
-/* Can't be named just checkResult() because the AbstractImageConverter
-   overload would confuse GCC 4.8 */
-/** @todo drop std::string in favor of our own string caster */
-template<class T, bool(Trade::AbstractSceneConverter::*f)(const T&, Containers::StringView)> void checkSceneConverterResult(Trade::AbstractSceneConverter& self, const T& mesh, const std::string& filename) {
-    /** @todo log redirection -- but we'd need assertions to not be part of
-        that so when it dies, the user can still see why */
-    bool out = (self.*f)(mesh,
-        #ifdef CORRADE_TARGET_WINDOWS
-        /* To allow people to conveniently use Python's os.path, we need to
-           convert backslashes to forward slashes as all Corrade and Magnum
-           APIs expect forward */
-        Utility::Path::fromNativeSeparators(filename)
-        #else
-        filename
-        #endif
-    );
-    if(!out) {
-        PyErr_SetString(PyExc_RuntimeError, "conversion failed");
-        throw py::error_already_set{};
-    }
-}
-
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
     switch(type) {
         #define _c(type)                                                    \
@@ -1560,7 +1538,25 @@ void trade(py::module_& m) {
     py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
         /** @todo features */
-        .def("convert_to_file", checkSceneConverterResult<Trade::MeshData, &Trade::AbstractSceneConverter::convertToFile>, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
+        /** @todo drop std::string in favor of our own string caster */
+        .def("convert_to_file", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& filename) {
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            bool out = self.convertToFile(mesh,
+                #ifdef CORRADE_TARGET_WINDOWS
+                /* To allow people to conveniently use Python's os.path, we
+                   need to convert backslashes to forward slashes as all
+                   Corrade and Magnum APIs expect forward */
+                Utility::Path::fromNativeSeparators(filename)
+                #else
+                filename
+                #endif
+            );
+            if(!out) {
+                PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+                throw py::error_already_set{};
+            }
+        }, "Convert a mesh to a file", py::arg("mesh"), py::arg("filename"));
     corrade::plugin(abstractSceneConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractSceneConverter>, PluginManager::AbstractManager> sceneConverterManager{m, "SceneConverterManager", "Manager for scene converter plugins"};
