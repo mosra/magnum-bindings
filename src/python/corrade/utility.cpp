@@ -57,6 +57,15 @@ void utility(py::module_& m) {
         }, "Value", py::arg("key"))
         .def("__setitem__", [](Utility::ConfigurationGroup& self, const std::string& key, const std::string& value) {
             self.setValue(key, value);
+        }, "Set a value", py::arg("key"), py::arg("value"))
+        .def("__setitem__", [](Utility::ConfigurationGroup& self, const std::string& key, double value) {
+            self.setValue(key, value);
+        }, "Set a value", py::arg("key"), py::arg("value"))
+        .def("__setitem__", [](Utility::ConfigurationGroup& self, const std::string& key, std::int64_t value) {
+            self.setValue(key, value);
+        }, "Set a value", py::arg("key"), py::arg("value"))
+        .def("__setitem__", [](Utility::ConfigurationGroup& self, const std::string& key, bool value) {
+            self.setValue(key, value);
         }, "Set a value", py::arg("key"), py::arg("value"));
 
     py::class_<Utility::Configuration, Utility::ConfigurationGroup>{m, "Configuration", "Parser and writer for configuration files"}

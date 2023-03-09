@@ -70,6 +70,9 @@ class Configuration(unittest.TestCase):
 
             a = utility.Configuration(filename)
             a['value'] = 'hello'
+            a['int'] = -168454764726
+            a['float'] = 3.14
+            a['bool'] = True
 
             a_refcount = sys.getrefcount(a)
             b = a.add_group('someGroup')
@@ -84,7 +87,7 @@ class Configuration(unittest.TestCase):
             a.save()
 
             with open(filename, 'r') as f:
-                self.assertEqual(f.read(), "value=hello\n[someGroup]\nsomeKey=42\n")
+                self.assertEqual(f.read(), "value=hello\nint=-168454764726\nfloat=3.14\nbool=1\n[someGroup]\nsomeKey=42\n")
 
     def test_save_different_filename(self):
         a = utility.Configuration()
