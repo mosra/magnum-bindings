@@ -144,7 +144,8 @@ void pluginmanager(py::module_& m) {
             }
 
             return state;
-        }, "Unload a plugin", py::arg("plugin"));
+        }, "Unload a plugin", py::arg("plugin"))
+        .def("register_external_manager", &PluginManager::AbstractManager::registerExternalManager, "Register an external manager for resolving inter-manager dependencies", py::arg("manager"), py::keep_alive<1, 2>());
 
     py::class_<PluginManager::AbstractPlugin, PluginManager::PyPluginHolder<PluginManager::AbstractPlugin>>{m, "AbstractPlugin", "Base class for plugin interfaces"}
         /* Plugin interface string, search paths, suffix, metadata file suffix

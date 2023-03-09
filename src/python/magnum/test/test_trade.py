@@ -1047,6 +1047,19 @@ class Importer(unittest.TestCase):
         with self.assertRaises(KeyError):
             manager.set_preferred_plugins('ApngImporter', [])
 
+    def test_register_external_manager(self):
+        # This scenario is stupid in practice, but want to test it on the
+        # Importer API for consistency
+        converter_manager = trade.ImageConverterManager()
+        converter_manager_refcount = sys.getrefcount(converter_manager)
+
+        manager = trade.ImporterManager()
+        manager.register_external_manager(converter_manager)
+        self.assertEqual(sys.getrefcount(converter_manager), converter_manager_refcount + 1)
+
+        del manager
+        self.assertEqual(sys.getrefcount(converter_manager), converter_manager_refcount)
+
     def test_metadata(self):
         manager = trade.ImporterManager()
         manager.set_preferred_plugins('PngImporter', ['StbImageImporter'])
