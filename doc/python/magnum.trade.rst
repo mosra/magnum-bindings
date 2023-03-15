@@ -523,6 +523,11 @@
 .. py:function:: magnum.trade.AbstractSceneConverter.begin_file
     :raise RuntimeError: If beginning the conversion fails
 
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractSceneConverter::beginFike()`, which expects forward
+    slashes as directory separators on all platforms.
+
 .. py:function:: magnum.trade.AbstractSceneConverter.end_file
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If ending the conversion fails

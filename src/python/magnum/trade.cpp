@@ -1712,7 +1712,16 @@ void trade(py::module_& m) {
         /** @todo begin/end (MeshOptimizer), begin/end data */
         /** @todo drop std::string in favor of our own string caster */
         .def("begin_file", [](Trade::AbstractSceneConverter& self, const std::string& filename) {
-            if(!self.beginFile(filename)) {
+            if(!self.beginFile(
+                #ifdef CORRADE_TARGET_WINDOWS
+                /* To allow people to conveniently use Python's os.path, we
+                   need to convert backslashes to forward slashes as all
+                   Corrade and Magnum APIs expect forward */
+                Utility::Path::fromNativeSeparators(filename)
+                #else
+                filename
+                #endif
+            )) {
                 PyErr_SetString(PyExc_RuntimeError, "beginning the conversion failed");
                 throw py::error_already_set{};
             }
