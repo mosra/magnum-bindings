@@ -148,6 +148,8 @@ class MeshData(unittest.TestCase):
 
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        # This adds extra attributes for joints and weights, don't want
+        importer.configuration['compatibilitySkinningAttributes'] = False
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
         mesh = importer.mesh(0)
@@ -163,79 +165,44 @@ class MeshData(unittest.TestCase):
         self.assertEqual(mesh.index_stride, 2)
 
         self.assertEqual(mesh.vertex_count, 3)
+        self.assertEqual(mesh.attribute_count(), 9)
 
-        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
-        # backwards compatibility to avoid this mess
+        # Attribute properties by ID
+        self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
+        # Custom attribute. On deprecated builds there are extra backwards
+        # compatibility JOINTS and WEIGHTS attributes.
         if magnum.BUILD_DEPRECATED:
-            self.assertEqual(mesh.attribute_count(), 11)
-
-            # Attribute properties by ID
-            self.assertEqual(mesh.attribute_name(3), trade.MeshAttribute.POSITION)
-            # Custom attribute
-            self.assertEqual(mesh.attribute_name(8), trade.MeshAttribute.CUSTOM(10))
-            self.assertEqual(mesh.attribute_id(3), 0)
-            # Attribute 5 is the second TEXTURE_COORDINATES attribute
-            self.assertEqual(mesh.attribute_id(5), 1)
-            self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(10), VertexFormat.UNSIGNED_INT)
-            self.assertEqual(mesh.attribute_offset(0), 20)
-            self.assertEqual(mesh.attribute_offset(3), 0)
-            self.assertEqual(mesh.attribute_stride(2), 28)
-            self.assertEqual(mesh.attribute_array_size(0), 0)
-            # Attribute 1 is JOINT_IDS
-            self.assertEqual(mesh.attribute_array_size(1), 4)
-
-            # Attribute properties by name
-            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
-            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
-            self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
-            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 3)
-            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 5)
-            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
-            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
-            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
-            self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
-            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
-            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
+            self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute.CUSTOM(10))
         else:
-            self.assertEqual(mesh.attribute_count(), 9)
-
-            # Attribute properties by ID
-            self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
-            # Custom attribute
             self.assertEqual(mesh.attribute_name(6), trade.MeshAttribute.CUSTOM(8))
-            self.assertEqual(mesh.attribute_id(2), 0)
-            # Attribute 4 is the second TEXTURE_COORDINATES attribute
-            self.assertEqual(mesh.attribute_id(4), 1)
-            self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(8), VertexFormat.UNSIGNED_INT)
-            self.assertEqual(mesh.attribute_offset(0), 20)
-            self.assertEqual(mesh.attribute_offset(2), 0)
-            self.assertEqual(mesh.attribute_stride(3), 28)
-            self.assertEqual(mesh.attribute_array_size(0), 0)
-            # Attribute 1 is JOINT_IDS
-            self.assertEqual(mesh.attribute_array_size(1), 4)
+        self.assertEqual(mesh.attribute_id(2), 0)
+        # Attribute 4 is the second TEXTURE_COORDINATES attribute
+        self.assertEqual(mesh.attribute_id(4), 1)
+        self.assertEqual(mesh.attribute_format(0), VertexFormat.VECTOR3UB_NORMALIZED)
+        self.assertEqual(mesh.attribute_format(8), VertexFormat.UNSIGNED_INT)
+        self.assertEqual(mesh.attribute_offset(0), 20)
+        self.assertEqual(mesh.attribute_offset(2), 0)
+        self.assertEqual(mesh.attribute_stride(3), 28)
+        self.assertEqual(mesh.attribute_array_size(0), 0)
+        # Attribute 1 is JOINT_IDS
+        self.assertEqual(mesh.attribute_array_size(1), 4)
 
-            # Attribute properties by name
-            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
-            self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
-            self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
-            self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
-            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 2)
-            self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 4)
-            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
-            self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
-            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
-            self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
-            self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
-            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
-            self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
+        # Attribute properties by name
+        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
+        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
+        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
+        self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 2)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 4)
+        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
+        self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
+        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
+        self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.POSITION), 0)
+        self.assertEqual(mesh.attribute_stride(trade.MeshAttribute.WEIGHTS), 28)
+        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.POSITION), 0)
+        self.assertEqual(mesh.attribute_array_size(trade.MeshAttribute.WEIGHTS), 4)
 
     def test_index_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
