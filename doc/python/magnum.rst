@@ -46,7 +46,8 @@
 
     An owning counterpart to :ref:`ImageView2D` / :ref:`MutableImageView2D`.
     Holds its own data buffer, thus doesn't have an equivalent to
-    :ref:`ImageView2D.owner`. Implicitly convertible to :ref:`ImageView2D` /
+    :ref:`ImageView2D.owner`. The :ref:`data` and :ref:`pixels` views allow
+    mutable access. Implicitly convertible to :ref:`ImageView2D` /
     :ref:`MutableImageView2D`, so all APIs consuming image views work with this
     type as well.
 
@@ -75,21 +76,60 @@
 
     The :ref:`owner` is :py:`None` if the view is empty.
 
+    `Pixel data access`_
+    ====================
+
+    The class makes use of Python's dynamic nature and provides direct access
+    to pixel data in their concrete types via :ref:`pixels`. The returned views
+    point to the underlying image data, element access coverts to a type
+    corresponding to a particular :ref:`PixelFormat` and for
+    performance-oriented access the view implements a buffer protocol with a
+    corresponding type annotation.
+
+    Normalized formats (such as :ref:`PixelFormat.RGB8_UNORM` but also
+    :ref:`PixelFormat.RGBA8_SRGB`) are unpacked to a corresponding
+    floating-point representation in element access and packed from a
+    floating-point representation in mutable acess. The type annotation is
+    however still matching the original type (such as :py:`'3B'` / :py:`'4B'`
+    in these cases), so code consuming these via the buffer protocol needs to
+    handle the normalization explicitly if needed.
+
+    ..
+        >>> from magnum import *
+        >>> import numpy as np
+        >>> import array
+
+    .. code:: pycon
+
+        >>> data = array.array('B', [0xf3, 0x2a, 0x80, 0x23, 0x00, 0xff, 0x00, 0xff])
+        >>> image = ImageView2D(PixelFormat.RGBA8_SRGB, (2, 1), data)
+        >>> image.pixels[0, 0] # sRGB -> float conversion
+        Vector(0.896269, 0.0231534, 0.215861, 0.137255)
+        >>> np.array(image.pixels, copy=False)[0]
+        array([[243,  42, 128,  35],
+               [  0, 255,   0, 255]], dtype=uint8)
+
 .. py:class:: magnum.ImageView3D
 
     See :ref:`ImageView2D` for more information.
 
 .. py:class:: magnum.MutableImageView1D
 
-    See :ref:`ImageView2D` for more information.
+    See :ref:`ImageView2D` for more information. The only difference to the
+    non-mutable variant is that it's possible to modify the image through
+    :ref:`data` and :ref:`pixels`.
 
 .. py:class:: magnum.MutableImageView2D
 
-    See :ref:`ImageView2D` for more information.
+    See :ref:`ImageView2D` for more information. The only difference to the
+    non-mutable variant is that it's possible to modify the image through
+    :ref:`data` and :ref:`pixels`.
 
 .. py:class:: magnum.MutableImageView3D
 
-    See :ref:`ImageView2D` for more information.
+    See :ref:`ImageView2D` for more information. The only difference to the
+    non-mutable variant is that it's possible to modify the image through
+    :ref:`data` and :ref:`pixels`.
 
 .. py:function:: magnum.ImageView1D.__init__(self, arg0: magnum.ImageView1D)
     :raise RuntimeError: If :ref:`trade.ImageData1D.is_compressed` is :py:`True`

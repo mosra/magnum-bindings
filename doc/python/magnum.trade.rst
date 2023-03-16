@@ -34,6 +34,18 @@
     :ref:`ImageView2D` / :ref:`MutableImageView2D`, so all APIs consuming image
     views work with this type as well.
 
+    `Pixel data access`_
+    ====================
+
+    The class makes use of Python's dynamic nature and provides direct access
+    to pixel data in their concrete types via :ref:`pixels`. See
+    :ref:`ImageView2D` documentation for more information and usage example.
+
+    Compared to :ref:`Image2D` and :ref:`ImageView2D` / :ref:`MutableImageView2D`,
+    the :ref:`data` and :ref:`pixels` views are immutable and mutable access
+    is provided depending on the value of :ref:`data_flags` via
+    :ref:`mutable_data` and :ref:`mutable_pixels`.
+
 .. py:class:: magnum.trade.ImageData3D
 
     See :ref:`ImageData2D` for more information.
@@ -44,6 +56,16 @@
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 .. py:property:: magnum.trade.ImageData3D.storage
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
+
+.. py:property:: magnum.trade.ImageData1D.mutable_data
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:property:: magnum.trade.ImageData2D.mutable_data
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:property:: magnum.trade.ImageData3D.mutable_data
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
 
 .. py:property:: magnum.trade.ImageData1D.format
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
@@ -65,6 +87,19 @@
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 .. py:property:: magnum.trade.ImageData3D.pixels
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
+
+.. py:property:: magnum.trade.ImageData1D.mutable_pixels
+    :raise AttributeError: If :ref:`is_compressed` is :py:`True`
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:property:: magnum.trade.ImageData2D.mutable_pixels
+    :raise AttributeError: If :ref:`is_compressed` is :py:`True`
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:property:: magnum.trade.ImageData3D.mutable_pixels
+    :raise AttributeError: If :ref:`is_compressed` is :py:`True`
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
 
 .. py:enum:: magnum.trade.MeshAttribute
 

@@ -39,6 +39,7 @@
 #include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 #include "Magnum/PythonBindings.h"
 
+#include "magnum/acessorsForPixelFormat.h"
 #include "magnum/bootstrap.h"
 
 #ifdef MAGNUM_BUILD_STATIC
@@ -68,8 +69,15 @@ template<class T> void image(py::class_<T>& c) {
             return Containers::pyArrayViewHolder(self.data(), self.data() ? py::cast(self) : py::none{});
         }, "Raw image data")
         .def_property_readonly("pixels", [](T& self) {
-            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions + 1, const char>{self.pixels()}, self.data() ? py::cast(self) : py::none{});
-        }, "View on pixel data");
+            const PixelFormat format = self.format();
+            const std::size_t itemsize = pixelFormatSize(format);
+            const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForPixelFormat(format);
+            if(!formatStringGetitemSetitem.first()) {
+                PyErr_SetString(PyExc_NotImplementedError, "access to this pixel format is not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions, char>{flattenPixelView(self.data(), self.pixels()), formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, self.data() ? py::cast(self) : py::none{});
+        }, "Pixel data");
 }
 
 template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
@@ -138,8 +146,15 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
             pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner;
         }, "Raw image data")
         .def_property_readonly("pixels", [](T& self) {
-            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions + 1, typename T::Type>{self.pixels()}, pyObjectHolderFor<PyImageViewHolder>(self).owner);
-        }, "View on pixel data")
+            const PixelFormat format = self.format();
+            const std::size_t itemsize = pixelFormatSize(format);
+            const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForPixelFormat(format);
+            if(!formatStringGetitemSetitem.first()) {
+                PyErr_SetString(PyExc_NotImplementedError, "access to this pixel format is not implemented yet, sorry");
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<T::Dimensions, typename T::Type>{flattenPixelView(self.data(), self.pixels()), formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, pyObjectHolderFor<PyImageViewHolder>(self).owner);
+        }, "Pixel data")
 
         .def_property_readonly("owner", [](T& self) {
             return pyObjectHolderFor<PyImageViewHolder>(self).owner;

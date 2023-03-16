@@ -50,6 +50,7 @@
 
 #include "corrade/EnumOperators.h"
 #include "corrade/pluginmanager.h"
+#include "magnum/acessorsForPixelFormat.h"
 #include "magnum/bootstrap.h"
 
 #ifdef CORRADE_TARGET_WINDOWS
@@ -173,6 +174,17 @@ template<UnsignedInt dimensions, class T> PyObject* implicitlyConvertibleToImage
     return r;
 }
 
+template<UnsignedInt dimensions, class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>> imagePixelsView(Trade::ImageData<dimensions>& image, const Containers::ArrayView<T> data, const Containers::StridedArrayView<dimensions + 1, T>& pixels) {
+    const PixelFormat format = image.format();
+    const std::size_t itemsize = pixelFormatSize(format);
+    const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForPixelFormat(format);
+    if(!formatStringGetitemSetitem.first()) {
+        PyErr_SetString(PyExc_NotImplementedError, "access to this pixel format is not implemented yet, sorry");
+        throw py::error_already_set{};
+    }
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<dimensions, T>{flattenPixelView(data, pixels), formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(image));
+}
+
 template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dimensions>>& c) {
     /*
         Missing APIs:
@@ -209,6 +221,9 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
         /* There are no constructors at the moment --- expecting those types
            get only created by importers. (It would also need the Array type
            and movability figured out, postponing that to later.) */
+        .def_property_readonly("data_flags", [](Trade::ImageData<dimensions>& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.dataFlags()));
+        }, "Data flags")
 
         /* Properties */
         .def_property_readonly("is_compressed", &Trade::ImageData<dimensions>::isCompressed, "Whether the image is compressed")
@@ -242,14 +257,31 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
         .def_property_readonly("data", [](Trade::ImageData<dimensions>& self) {
             return Containers::pyArrayViewHolder(self.data(), py::cast(self));
         }, "Raw image data")
+        .def_property_readonly("mutable_data", [](Trade::ImageData<dimensions>& self) {
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "image data is not mutable");
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(self.mutableData(), py::cast(self));
+        }, "Mutable raw image data")
         .def_property_readonly("pixels", [](Trade::ImageData<dimensions>& self) {
             if(self.isCompressed()) {
                 PyErr_SetString(PyExc_AttributeError, "image is compressed");
                 throw py::error_already_set{};
             }
-
-            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<dimensions + 1, const char>{self.pixels()}, py::cast(self));
-        }, "View on pixel data");
+            return imagePixelsView(self, self.data(), self.pixels());
+        }, "Pixel data")
+        .def_property_readonly("mutable_pixels", [](Trade::ImageData<dimensions>& self) {
+            if(self.isCompressed()) {
+                PyErr_SetString(PyExc_AttributeError, "image is compressed");
+                throw py::error_already_set{};
+            }
+            if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AttributeError, "image data is not mutable");
+                throw py::error_already_set{};
+            }
+            return imagePixelsView(self, self.mutableData(), self.mutablePixels());
+        }, "Mutable pixel data");
 }
 
 /* For some reason having ...Args as the second (and not last) template

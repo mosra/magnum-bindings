@@ -51,7 +51,6 @@ template<> constexpr const char* pythonFormatString<std::uint32_t>() { return "I
 template<> constexpr const char* pythonFormatString<std::int64_t>() { return "q"; }
 template<> constexpr const char* pythonFormatString<std::uint64_t>() { return "Q"; }
 /** @todo how to represent std::size_t? conflicts with uint32_t/uint64_t above */
-/** @todo half? take from Magnum? */
 template<> constexpr const char* pythonFormatString<float>() { return "f"; }
 template<> constexpr const char* pythonFormatString<double>() { return "d"; }
 

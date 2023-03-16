@@ -221,11 +221,13 @@ class Framebuffer(GLTestCase):
         self.assertEqual(sys.getrefcount(a), a_refcount)
 
         pixels = a.pixels
+        self.assertEqual(pixels.size, (2, 2))
+        self.assertEqual(pixels.stride, (8, 4))
+        self.assertEqual(pixels.format, '4B')
         self.assertIs(pixels.owner, a)
+        # Rounding errors in the 8-bit representation
+        self.assertEqual(pixels[0, 0], Color4(1, 0.501961, 0.74902))
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
-        self.assertEqual(ord(a.pixels[0, 0, 0]), 0xff)
-        self.assertEqual(ord(a.pixels[0, 1, 1]), 0x80)
-        self.assertEqual(ord(a.pixels[1, 0, 2]), 0xbf)
 
         del pixels
         self.assertEqual(sys.getrefcount(a), a_refcount)
@@ -259,9 +261,8 @@ class Framebuffer(GLTestCase):
         a = MutableImageView2D(PixelFormat.RGBA8_UNORM, (2, 2), bytearray(16))
         framebuffer.read(Range2Di.from_size((1, 1), (2, 2)), a)
         self.assertEqual(a.size, Vector2i(2, 2))
-        self.assertEqual(ord(a.pixels[0, 0, 0]), 0xff)
-        self.assertEqual(ord(a.pixels[0, 1, 1]), 0x80)
-        self.assertEqual(ord(a.pixels[1, 0, 2]), 0xbf)
+        # Rounding errors in the 8-bit representation
+        self.assertEqual(a.pixels[0, 0], Color4(1, 0.501961, 0.74902))
 
 class Mesh(GLTestCase):
     def test_init(self):

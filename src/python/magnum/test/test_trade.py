@@ -41,23 +41,11 @@ class ImageData(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
 
         image = importer.image2d(0)
-        image_refcount = sys.getrefcount(image)
         self.assertFalse(image.is_compressed)
         self.assertEqual(image.storage.alignment, 1) # libPNG has 4 tho
         self.assertEqual(image.format, PixelFormat.RGB8_UNORM)
         self.assertEqual(image.pixel_size, 3)
         self.assertEqual(image.size, Vector2i(3, 2))
-        # TODO: ugh, report as bytes, not chars
-        self.assertEqual(ord(image.pixels[1, 2, 2]), 181)
-        self.assertEqual(ord(image.data[9 + 6 + 2]), 181) # libPNG has 12 +
-
-        data = image.data
-        self.assertEqual(len(data), 3*3*2)
-        self.assertIs(data.owner, image)
-        self.assertEqual(sys.getrefcount(image), image_refcount + 1)
-
-        del data
-        self.assertEqual(sys.getrefcount(image), image_refcount)
 
     def test_compressed(self):
         # The only way to get an image instance is through a manager
@@ -100,6 +88,107 @@ class ImageData(unittest.TestCase):
             view = ImageView2D(image)
         with self.assertRaisesRegex(RuntimeError, "image is compressed"):
             mutable_view = MutableImageView2D(image)
+
+    def test_data_access(self):
+        # The only way to get an image instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
+
+        image = importer.image2d(0)
+        image_refcount = sys.getrefcount(image)
+        self.assertEqual(image.storage.alignment, 1) # libPNG has 4 tho
+        self.assertEqual(image.format, PixelFormat.RGB8_UNORM)
+        self.assertEqual(image.size, Vector2i(3, 2))
+
+        data = image.data
+        self.assertEqual(len(data), 3*3*2)
+        self.assertEqual(ord(data[9 + 6 + 2]), 181) # libPNG has 12 +
+        self.assertIs(data.owner, image)
+        self.assertEqual(sys.getrefcount(image), image_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(image), image_refcount)
+
+        mutable_data = image.data
+        self.assertEqual(len(mutable_data), 3*3*2)
+        self.assertEqual(ord(mutable_data[9 + 6 + 2]), 181) # libPNG has 12 +
+        self.assertIs(mutable_data.owner, image)
+        self.assertEqual(sys.getrefcount(image), image_refcount + 1)
+
+        del mutable_data
+        self.assertEqual(sys.getrefcount(image), image_refcount)
+
+    def test_mutable_data_access(self):
+        # The only way to get an image instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
+
+        image = importer.image2d(0)
+        self.assertEqual(image.data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+
+        data = image.data
+        mutable_data = image.mutable_data
+        # TODO: ugh, report as bytes, not chars
+        self.assertEqual(ord(data[13]), 254)
+        self.assertEqual(ord(mutable_data[13]), 254)
+
+        mutable_data[13] = chr(76)
+        self.assertEqual(data[13], chr(76))
+
+    def test_pixels_access(self):
+        # The only way to get an image instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
+
+        image = importer.image2d(0)
+        image_refcount = sys.getrefcount(image)
+        self.assertEqual(image.storage.alignment, 1) # libPNG has 4 tho
+        self.assertEqual(image.format, PixelFormat.RGB8_UNORM)
+        self.assertEqual(image.size, Vector2i(3, 2))
+
+        pixels = image.pixels
+        self.assertEqual(pixels.size, (2, 3))
+        self.assertEqual(pixels.stride, (9, 3))
+        self.assertEqual(pixels.format, '3B')
+        self.assertEqual(pixels[0, 2], Color3(0.792157, 0.996078, 0.466667))
+        self.assertEqual(pixels[1, 0], Color3(0.870588, 0.678431, 0.709804))
+        self.assertIs(pixels.owner, image)
+        self.assertEqual(sys.getrefcount(image), image_refcount + 1)
+
+        del pixels
+        self.assertEqual(sys.getrefcount(image), image_refcount)
+
+    def test_mutable_pixels_access(self):
+        # The only way to get an image instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "rgb.png"))
+
+        image = importer.image2d(0)
+        self.assertEqual(image.data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+
+        pixels = image.pixels
+        mutable_pixels = image.mutable_pixels
+        self.assertEqual(pixels[0, 2], Color3(0.792157, 0.996078, 0.466667))
+        self.assertEqual(mutable_pixels[0, 2], Color3(0.792157, 0.996078, 0.466667))
+
+        mutable_pixels[0, 2] *= 0.5
+        self.assertEqual(pixels[0, 2], Color3(0.396078, 0.498039, 0.235294))
+
+    def test_data_access_not_mutable(self):
+        pass
+        # TODO implement once there's a way to get immutable ImageData, either
+        #   by "deserializing" a binary blob, or by mmapping a KTX file etc.
+
+    def test_pixels_access_unsupported_format(self):
+        # The only way to get an image instance is through a manager
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "dxt10-depth32f-stencil8ui.dds"))
+
+        image = importer.image2d(0)
+        self.assertEqual(image.format, PixelFormat.DEPTH32F_STENCIL8UI)
+
+        with self.assertRaisesRegex(NotImplementedError, "access to this pixel format is not implemented yet, sorry"):
+            image.pixels
 
 class MeshData(unittest.TestCase):
     def test_custom_attribute(self):

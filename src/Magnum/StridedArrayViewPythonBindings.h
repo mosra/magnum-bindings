@@ -25,8 +25,9 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <Corrade/Containers/StridedArrayViewPythonBindings.h>
 #include <Magnum/Magnum.h>
+
+#include "Corrade/Containers/StridedArrayViewPythonBindings.h"
 
 namespace Corrade { namespace Containers { namespace Implementation {
 
@@ -37,7 +38,9 @@ namespace Corrade { namespace Containers { namespace Implementation {
 
 #define _c(type, string)                                                    \
     template<> constexpr const char* pythonFormatString<Magnum::type>() { return string; }
+_c(Half,        "e")
 _c(Vector2,     "2f")
+_c(Vector2h,    "2e")
 _c(Vector2d,    "2d")
 _c(Vector2ub,   "2B")
 _c(Vector2b,    "2b")
@@ -46,6 +49,7 @@ _c(Vector2s,    "2h")
 _c(Vector2ui,   "2I")
 _c(Vector2i,    "2i")
 _c(Vector3,     "3f")
+_c(Vector3h,    "3e")
 _c(Vector3d,    "3d")
 _c(Vector3ub,   "3B")
 _c(Vector3b,    "3b")
@@ -54,6 +58,7 @@ _c(Vector3s,    "3h")
 _c(Vector3ui,   "3I")
 _c(Vector3i,    "3i")
 _c(Vector4,     "4f")
+_c(Vector4h,    "4e")
 _c(Vector4d,    "4d")
 _c(Vector4ub,   "4B")
 _c(Vector4b,    "4b")
