@@ -47,6 +47,7 @@ cmake .. \
     -DMAGNUM_WITH_WINDOWLESS${PLATFORM_GL_API}APPLICATION=ON \
     -DMAGNUM_WITH_ANYIMAGEIMPORTER=ON \
     -DMAGNUM_WITH_ANYSCENECONVERTER=ON \
+    -DMAGNUM_WITH_TGAIMPORTER=ON \
     -G Ninja
 
 # In case of a static build there's no way for the test to know the plugin

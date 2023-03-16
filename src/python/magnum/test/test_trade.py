@@ -1005,9 +1005,16 @@ class Importer(unittest.TestCase):
 
     def test_set_preferred_plugins(self):
         manager = trade.ImporterManager()
-        # TODO test this better once we can verify it gets actually loaded
+
+        # TGA importer is loaded directly
+        importer = manager.load_and_instantiate('TgaImporter')
+        self.assertEqual(importer.metadata.name, 'TgaImporter')
+
         manager.set_preferred_plugins('TgaImporter', ['StbImageImporter', 'DevIlImageImporter'])
-        self.assertIn('StbImageImporter', manager.alias_list)
+
+        # TGA importer is loaded from the preferred implementation
+        importer = manager.load_and_instantiate('TgaImporter')
+        self.assertEqual(importer.metadata.name, 'StbImageImporter')
 
     def test_set_preferred_plugins_alias_not_found(self):
         manager = trade.ImporterManager()

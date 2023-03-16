@@ -73,6 +73,7 @@ cmake .. ^
     -DMAGNUM_WITH_WINDOWLESSWGLAPPLICATION=ON ^
     -DMAGNUM_WITH_ANYIMAGEIMPORTER=ON ^
     -DMAGNUM_WITH_ANYSCENECONVERTER=ON ^
+    -DMAGNUM_WITH_TGAIMPORTER=ON ^
     %COMPILER_EXTRA% -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b
