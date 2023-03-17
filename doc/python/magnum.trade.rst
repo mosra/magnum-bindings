@@ -402,6 +402,22 @@
     :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
     :raise KeyError: If :p:`name` was not found
 
+.. py:property:: magnum.trade.AbstractImporter.texture_count
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.texture_for_name
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.texture_name
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`texture_count`
+
+.. TODO this needs distinction by parameter names, at least
+
+.. py:function:: magnum.trade.AbstractImporter.texture
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If texture import fails
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`texture_count`
+    :raise KeyError: If :p:`name` was not found
+
 .. py:property:: magnum.trade.AbstractImporter.image1d_count
     :raise AssertionError: If no file is opened
 .. py:property:: magnum.trade.AbstractImporter.image2d_count

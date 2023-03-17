@@ -42,6 +42,7 @@
 #include <Magnum/Trade/ImageData.h>
 #include <Magnum/Trade/MeshData.h>
 #include <Magnum/Trade/SceneData.h>
+#include <Magnum/Trade/TextureData.h>
 
 #include "Corrade/Containers/PythonBindings.h"
 #include "Corrade/Containers/OptionalPythonBindings.h"
@@ -1453,6 +1454,29 @@ void trade(py::module_& m) {
             return sceneFieldView(self, id, self.mutableField(id));
         }, "Mutable data for given field", py::arg("name"));
 
+    py::enum_<Trade::TextureType>{m, "TextureType", "Texture type"}
+        .value("TEXTURE1D", Trade::TextureType::Texture1D)
+        .value("TEXTURE1D_ARRAY", Trade::TextureType::Texture1DArray)
+        .value("TEXTURE2D", Trade::TextureType::Texture2D)
+        .value("TEXTURE2D_ARRAY", Trade::TextureType::Texture2DArray)
+        .value("TEXTURE3D", Trade::TextureType::Texture3D)
+        .value("CUBE_MAP", Trade::TextureType::CubeMap)
+        .value("CUBE_MAP_ARRAY", Trade::TextureType::CubeMapArray);
+
+    py::class_<Trade::TextureData>{m, "TextureData", "Texture data"}
+        .def_property_readonly("type", &Trade::TextureData::type, "Texture type")
+        .def_property_readonly("minification_filter", &Trade::TextureData::minificationFilter, "Minification filter")
+        .def_property_readonly("magnification_filter", &Trade::TextureData::magnificationFilter, "Magnification filter")
+        .def_property_readonly("mipmap_filter", &Trade::TextureData::mipmapFilter, "Mipmap filter")
+        .def_property_readonly("wrapping", [](Trade::TextureData& self) {
+            return std::make_tuple(
+                self.wrapping()[0],
+                self.wrapping()[1],
+                self.wrapping()[2]
+            );
+        }, "Wrapping")
+        .def_property_readonly("image", &Trade::TextureData::image, "Image ID");
+
     /* Importer. Skipping file callbacks and openState as those operate with
        void*. Leaving the name as AbstractImporter (instead of Importer) to
        avoid needless name differences and because in the future there *might*
@@ -1554,6 +1578,12 @@ void trade(py::module_& m) {
                 return std::string{attribute};
             return {};
         }, "String name for given custom mesh attribute", py::arg("name"))
+
+        .def_property_readonly("texture_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::textureCount>, "Texture count")
+        .def("texture_for_name", checkOpenedString<Int, &Trade::AbstractImporter::textureForName>, "Texture ID for given name", py::arg("name"))
+        .def("texture_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::textureName, &Trade::AbstractImporter::textureCount>, "Texture name", py::arg("id"))
+        .def("texture", checkOpenedBoundsResult<Trade::TextureData, &Trade::AbstractImporter::texture, &Trade::AbstractImporter::textureCount>, "Texture", py::arg("id"))
+        .def("texture", checkOpenedBoundsResultString<Trade::TextureData, &Trade::AbstractImporter::texture, &Trade::AbstractImporter::textureForName>, "Texture for given name", py::arg("name"))
 
         .def_property_readonly("image1d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image1DCount>, "One-dimensional image count")
         .def_property_readonly("image2d_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::image2DCount>, "Two-dimensional image count")

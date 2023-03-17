@@ -66,6 +66,8 @@ class ImageData(unittest.TestCase):
             image.pixel_size
         with self.assertRaisesRegex(AttributeError, "image is compressed"):
             image.pixels
+        with self.assertRaisesRegex(AttributeError, "image is compressed"):
+            image.mutable_pixels
 
     def test_convert_view(self):
         # The only way to get an image instance is through a manager
@@ -1044,6 +1046,19 @@ class SceneData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
             scene.mutable_field(string_field)
 
+class SceneData(unittest.TestCase):
+    def test(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
+
+        texture = importer.texture("A texture")
+        self.assertEqual(texture.type, trade.TextureType.TEXTURE2D)
+        self.assertEqual(texture.minification_filter, SamplerFilter.NEAREST)
+        self.assertEqual(texture.magnification_filter, SamplerFilter.LINEAR)
+        self.assertEqual(texture.mipmap_filter, SamplerMipmap.NEAREST)
+        self.assertEqual(texture.wrapping, (SamplerWrapping.MIRRORED_REPEAT, SamplerWrapping.CLAMP_TO_EDGE, SamplerWrapping.REPEAT))
+        self.assertEqual(texture.image, 1)
+
 class Importer(unittest.TestCase):
     def test_manager(self):
         manager = trade.ImporterManager()
@@ -1233,6 +1248,17 @@ class Importer(unittest.TestCase):
             importer.mesh('')
 
         with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.texture_count
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.texture_for_name('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.texture_name(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.texture(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.texture('')
+
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image1d_count
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.image2d_count
@@ -1286,6 +1312,11 @@ class Importer(unittest.TestCase):
             importer.mesh_name(0)
         with self.assertRaisesRegex(IndexError, "ID out of bounds"):
             importer.mesh(0)
+
+        with self.assertRaises(IndexError):
+            importer.texture_name(0)
+        with self.assertRaises(IndexError):
+            importer.texture(0)
 
         with self.assertRaises(IndexError):
             importer.image1d_level_count(0)
@@ -1438,6 +1469,29 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.mesh('A broken mesh')
 
+    def test_texture_by_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
+
+        texture = importer.texture("A texture")
+        self.assertEqual(texture.image, 1)
+
+    def test_texture_by_name_not_found(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
+
+        with self.assertRaises(KeyError):
+            importer.texture('Nonexistent')
+
+    def test_texture_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
+
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.texture(1)
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.texture("A broken texture")
+
     def test_image2d(self):
         manager = trade.ImporterManager()
         manager_refcount = sys.getrefcount(manager)
@@ -1471,14 +1525,14 @@ class Importer(unittest.TestCase):
 
     def test_image2d_by_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
         image = importer.image2d('A named image')
         self.assertEqual(image.size, Vector2i(3, 2))
 
     def test_image2d_by_name_not_found(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
         with self.assertRaises(KeyError):
             importer.image2d('Nonexistent')
@@ -1494,7 +1548,7 @@ class Importer(unittest.TestCase):
 
     def test_image2d_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'image.gltf'))
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.image2d(0)
