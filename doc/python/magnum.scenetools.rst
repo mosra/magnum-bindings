@@ -1,4 +1,4 @@
-/*
+..
     This file is part of Magnum.
 
     Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
@@ -21,23 +21,20 @@
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
-*/
+..
 
-/* Named magnum/staticconfigure.h to avoid it colliding with Magnum/configure.h
-   on case-insensitive filesystems */
+.. py:function:: magnum.scenetools.flatten_transformation_hierarchy2d
+    :raise KeyError: If :p:`field` does not exist in :p:`scene`
+    :raise IndexError: If :p:`field_id` negative or not less than
+        :ref:`trade.SceneData.field_count`
+    :raise AssertionError: If :p:`scene` is not 2D
+    :raise AssertionError: If :p:`scene` does not have
+        :ref:`trade.SceneField.PARENT`
 
-#cmakedefine Magnum_GL_FOUND
-#cmakedefine Magnum_MeshTools_FOUND
-#cmakedefine Magnum_Primitives_FOUND
-#cmakedefine Magnum_SceneGraph_FOUND
-#cmakedefine Magnum_SceneTools_FOUND
-#cmakedefine Magnum_Shaders_FOUND
-#cmakedefine Magnum_Text_FOUND
-#cmakedefine Magnum_Trade_FOUND
-
-#cmakedefine Magnum_GlfwApplication_FOUND
-#cmakedefine Magnum_Sdl2Application_FOUND
-#cmakedefine Magnum_WindowlessCglApplication_FOUND
-#cmakedefine Magnum_WindowlessEglApplication_FOUND
-#cmakedefine Magnum_WindowlessGlxApplication_FOUND
-#cmakedefine Magnum_WindowlessWglApplication_FOUND
+.. py:function:: magnum.scenetools.flatten_transformation_hierarchy3d
+    :raise KeyError: If :p:`field` does not exist in :p:`scene`
+    :raise IndexError: If :p:`field_id` negative or not less than
+        :ref:`trade.SceneData.field_count`
+    :raise AssertionError: If :p:`scene` is not 2D
+    :raise AssertionError: If :p:`scene` does not have
+        :ref:`trade.SceneField.PARENT`

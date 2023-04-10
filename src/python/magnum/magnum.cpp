@@ -527,6 +527,12 @@ PYBIND11_MODULE(_magnum, m) {
     magnum::primitives(primitives);
     #endif
 
+    #ifdef Magnum_SceneTools_FOUND
+    /* Depends on trade */
+    py::module_ scenetools = m.def_submodule("scenetools");
+    magnum::scenetools(scenetools);
+    #endif
+
     #ifdef Magnum_Shaders_FOUND
     /* Depends on gl */
     py::module_ shaders = m.def_submodule("shaders");

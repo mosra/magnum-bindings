@@ -33,6 +33,7 @@ find_package(Magnum COMPONENTS
     MeshTools
     Primitives
     SceneGraph
+    SceneTools
     Shaders
     Text
     Trade
@@ -80,6 +81,9 @@ set(magnum_scenegraph_SRCS
     scenegraph.cpp
     scenegraph.matrix.cpp
     scenegraph.trs.cpp)
+
+set(magnum_scenetools_SRCS
+    scenetools.cpp)
 
 set(magnum_shaders_SRCS
     shaders.cpp)
@@ -130,6 +134,17 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_link_libraries(magnum_scenegraph PRIVATE Magnum::SceneGraph)
         set_target_properties(magnum_scenegraph PROPERTIES
             OUTPUT_NAME "scenegraph"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_SceneTools_FOUND)
+        pybind11_add_module(magnum_scenetools ${pybind11_add_module_SYSTEM} ${magnum_scenetools_SRCS})
+        target_include_directories(magnum_scenetools PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_scenetools PRIVATE Magnum::SceneTools)
+        set_target_properties(magnum_scenetools PROPERTIES
+            OUTPUT_NAME "scenetools"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
 
@@ -191,6 +206,11 @@ else()
     if(Magnum_SceneGraph_FOUND)
         list(APPEND magnum_SRCS ${magnum_scenegraph_SRCS})
         list(APPEND magnum_LIBS Magnum::SceneGraph)
+    endif()
+
+    if(Magnum_SceneTools_FOUND)
+        list(APPEND magnum_SRCS ${magnum_scenetools_SRCS})
+        list(APPEND magnum_LIBS Magnum::SceneTools)
     endif()
 
     if(Magnum_Shaders_FOUND)

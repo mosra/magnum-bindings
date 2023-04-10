@@ -21,13 +21,14 @@ import magnum.platform.sdl2
 import magnum.primitives
 import magnum.shaders
 import magnum.scenegraph
+import magnum.scenetools
 import magnum.text
 import magnum.trade
 
 # So the doc see everything
 # TODO: use just +=, m.css should reorder this on its own
 corrade.__all__ = ['containers', 'pluginmanager', 'utility', 'BUILD_DEPRECATED', 'BUILD_STATIC', 'BUILD_MULTITHREADED', 'TARGET_UNIX', 'TARGET_APPLE', 'TARGET_IOS', 'TARGET_IOS_SIMULATOR', 'TARGET_WINDOWS', 'TARGET_WINDOWS_RT', 'TARGET_EMSCRIPTEN', 'TARGET_ANDROID']
-magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'text', 'trade', 'BUILD_DEPRECATED', 'BUILD_STATIC', 'TARGET_GL', 'TARGET_GLES', 'TARGET_GLES2', 'TARGET_WEBGL', 'TARGET_EGL', 'TARGET_VK'] + magnum.__all__
+magnum.__all__ = ['math', 'gl', 'meshtools', 'platform', 'primitives', 'shaders', 'scenegraph', 'scenetools', 'text', 'trade', 'BUILD_DEPRECATED', 'BUILD_STATIC', 'TARGET_GL', 'TARGET_GLES', 'TARGET_GLES2', 'TARGET_WEBGL', 'TARGET_EGL', 'TARGET_VK'] + magnum.__all__
 
 # hide values of the preprocessor defines to avoid confusion by assigning a
 # class without __repr__ to them
@@ -204,6 +205,7 @@ INPUT_DOCS = [
     'magnum.math.rst',
     'magnum.platform.rst',
     'magnum.scenegraph.rst',
+    'magnum.scenetools.rst',
     'magnum.shaders.rst',
     'magnum.text.rst',
     'magnum.trade.rst',
