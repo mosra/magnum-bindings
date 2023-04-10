@@ -30,6 +30,7 @@
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/MeshTools/CompressIndices.h>
+#include <Magnum/MeshTools/Concatenate.h>
 #include <Magnum/MeshTools/Duplicate.h>
 #include <Magnum/MeshTools/FilterAttributes.h>
 #include <Magnum/MeshTools/GenerateIndices.h>
@@ -86,6 +87,37 @@ void meshtools(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("at_least") = MeshIndexType::UnsignedShort)
+        /** @todo ew, expose Iterable directly */
+        .def("concatenate", [](const std::vector<std::reference_wrapper<Trade::MeshData>>& meshes, MeshTools::InterleaveFlag flags) {
+            if(meshes.empty()) {
+                PyErr_SetString(PyExc_AssertionError, "expected at least one mesh");
+                throw py::error_already_set{};
+            }
+            const MeshPrimitive primitive = meshes[0].get().primitive();
+            for(std::size_t i = 0; i != meshes.size(); ++i) {
+                const Trade::MeshData& mesh = meshes[i];
+                if(mesh.primitive() == MeshPrimitive::LineStrip ||
+                   mesh.primitive() == MeshPrimitive::LineLoop ||
+                   mesh.primitive() == MeshPrimitive::TriangleStrip ||
+                   mesh.primitive() == MeshPrimitive::TriangleFan)
+                {
+                    PyErr_SetString(PyExc_AssertionError, "invalid mesh primitive");
+                    throw py::error_already_set{};
+                }
+                if(mesh.primitive() != primitive) {
+                    PyErr_SetString(PyExc_AssertionError, "inconsistent mesh primitive");
+                    throw py::error_already_set{};
+                }
+            }
+            /** @todo check that the indices/Vertices aren't impl-specific once
+                it's possible to test */
+            /** @todo there's a lot more assertions re attribute formats, array
+                sizes, etc */
+
+            return MeshTools::concatenate(Containers::Iterable<const Trade::MeshData>{meshes.data(), meshes.size(), sizeof(std::reference_wrapper<Trade::MeshData>), [](const void* data) -> const Trade::MeshData& {
+                return static_cast<const std::reference_wrapper<Trade::MeshData>*>(data)->get();
+            }}, flags);
+        }, "Concatenate meshes together", py::arg("meshes"), py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
         .def("duplicate", [](const Trade::MeshData& mesh) {
             if(!mesh.isIndexed()) {
                 PyErr_SetString(PyExc_AssertionError, "the mesh is not indexed");

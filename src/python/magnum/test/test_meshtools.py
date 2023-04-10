@@ -45,6 +45,32 @@ class CompressIndices(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "the mesh is not indexed"):
             meshtools.compress_indices(mesh)
 
+class Concatenate(unittest.TestCase):
+    def test(self):
+        cube = primitives.cube_solid()
+        # It's a TRIANGLE_STRIP
+        plane = meshtools.generate_indices(primitives.plane_solid())
+        concatenated = meshtools.concatenate([cube, plane])
+        self.assertEqual(concatenated.vertex_count, cube.vertex_count + plane.vertex_count)
+        self.assertEqual(concatenated.index_count, cube.index_count + plane.index_count)
+
+    def test_empty(self):
+        with self.assertRaisesRegex(AssertionError, "expected at least one mesh"):
+            meshtools.concatenate([])
+
+    def test_invalid_primitive(self):
+        with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
+            meshtools.concatenate([primitives.cube_solid(), primitives.plane_solid()])
+        # Should check that also for the first argument
+        with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
+            meshtools.concatenate([primitives.plane_solid()])
+
+    def test_inconsistent_primitive(self):
+        with self.assertRaisesRegex(AssertionError, "inconsistent mesh primitive"):
+            meshtools.concatenate([primitives.cube_solid(), primitives.line3d()])
+        with self.assertRaisesRegex(AssertionError, "inconsistent mesh primitive"):
+            meshtools.concatenate([primitives.line3d(), primitives.cube_solid()])
+
 class Duplicate(unittest.TestCase):
     def test(self):
         mesh = primitives.cube_solid()

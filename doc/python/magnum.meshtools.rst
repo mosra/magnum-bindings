@@ -26,6 +26,15 @@
 .. py:function:: magnum.meshtools.compress_indices
     :raise AssertionError: If :p:`mesh` is not indexed
 
+.. py:function:: magnum.meshtools.concatenate
+    :raise AssertionError: If :p:`meshes` is empty
+    :raise AssertionError: If any of the :p:`meshes` is
+        :ref:`MeshPrimitive.LINE_STRIP`, :ref:`MeshPrimitive.LINE_LOOP`,
+        :ref:`MeshPrimitive.TRIANGLE_STRIP` or
+        :ref:`MeshPrimitive.TRIANGLE_FAN`
+    :raise AssertionError: If all :p:`meshes` don't have the same
+        :ref:`MeshPrimitive`
+
 .. py:function:: magnum.meshtools.duplicate
     :raise AssertionError: If :p:`mesh` is not indexed
 

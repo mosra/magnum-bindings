@@ -102,8 +102,8 @@ Changelog
 -   Fixed :ref:`platform.sdl2.Application.InputEvent.Modifier` and
     :ref:`platform.glfw.Application.InputEvent.Modifier` to behave properly
     as flags and not just as an enum
--   Exposed :ref:`meshtools.compress_indices()`, :ref:`meshtools.duplicate()`,
-    :ref:`meshtools.filter_except_attributes()`,
+-   Exposed :ref:`meshtools.compress_indices()`, :ref:`meshtools.concatenate()`,
+    :ref:`meshtools.duplicate()`, :ref:`meshtools.filter_except_attributes()`,
     :ref:`meshtools.filter_only_attributes()`,
     :ref:`meshtools.generate_indices()`, :ref:`meshtools.interleave()`,
     :ref:`meshtools.owned()`, :ref:`meshtools.remove_duplicates()`,
