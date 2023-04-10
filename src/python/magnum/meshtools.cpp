@@ -43,12 +43,12 @@ void meshtools(py::module_& m) {
     py::module_::import("magnum.trade");
     #endif
 
-    py::enum_<MeshTools::CompileFlag> compileFlag{m, "CompileFlag", "Mesh compilation flags"};
-    compileFlag
+    py::enum_<MeshTools::CompileFlag> compileFlags{m, "CompileFlags", "Mesh compilation flags"};
+    compileFlags
         .value("NONE", MeshTools::CompileFlag{})
         .value("GENERATE_FLAT_NORMALS", MeshTools::CompileFlag::GenerateFlatNormals)
         .value("GENERATE_SMOOTH_NORMALS", MeshTools::CompileFlag::GenerateSmoothNormals);
-    corrade::enumOperators(compileFlag);
+    corrade::enumOperators(compileFlags);
 
     m
         .def("compile", [](const Trade::MeshData& mesh, MeshTools::CompileFlag flags) {
