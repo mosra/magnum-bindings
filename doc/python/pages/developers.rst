@@ -50,7 +50,7 @@ Developers Guide
     module from ``magnum_foo_SRCS``, linking to ``Magnum::Foo`` and setting
     ``OUTPUT_NAME`` to ``foo``.
 3.  Add a :cmake:`if(Magnum_Foo_FOUND)` branch to the :cmake:`else()`
-    condition, ``APPEND``\ ing ``magnum_FOO_SRCS`` to ``magnum_SRCS`` and
+    condition, ``APPEND``\ ing ``magnum_foo_SRCS`` to ``magnum_SRCS`` and
     ``Magnum::Foo`` to ``magnum_LIBS``.
 4.  Add :cpp:`void foo(py::module_& m);` forward declaration to
     ``magnum/bootstrap.h``, and :cpp:`#cmakdefeine Magnum_Foo_FOUND` to
@@ -62,7 +62,7 @@ Developers Guide
     :cpp:`#ifdef MAGNUM_BUILD_STATIC` section of :cpp:`PYBIND11_MODULE()` in
     ``magnum/magnum.cpp``.
 7.  Add the new module name to the list in ``magnum/__init__.py``.
-8.  Add a line with `magnum_foo` to the :cmake:`foreach()` in
+8.  Add a line with ``magnum_foo`` to the :cmake:`foreach()` in
     ``src/python/CMakeLists.txt``, and then a corresponding :py:`'magnum.foo'`
     entry in ``src/python/setup.py.cmake``
 9.  Add a ``magnum/test/test_foo.py`` test file, and potentially also
