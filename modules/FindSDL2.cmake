@@ -138,10 +138,10 @@ else()
         # which CMake somehow prefers before the SDL2-2.0.dylib file. Making
         # the dylib first so it is preferred. Not sure how this maps to debug
         # config though :/
-        NAMES SDL2-2.0 SDL2
+        NAMES SDL2-2.0 SDL2 SDL2-static
         PATH_SUFFIXES ${_SDL2_LIBRARY_PATH_SUFFIX})
     find_library(SDL2_LIBRARY_DEBUG
-        NAMES SDL2d
+        NAMES SDL2d SDL2-staticd
         PATH_SUFFIXES ${_SDL2_LIBRARY_PATH_SUFFIX})
     # FPHSA needs one of the _DEBUG/_RELEASE variables to check that the
     # library was found -- using SDL_LIBRARY, which will get populated by
@@ -168,10 +168,10 @@ find_path(SDL2_INCLUDE_DIR
 if(CORRADE_TARGET_WINDOWS)
     find_file(SDL2_DLL_RELEASE
         NAMES SDL2.dll
-        PATH_SUFFIXES ${_SDL2_RUNTIME_PATH_SUFFIX} ${_SDL2_LIBRARY_PATH_SUFFIX})
+        PATH_SUFFIXES bin ${_SDL2_RUNTIME_PATH_SUFFIX} ${_SDL2_LIBRARY_PATH_SUFFIX})
     find_file(SDL2_DLL_DEBUG
         NAMES SDL2d.dll # not sure?
-        PATH_SUFFIXES ${_SDL2_RUNTIME_PATH_SUFFIX} ${_SDL2_LIBRARY_PATH_SUFFIX})
+        PATH_SUFFIXES bin ${_SDL2_RUNTIME_PATH_SUFFIX} ${_SDL2_LIBRARY_PATH_SUFFIX})
 endif()
 
 # (Static) macOS / iOS dependencies. On macOS these were mainly needed when
