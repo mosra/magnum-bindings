@@ -28,9 +28,15 @@ import unittest
 from corrade import containers
 from magnum import *
 from magnum import scenetools, trade
+import magnum
 
 class FlattenTransformationHierarchy(unittest.TestCase):
     def test_2d(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         # The only way to get a 2D scene is via PrimitiveImporter
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
@@ -43,6 +49,11 @@ class FlattenTransformationHierarchy(unittest.TestCase):
         self.assertEqual(transformations[0], Matrix3.translation((-4.5, -3.0)))
 
     def test_2d_field_id(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         # The only way to get a 2D scene is via PrimitiveImporter
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
@@ -57,6 +68,11 @@ class FlattenTransformationHierarchy(unittest.TestCase):
         self.assertEqual(transformations[0], Matrix3.translation((-4.5, -3.0)))
 
     def test_3d(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
 
@@ -68,6 +84,11 @@ class FlattenTransformationHierarchy(unittest.TestCase):
         self.assertEqual(transformations[0], Matrix4.translation((-4.5, -3.0, 0.0)))
 
     def test_3d_field_id(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
 
@@ -81,6 +102,11 @@ class FlattenTransformationHierarchy(unittest.TestCase):
         self.assertEqual(transformations[0], Matrix4.translation((-4.5, -3.0, 0.0)))
 
     def test_field_not_found(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
 
@@ -96,6 +122,11 @@ class FlattenTransformationHierarchy(unittest.TestCase):
             scenetools.flatten_transformation_hierarchy3d(scene, scene.field_count)
 
     def test_not_2d_not_3d(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
         importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
         importer.open_data(containers.ArrayView())
 
