@@ -51,9 +51,9 @@ void meshtools(py::module_& m) {
     corrade::enumOperators(compileFlag);
 
     m
-        .def("compile", [](const Trade::MeshData& meshData, MeshTools::CompileFlag flags) {
-            return MeshTools::compile(meshData, flags);
-        }, "Compile 3D mesh data", py::arg("mesh_data"), py::arg("flags") = MeshTools::CompileFlag{});
+        .def("compile", [](const Trade::MeshData& mesh, MeshTools::CompileFlag flags) {
+            return MeshTools::compile(mesh, flags);
+        }, "Compile 3D mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::CompileFlag{});
 }
 
 }
