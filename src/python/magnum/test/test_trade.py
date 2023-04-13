@@ -46,6 +46,7 @@ class ImageData(unittest.TestCase):
         self.assertEqual(image.format, PixelFormat.RGB8_UNORM)
         self.assertEqual(image.pixel_size, 3)
         self.assertEqual(image.size, Vector2i(3, 2))
+        self.assertIsNone(image.owner)
 
     def test_compressed(self):
         # The only way to get an image instance is through a manager
@@ -247,6 +248,7 @@ class MeshData(unittest.TestCase):
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
         self.assertEqual(mesh.index_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
         self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+        self.assertIsNone(mesh.owner)
 
         # Index properties
         self.assertTrue(mesh.is_indexed)
@@ -727,6 +729,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(scene.field_size_bound, 4)
         self.assertFalse(scene.is_2d)
         self.assertTrue(scene.is_3d)
+        self.assertIsNone(scene.owner)
 
         # Field properties by ID
         self.assertEqual(scene.field_name(2), trade.SceneField.TRANSFORMATION)

@@ -87,6 +87,10 @@ if(Magnum_SceneGraph_FOUND)
     add_subdirectory(SceneGraph)
 endif()
 
+if(Magnum_Trade_FOUND)
+    add_subdirectory(Trade)
+endif()
+
 if(MAGNUM_BUILD_TESTS)
     add_subdirectory(Test ${EXCLUDE_FROM_ALL_IF_TEST_TARGET})
 endif()

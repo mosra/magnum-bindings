@@ -48,6 +48,7 @@
 #include "Corrade/Containers/OptionalPythonBindings.h"
 #include "Magnum/PythonBindings.h"
 #include "Magnum/StridedArrayViewPythonBindings.h"
+#include "Magnum/Trade/PythonBindings.h"
 
 #include "corrade/EnumOperators.h"
 #include "corrade/pluginmanager.h"
@@ -186,7 +187,7 @@ template<UnsignedInt dimensions, class T> Containers::PyArrayViewHolder<Containe
     return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<dimensions, T>{flattenPixelView(data, pixels), formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(image));
 }
 
-template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dimensions>>& c) {
+template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dimensions>, Trade::PyDataHolder<Trade::ImageData<dimensions>>>& c) {
     /*
         Missing APIs:
 
@@ -282,7 +283,11 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
                 throw py::error_already_set{};
             }
             return imagePixelsView(self, self.mutableData(), self.mutablePixels());
-        }, "Mutable pixel data");
+        }, "Mutable pixel data")
+
+        .def_property_readonly("owner", [](Trade::ImageData<dimensions>& self) {
+            return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;
+        }, "Memory owner");
 }
 
 /* For some reason having ...Args as the second (and not last) template
@@ -827,7 +832,7 @@ void trade(py::module_& m) {
         .value("OBJECT_ID", Trade::MeshAttribute::ObjectId);
     enumWithCustomValues<Trade::MeshAttribute, Trade::Implementation::MeshAttributeCustom>(meshAttribute);
 
-    py::class_<Trade::MeshData>{m, "MeshData", "Mesh data"}
+    py::class_<Trade::MeshData, Trade::PyDataHolder<Trade::MeshData>>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
         .def_property_readonly("index_data_flags", [](Trade::MeshData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.indexDataFlags()));
@@ -1051,11 +1056,15 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return meshAttributeView(self, id, self.mutableAttribute(id));
-        }, "Mutable data for given attribute", py::arg("id"));
+        }, "Mutable data for given attribute", py::arg("id"))
 
-    py::class_<Trade::ImageData1D> imageData1D{m, "ImageData1D", "One-dimensional image data"};
-    py::class_<Trade::ImageData2D> imageData2D{m, "ImageData2D", "Two-dimensional image data"};
-    py::class_<Trade::ImageData3D> imageData3D{m, "ImageData3D", "Three-dimensional image data"};
+        .def_property_readonly("owner", [](Trade::MeshData& self) {
+            return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;
+        }, "Memory owner");
+
+    py::class_<Trade::ImageData1D, Trade::PyDataHolder<Trade::ImageData1D>> imageData1D{m, "ImageData1D", "One-dimensional image data"};
+    py::class_<Trade::ImageData2D, Trade::PyDataHolder<Trade::ImageData2D>> imageData2D{m, "ImageData2D", "Two-dimensional image data"};
+    py::class_<Trade::ImageData3D, Trade::PyDataHolder<Trade::ImageData3D>> imageData3D{m, "ImageData3D", "Three-dimensional image data"};
     imageData(imageData1D);
     imageData(imageData2D);
     imageData(imageData3D);
@@ -1198,7 +1207,7 @@ void trade(py::module_& m) {
         .value("NONE", Trade::SceneFieldFlag{});
     corrade::enumOperators(sceneFieldFlag);
 
-    py::class_<Trade::SceneData>{m, "SceneData", "Scene data"}
+    py::class_<Trade::SceneData, Trade::PyDataHolder<Trade::SceneData>>{m, "SceneData", "Scene data"}
         .def_property_readonly("data_flags", [](Trade::SceneData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.dataFlags()));
         }, "Data flags")
@@ -1453,7 +1462,11 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return sceneFieldView(self, id, self.mutableField(id));
-        }, "Mutable data for given field", py::arg("name"));
+        }, "Mutable data for given field", py::arg("name"))
+
+        .def_property_readonly("owner", [](Trade::SceneData& self) {
+            return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;
+        }, "Memory owner");
 
     py::enum_<Trade::TextureType>{m, "TextureType", "Texture type"}
         .value("TEXTURE1D", Trade::TextureType::Texture1D)

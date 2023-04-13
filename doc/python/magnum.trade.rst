@@ -29,10 +29,17 @@
 
 .. py:class:: magnum.trade.ImageData2D
 
-    Similarly to :ref:`Image2D`, holds its own data buffer, thus doesn't have
-    an equivalent to :ref:`ImageView2D.owner`. Implicitly convertible to
-    :ref:`ImageView2D` / :ref:`MutableImageView2D`, so all APIs consuming image
-    views work with this type as well.
+    Implicitly convertible to :ref:`ImageView2D` / :ref:`MutableImageView2D`,
+    so all APIs consuming image views work with this type as well.
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    The class can be both owning an non-owning depending on the value of
+    :ref:`data_flags`. If they contain neither :ref:`DataFlags.OWNED` nor
+    :ref:`DataFlags.GLOBAL`, the :ref:`owner` property references the object
+    actually owning the pixel data the image points to. This ensures calling
+    :py:`del` on the original object will *not* invalidate the data.
 
     `Pixel data access`_
     ====================
@@ -124,6 +131,16 @@
 .. py:class:: magnum.trade.MeshData
 
     :TODO: remove this line once m.css stops ignoring first caption on a page
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    The class can be both owning an non-owning depending on the value of
+    :ref:`index_data_flags` and :ref:`vertex_data_flags`. If they contain
+    neither :ref:`DataFlags.OWNED` nor :ref:`DataFlags.GLOBAL`, the
+    :ref:`owner` property references the object actually owning the index and
+    vertex data the mesh points to. This ensures calling :py:`del` on the
+    original object will *not* invalidate the data.
 
     `Index and attribute data access`_
     ==================================
@@ -248,6 +265,15 @@
 .. py:class:: magnum.trade.SceneData
 
     :TODO: remove this line once m.css stops ignoring first caption on a page
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    The class can be both owning an non-owning depending on the value of
+    :ref:`data_flags`. If they contain neither :ref:`DataFlags.OWNED` nor
+    :ref:`DataFlags.GLOBAL`, the :ref:`owner` property references the object
+    actually owning the data the scene points to. This ensures calling
+    :py:`del` on the original object will *not* invalidate the data.
 
     `Field data access`_
     ====================

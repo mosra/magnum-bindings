@@ -110,7 +110,9 @@ if(NOT MAGNUM_BUILD_STATIC)
 
     if(Magnum_MeshTools_FOUND)
         pybind11_add_module(magnum_meshtools ${pybind11_add_module_SYSTEM} ${magnum_meshtools_SRCS})
-        target_include_directories(magnum_meshtools PRIVATE ${PROJECT_SOURCE_DIR}/src/python)
+        target_include_directories(magnum_meshtools PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
         target_link_libraries(magnum_meshtools PRIVATE Magnum::MeshTools)
         set_target_properties(magnum_meshtools PROPERTIES
             OUTPUT_NAME "meshtools"
