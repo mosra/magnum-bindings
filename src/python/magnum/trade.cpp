@@ -809,6 +809,7 @@ void trade(py::module_& m) {
     dataFlag
         .value("OWNED", Trade::DataFlag::Owned)
         .value("EXTERNALLY_OWNED", Trade::DataFlag::ExternallyOwned)
+        .value("GLOBAL", Trade::DataFlag::Global)
         .value("MUTABLE", Trade::DataFlag::Mutable)
         .value("NONE", Trade::DataFlag{});
     corrade::enumOperators(dataFlag);

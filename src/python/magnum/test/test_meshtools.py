@@ -144,7 +144,7 @@ class Interleave(unittest.TestCase):
 class Owned(unittest.TestCase):
     def test(self):
         mesh = primitives.square_solid()
-        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.NONE)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.GLOBAL)
 
         owned = meshtools.owned(mesh)
         self.assertEqual(owned.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)

@@ -541,8 +541,8 @@ class MeshData(unittest.TestCase):
         mesh = primitives.cube_solid()
         # TODO split this once there's a mesh where only one or the other would
         #   be true (maybe with zero-copy loading of PLYs / STLs?)
-        self.assertEqual(mesh.index_data_flags, trade.DataFlags.NONE)
-        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.NONE)
+        self.assertEqual(mesh.index_data_flags, trade.DataFlags.GLOBAL)
+        self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.GLOBAL)
 
         with self.assertRaisesRegex(AttributeError, "mesh index data is not mutable"):
             mesh.mutable_index_data
