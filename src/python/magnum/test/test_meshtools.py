@@ -24,6 +24,7 @@
 #
 
 import os
+import sys
 import unittest
 
 from magnum import *
@@ -106,23 +107,61 @@ class GenerateIndices(unittest.TestCase):
 class FilterAttributes(unittest.TestCase):
     def test_only(self):
         mesh = primitives.cube_solid()
+        mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.attribute_count(), 2)
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.NORMAL))
 
         # Currently it doesn't blow up if unknown attributes are listed
         filtered = meshtools.filter_only_attributes(mesh, [trade.MeshAttribute.TEXTURE_COORDINATES, trade.MeshAttribute.NORMAL])
+        filtered_refcount = sys.getrefcount(filtered)
         self.assertEqual(filtered.attribute_count(), 1)
         self.assertTrue(filtered.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+        self.assertIs(filtered.owner, mesh)
+
+        # Subsequent filtering will still reference the original mesh, not the
+        # intermediates
+        filtered2 = meshtools.filter_only_attributes(filtered, [trade.MeshAttribute.NORMAL])
+        self.assertEqual(filtered.attribute_count(), 1)
+        self.assertTrue(filtered.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 2)
+        self.assertIs(filtered2.owner, mesh)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
     def test_except(self):
         mesh = primitives.cube_solid()
+        mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.attribute_count(), 2)
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.NORMAL))
 
         # Currently it doesn't blow up if unknown attributes are listed
         filtered = meshtools.filter_except_attributes(mesh, [trade.MeshAttribute.TEXTURE_COORDINATES, trade.MeshAttribute.NORMAL])
+        filtered_refcount = sys.getrefcount(filtered)
         self.assertEqual(filtered.attribute_count(), 1)
-        self.assertFalse(filtered.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertTrue(filtered.has_attribute(trade.MeshAttribute.POSITION))
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+        self.assertIs(filtered.owner, mesh)
+
+        # Subsequent filtering will still reference the original mesh, not the
+        # intermediates
+        filtered2 = meshtools.filter_except_attributes(filtered, [trade.MeshAttribute.NORMAL])
+        self.assertEqual(filtered.attribute_count(), 1)
+        self.assertTrue(filtered.has_attribute(trade.MeshAttribute.POSITION))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 2)
+        self.assertIs(filtered2.owner, mesh)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
 class Interleave(unittest.TestCase):
     def test(self):

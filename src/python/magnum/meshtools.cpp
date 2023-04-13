@@ -40,6 +40,9 @@
 #include <Magnum/MeshTools/Transform.h>
 #include <Magnum/Trade/MeshData.h>
 
+#include "Corrade/PythonBindings.h"
+#include "Magnum/Trade/PythonBindings.h"
+
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 
@@ -129,10 +132,16 @@ void meshtools(py::module_& m) {
             return MeshTools::duplicate(mesh);
         }, "Duplicate indexed mesh data", py::arg("mesh"))
         .def("filter_except_attributes", [](const Trade::MeshData& mesh, const std::vector<Trade::MeshAttribute> attributes) {
-            return MeshTools::filterExceptAttributes(mesh, attributes);
+            /* If the mesh already has an owner, use that instead to avoid
+               long reference chains */
+            py::object meshOwner = pyObjectHolderFor<Trade::PyDataHolder>(mesh).owner;
+            return Trade::pyDataHolder(MeshTools::filterExceptAttributes(mesh, attributes), meshOwner.is_none() ? py::cast(mesh) : std::move(meshOwner));
         }, "Filter a mesh to contain everything except the selected subset of named attributes", py::arg("mesh"), py::arg("attributes"))
         .def("filter_only_attributes", [](const Trade::MeshData& mesh, const std::vector<Trade::MeshAttribute> attributes) {
-            return MeshTools::filterOnlyAttributes(mesh, attributes);
+            /* If the mesh already has an owner, use that instead to avoid
+               long reference chains */
+            py::object meshOwner = pyObjectHolderFor<Trade::PyDataHolder>(mesh).owner;
+            return Trade::pyDataHolder(MeshTools::filterOnlyAttributes(mesh, attributes), meshOwner.is_none() ? py::cast(mesh) : std::move(meshOwner));
         }, "Filter a mesh to contain only the selected subset of named attributes", py::arg("mesh"), py::arg("attributes"))
         .def("generate_indices", [](const Trade::MeshData& mesh) {
             if(mesh.primitive() != MeshPrimitive::LineStrip &&
