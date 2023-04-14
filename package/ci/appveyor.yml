@@ -99,11 +99,15 @@ install:
 # Ninja. `cinst ninja` started 503ing in late November 2019 and wasn't really
 # reliable before either. So install by hand, as that's reliable always.
 - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\ninja-win.zip appveyor DownloadFile https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
-- 7z x ninja-win.zip -oC:/tools/ninja
+- 7z x ninja-win.zip -oC:/tools
+- set PATH=C:/tools;%PATH%
+
+# Codecov uploader
+- appveyor DownloadFile https://uploader.codecov.io/latest/windows/codecov.exe -FileName C:/tools/codecov.exe
 
 # pip is in Scripts
 - set PATH=C:/tools/ninja;C:/Python%PYTHON%-x64;C:/Python%PYTHON%-x64/Scripts;%PATH%
-- pip3 install coverage codecov
+- pip3 install coverage
 
 - IF NOT "%BUILD_STATIC%" == "ON" set BUILD_STATIC=OFF
 # The fugly \=/ magic is to replace backward slashes with forward so CMake
