@@ -1505,6 +1505,7 @@ void trade(py::module_& m) {
 
     py::enum_<Trade::ImporterFlag> importerFlags{m, "ImporterFlags", "Importer flags"};
     importerFlags
+        .value("QUIET", Trade::ImporterFlag::Quiet)
         .value("VERBOSE", Trade::ImporterFlag::Verbose)
         .value("NONE", Trade::ImporterFlag{});
     corrade::enumOperators(importerFlags);
@@ -1648,6 +1649,7 @@ void trade(py::module_& m) {
 
     py::enum_<Trade::ImageConverterFlag> imageConverterFlags{m, "ImageConverterFlags", "Image converter flags"};
     imageConverterFlags
+        .value("QUIET", Trade::ImageConverterFlag::Quiet)
         .value("VERBOSE", Trade::ImageConverterFlag::Verbose)
         .value("NONE", Trade::ImageConverterFlag{});
     corrade::enumOperators(imageConverterFlags);
@@ -1702,6 +1704,7 @@ void trade(py::module_& m) {
 
     py::enum_<Trade::SceneConverterFlag> sceneConverterFlags{m, "SceneConverterFlags", "Scene converter flags"};
     sceneConverterFlags
+        .value("QUIET", Trade::SceneConverterFlag::Quiet)
         .value("VERBOSE", Trade::SceneConverterFlag::Verbose)
         .value("NONE", Trade::SceneConverterFlag{});
     corrade::enumOperators(sceneConverterFlags);
