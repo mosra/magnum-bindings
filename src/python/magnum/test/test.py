@@ -27,7 +27,10 @@ import array
 import sys
 import unittest
 
+from corrade import utility
 from magnum import *
+
+# tests also corrade.utility.copy() in UtilityCopy
 
 class PixelStorage_(unittest.TestCase):
     def test_init(self):
@@ -447,3 +450,64 @@ class ImageView(unittest.TestCase):
 
         with self.assertRaisesRegex(NotImplementedError, "access to this pixel format is not implemented yet, sorry"):
             a.pixels
+
+class UtilityCopy(unittest.TestCase):
+    def test_1d(self):
+        a_data = array.array('f', [1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        a = ImageView1D(PixelFormat.RGB32F, 2, a_data)
+
+        b_data = array.array('f', [0.0]*6)
+        b = MutableImageView1D(PixelFormat.RGB32F, 2, b_data)
+
+        utility.copy(a.pixels, b.pixels)
+        self.assertEqual(list(b_data), [1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+
+    def test_2d(self):
+        a_data = array.array('f', [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+        a = ImageView2D(PixelFormat.RG32F, (2, 2), a_data)
+
+        b_data = array.array('f', [0.0]*8)
+        b = MutableImageView2D(PixelFormat.RG32F, (2, 2), b_data)
+
+        utility.copy(a.pixels, b.pixels)
+        self.assertEqual(list(b_data), [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+
+    def test_3d(self):
+        a_data = array.array('f', [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
+        a = ImageView3D(PixelFormat.R32F, (3, 1, 3), a_data)
+
+        b_data = array.array('f', [0.0]*9)
+        b = MutableImageView3D(PixelFormat.R32F, (3, 1, 3), b_data)
+
+        utility.copy(a.pixels, b.pixels)
+        self.assertEqual(list(b_data), [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
+
+    def test_size_mismatch(self):
+        a_data = array.array('f', [0.0]*12)
+        a = ImageView2D(PixelFormat.RG32F, (3, 2), a_data)
+
+        b_data = array.array('f', [0.0]*12)
+        b = MutableImageView2D(PixelFormat.RG32F, (2, 3), b_data)
+
+        with self.assertRaisesRegex(AssertionError, "sizes don't match"):
+            utility.copy(a.pixels, b.pixels)
+
+    def test_itemsize_mismatch(self):
+        a_data = array.array('f', [0.0]*12)
+        a = ImageView2D(PixelFormat.RG32F, (3, 2), a_data)
+
+        b_data = array.array('f', [0.0]*18)
+        b = MutableImageView2D(PixelFormat.RGB32F, (3, 2), b_data)
+
+        with self.assertRaisesRegex(AssertionError, "type sizes don't match"):
+            utility.copy(a.pixels, b.pixels)
+
+    def test_format_mismatch(self):
+        a_data = array.array('f', [0.0]*12)
+        a = ImageView2D(PixelFormat.RG32F, (3, 2), a_data)
+
+        b_data = array.array('I', [0]*18)
+        b = MutableImageView2D(PixelFormat.RG32UI, (3, 2), b_data)
+
+        with self.assertRaisesRegex(AssertionError, "types don't match"):
+            utility.copy(a.pixels, b.pixels)

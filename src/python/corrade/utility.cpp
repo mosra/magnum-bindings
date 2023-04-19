@@ -24,15 +24,44 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <Corrade/Utility/Algorithms.h>
 #include <Corrade/Utility/Assert.h>
 #include <Corrade/Utility/Configuration.h>
 
 #include "corrade/bootstrap.h"
 
+#include "Corrade/Containers/StridedArrayViewPythonBindings.h"
+
 namespace corrade {
+
+template<unsigned dimensions> void algorithmsCopy(py::module_& m) {
+    m.def("copy", [](const Containers::PyStridedArrayView<dimensions, const char>& src, const Containers::PyStridedArrayView<dimensions, char>& dst) {
+        if(src.size() != dst.size()) {
+            PyErr_SetString(PyExc_AssertionError, "sizes don't match");
+            throw py::error_already_set{};
+        }
+        if(src.itemsize != dst.itemsize) {
+            PyErr_SetString(PyExc_AssertionError, "type sizes don't match");
+            throw py::error_already_set{};
+        }
+        if(Containers::StringView{src.format} != Containers::StringView{dst.format}) {
+            PyErr_SetString(PyExc_AssertionError, "types don't match");
+            throw py::error_already_set{};
+        }
+
+        Utility::copy(
+            Containers::arrayCast<dimensions + 1, const char>(Containers::StridedArrayView<dimensions, const void>{src}, src.itemsize),
+            Containers::arrayCast<dimensions + 1, char>(Containers::StridedArrayView<dimensions, void>{dst}, dst.itemsize));
+    }, "Copy a strided array view to another", py::arg("src"), py::arg("dst"));
+}
 
 void utility(py::module_& m) {
     m.doc() = "Utilities";
+
+    algorithmsCopy<1>(m);
+    algorithmsCopy<2>(m);
+    algorithmsCopy<3>(m);
+    algorithmsCopy<4>(m);
 
     py::class_<Utility::ConfigurationGroup>{m, "ConfigurationGroup", "Group of values in a configuration file"}
         .def_property_readonly("has_groups", &Utility::ConfigurationGroup::hasGroups, "Whether this group has any subgroups")

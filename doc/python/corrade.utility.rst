@@ -23,6 +23,9 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
+.. py:function:: corrade.utility.copy
+    :raise AssertionError: If :p:`src` and :p:`dst` sizes, type sizes or types are different
+
 .. py:function:: corrade.utility.ConfigurationGroup.group
     :raise KeyError: If group :p:`name` doesn't exist
 

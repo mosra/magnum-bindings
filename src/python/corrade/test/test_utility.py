@@ -30,6 +30,9 @@ import unittest
 
 from corrade import utility
 
+# The copy() algorithms can't be tested here as there's nothing that would
+# return a StridedArrayView. A test is in magnum/test/test.py instead.
+
 # Tests also the ConfigurationGroup bindings, as a ConfigurationGroup cannot be
 # constructed as a standalone type
 class Configuration(unittest.TestCase):
