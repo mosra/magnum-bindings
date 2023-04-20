@@ -25,6 +25,10 @@
 
 """Root Magnum module"""
 
+# Important -- performs various platform-specific setup like adding DLL paths
+# on Windows
+import corrade
+
 from _magnum import *
 
 # This feels extremely hackish, but without that it wouldn't be possible to

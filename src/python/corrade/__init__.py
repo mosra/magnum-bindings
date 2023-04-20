@@ -25,6 +25,22 @@
 
 """Root Corrade module"""
 
+# On Windows, if a known directory layout is detected, add paths containing
+# binaries to the DLL search path
+import platform
+if platform.system() == 'Windows':
+    import os
+
+    for directory in [
+        # Prebuilt binaries from the magnum-ci repo have this file in
+        # python/corrade/ and DLLs in bin/
+        '../../bin'
+    ]:
+        bin_path = os.path.join(os.path.dirname(__file__), directory)
+        if os.path.exists(bin_path):
+            os.add_dll_directory(bin_path)
+            break
+
 from _corrade import *
 
 import sys
