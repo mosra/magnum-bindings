@@ -98,6 +98,9 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
         ElementType operator[](std::size_t i) const {
             return Implementation::PyStridedElement<dimensions, T>::wrap(StridedArrayView<dimensions, T>::operator[](i), format, itemsize, getitem, setitem);
         }
+        T& operator[](const Size<dimensions>& i) const {
+            return StridedArrayView<dimensions, T>::operator[](i);
+        }
 
         PyStridedArrayView<dimensions, T> slice(std::size_t begin, std::size_t end) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::slice(begin, end), format, itemsize, getitem, setitem};
