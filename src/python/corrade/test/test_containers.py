@@ -354,7 +354,7 @@ class StridedArrayView1D(unittest.TestCase):
         data = b'hello'
         data_refcount = sys.getrefcount(data)
 
-        # slice.start = slice.stop
+        # Because this is out of bounds, slice.start = slice.stop
         a = containers.StridedArrayView1D(data)[7:8]
         self.assertEqual(a.size, (0, ))
 
