@@ -143,7 +143,7 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
                 throw py::error_already_set{};
             }
             return self[i];
-        }, "Value at given position")
+        }, "Value at given position", py::arg("i"))
 
         /* Slicing */
         .def("__getitem__", [](const Containers::ArrayView<T>& self, py::slice slice) -> py::object {
@@ -160,7 +160,7 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
             /* Usual business */
             auto sliced = self.slice(calculated.start, calculated.stop);
             return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
-        }, "Slice the view");
+        }, "Slice the view", py::arg("slice"));
 
     enableBetterBufferProtocol<Containers::ArrayView<T>, arrayViewBufferProtocol>(c);
 }
@@ -173,7 +173,7 @@ template<class T> void mutableArrayView(py::class_<Containers::ArrayView<T>, Con
                 throw py::error_already_set{};
             }
             self[i] = value;
-        }, "Set a value at given position");
+        }, "Set a value at given position", py::arg("i"), py::arg("value"));
 }
 
 /* Tuple for given dimension */
@@ -461,15 +461,15 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
             const Slice calculated = calculateSlice(slice, Containers::Size<dimensions>{self.size()}[0]);
             const auto sliced = self.slice(calculated.start, calculated.stop).every(calculated.step);
             return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Slice the view")
+        }, "Slice the view", py::arg("slice"))
 
         /* Fancy operations */
         .def("flipped", [](const Containers::PyStridedArrayView<dimensions, T>& self, const std::size_t dimension) {
             return Containers::pyArrayViewHolder(StridedOperation<dimensions>::flipped(self, dimension), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Flip a dimension")
+        }, "Flip a dimension", py::arg("dimension"))
         .def("broadcasted", [](const Containers::PyStridedArrayView<dimensions, T>& self, const std::size_t dimension, std::size_t size) {
             return Containers::pyArrayViewHolder(StridedOperation<dimensions>::broadcasted(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Broadcast a dimension");
+        }, "Broadcast a dimension", py::arg("dimension"), py::arg("size"));
 
     enableBetterBufferProtocol<Containers::PyStridedArrayView<dimensions, T>, stridedArrayViewBufferProtocol>(c);
 }
@@ -484,7 +484,7 @@ template<class T> void stridedArrayView1D(py::class_<Containers::PyStridedArrayV
                 throw py::error_already_set{};
             }
             return self.getitem(&self[i]);
-        }, "Value at given position");
+        }, "Value at given position", py::arg("i"));
 }
 
 template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Containers::PyStridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>>>& c) {
@@ -497,7 +497,7 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
                 throw py::error_already_set{};
             }
             return Containers::pyArrayViewHolder(self[i], pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Sub-view at given position")
+        }, "Sub-view at given position", py::arg("i"))
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, std::size_t>::Type& iTuple) {
             Containers::Size<dimensions> iSize{NoInit};
             for(std::size_t j = 0; j != dimensions; ++j) {
@@ -509,7 +509,7 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
                 iSize[j] = i;
             }
             return self.getitem(&self[iSize]);
-        }, "Value at given position")
+        }, "Value at given position", py::arg("i"))
 
         /* Multi-dimensional slicing */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) {
@@ -529,12 +529,12 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
 
             const auto sliced = self.slice(starts, stops).every(steps);
             return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Slice the view")
+        }, "Slice the view", py::arg("slice"))
 
         /* Fancy operations */
         .def("transposed", [](const Containers::PyStridedArrayView<dimensions, T>& self, const std::size_t a, std::size_t b) {
             return Containers::pyArrayViewHolder(StridedOperation<dimensions>::transposed(self, a, b), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
-        }, "Transpose two dimensions");
+        }, "Transpose two dimensions", py::arg("a"), py::arg("b"));
 }
 
 void mutableStridedArrayView1D(py::class_<Containers::PyStridedArrayView<1, char>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, char>>>& c) {
@@ -545,7 +545,7 @@ void mutableStridedArrayView1D(py::class_<Containers::PyStridedArrayView<1, char
                 throw py::error_already_set{};
             }
             self.setitem(&self[i], value);
-        }, "Set a value at given position");
+        }, "Set a value at given position", py::arg("i"), py::arg("value"));
 }
 
 template<unsigned dimensions> void mutableStridedArrayViewND(py::class_<Containers::PyStridedArrayView<dimensions, char>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, char>>>& c) {
@@ -561,7 +561,7 @@ template<unsigned dimensions> void mutableStridedArrayViewND(py::class_<Containe
                 iSize[j] = i;
             }
             self.setitem(&self[iSize], value);
-        }, "Set a value at given position");
+        }, "Set a value at given position", py::arg("i"), py::arg("value"));
 }
 
 }
