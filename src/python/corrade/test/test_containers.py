@@ -931,7 +931,7 @@ class StridedArrayViewCustomDynamicType(unittest.TestCase):
         self.assertEqual(a.view[1][1], -773)
         self.assertEqual(a.view[1][2], 0)
 
-class TestOptional(unittest.TestCase):
+class Optional(unittest.TestCase):
     def test_simple(self):
         self.assertIsNone(test_optional.simple_type(False))
         self.assertEqual(test_optional.simple_type(True), 5)
