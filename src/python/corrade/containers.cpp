@@ -41,7 +41,8 @@ namespace {
 struct Slice {
     std::size_t start;
     std::size_t stop;
-    std::ptrdiff_t step;
+    bool flip;
+    std::size_t step;
 };
 
 Slice calculateSlice(const py::slice& slice, std::size_t containerSize) {
@@ -53,14 +54,30 @@ Slice calculateSlice(const py::slice& slice, std::size_t containerSize) {
         throw py::error_already_set{};
 
     /* If step is negative, start > stop and we have to recalculate */
+    /** @todo this doesn't seem to be a guarantee, the assert fires with bad
+        input as well */
     CORRADE_INTERNAL_ASSERT((start <= stop) == (step > 0));
+    bool flip = false;
     if(step < 0) {
         std::swap(start, stop);
         start += 1;
         stop += 1;
+        step = -step;
+        flip = true;
     }
 
-    return Slice{std::size_t(start), std::size_t(stop), step};
+    return Slice{std::size_t(start), std::size_t(stop), flip, std::size_t(step)};
+}
+
+template<class T> Containers::PyArrayViewHolder<T> arrayViewStridedSlice(const T& self, const Slice& calculated, py::object owner) {
+    auto sliced = self.slice(calculated.start, calculated.stop);
+    /* every() currently accepts negative numbers in StridedArrayView, but in
+       the future it will not, flipped() is the better API. StridedBitArrayView
+       accepts just an unsigned type. */
+    if(calculated.flip)
+        sliced = sliced.template flipped<0>();
+    sliced = sliced.every(calculated.step);
+    return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : std::move(owner));
 }
 
 template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int flags) {
@@ -152,9 +169,8 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
             /* Non-trivial stride, return a different type */
             /** @todo this always assumes bytes for now -- remember the format
                 and provide a checked typed conversion API */
-            if(calculated.step != 1) {
-                auto sliced = Containers::PyStridedArrayView<1, T>{ Containers::stridedArrayView(self)}.slice(calculated.start, calculated.stop).every(calculated.step);
-                return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
+            if(calculated.step != 1 || calculated.flip) {
+                return pyCastButNotShitty(arrayViewStridedSlice(Containers::PyStridedArrayView<1, T>{Containers::stridedArrayView(self)}, calculated, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
             }
 
             /* Usual business */
@@ -385,6 +401,35 @@ template<> struct StridedOperation<4> {
     }
 };
 
+template<unsigned dimensions, template<unsigned> class Steps, class T> Containers::PyArrayViewHolder<T> stridedArrayViewSlice(const T& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice, py::object owner) {
+    Containers::Size<dimensions> starts;
+    Containers::Size<dimensions> stops;
+    Containers::StridedDimensions<dimensions, bool> flips;
+    Steps<dimensions> steps;
+
+    bool empty = false;
+    for(std::size_t i = 0; i != dimensions; ++i) {
+        const Slice calculated = calculateSlice(dimensionsTupleGet<py::slice>(slice, i), self.size()[i]);
+        starts[i] = calculated.start;
+        stops[i] = calculated.stop;
+        steps[i] = calculated.step;
+        flips[i] = calculated.flip;
+        steps[i] = calculated.step;
+
+        if(calculated.start == calculated.stop)
+            empty = true;
+    }
+
+    auto sliced = self.slice(starts, stops);
+    /* every() currently accepts negative numbers in StridedArrayView, but in
+       the future it will not, flipped() is the better API. StridedBitArrayView
+       accepts just an unsigned type. */
+    for(std::size_t i = 0; i != dimensions; ++i)
+        if(flips[i]) sliced = StridedOperation<dimensions>::flipped(sliced, i);
+    sliced = sliced.every(steps);
+    return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : std::move(owner));
+}
+
 template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containers::PyStridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>>>& c) {
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, Containers::PyStridedArrayView<dimensions, T>>();
@@ -459,8 +504,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
         /* Slicing of the top dimension */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, py::slice slice) {
             const Slice calculated = calculateSlice(slice, Containers::Size<dimensions>{self.size()}[0]);
-            const auto sliced = self.slice(calculated.start, calculated.stop).every(calculated.step);
-            return Containers::pyArrayViewHolder(sliced, calculated.start == calculated.stop ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+            return arrayViewStridedSlice(self, calculated, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view", py::arg("slice"))
 
         /* Fancy operations */
@@ -513,22 +557,7 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
 
         /* Multi-dimensional slicing */
         .def("__getitem__", [](const Containers::PyStridedArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) {
-            Containers::Size<dimensions> starts;
-            Containers::Size<dimensions> stops;
-            Containers::Stride<dimensions> steps;
-
-            bool empty = false;
-            for(std::size_t i = 0; i != dimensions; ++i) {
-                const Slice calculated = calculateSlice(dimensionsTupleGet<py::slice>(slice, i), self.size()[i]);
-                starts[i] = calculated.start;
-                stops[i] = calculated.stop;
-                steps[i] = calculated.step;
-
-                if(calculated.start == calculated.stop) empty = true;
-            }
-
-            const auto sliced = self.slice(starts, stops).every(steps);
-            return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+            return stridedArrayViewSlice<dimensions, Containers::Stride>(self, slice, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Slice the view", py::arg("slice"))
 
         /* Fancy operations */
