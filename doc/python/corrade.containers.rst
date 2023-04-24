@@ -52,8 +52,8 @@
     object in the :ref:`owner` field, meaning that calling :py:`del` on the
     original object will *not* invalidate the view. Slicing a view creates a
     new view referencing the same original object, without any dependency on
-    the previous view. That means a long chained slicing operation will not cause
-    increased memory usage.
+    the previous view. That means a long chained slicing operation will not
+    cause increased memory usage.
 
     .. code:: pycon
 
@@ -81,8 +81,16 @@
 
     Provides one-dimensional read-only view on a memory range with custom
     stride values. See :ref:`StridedArrayView2D`, :ref:`StridedArrayView3D`,
-    :ref:`MutableStridedArrayView1D` and others for multi-dimensional and
-    mutable equivalents.
+    :ref:`StridedArrayView4D`, :ref:`MutableStridedArrayView1D` and others for
+    multi-dimensional and mutable equivalents.
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    Similarly to :ref:`ArrayView`, the view keeps a reference to the original
+    memory owner object in the :ref:`owner` field. Slicing a view creates a
+    new view referencing the same original object, without any dependency on
+    the previous view. The :py:`owner` is :py:`None` if the view is empty.
 
     `Comparison to Python's memoryview`_
     ====================================
@@ -92,25 +100,96 @@
     multi-dimensional slicing as well (which raises :ref:`NotImplementedError`
     in Py3.7 :ref:`memoryview`).
 
+.. py:function:: corrade.containers.StridedArrayView1D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+.. py:function:: corrade.containers.StridedArrayView1D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+
 .. py:class:: corrade.containers.MutableStridedArrayView1D
 
     Equivalent to :ref:`StridedArrayView1D`, but implementing
     :ref:`__setitem__()` as well.
 
+.. py:function:: corrade.containers.MutableStridedArrayView1D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+.. py:function:: corrade.containers.MutableStridedArrayView1D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+
 .. py:class:: corrade.containers.StridedArrayView2D
 
     See :ref:`StridedArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedArrayView2D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.StridedArrayView2D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.StridedArrayView2D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+        they're the same
 
 .. py:class:: corrade.containers.MutableStridedArrayView2D
 
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
+.. py:function:: corrade.containers.MutableStridedArrayView2D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.MutableStridedArrayView2D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.MutableStridedArrayView2D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+        they're the same
+
 .. py:class:: corrade.containers.StridedArrayView3D
 
     See :ref:`StridedArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedArrayView3D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.StridedArrayView3D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.StridedArrayView3D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+        or if  they're the same
 
 .. py:class:: corrade.containers.MutableStridedArrayView3D
 
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
+
+.. py:function:: corrade.containers.MutableStridedArrayView3D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.MutableStridedArrayView3D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.MutableStridedArrayView3D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+        or if  they're the same
+
+.. py:class:: corrade.containers.StridedArrayView4D
+
+    See :ref:`StridedArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedArrayView4D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.StridedArrayView4D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.StridedArrayView4D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3` or if  they're the same
+
+.. py:class:: corrade.containers.MutableStridedArrayView4D
+
+    See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
+    information.
+
+.. py:function:: corrade.containers.MutableStridedArrayView4D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.MutableStridedArrayView4D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.MutableStridedArrayView4D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3` or if  they're the same

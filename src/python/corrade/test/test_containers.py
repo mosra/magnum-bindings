@@ -395,6 +395,30 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(c2.size, (6,))
         self.assertEqual(c2.stride, (-2,))
 
+    def test_ops(self):
+        a = b'01234567'
+        v = memoryview(a).cast('b', shape=[8])
+
+        b = containers.StridedArrayView1D(v).flipped(0)
+        self.assertEqual(b.size, (8,))
+        self.assertEqual(b.stride, (-1,))
+        self.assertEqual(bytes(b), b'76543210')
+
+        d = containers.StridedArrayView1D(v)[3:4].broadcasted(0, 5)
+        self.assertEqual(d.size, (5,))
+        self.assertEqual(d.stride, (0,))
+        self.assertEqual(bytes(d), b'33333')
+
+    def test_ops_invalid(self):
+        a = b'00'
+
+        with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
+            containers.StridedArrayView1D().flipped(1)
+        with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
+            containers.StridedArrayView1D(a).broadcasted(1, 3)
+        with self.assertRaisesRegex(ValueError, "can't broadcast dimension 0 with 2 elements"):
+            containers.StridedArrayView1D(a).broadcasted(0, 3)
+
     def test_convert_memoryview(self):
         a = b'World is hell!'
         a_refcount = sys.getrefcount(a)
@@ -680,6 +704,19 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(d.stride, (8, 0))
         self.assertEqual(bytes(d), b'3377bb')
 
+    def test_ops_invalid(self):
+        a = b'00'
+        v = memoryview(a).cast('b', shape=[1, 2])
+
+        with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
+            containers.StridedArrayView2D().flipped(2)
+        with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
+            containers.StridedArrayView2D(v).broadcasted(2, 3)
+        with self.assertRaisesRegex(ValueError, "can't broadcast dimension 1 with 2 elements"):
+            containers.StridedArrayView2D(v).broadcasted(1, 3)
+        with self.assertRaisesRegex(IndexError, "dimensions 0, 2 can't be transposed in a 2D view"):
+            containers.StridedArrayView2D().transposed(0, 2)
+
     def test_convert_memoryview(self):
         a = memoryview(b'01234567'
                        b'456789ab'
@@ -777,6 +814,19 @@ class StridedArrayView3D(unittest.TestCase):
         self.assertEqual(f.stride, (24, 8, 0))
         self.assertEqual(bytes(f), b'000004444488888ccccc0000044444')
 
+    def test_ops_invalid(self):
+        a = b'00'
+        v = memoryview(a).cast('b', shape=[1, 1, 2])
+
+        with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
+            containers.StridedArrayView3D().flipped(3)
+        with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
+            containers.StridedArrayView3D(v).broadcasted(3, 3)
+        with self.assertRaisesRegex(ValueError, "can't broadcast dimension 2 with 2 elements"):
+            containers.StridedArrayView3D(v).broadcasted(2, 3)
+        with self.assertRaisesRegex(IndexError, "dimensions 1, 3 can't be transposed in a 3D view"):
+            containers.StridedArrayView3D().transposed(1, 3)
+
 # This is just a dumb copy of the above with one dimension inserted at the
 # second place.
 class StridedArrayView4D(unittest.TestCase):
@@ -854,6 +904,19 @@ class StridedArrayView4D(unittest.TestCase):
         self.assertEqual(f.size, (2, 1, 3, 5))
         self.assertEqual(f.stride, (24, 24, 8, 0))
         self.assertEqual(bytes(f), b'000004444488888ccccc0000044444')
+
+    def test_ops_invalid(self):
+        a = b'00'
+        v = memoryview(a).cast('b', shape=[1, 1, 1, 2])
+
+        with self.assertRaisesRegex(IndexError, "dimension 4 out of range for a 4D view"):
+            containers.StridedArrayView4D().flipped(4)
+        with self.assertRaisesRegex(IndexError, "dimension 4 out of range for a 4D view"):
+            containers.StridedArrayView4D(v).broadcasted(4, 3)
+        with self.assertRaisesRegex(ValueError, "can't broadcast dimension 3 with 2 elements"):
+            containers.StridedArrayView4D(v).broadcasted(3, 3)
+        with self.assertRaisesRegex(IndexError, "dimensions 4, 3 can't be transposed in a 4D view"):
+            containers.StridedArrayView4D().transposed(4, 3)
 
 class StridedArrayViewCustomType(unittest.TestCase):
     def test_short(self):

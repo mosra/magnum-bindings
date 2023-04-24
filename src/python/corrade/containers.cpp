@@ -326,13 +326,18 @@ template<> struct StridedOperation<1> {
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> flipped(const View<dimensions, T>& view, unsigned dimension) {
         if(dimension == 0)
             return view.template flipped<0>();
-        PyErr_Format(PyExc_ValueError, "dimension %u out of range for a %iD view", dimension, dimensions);
+        PyErr_Format(PyExc_IndexError, "dimension %u out of range for a %iD view", dimension, dimensions);
         throw py::error_already_set{};
     }
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> broadcasted(const View<dimensions, T>& view, unsigned dimension, std::size_t size) {
-        if(dimension == 0)
+        if(dimension == 0) {
+            if(Containers::Size<dimensions>{view.size()}[0] != 1) {
+                PyErr_Format(PyExc_ValueError, "can't broadcast dimension %u with %zu elements", dimension, Containers::Size<dimensions>{view.size()}[0]);
+                throw py::error_already_set{};
+            }
             return view.template broadcasted<0>(size);
-        PyErr_Format(PyExc_ValueError, "dimension %u out of range for a %iD view", dimension, dimensions);
+        }
+        PyErr_Format(PyExc_IndexError, "dimension %u out of range for a %iD view", dimension, dimensions);
         throw py::error_already_set{};
     }
 };
@@ -341,7 +346,7 @@ template<> struct StridedOperation<2> {
         if((a == 0 && b == 1) ||
            (a == 1 && b == 0))
             return view.template transposed<0, 1>();
-        PyErr_Format(PyExc_ValueError, "dimensions %u, %u can't be transposed in a %iD view", a, b, dimensions);
+        PyErr_Format(PyExc_IndexError, "dimensions %u, %u can't be transposed in a %iD view", a, b, dimensions);
         throw py::error_already_set{};
     }
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> flipped(const View<dimensions, T>& view, unsigned dimension) {
@@ -350,8 +355,13 @@ template<> struct StridedOperation<2> {
         return StridedOperation<1>::flipped(view, dimension);
     }
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> broadcasted(const View<dimensions, T>& view, unsigned dimension, std::size_t size) {
-        if(dimension == 1)
+        if(dimension == 1) {
+            if(view.size()[1] != 1) {
+                PyErr_Format(PyExc_ValueError, "can't broadcast dimension %u with %zu elements", dimension, view.size()[1]);
+                throw py::error_already_set{};
+            }
             return view.template broadcasted<1>(size);
+        }
         return StridedOperation<1>::broadcasted(view, dimension, size);
     }
 };
@@ -371,8 +381,13 @@ template<> struct StridedOperation<3> {
         return StridedOperation<2>::flipped(view, dimension);
     }
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> broadcasted(const View<dimensions, T>& view, unsigned dimension, std::size_t size) {
-        if(dimension == 2)
+        if(dimension == 2) {
+            if(view.size()[2] != 1) {
+                PyErr_Format(PyExc_ValueError, "can't broadcast dimension %u with %zu elements", dimension, view.size()[2]);
+                throw py::error_already_set{};
+            }
             return view.template broadcasted<2>(size);
+        }
         return StridedOperation<2>::broadcasted(view, dimension, size);
     }
 };
@@ -395,8 +410,13 @@ template<> struct StridedOperation<4> {
         return StridedOperation<3>::flipped(view, dimension);
     }
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> broadcasted(const View<dimensions, T>& view, unsigned dimension, std::size_t size) {
-        if(dimension == 3)
+        if(dimension == 3) {
+            if(view.size()[3] != 1) {
+                PyErr_Format(PyExc_ValueError, "can't broadcast dimension %u with %zu elements", dimension, view.size()[3]);
+                throw py::error_already_set{};
+            }
             return view.template broadcasted<3>(size);
+        }
         return StridedOperation<3>::broadcasted(view, dimension, size);
     }
 };
