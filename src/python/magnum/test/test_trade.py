@@ -1049,7 +1049,7 @@ class SceneData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
             scene.mutable_field(string_field)
 
-class SceneData(unittest.TestCase):
+class TextureData(unittest.TestCase):
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
