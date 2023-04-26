@@ -39,6 +39,11 @@ Changelog
     :ref:`magnum.BUILD_DEPRECATED` constants, as some features may work
     differently depending on these being enabled or not and it's useful to be
     able to query this
+-   Exposed the new :ref:`containers.BitArray`, :ref:`containers.BitArrayView`,
+    :ref:`containers.StridedBitArrayView1D` containers, their mutable and
+    multi-dimensional counterparts as well as the
+    :ref:`containers.StridedArrayView*D.slice_bit() <containers.StridedArrayView1D.slice_bit()>`
+    utility
 -   Exposed missing :ref:`Vector4` constructor from a :ref:`Vector3` and a
     W component and :ref:`Vector3` from :ref:`Vector2` and a Z component
 -   Renamed :py:`Matrix3.from()` / :py:`Matrix4.from()` to :ref:`Matrix3.from_()`

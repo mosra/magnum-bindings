@@ -26,6 +26,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h> /* so ArrayView is convertible from python array */
 #include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/BitArray.h>
+#include <Corrade/Containers/StridedBitArrayView.h>
 #include <Corrade/Containers/ScopeGuard.h>
 
 #include "Corrade/Containers/PythonBindings.h"
@@ -190,6 +192,57 @@ template<class T> void mutableArrayView(py::class_<Containers::ArrayView<T>, Con
             }
             self[i] = value;
         }, "Set a value at given position", py::arg("i"), py::arg("value"));
+}
+
+template<class T> void bitArrayView(py::class_<Containers::BasicBitArrayView<T>, Containers::PyArrayViewHolder<Containers::BasicBitArrayView<T>>>& c) {
+    c
+        /* Constructor */
+        .def(py::init(), "Default constructor")
+        .def(py::init([](Containers::BitArray& other) {
+            return pyArrayViewHolder(Containers::BasicBitArrayView<T>{other}, other.size() ? py::cast(other) : py::none{});
+        }), "Construct a view on a bit array", py::arg("array"))
+
+        /* Offset, size and memory owning object */
+        .def_property_readonly("offset", &Containers::BasicBitArrayView<T>::offset, "Bit offset")
+        .def("__len__", &Containers::BasicBitArrayView<T>::size, "Size in bits")
+        .def_property_readonly("owner", [](const Containers::BasicBitArrayView<T>& self) {
+            return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
+        }, "Memory owner object")
+
+        /* Single item retrieval. Need to raise IndexError in order to allow
+           iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+        .def("__getitem__", [](const Containers::BasicBitArrayView<T>& self, std::size_t i) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self[i];
+        }, "Bit at given position", py::arg("i"))
+
+        /* Slicing */
+        .def("__getitem__", [](const Containers::BasicBitArrayView<T>& self, py::slice slice) -> py::object {
+            const Slice calculated = calculateSlice(slice, self.size());
+
+            /* Non-trivial stride, return a different type */
+            if(calculated.step != 1 || calculated.flip) {
+                return pyCastButNotShitty(arrayViewStridedSlice(Containers::BasicStridedBitArrayView<1, T>{self}, calculated, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner));
+            }
+
+            /* Usual business */
+            auto sliced = self.slice(calculated.start, calculated.stop);
+            return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
+        }, "Slice the view", py::arg("slice"));
+}
+
+template<class T> void mutableBitArrayView(py::class_<Containers::BasicBitArrayView<T>, Containers::PyArrayViewHolder<Containers::BasicBitArrayView<T>>>& c) {
+    c
+        .def("__setitem__", [](const Containers::BasicBitArrayView<T>& self, std::size_t i, bool value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.set(i, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
 }
 
 /* Tuple for given dimension */
@@ -528,6 +581,13 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
         }, "Slice the view", py::arg("slice"))
 
         /* Fancy operations */
+        .def("slice_bit", [](const Containers::PyStridedArrayView<dimensions, T>& self, std::size_t index) {
+            if(index >= self.itemsize*8) {
+                PyErr_Format(PyExc_IndexError, "index %zu out of range for %zu bits", index, self.itemsize*8);
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(self.sliceBit(index), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Slice to a bit", py::arg("index"))
         .def("flipped", [](const Containers::PyStridedArrayView<dimensions, T>& self, const std::size_t dimension) {
             return Containers::pyArrayViewHolder(StridedOperation<dimensions>::flipped(self, dimension), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
         }, "Flip a dimension", py::arg("dimension"))
@@ -613,10 +673,179 @@ template<unsigned dimensions> void mutableStridedArrayViewND(py::class_<Containe
         }, "Set a value at given position", py::arg("i"), py::arg("value"));
 }
 
+template<unsigned dimensions, class T> void stridedBitArrayView(py::class_<Containers::BasicStridedBitArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<dimensions, T>>>& c) {
+    c
+        /* Constructor */
+        .def(py::init(), "Default constructor")
+
+        /* Length, size/stride tuple, dimension count and memory owning object */
+        .def_property_readonly("offset", &Containers::BasicStridedBitArrayView<dimensions, T>::offset, "Bit offset")
+        .def("__len__", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self) {
+            return Containers::Size<dimensions>(self.size())[0];
+        }, "View size in the top-level dimension")
+        .def_property_readonly("size", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self) {
+            return size<dimensions>(self.size());
+        }, "View size in each dimension")
+        .def_property_readonly("stride", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self) {
+            return stride<dimensions>(self.stride());
+        }, "View stride in each dimension")
+        .def_property_readonly("dimensions", [](const Containers::BasicStridedBitArrayView<dimensions, T>&) { return dimensions; }, "Dimension count")
+        .def_property_readonly("owner", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self) {
+            return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;
+        }, "Memory owner object")
+
+        /* Slicing of the top dimension */
+        .def("__getitem__", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, py::slice slice) {
+            const Slice calculated = calculateSlice(slice, Containers::Size<dimensions>{self.size()}[0]);
+            return arrayViewStridedSlice(self, calculated, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Slice the view", py::arg("slice"))
+
+        /* Fancy operations */
+        .def("flipped", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, const std::size_t dimension) {
+            return Containers::pyArrayViewHolder(StridedOperation<dimensions>::flipped(self, dimension), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Flip a dimension", py::arg("dimension"))
+        .def("broadcasted", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, const std::size_t dimension, std::size_t size) {
+            return Containers::pyArrayViewHolder(StridedOperation<dimensions>::broadcasted(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Broadcast a dimension", py::arg("dimension"), py::arg("size"));
+}
+
+template<class T> void stridedBitArrayView1D(py::class_<Containers::BasicStridedBitArrayView<1, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<1, T>>>& c) {
+    c
+        .def(py::init([](Containers::BitArray& other) {
+            return pyArrayViewHolder(Containers::BasicStridedBitArrayView<1, T>{Containers::BasicBitArrayView<T>{other}}, other.size() ? py::cast(other) : py::none{});
+        }), "Construct a view on a bit array", py::arg("array"))
+        .def(py::init([](Containers::BasicBitArrayView<T>& other) {
+            return pyArrayViewHolder(Containers::BasicStridedBitArrayView<1, T>{other}, pyObjectHolderFor<Containers::PyArrayViewHolder>(other).owner);
+        }), "Construct from a bit array view", py::arg("view"))
+        /* Construction of a const view from a mutable is done directly in
+           containers() at the end */
+
+        /* Single item retrieval. Need to raise IndexError in order to allow
+           iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+        .def("__getitem__", [](const Containers::BasicStridedBitArrayView<1, T>& self, std::size_t i) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self[i];
+        }, "Bit at given position", py::arg("i"));
+}
+
+template<unsigned dimensions, class T> void stridedBitArrayViewND(py::class_<Containers::BasicStridedBitArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<dimensions, T>>>& c) {
+    c
+        /* Sub-view and single bit retrieval. Need to raise IndexError in order
+           to allow iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+        .def("__getitem__", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, std::size_t i) {
+            if(i >= Containers::Size<dimensions>{self.size()}[0]) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return Containers::pyArrayViewHolder(self[i], pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Sub-view at given position", py::arg("i"))
+        .def("__getitem__", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, std::size_t>::Type& iTuple) {
+            Containers::Size<dimensions> iSize{NoInit};
+            for(std::size_t j = 0; j != dimensions; ++j) {
+                const std::size_t i = dimensionsTupleGet<std::size_t>(iTuple, j);
+                if(i >= self.size()[j]) {
+                    PyErr_SetNone(PyExc_IndexError);
+                    throw py::error_already_set{};
+                }
+                iSize[j] = i;
+            }
+            return self[iSize];
+        }, "Bit at given position", py::arg("i"))
+
+        /* Multi-dimensional slicing */
+        .def("__getitem__", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, const typename DimensionsTuple<dimensions, py::slice>::Type& slice) {
+            return stridedArrayViewSlice<dimensions, Containers::Size>(self, slice, pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Slice the view", py::arg("slice"))
+
+        /* Fancy operations */
+        .def("transposed", [](const Containers::BasicStridedBitArrayView<dimensions, T>& self, const std::size_t a, std::size_t b) {
+            return Containers::pyArrayViewHolder(StridedOperation<dimensions>::transposed(self, a, b), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Transpose two dimensions", py::arg("a"), py::arg("b"));
+}
+
+void mutableStridedBitArrayView1D(py::class_<Containers::BasicStridedBitArrayView<1, char>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<1, char>>>& c) {
+    c
+        .def("__setitem__", [](const Containers::BasicStridedBitArrayView<1, char>& self, const std::size_t i, bool value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.set(i, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
+}
+
+template<unsigned dimensions> void mutableStridedBitArrayViewND(py::class_<Containers::BasicStridedBitArrayView<dimensions, char>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<dimensions, char>>>& c) {
+    c
+        .def("__setitem__", [](const Containers::BasicStridedBitArrayView<dimensions, char>& self, const typename DimensionsTuple<dimensions, std::size_t>::Type& iTuple, bool value) {
+            Containers::Size<dimensions> iSize{NoInit};
+            for(std::size_t j = 0; j != dimensions; ++j) {
+                const std::size_t i = dimensionsTupleGet<std::size_t>(iTuple, j);
+                if(i >= self.size()[j]) {
+                    PyErr_SetNone(PyExc_IndexError);
+                    throw py::error_already_set{};
+                }
+                iSize[j] = i;
+            }
+            self.set(iSize, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
+}
+
 }
 
 void containers(py::module_& m) {
     m.doc() = "Container implementations";
+
+    py::class_<Containers::BitArray>{m, "BitArray", "Bit array"}
+        /* Constructors */
+        .def_static("value_init", [](std::size_t size) {
+            return Containers::BitArray{ValueInit, size};
+        }, "Construct a zero-initialized array", py::arg("size"))
+        .def_static("no_init", [](std::size_t size) {
+            return Containers::BitArray{NoInit, size};
+        }, "Construct an array without initializing its contents", py::arg("size"))
+        .def_static("direct_init", [](std::size_t size, bool value) {
+            return Containers::BitArray{DirectInit, size, value};
+        }, "Construct an array initialized to a particular bit value", py::arg("size"), py::arg("value"))
+        .def(py::init(), "Default constructor")
+
+        /* Offset, size and memory owning object */
+        .def_property_readonly("offset", &Containers::BitArray::offset, "Bit offset")
+        .def("__len__", &Containers::BitArray::size, "Size in bits")
+
+        /* Single bit access. Need to raise IndexError in order to allow
+           iteration: https://docs.python.org/3/reference/datamodel.html#object.__getitem__ */
+        .def("__getitem__", [](const Containers::BitArray& self, std::size_t i) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            return self[i];
+        }, "Bit at given position", py::arg("i"))
+        .def("__setitem__", [](Containers::BitArray& self, std::size_t i, const bool value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.set(i, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"))
+
+        /* Slicing */
+        .def("__getitem__", [](Containers::BitArray& self, py::slice slice) -> py::object {
+            const Slice calculated = calculateSlice(slice, self.size());
+
+            /* Non-trivial stride, return a different type */
+            if(calculated.step != 1 || calculated.flip) {
+                /** @todo what's up with the cast?! */
+                return pyCastButNotShitty(arrayViewStridedSlice(Containers::MutableStridedBitArrayView1D{Containers::MutableBitArrayView{self}}, calculated, py::cast(self)));
+            }
+
+            /* Usual business */
+            const auto sliced = self.slice(calculated.start, calculated.stop);
+            return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? py::cast(self) : py::none{}));
+        }, "Slice the view", py::arg("slice"));
 
     py::class_<Containers::ArrayView<const char>, Containers::PyArrayViewHolder<Containers::ArrayView<const char>>> arrayView_{m,
         "ArrayView", "Array view", py::buffer_protocol{}};
@@ -626,6 +855,59 @@ void containers(py::module_& m) {
         "MutableArrayView", "Mutable array view", py::buffer_protocol{}};
     arrayView(mutableArrayView_);
     mutableArrayView(mutableArrayView_);
+
+    py::class_<Containers::BitArrayView, Containers::PyArrayViewHolder<Containers::BitArrayView>> bitArrayView_{m,
+        "BitArrayView", "Bit array view"};
+    bitArrayView(bitArrayView_);
+
+    py::class_<Containers::MutableBitArrayView, Containers::PyArrayViewHolder<Containers::MutableBitArrayView>> mutableBitArrayView_{m,
+        "MutableBitArrayView", "Mutable bit array view"};
+    bitArrayView(mutableBitArrayView_);
+    mutableBitArrayView(mutableBitArrayView_);
+
+    /* These have to be defined before StridedArrayView types in order to have
+       them ready for the return type of sliceBit() */
+    py::class_<Containers::StridedBitArrayView1D, Containers::PyArrayViewHolder<Containers::StridedBitArrayView1D>> stridedBitArrayView1D_{m,
+        "StridedBitArrayView1D", "One-dimensional bit array view with stride information"};
+    py::class_<Containers::StridedBitArrayView2D, Containers::PyArrayViewHolder<Containers::StridedBitArrayView2D>> stridedBitArrayView2D_{m,
+        "StridedBitArrayView2D", "Two-dimensional bit array view with stride information"};
+    py::class_<Containers::StridedBitArrayView3D, Containers::PyArrayViewHolder<Containers::StridedBitArrayView3D>> stridedBitArrayView3D_{m,
+        "StridedBitArrayView3D", "Three-dimensional bit array view with stride information"};
+    py::class_<Containers::StridedBitArrayView4D, Containers::PyArrayViewHolder<Containers::StridedBitArrayView4D>> stridedBitArrayView4D_{m,
+        "StridedBitArrayView4D", "Four-dimensional bit array view with stride information"};
+    stridedBitArrayView(stridedBitArrayView1D_);
+    stridedBitArrayView1D(stridedBitArrayView1D_);
+    stridedBitArrayView1D_
+        .def(py::init([](Containers::MutableBitArrayView& other) {
+            return pyArrayViewHolder(Containers::StridedBitArrayView1D{other}, pyObjectHolderFor<Containers::PyArrayViewHolder>(other).owner);
+        }), "Construct from a bit array view", py::arg("view"));
+    stridedBitArrayView(stridedBitArrayView2D_);
+    stridedBitArrayViewND(stridedBitArrayView2D_);
+    stridedBitArrayView(stridedBitArrayView3D_);
+    stridedBitArrayViewND(stridedBitArrayView3D_);
+    stridedBitArrayView(stridedBitArrayView4D_);
+    stridedBitArrayViewND(stridedBitArrayView4D_);
+
+    py::class_<Containers::MutableStridedBitArrayView1D, Containers::PyArrayViewHolder<Containers::MutableStridedBitArrayView1D>> mutableStridedBitArrayView1D_{m,
+        "MutableStridedBitArrayView1D", "Mutable one-dimensional bit array view with stride information", py::buffer_protocol{}};
+    py::class_<Containers::MutableStridedBitArrayView2D, Containers::PyArrayViewHolder<Containers::MutableStridedBitArrayView2D>> mutableStridedBitArrayView2D_{m,
+        "MutableStridedBitArrayView2D", "Mutable two-dimensional bit array view with stride information", py::buffer_protocol{}};
+    py::class_<Containers::MutableStridedBitArrayView3D, Containers::PyArrayViewHolder<Containers::MutableStridedBitArrayView3D>> mutableStridedBitArrayView3D_{m,
+        "MutableStridedBitArrayView3D", "Mutable three-dimensional bit array view with stride information", py::buffer_protocol{}};
+    py::class_<Containers::MutableStridedBitArrayView4D, Containers::PyArrayViewHolder<Containers::MutableStridedBitArrayView4D>> mutableStridedBitArrayView4D_{m,
+        "MutableStridedBitArrayView4D", "Mutable four-dimensional bit array view with stride information", py::buffer_protocol{}};
+    stridedBitArrayView(mutableStridedBitArrayView1D_);
+    stridedBitArrayView1D(mutableStridedBitArrayView1D_);
+    stridedBitArrayView(mutableStridedBitArrayView2D_);
+    stridedBitArrayViewND(mutableStridedBitArrayView2D_);
+    stridedBitArrayView(mutableStridedBitArrayView3D_);
+    stridedBitArrayViewND(mutableStridedBitArrayView3D_);
+    stridedBitArrayView(mutableStridedBitArrayView4D_);
+    stridedBitArrayViewND(mutableStridedBitArrayView4D_);
+    mutableStridedBitArrayView1D(mutableStridedBitArrayView1D_);
+    mutableStridedBitArrayViewND(mutableStridedBitArrayView2D_);
+    mutableStridedBitArrayViewND(mutableStridedBitArrayView3D_);
+    mutableStridedBitArrayViewND(mutableStridedBitArrayView4D_);
 
     py::class_<Containers::PyStridedArrayView<1, const char>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, const char>>> stridedArrayView1D_{m,
         "StridedArrayView1D", "One-dimensional array view with stride information", py::buffer_protocol{}};

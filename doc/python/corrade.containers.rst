@@ -193,3 +193,144 @@
 .. py:function:: corrade.containers.MutableStridedArrayView4D.transposed
     :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3` or if  they're the same
+
+.. py:class:: corrade.containers.BitArray
+
+    An owning counterpart to :ref:`BitArrayView` / :ref:`MutableBitArrayView`.
+    Holds its own data buffer, thus doesn't have an equivalent to
+    :ref:`BitArrayView.owner`. Implicitly convertible to :ref:`BitArrayView`,
+    :ref:`MutableBitArrayView`, :ref:`StridedBitArrayView1D` and
+    :ref:`MutableStridedBitArrayView1D`, so all APIs consuming (strided) bit
+    array views work with this type as well.
+
+.. py:class:: corrade.containers.BitArrayView
+
+    Comparex to an :ref:`ArrayView`, which operates with byte-sized types,
+    provides a view on individual bits. Convertible from a :ref:`BitArrayView`.
+    See :ref:`StridedBitArrayView1D` and others for more generic bit views. :ref:`BitArrayView` is immutable, see :ref:`MutableBitArrayView` for the
+    mutable alternative. All slicing operations are supported, specifying a
+    non-trivial stride will return a :ref:`StridedBitArrayView1D` instead of a :ref:`BitArrayView`.
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    Similarly to :ref:`ArrayView`, the view keeps a reference to the original
+    memory owner object in the :ref:`owner` field. Slicing a view creates a
+    new view referencing the same original object, without any dependency on
+    the previous view. The :py:`owner` is :py:`None` if the view is empty.
+
+.. py:class:: corrade.containers.MutableBitArrayView
+
+    Equivalent to :ref:`BitArrayView`, but implementing :ref:`__setitem__()` as
+    well.
+
+.. py:class:: corrade.containers.StridedBitArrayView1D
+
+    Provides one-dimensional read-only view on a memory range with custom
+    stride values. See :ref:`StridedBitArrayView2D`,
+    :ref:`StridedBitArrayView3D`, :ref:`StridedBitArrayView4D`,
+    :ref:`MutableStridedBitArrayView1D` and others for multi-dimensional and
+    mutable equivalents.
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    Similarly to :ref:`BitArrayView`, the view keeps a reference to the
+    original memory owner object in the :ref:`owner` field. Slicing a view
+    creates a new view referencing the same original object, without any
+    dependency on the previous view. The :py:`owner` is :py:`None` if the view
+    is empty.
+
+.. py:function:: corrade.containers.StridedBitArrayView1D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+.. py:function:: corrade.containers.StridedBitArrayView1D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+
+.. py:class:: corrade.containers.MutableStridedBitArrayView1D
+
+    Equivalent to :ref:`StridedBitArrayView1D`, but implementing
+    :ref:`__setitem__()` as well.
+
+.. py:function:: corrade.containers.MutableStridedBitArrayView1D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+.. py:function:: corrade.containers.MutableStridedBitArrayView1D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`
+
+.. py:class:: corrade.containers.StridedBitArrayView2D
+
+    See :ref:`StridedBitArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedBitArrayView2D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.StridedBitArrayView2D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.StridedBitArrayView2D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+        they're the same
+
+.. py:class:: corrade.containers.MutableStridedBitArrayView2D
+
+    See :ref:`StridedBitArrayView1D` and :ref:`MutableStridedBitArrayView1D`
+    for more information.
+
+.. py:function:: corrade.containers.MutableStridedBitArrayView2D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.MutableStridedBitArrayView2D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+.. py:function:: corrade.containers.MutableStridedBitArrayView2D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+        they're the same
+
+.. py:class:: corrade.containers.StridedBitArrayView3D
+
+    See :ref:`StridedBitArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedBitArrayView3D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.StridedBitArrayView3D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.StridedBitArrayView3D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+        or if  they're the same
+
+.. py:class:: corrade.containers.MutableStridedBitArrayView3D
+
+    See :ref:`StridedBitArrayView1D` and :ref:`MutableStridedBitArrayView1D`
+    for more information.
+
+.. py:function:: corrade.containers.MutableStridedBitArrayView3D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.MutableStridedBitArrayView3D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+.. py:function:: corrade.containers.MutableStridedBitArrayView3D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+        or if  they're the same
+
+.. py:class:: corrade.containers.StridedBitArrayView4D
+
+    See :ref:`StridedBitArrayView1D` for more information.
+
+.. py:function:: corrade.containers.StridedBitArrayView4D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.StridedBitArrayView4D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.StridedBitArrayView4D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3` or if  they're the same
+
+.. py:class:: corrade.containers.MutableStridedBitArrayView4D
+
+    See :ref:`StridedBitArrayView1D` and :ref:`MutableStridedBitArrayView1D`
+    for more information.
+
+.. py:function:: corrade.containers.MutableStridedBitArrayView4D.flipped
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.MutableStridedBitArrayView4D.broadcasted
+    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3`
+.. py:function:: corrade.containers.MutableStridedBitArrayView4D.transposed
+    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+        :py:`3` or if  they're the same
