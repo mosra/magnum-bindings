@@ -29,7 +29,7 @@
 #include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
-#include <Magnum/SceneTools/FlattenTransformationHierarchy.h>
+#include <Magnum/SceneTools/Hierarchy.h>
 #include <Magnum/Trade/SceneData.h>
 
 #include "magnum/bootstrap.h"
@@ -46,7 +46,7 @@ void scenetools(py::module_& m) {
     #endif
 
     m
-        .def("flatten_transformation_hierarchy2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
+        .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {
                 PyErr_SetNone(PyExc_KeyError);
@@ -63,10 +63,10 @@ void scenetools(py::module_& m) {
 
             /** @todo maybe do a caster for arrays, finally?! */
             std::vector<Matrix3> out(scene.fieldSize(*fieldId));
-            SceneTools::flattenTransformationHierarchy2DInto(scene, *fieldId, out, globalTransformation);
+            SceneTools::absoluteFieldTransformations2DInto(scene, *fieldId, out, globalTransformation);
             return out;
-        }, "Flatten a 2D transformation hierarchy for given field", py::arg("scene"), py::arg("field"), py::arg("global_transformation") = Matrix3{})
-        .def("flatten_transformation_hierarchy2d", [](const Trade::SceneData& scene, UnsignedInt fieldId, const Matrix3& globalTransformation) {
+        }, "Calculate absolute 2D transformations for given field", py::arg("scene"), py::arg("field"), py::arg("global_transformation") = Matrix3{})
+        .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, UnsignedInt fieldId, const Matrix3& globalTransformation) {
             if(fieldId >= scene.fieldCount()) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
@@ -82,10 +82,10 @@ void scenetools(py::module_& m) {
 
             /** @todo maybe do a caster for arrays, finally?! */
             std::vector<Matrix3> out(scene.fieldSize(fieldId));
-            SceneTools::flattenTransformationHierarchy2DInto(scene, fieldId, out, globalTransformation);
+            SceneTools::absoluteFieldTransformations2DInto(scene, fieldId, out, globalTransformation);
             return out;
-        }, "Flatten a 2D transformation hierarchy for given field ID", py::arg("scene"), py::arg("field_id"), py::arg("global_transformation") = Matrix3{})
-        .def("flatten_transformation_hierarchy3d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix4& globalTransformation) {
+        }, "Calculate absolute 2D transformations for given named field", py::arg("scene"), py::arg("field_id"), py::arg("global_transformation") = Matrix3{})
+        .def("absolute_field_transformations3d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix4& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {
                 PyErr_SetNone(PyExc_KeyError);
@@ -102,10 +102,10 @@ void scenetools(py::module_& m) {
 
             /** @todo maybe do a caster for arrays, finally?! */
             std::vector<Matrix4> out(scene.fieldSize(*fieldId));
-            SceneTools::flattenTransformationHierarchy3DInto(scene, *fieldId, out, globalTransformation);
+            SceneTools::absoluteFieldTransformations3DInto(scene, *fieldId, out, globalTransformation);
             return out;
-        }, "Flatten a 3D transformation hierarchy for given field", py::arg("scene"), py::arg("field"), py::arg("global_transformation") = Matrix4{})
-        .def("flatten_transformation_hierarchy3d", [](const Trade::SceneData& scene, UnsignedInt fieldId, const Matrix4& globalTransformation) {
+        }, "Calculate absolute 3D transformations for given field", py::arg("scene"), py::arg("field"), py::arg("global_transformation") = Matrix4{})
+        .def("absolute_field_transformations3d", [](const Trade::SceneData& scene, UnsignedInt fieldId, const Matrix4& globalTransformation) {
             if(fieldId >= scene.fieldCount()) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
@@ -121,9 +121,9 @@ void scenetools(py::module_& m) {
 
             /** @todo maybe do a caster for arrays, finally?! */
             std::vector<Matrix4> out(scene.fieldSize(fieldId));
-            SceneTools::flattenTransformationHierarchy3DInto(scene, fieldId, out, globalTransformation);
+            SceneTools::absoluteFieldTransformations3DInto(scene, fieldId, out, globalTransformation);
             return out;
-        }, "Flatten a 3D transformation hierarchy for given field ID", py::arg("scene"), py::arg("field_id"), py::arg("global_transformation") = Matrix4{});
+        }, "Calculate absolute 2D transformations for given named field", py::arg("scene"), py::arg("field_id"), py::arg("global_transformation") = Matrix4{});
 }
 
 }

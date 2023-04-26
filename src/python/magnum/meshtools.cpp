@@ -30,13 +30,13 @@
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/MeshTools/CompressIndices.h>
+#include <Magnum/MeshTools/Copy.h>
 #include <Magnum/MeshTools/Concatenate.h>
 #include <Magnum/MeshTools/Duplicate.h>
-#include <Magnum/MeshTools/FilterAttributes.h>
+#include <Magnum/MeshTools/Filter.h>
 #include <Magnum/MeshTools/GenerateIndices.h>
 #include <Magnum/MeshTools/Interleave.h>
 #include <Magnum/MeshTools/RemoveDuplicates.h>
-#include <Magnum/MeshTools/Reference.h>
 #include <Magnum/MeshTools/Transform.h>
 #include <Magnum/Trade/MeshData.h>
 
@@ -163,7 +163,7 @@ void meshtools(py::module_& m) {
                 test */
             return MeshTools::interleave(mesh, {}, flags);
         }, "Interleave mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
-        .def("owned", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::owned), "Create an owned mesh data", py::arg("mesh"))
+        .def("copy", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::copy), "Make a owned copy of the mesh", py::arg("mesh"))
         /** @todo check that the indices/vertices aren't impl-specific once
             it's possible to test */
         .def("remove_duplicates", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::removeDuplicates), "Remove mesh data duplicates", py::arg("mesh"))

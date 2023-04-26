@@ -23,7 +23,7 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
-.. py:function:: magnum.scenetools.flatten_transformation_hierarchy2d
+.. py:function:: magnum.scenetools.absolute_field_transformations2d
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
     :raise IndexError: If :p:`field_id` negative or not less than
         :ref:`trade.SceneData.field_count`
@@ -31,7 +31,7 @@
     :raise AssertionError: If :p:`scene` does not have
         :ref:`trade.SceneField.PARENT`
 
-.. py:function:: magnum.scenetools.flatten_transformation_hierarchy3d
+.. py:function:: magnum.scenetools.absolute_field_transformations3d
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
     :raise IndexError: If :p:`field_id` negative or not less than
         :ref:`trade.SceneData.field_count`

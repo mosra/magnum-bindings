@@ -180,13 +180,13 @@ class Interleave(unittest.TestCase):
         # Gap after normals removed
         self.assertEqual(interleaved_packed.attribute_stride(trade.MeshAttribute.POSITION), 12 + 8)
 
-class Owned(unittest.TestCase):
+class Copy(unittest.TestCase):
     def test(self):
         mesh = primitives.square_solid()
         self.assertEqual(mesh.vertex_data_flags, trade.DataFlags.GLOBAL)
 
-        owned = meshtools.owned(mesh)
-        self.assertEqual(owned.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+        copy = meshtools.copy(mesh)
+        self.assertEqual(copy.vertex_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
 
 class RemoveDuplicates(unittest.TestCase):
     def test(self):
@@ -248,14 +248,14 @@ class Transform(unittest.TestCase):
         self.assertEqual(transformed.attribute(trade.MeshAttribute.TEXTURE_COORDINATES)[0], (101.0, 0.0))
 
     def test_texture_coordinates2d_in_place(self):
-        mesh = meshtools.owned(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
+        mesh = meshtools.copy(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
         self.assertEqual(mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES)[0], (1.0, 0.0))
 
         meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3.translation(Vector2.x_axis(100.0)))
         self.assertEqual(mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES)[0], (101.0, 0.0))
 
     def test_no_attribute(self):
-        mesh = meshtools.owned(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
+        mesh = meshtools.copy(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
 
         with self.assertRaisesRegex(KeyError, "position attribute not found"):
             meshtools.transform2d(mesh, Matrix3(), 1)
