@@ -40,14 +40,18 @@
       "camera": 1,
       "extras": {
         "aNumber": 5,
-        "aString": "hello!"
+        "aString": "hello!",
+        "yes": true
       },
       "children": [3]
     },
     {
       "camera": 0,
       "translation": [4, 5, 6],
-      "children": [0]
+      "children": [0],
+      "extras": {
+        "yes": false
+      }
     },
     {
       "name": "A broken node",

@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/StridedArrayView.h>
+#include <Corrade/Containers/StridedBitArrayView.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Corrade/Containers/Triple.h>
 #include <Magnum/ImageView.h>
@@ -1407,26 +1408,30 @@ void trade(py::module_& m) {
                 PyErr_SetNone(PyExc_KeyError);
                 throw py::error_already_set{};
             }
-            /** @todo handle arrays (return a 2D view, and especially annotate
-                the return type properly in the docs) */
+            /** @todo handle arrays (return a 2D (bit) view) */
             if(self.fieldArraySize(*found) != 0) {
                 PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
                 throw py::error_already_set{};
             }
-            return sceneFieldView(self, *found, self.field(*found));
+            /** @todo annotate the return type properly in the docs */
+            if(self.fieldType(*found) == Trade::SceneFieldType::Bit)
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBits(*found), py::cast(self)));
+            return pyCastButNotShitty(sceneFieldView(self, *found, self.field(*found)));
         }, "Data for given named field", py::arg("name"))
         .def("field", [](Trade::SceneData& self, UnsignedInt id) {
             if(id >= self.fieldCount()) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
-            /** @todo handle arrays (return a 2D view, and especially annotate
-                the return type properly in the docs) */
+            /** @todo handle arrays (return a 2D (bit) view) */
             if(self.fieldArraySize(id) != 0) {
                 PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
                 throw py::error_already_set{};
             }
-            return sceneFieldView(self, id, self.field(id));
+            /** @todo annotate the return type properly in the docs */
+            if(self.fieldType(id) == Trade::SceneFieldType::Bit)
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBits(id), py::cast(self)));
+            return pyCastButNotShitty(sceneFieldView(self, id, self.field(id)));
         }, "Data for given field", py::arg("name"))
         .def("mutable_field", [](Trade::SceneData& self, Trade::SceneField name) {
             const Containers::Optional<UnsignedInt> found = self.findFieldId(name);
@@ -1438,13 +1443,15 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
                 throw py::error_already_set{};
             }
-            /** @todo handle arrays (return a 2D view, and especially annotate
-                the return type properly in the docs) */
+            /** @todo handle arrays (return a 2D (bit) view) */
             if(self.fieldArraySize(*found) != 0) {
                 PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
                 throw py::error_already_set{};
             }
-            return sceneFieldView(self, *found, self.mutableField(*found));
+            /** @todo annotate the return type properly in the docs */
+            if(self.fieldType(*found) == Trade::SceneFieldType::Bit)
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(self.mutableFieldBits(*found), py::cast(self)));
+            return pyCastButNotShitty(sceneFieldView(self, *found, self.mutableField(*found)));
         }, "Mutable data for given named field", py::arg("name"))
         .def("mutable_field", [](Trade::SceneData& self, UnsignedInt id) {
             if(id >= self.fieldCount()) {
@@ -1455,13 +1462,15 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
                 throw py::error_already_set{};
             }
-            /** @todo handle arrays (return a 2D view, and especially annotate
-                the return type properly in the docs) */
+            /** @todo handle arrays (return a 2D (bit) view) */
             if(self.fieldArraySize(id) != 0) {
                 PyErr_SetString(PyExc_NotImplementedError, "array fields not implemented yet, sorry");
                 throw py::error_already_set{};
             }
-            return sceneFieldView(self, id, self.mutableField(id));
+            /** @todo annotate the return type properly in the docs */
+            if(self.fieldType(id) == Trade::SceneFieldType::Bit)
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(self.mutableFieldBits(id), py::cast(self)));
+            return pyCastButNotShitty(sceneFieldView(self, id, self.mutableField(id)));
         }, "Mutable data for given field", py::arg("name"))
 
         .def_property_readonly("owner", [](Trade::SceneData& self) {

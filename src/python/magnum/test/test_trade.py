@@ -29,7 +29,7 @@ import sys
 import tempfile
 import unittest
 
-from corrade import pluginmanager
+from corrade import containers, pluginmanager
 from magnum import *
 from magnum import primitives, trade
 import magnum
@@ -723,7 +723,7 @@ class SceneData(unittest.TestCase):
         scene = importer.scene(0)
         self.assertEqual(scene.mapping_type, trade.SceneMappingType.UNSIGNED_INT)
         self.assertEqual(scene.mapping_bound, 4)
-        self.assertEqual(scene.field_count, 7)
+        self.assertEqual(scene.field_count, 8)
         # TODO add some array extras once supported to have this different from
         #   the mapping bound
         self.assertEqual(scene.field_size_bound, 4)
@@ -821,8 +821,12 @@ class SceneData(unittest.TestCase):
         scene = importer.scene(0)
         scene_refcount = sys.getrefcount(scene)
         translation_id = scene.field_id(trade.SceneField.TRANSLATION)
+        scene_field_yes = importer.scene_field_for_name('yes')
+        self.assertIsNotNone(scene_field_yes)
+        yes_id = scene.field_id(scene_field_yes)
 
         translations = scene.field(translation_id)
+        self.assertIsInstance(translations, containers.StridedArrayView1D)
         self.assertEqual(translations.size, (3, ))
         self.assertEqual(translations.stride, (12, ))
         self.assertEqual(translations.format, '3f')
@@ -838,6 +842,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(sys.getrefcount(scene), scene_refcount)
 
         cameras = scene.field(trade.SceneField.CAMERA)
+        self.assertIsInstance(cameras, containers.StridedArrayView1D)
         self.assertEqual(cameras.size, (2, ))
         self.assertEqual(cameras.stride, (4, ))
         self.assertEqual(cameras.format, 'I')
@@ -848,7 +853,26 @@ class SceneData(unittest.TestCase):
         del cameras
         self.assertEqual(sys.getrefcount(scene), scene_refcount)
 
+        yeses1 = scene.field(scene_field_yes)
+        yeses2 = scene.field(yes_id)
+        self.assertIsInstance(yeses1, containers.StridedBitArrayView1D)
+        self.assertIsInstance(yeses2, containers.StridedBitArrayView1D)
+        self.assertEqual(yeses1.size, (2, ))
+        self.assertEqual(yeses2.size, (2, ))
+        self.assertEqual(yeses1.stride, (1, ))
+        self.assertEqual(yeses2.stride, (1, ))
+        self.assertEqual(list(yeses1), [True, False])
+        self.assertEqual(list(yeses2), [True, False])
+        self.assertIs(yeses1.owner, scene)
+        self.assertIs(yeses2.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 2)
+
+        del yeses1
+        del yeses2
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
         mutable_translations = scene.mutable_field(translation_id)
+        self.assertIsInstance(mutable_translations, containers.MutableStridedArrayView1D)
         self.assertEqual(mutable_translations.size, (3, ))
         self.assertEqual(mutable_translations.stride, (12, ))
         self.assertEqual(mutable_translations.format, '3f')
@@ -864,6 +888,7 @@ class SceneData(unittest.TestCase):
         self.assertEqual(sys.getrefcount(scene), scene_refcount)
 
         mutable_cameras = scene.mutable_field(trade.SceneField.CAMERA)
+        self.assertIsInstance(mutable_cameras, containers.MutableStridedArrayView1D)
         self.assertEqual(mutable_cameras.size, (2, ))
         self.assertEqual(mutable_cameras.stride, (4, ))
         self.assertEqual(mutable_cameras.format, 'I')
@@ -872,6 +897,24 @@ class SceneData(unittest.TestCase):
         self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
 
         del mutable_cameras
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+        mutable_yeses1 = scene.mutable_field(scene_field_yes)
+        mutable_yeses2 = scene.mutable_field(yes_id)
+        self.assertIsInstance(mutable_yeses1, containers.MutableStridedBitArrayView1D)
+        self.assertIsInstance(mutable_yeses2, containers.MutableStridedBitArrayView1D)
+        self.assertEqual(mutable_yeses1.size, (2, ))
+        self.assertEqual(mutable_yeses2.size, (2, ))
+        self.assertEqual(mutable_yeses1.stride, (1, ))
+        self.assertEqual(mutable_yeses2.stride, (1, ))
+        self.assertEqual(list(mutable_yeses1), [True, False])
+        self.assertEqual(list(mutable_yeses2), [True, False])
+        self.assertIs(mutable_yeses1.owner, scene)
+        self.assertIs(mutable_yeses2.owner, scene)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 2)
+
+        del mutable_yeses1
+        del mutable_yeses2
         self.assertEqual(sys.getrefcount(scene), scene_refcount)
 
     def test_mutable_mapping_access(self):
@@ -921,6 +964,24 @@ class SceneData(unittest.TestCase):
 
         mutable_cameras[1] = 13378
         self.assertEqual(cameras[1], 13378)
+
+        scene_field_yes = importer.scene_field_for_name('yes')
+        self.assertIsNotNone(scene_field_yes)
+        yes_id = scene.field_id(scene_field_yes)
+
+        yeses1 = scene.field(scene_field_yes)
+        yeses2 = scene.field(yes_id)
+        mutable_yeses1 = scene.mutable_field(scene_field_yes)
+        mutable_yeses2 = scene.mutable_field(yes_id)
+        self.assertEqual(yeses1[0], True)
+        self.assertEqual(yeses2[1], False)
+        self.assertEqual(mutable_yeses1[0], True)
+        self.assertEqual(mutable_yeses2[1], False)
+
+        mutable_yeses1[0] = False
+        mutable_yeses2[1] = True
+        self.assertEqual(yeses1[0], False)
+        self.assertEqual(yeses2[1], True)
 
     def test_pointer_field_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1375,7 +1436,7 @@ class Importer(unittest.TestCase):
         self.assertEqual(importer.scene_field_for_name('aString'), trade.SceneField.CUSTOM(1))
 
         scene = importer.scene(0)
-        self.assertEqual(scene.field_count, 7)
+        self.assertEqual(scene.field_count, 8)
         self.assertTrue(scene.has_field(importer.scene_field_for_name('aString')))
 
     def test_scene_by_name(self):
@@ -1383,7 +1444,7 @@ class Importer(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
         scene = importer.scene("A scene")
-        self.assertEqual(scene.field_count, 7)
+        self.assertEqual(scene.field_count, 8)
 
     def test_scene_by_name_not_found(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
