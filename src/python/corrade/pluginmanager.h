@@ -33,41 +33,9 @@
 #include <Corrade/PluginManager/Manager.h>
 
 #include "Corrade/PythonBindings.h"
+#include "Corrade/PluginManager/PythonBindings.h"
 
 #include "corrade/bootstrap.h"
-
-namespace Corrade { namespace PluginManager {
-
-/* Stores additional stuff needed for proper refcounting of plugin instances.
-   Due to obvious reasons we can't subclass plugins so this is the only
-   possible way. */
-template<class T> struct PyPluginHolder: std::unique_ptr<T> {
-    explicit PyPluginHolder(T*) {
-        /* Pybind needs this signature, but it should never be called */
-        CORRADE_INTERNAL_ASSERT_UNREACHABLE();
-    }
-
-    explicit PyPluginHolder(T* object, pybind11::object manager) noexcept: std::unique_ptr<T>{object}, manager{std::move(manager)} {}
-
-    PyPluginHolder(PyPluginHolder<T>&&) noexcept = default;
-    PyPluginHolder(const PyPluginHolder<T>&) = delete;
-    PyPluginHolder<T>& operator=(PyPluginHolder<T>&&) noexcept = default;
-    PyPluginHolder<T>& operator=(const PyPluginHolder<T>&) = default;
-
-    ~PyPluginHolder() {
-        /* On destruction, first `manager` and then the plugin would be
-           destroyed, which would mean it asserts due to the manager being
-           destructed while plugins are still around. To flip the order, we
-           need to reset the pointer first */
-        std::unique_ptr<T>::reset();
-    }
-
-    pybind11::object manager;
-};
-
-}}
-
-PYBIND11_DECLARE_HOLDER_TYPE(T, Corrade::PluginManager::PyPluginHolder<T>)
 
 namespace corrade {
 
@@ -115,7 +83,7 @@ template<class T> void manager(py::class_<PluginManager::Manager<T>, PluginManag
                 throw py::error_already_set{};
             }
 
-            return PluginManager::PyPluginHolder<T>{loaded.release(), py::cast(self)};
+            return PluginManager::pyPluginHolder(std::move(loaded), py::cast(self));
         })
         .def("load_and_instantiate", [](PluginManager::Manager<T>& self, const std::string& plugin) {
             auto loaded = self.loadAndInstantiate(plugin);
@@ -124,7 +92,7 @@ template<class T> void manager(py::class_<PluginManager::Manager<T>, PluginManag
                 throw py::error_already_set{};
             }
 
-            return PluginManager::PyPluginHolder<T>{loaded.release(), py::cast(self)};
+            return PluginManager::pyPluginHolder(std::move(loaded), py::cast(self));
         });
 }
 

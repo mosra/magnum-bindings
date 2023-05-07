@@ -23,17 +23,10 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-# IDE folder in VS, Xcode etc. CMake 3.12+, older versions have only the FOLDER
-# property that would have to be set on each target separately.
-set(CMAKE_FOLDER "Corrade/Python")
-
 if(MAGNUM_WITH_PYTHON)
-    add_custom_target(CorradePython SOURCES PythonBindings.h)
-    install(FILES PythonBindings.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
-endif()
+    set(CorradePluginManagerPython_HEADERS
+        PythonBindings.h)
 
-add_subdirectory(Containers)
-
-if(Corrade_PluginManager_FOUND)
-    add_subdirectory(PluginManager)
+    add_custom_target(CorradePluginManagerPython SOURCES ${CorradePluginManagerPython_HEADERS})
+    install(FILES ${CorradePluginManagerPython_HEADERS} DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR}/PluginManager)
 endif()
