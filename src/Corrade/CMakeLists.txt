@@ -30,6 +30,6 @@ set(CMAKE_FOLDER "Corrade/Python")
 if(MAGNUM_WITH_PYTHON)
     add_custom_target(CorradePython SOURCES PythonBindings.h)
     install(FILES PythonBindings.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
-
-    add_subdirectory(Containers)
 endif()
+
+add_subdirectory(Containers)
