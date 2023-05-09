@@ -126,6 +126,8 @@ Changelog
     :ref:`platform.glfw.Application.dpi_scaling`
 -   Exposed :ref:`platform.glfw.Application.swap_interval` and
     :ref:`platform.glfw.Application.main_loop_iteration`
+-   Exposed :ref:`platform.sdl2.Application.cursor` and
+    :ref:`platform.sdl2.Application.warp_cursor`, same for GLFW
 -   Exposed :ref:`trade.AbstractImporter.features` and
     :ref:`trade.AbstractImporter.flags` and corresponding enums
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and

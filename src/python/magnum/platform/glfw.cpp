@@ -203,6 +203,24 @@ void glfw(py::module_& m) {
     py::class_<PublicizedApplication::MouseMoveEvent, PublicizedApplication::InputEvent> mouseMoveEvent_{glfwApplication, "MouseMoveEvent", "Mouse move event"};
     py::class_<PublicizedApplication::MouseScrollEvent, PublicizedApplication::InputEvent> mouseScrollEvent_{glfwApplication, "MouseScrollEvent", "Mouse scroll event"};
 
+    py::enum_<Platform::Application::Cursor>{glfwApplication, "Cursor", "Cursor type"}
+        .value("ARROW", Platform::Application::Cursor::Arrow)
+        .value("TEXT_INPUT", Platform::Application::Cursor::TextInput)
+        .value("CROSSHAIR", Platform::Application::Cursor::Crosshair)
+        #ifdef GLFW_RESIZE_NWSE_CURSOR
+        .value("RESIZE_NWSE", Platform::Application::Cursor::ResizeNWSE)
+        .value("RESIZE_NESW", Platform::Application::Cursor::ResizeNESW)
+        #endif
+        .value("RESIZE_WE", Platform::Application::Cursor::ResizeWE)
+        .value("RESIZE_NS", Platform::Application::Cursor::ResizeNS)
+        #ifdef GLFW_RESIZE_NWSE_CURSOR
+        .value("RESIZE_ALL", Platform::Application::Cursor::ResizeAll)
+        .value("NO", Platform::Application::Cursor::No)
+        #endif
+        .value("HAND", Platform::Application::Cursor::Hand)
+        .value("HIDDEN", Platform::Application::Cursor::Hidden)
+        .value("HIDDEN_LOCKED", Platform::Application::Cursor::HiddenLocked);
+
     application(glfwApplication);
     exitEvent(exitEvent_);
     viewportEvent(viewportEvent_);

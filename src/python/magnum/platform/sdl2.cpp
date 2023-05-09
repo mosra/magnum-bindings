@@ -203,6 +203,21 @@ void sdl2(py::module_& m) {
     py::class_<PublicizedApplication::MouseMoveEvent, PublicizedApplication::InputEvent> mouseMoveEvent_{sdl2application, "MouseMoveEvent", "Mouse move event"};
     py::class_<PublicizedApplication::MouseScrollEvent, PublicizedApplication::InputEvent> mouseScrollEvent_{sdl2application, "MouseScrollEvent", "Mouse scroll event"};
 
+    py::enum_<Platform::Application::Cursor>{sdl2application, "Cursor", "Cursor type"}
+        .value("ARROW", Platform::Application::Cursor::Arrow)
+        .value("TEXT_INPUT", Platform::Application::Cursor::TextInput)
+        .value("CROSSHAIR", Platform::Application::Cursor::Crosshair)
+        .value("WAIT_ARROW", Platform::Application::Cursor::WaitArrow)
+        .value("RESIZE_NWSE", Platform::Application::Cursor::ResizeNWSE)
+        .value("RESIZE_NESW", Platform::Application::Cursor::ResizeNESW)
+        .value("RESIZE_WE", Platform::Application::Cursor::ResizeWE)
+        .value("RESIZE_NS", Platform::Application::Cursor::ResizeNS)
+        .value("RESIZE_ALL", Platform::Application::Cursor::ResizeAll)
+        .value("NO", Platform::Application::Cursor::No)
+        .value("HAND", Platform::Application::Cursor::Hand)
+        .value("HIDDEN", Platform::Application::Cursor::Hidden)
+        .value("HIDDEN_LOCKED", Platform::Application::Cursor::HiddenLocked);
+
     application(sdl2application);
     exitEvent(exitEvent_);
     viewportEvent(viewportEvent_);
