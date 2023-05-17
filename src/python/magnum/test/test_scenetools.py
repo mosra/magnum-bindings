@@ -396,6 +396,24 @@ class Hierarchy(unittest.TestCase):
             scenetools.absolute_field_transformations3d(scene2d, scene3d.field_id(trade.SceneField.MESH))
 
     def test_absolute_field_transformations_no_hierarchy(self):
-        # TODO implement once it's possible to create / import a scene without
-        #   the parent field
-        pass
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene2d = scenetools.filter_except_fields(importer.scene(0), [trade.SceneField.PARENT])
+        scene3d = scenetools.filter_except_fields(importer.scene(1), [trade.SceneField.PARENT])
+        self.assertFalse(scene2d.is_3d)
+        self.assertFalse(scene3d.is_2d)
+
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.absolute_field_transformations2d(scene2d, trade.SceneField.MESH)
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.absolute_field_transformations2d(scene2d, scene2d.field_id(trade.SceneField.MESH))
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.absolute_field_transformations3d(scene3d, trade.SceneField.MESH)
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.absolute_field_transformations3d(scene3d, scene2d.field_id(trade.SceneField.MESH))
