@@ -274,6 +274,44 @@ class Filter(unittest.TestCase):
                 (importer.scene_field_for_name('yes'), containers.BitArray.value_init(2))
             ])
 
+    def test_objects(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+        self.assertEqual(scene.mapping_bound, 4)
+        self.assertEqual(scene.field_count, 8)
+        self.assertEqual(scene.field_size(trade.SceneField.PARENT), 4)
+        self.assertEqual(scene.field_size(trade.SceneField.TRANSFORMATION), 4)
+        self.assertEqual(scene.field_size(trade.SceneField.TRANSLATION), 3)
+        self.assertEqual(scene.field_size(trade.SceneField.CAMERA), 2)
+
+        # Two parents, transformations and translations gone
+        objects_to_keep = containers.BitArray.direct_init(scene.mapping_bound, True)
+        objects_to_keep[0] = False
+        objects_to_keep[1] = False
+
+        filtered = scenetools.filter_objects(scene, objects_to_keep)
+        self.assertEqual(filtered.mapping_bound, 4)
+        self.assertEqual(filtered.field_count, 8)
+        self.assertEqual(filtered.field_size(trade.SceneField.PARENT), 2)
+        self.assertEqual(filtered.field_size(trade.SceneField.TRANSFORMATION), 2)
+        self.assertEqual(filtered.field_size(trade.SceneField.TRANSLATION), 1)
+        self.assertEqual(filtered.field_size(trade.SceneField.CAMERA), 2)
+        # The original scene isn't referenced by this one, it's a full copy
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_objects_invalid_size(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = importer.scene(0)
+        self.assertEqual(scene.mapping_bound, 4)
+
+        with self.assertRaisesRegex(AssertionError, "expected 4 bits but got 3"):
+            scenetools.filter_objects(scene, containers.BitArray.value_init(3))
+
 class Hierarchy(unittest.TestCase):
     def test_absolute_field_transformations2d(self):
         # Static builds with non-static plugins cause assertions with non-owned

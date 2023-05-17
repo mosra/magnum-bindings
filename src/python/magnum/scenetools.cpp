@@ -150,6 +150,17 @@ void scenetools(py::module_& m) {
 
             return SceneTools::filterFieldEntries(scene, entriesToKeep);
         }, "Filter individual entries of fields in a scene", py::arg("scene"), py::arg("entries_to_keep"))
+        .def("filter_objects", [](const Trade::SceneData& scene, const Containers::BitArrayView objectsToKeep) {
+            if(objectsToKeep.size() != scene.mappingBound()) {
+                PyErr_Format(PyExc_AssertionError, "expected %llu bits but got %zu", scene.mappingBound(), objectsToKeep.size());
+                throw py::error_already_set{};
+            }
+            /** @todo this will blow up if any objects have a bit / string
+                field, implement that already so it's not needed to check
+                here */
+
+            return SceneTools::filterObjects(scene, objectsToKeep);
+        }, "Filter objects in a scene", py::arg("scene"), py::arg("objects_to_keep"))
         .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {
