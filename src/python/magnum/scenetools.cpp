@@ -161,6 +161,34 @@ void scenetools(py::module_& m) {
 
             return SceneTools::filterObjects(scene, objectsToKeep);
         }, "Filter objects in a scene", py::arg("scene"), py::arg("objects_to_keep"))
+        .def("parents_breadth_first", [](const Trade::SceneData& scene) {
+            const Containers::Optional<UnsignedInt> parentFieldId = scene.findFieldId(Trade::SceneField::Parent);
+            if(!parentFieldId) {
+                PyErr_SetString(PyExc_AssertionError, "the scene has no hierarchy");
+                throw py::error_already_set{};
+            }
+
+            /** @todo ugh, add type converters for Corrade arrays already */
+            std::vector<std::pair<UnsignedInt, Int>> out{scene.fieldSize(*parentFieldId)};
+            SceneTools::parentsBreadthFirstInto(scene,
+                Containers::stridedArrayView(out).slice(&decltype(out)::value_type::first),
+                Containers::stridedArrayView(out).slice(&decltype(out)::value_type::second));
+            return out;
+        }, "Retrieve parents in a breadth-first order", py::arg("scene"))
+        .def("children_depth_first", [](const Trade::SceneData& scene) {
+            const Containers::Optional<UnsignedInt> parentFieldId = scene.findFieldId(Trade::SceneField::Parent);
+            if(!parentFieldId) {
+                PyErr_SetString(PyExc_AssertionError, "the scene has no hierarchy");
+                throw py::error_already_set{};
+            }
+
+            /** @todo ugh, add type converters for Corrade arrays already */
+            std::vector<std::pair<UnsignedInt, UnsignedInt>> out{scene.fieldSize(*parentFieldId)};
+            SceneTools::childrenDepthFirstInto(scene,
+                Containers::stridedArrayView(out).slice(&decltype(out)::value_type::first),
+                Containers::stridedArrayView(out).slice(&decltype(out)::value_type::second));
+            return out;
+        }, "Retrieve children in a depth-first order", py::arg("scene"))
         .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {

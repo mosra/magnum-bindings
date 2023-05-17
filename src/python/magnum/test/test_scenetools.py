@@ -313,6 +313,41 @@ class Filter(unittest.TestCase):
             scenetools.filter_objects(scene, containers.BitArray.value_init(3))
 
 class Hierarchy(unittest.TestCase):
+    def test_parents_breadth_first_children_depth_first(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = importer.scene(0)
+
+        parents_breadth_first = scenetools.parents_breadth_first(scene)
+        children_depth_first = scenetools.children_depth_first(scene)
+        self.assertEqual(parents_breadth_first, [
+            # Root objects first, parent always before all its children
+            (1, -1),
+            (2, -1),
+            (3, 2),
+            (0, 3)
+        ])
+        self.assertEqual(children_depth_first, [
+            # Object 1 has no children
+            (1, 0),
+            # Object 2 has one direct child and one grandchild, etc
+            (2, 2),
+                (3, 1),
+                    (0, 0)
+        ])
+
+    def test_parents_breadth_first_children_depth_first_no_hierarchy(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = scenetools.filter_except_fields(importer.scene(0), [trade.SceneField.PARENT])
+
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.parents_breadth_first(scene)
+        with self.assertRaisesRegex(AssertionError, "the scene has no hierarchy"):
+            scenetools.children_depth_first(scene)
+
     def test_absolute_field_transformations2d(self):
         # Static builds with non-static plugins cause assertions with non-owned
         # array deleters used by PrimitiveImporter, skip in that case
