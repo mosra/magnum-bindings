@@ -104,14 +104,14 @@ class GenerateIndices(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
             meshtools.generate_indices(mesh)
 
-class FilterAttributes(unittest.TestCase):
-    def test_only(self):
+class Filter(unittest.TestCase):
+    def test_only_attributes(self):
         mesh = primitives.cube_solid()
         mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.attribute_count(), 2)
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.NORMAL))
 
-        # Currently it doesn't blow up if unknown attributes are listed
+        # Attributes that are not present in the mesh are deliberately ignored
         filtered = meshtools.filter_only_attributes(mesh, [trade.MeshAttribute.TEXTURE_COORDINATES, trade.MeshAttribute.NORMAL])
         filtered_refcount = sys.getrefcount(filtered)
         self.assertEqual(filtered.attribute_count(), 1)
@@ -134,13 +134,13 @@ class FilterAttributes(unittest.TestCase):
         del filtered2
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
-    def test_except(self):
+    def test_except_attributes(self):
         mesh = primitives.cube_solid()
         mesh_refcount = sys.getrefcount(mesh)
         self.assertEqual(mesh.attribute_count(), 2)
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.NORMAL))
 
-        # Currently it doesn't blow up if unknown attributes are listed
+        # Attributes that are not present in the mesh are deliberately ignored
         filtered = meshtools.filter_except_attributes(mesh, [trade.MeshAttribute.TEXTURE_COORDINATES, trade.MeshAttribute.NORMAL])
         filtered_refcount = sys.getrefcount(filtered)
         self.assertEqual(filtered.attribute_count(), 1)
