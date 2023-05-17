@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import os
 import sys
 import unittest
 
@@ -167,6 +168,111 @@ class Filter(unittest.TestCase):
 
         del filtered2
         self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_field_entries(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+        self.assertEqual(scene.field_count, 8)
+        self.assertEqual(scene.field_size(trade.SceneField.PARENT), 4)
+        self.assertEqual(scene.field_size(trade.SceneField.IMPORTER_STATE), 4)
+        self.assertEqual(scene.field_size(trade.SceneField.TRANSFORMATION), 4)
+        self.assertEqual(scene.field_size(trade.SceneField.CAMERA), 2)
+
+        # Remove two parents (and importer state, which is linked), one camera
+        # and all but one transformation
+        parents_to_keep = containers.BitArray.direct_init(scene.field_size(trade.SceneField.PARENT), True)
+        parents_to_keep[0] = False
+        parents_to_keep[2] = False
+
+        transformations_to_keep = containers.BitArray.direct_init(scene.field_size(trade.SceneField.TRANSFORMATION), False)
+        transformations_to_keep[3] = True
+
+        cameras_to_keep = containers.BitArray.direct_init(scene.field_size(trade.SceneField.CAMERA), True)
+        cameras_to_keep[1] = False
+
+        filtered1 = scenetools.filter_field_entries(scene, [
+            (trade.SceneField.PARENT, parents_to_keep),
+            (trade.SceneField.IMPORTER_STATE, parents_to_keep),
+            (trade.SceneField.TRANSFORMATION, transformations_to_keep),
+            (trade.SceneField.CAMERA, cameras_to_keep)
+        ])
+        filtered2 = scenetools.filter_field_entries(scene, [
+            (scene.field_id(trade.SceneField.PARENT), parents_to_keep),
+            (scene.field_id(trade.SceneField.IMPORTER_STATE), parents_to_keep),
+            (scene.field_id(trade.SceneField.TRANSFORMATION), transformations_to_keep),
+            (scene.field_id(trade.SceneField.CAMERA), cameras_to_keep)
+        ])
+        self.assertEqual(filtered1.field_count, 8)
+        self.assertEqual(filtered2.field_count, 8)
+        self.assertEqual(filtered1.field_size(trade.SceneField.PARENT), 2)
+        self.assertEqual(filtered2.field_size(trade.SceneField.PARENT), 2)
+        self.assertEqual(filtered1.field_size(trade.SceneField.TRANSFORMATION), 1)
+        self.assertEqual(filtered2.field_size(trade.SceneField.TRANSFORMATION), 1)
+        self.assertEqual(filtered1.field_size(trade.SceneField.CAMERA), 1)
+        self.assertEqual(filtered2.field_size(trade.SceneField.CAMERA), 1)
+        # The original scene isn't referenced by these, it's a full copy
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_field_entries_invalid(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "scene.gltf"))
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+        self.assertEqual(scene.field_count, 8)
+
+        with self.assertRaisesRegex(AssertionError, "index 8 out of range for 8 fields"):
+            scenetools.filter_field_entries(scene, [
+                (8, containers.BitArrayView())
+            ])
+        with self.assertRaisesRegex(AssertionError, "field at index 1 not found"):
+            scenetools.filter_field_entries(scene, [
+                (trade.SceneField.CAMERA, containers.BitArray.value_init(2)),
+                (trade.SceneField.LIGHT, containers.BitArrayView())
+            ])
+
+        with self.assertRaisesRegex(AssertionError, "field at index 2 listed more than once"):
+            scenetools.filter_field_entries(scene, [
+                (trade.SceneField.CAMERA, containers.BitArray.value_init(2)),
+                (trade.SceneField.TRANSLATION, containers.BitArray.value_init(3)),
+                (trade.SceneField.CAMERA, containers.BitArray.value_init(2))
+            ])
+        with self.assertRaisesRegex(AssertionError, "field 4 listed more than once"):
+            scenetools.filter_field_entries(scene, [
+                (scene.field_id(trade.SceneField.CAMERA), containers.BitArray.value_init(2)),
+                (scene.field_id(trade.SceneField.TRANSLATION), containers.BitArray.value_init(3)),
+                (scene.field_id(trade.SceneField.CAMERA), containers.BitArray.value_init(2))
+            ])
+
+        with self.assertRaisesRegex(AssertionError, "expected 3 bits for field 3 but got 4"):
+            scenetools.filter_field_entries(scene, [
+                (scene.field_id(trade.SceneField.TRANSLATION), containers.BitArray.value_init(4))
+            ])
+        with self.assertRaisesRegex(AssertionError, "expected 3 bits for field at index 1 but got 4"):
+            scenetools.filter_field_entries(scene, [
+                (trade.SceneField.CAMERA, containers.BitArray.value_init(2)),
+                (trade.SceneField.TRANSLATION, containers.BitArray.value_init(4))
+            ])
+
+        with self.assertRaisesRegex(NotImplementedError, "filtering string fields is not implemented yet, sorry"):
+            scenetools.filter_field_entries(scene, [
+                (scene.field_id(importer.scene_field_for_name('aString')), containers.BitArray.value_init(1))
+            ])
+        with self.assertRaisesRegex(NotImplementedError, "filtering string fields is not implemented yet, sorry"):
+            scenetools.filter_field_entries(scene, [
+                (importer.scene_field_for_name('aString'), containers.BitArray.value_init(1))
+            ])
+        with self.assertRaisesRegex(NotImplementedError, "filtering bit fields is not implemented yet, sorry"):
+            scenetools.filter_field_entries(scene, [
+                (scene.field_id(importer.scene_field_for_name('yes')), containers.BitArray.value_init(2))
+            ])
+        with self.assertRaisesRegex(NotImplementedError, "filtering bit fields is not implemented yet, sorry"):
+            scenetools.filter_field_entries(scene, [
+                (importer.scene_field_for_name('yes'), containers.BitArray.value_init(2))
+            ])
 
 class Hierarchy(unittest.TestCase):
     def test_absolute_field_transformations2d(self):

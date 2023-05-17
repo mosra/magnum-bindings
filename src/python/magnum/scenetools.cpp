@@ -26,8 +26,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for std::vector */
 #include <Corrade/Containers/ArrayViewStl.h>
+#include <Corrade/Containers/BitArray.h>
 #include <Corrade/Containers/BitArrayView.h>
 #include <Corrade/Containers/Optional.h>
+#include <Corrade/Containers/Pair.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
 #include <Magnum/SceneTools/Filter.h>
@@ -74,6 +76,80 @@ void scenetools(py::module_& m) {
             py::object sceneOwner = pyObjectHolderFor<Trade::PyDataHolder>(scene).owner;
             return Trade::pyDataHolder(SceneTools::filterExceptFields(scene, fields), sceneOwner.is_none() ? py::cast(scene) : std::move(sceneOwner));
         }, "Filter a scene to contain everything the selected subset of named fields", py::arg("scene"), py::arg("fields"))
+        /** @todo ew, especially the cast .. i hope they have compatible
+            layout, not like std::tuple */
+        /* The enum-based overloads NEEDS to be before the integer overload,
+           otherwise pybind happily uses the enums as integer values!!! */
+        .def("filter_field_entries", [](const Trade::SceneData& scene, const std::vector<std::pair<Trade::SceneField, Containers::BitArrayView>> entriesToKeepStl) {
+            const auto entriesToKeep = Containers::arrayCast<const Containers::Pair<Trade::SceneField, Containers::BitArrayView>>(Containers::arrayView(entriesToKeepStl));
+            Containers::BitArray usedFields{ValueInit, scene.fieldCount()};
+            for(std::size_t i = 0; i != entriesToKeep.size(); ++i) {
+                const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(entriesToKeep[i].first());
+                if(!fieldId) {
+                    PyErr_Format(PyExc_AssertionError, "field at index %zu not found", i, scene.fieldCount());
+                    throw py::error_already_set{};
+                }
+                if(usedFields[*fieldId]) {
+                    PyErr_Format(PyExc_AssertionError, "field at index %zu listed more than once", i);
+                    throw py::error_already_set{};
+                }
+                usedFields.set(*fieldId);
+                const Containers::BitArrayView mask = entriesToKeep[i].second();
+                if(mask.size() != scene.fieldSize(*fieldId)) {
+                    PyErr_Format(PyExc_AssertionError, "expected %zu bits for field at index %zu but got %zu", scene.fieldSize(*fieldId), i, mask.size());
+                    throw py::error_already_set{};
+                }
+                const Trade::SceneFieldType fieldType = scene.fieldType(*fieldId);
+                if(Trade::Implementation::isSceneFieldTypeString(fieldType)) {
+                    PyErr_SetString(PyExc_NotImplementedError, "filtering string fields is not implemented yet, sorry");
+                    throw py::error_already_set{};
+                }
+                if(fieldType == Trade::SceneFieldType::Bit) {
+                    PyErr_SetString(PyExc_NotImplementedError, "filtering bit fields is not implemented yet, sorry");
+                    throw py::error_already_set{};
+                }
+            }
+            /** @todo check field sharing as well to avoid an assertion --
+                make an internal helper in SceneTools or some such, it makes no
+                sense to duplicate the whole logic here */
+
+            return SceneTools::filterFieldEntries(scene, entriesToKeep);
+        }, "Filter individual entries of named fields in a scene", py::arg("scene"), py::arg("entries_to_keep"))
+        .def("filter_field_entries", [](const Trade::SceneData& scene, const std::vector<std::pair<UnsignedInt, Containers::BitArrayView>> entriesToKeepStl) {
+            const auto entriesToKeep = Containers::arrayCast<const Containers::Pair<UnsignedInt, Containers::BitArrayView>>(Containers::arrayView(entriesToKeepStl));
+            Containers::BitArray usedFields{ValueInit, scene.fieldCount()};
+            for(std::size_t i = 0; i != entriesToKeep.size(); ++i) {
+                const UnsignedInt fieldId = entriesToKeep[i].first();
+                if(fieldId >= scene.fieldCount()) {
+                    PyErr_Format(PyExc_AssertionError, "index %u out of range for %u fields", fieldId, scene.fieldCount());
+                    throw py::error_already_set{};
+                }
+                if(usedFields[fieldId]) {
+                    PyErr_Format(PyExc_AssertionError, "field %u listed more than once", fieldId);
+                    throw py::error_already_set{};
+                }
+                usedFields.set(fieldId);
+                const Containers::BitArrayView mask = entriesToKeep[i].second();
+                if(mask.size() != scene.fieldSize(fieldId)) {
+                    PyErr_Format(PyExc_AssertionError, "expected %zu bits for field %u but got %zu", scene.fieldSize(fieldId), fieldId, mask.size());
+                    throw py::error_already_set{};
+                }
+                const Trade::SceneFieldType fieldType = scene.fieldType(fieldId);
+                if(Trade::Implementation::isSceneFieldTypeString(fieldType)) {
+                    PyErr_SetString(PyExc_NotImplementedError, "filtering string fields is not implemented yet, sorry");
+                    throw py::error_already_set{};
+                }
+                if(fieldType == Trade::SceneFieldType::Bit) {
+                    PyErr_SetString(PyExc_NotImplementedError, "filtering bit fields is not implemented yet, sorry");
+                    throw py::error_already_set{};
+                }
+            }
+            /** @todo check field sharing as well to avoid an assertion --
+                make an internal helper in SceneTools or some such, it makes no
+                sense to duplicate the whole logic here */
+
+            return SceneTools::filterFieldEntries(scene, entriesToKeep);
+        }, "Filter individual entries of fields in a scene", py::arg("scene"), py::arg("entries_to_keep"))
         .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {

@@ -27,6 +27,14 @@
     :raise AssertionError: If size of :p:`fields_to_keep` is different than
         :ref:`trade.SceneData.field_count`
 
+.. py:function:: magnum.scenetools.filter_field_entries
+    :raise AssertionError: If any field in :p:`entries_to_keep` does not exist
+        in :p:`scene`
+    :raise AssertionError: If any field in :p:`entries_to_keep` is listed more
+        than once
+    :raise AssertionError: If size of any array in :p:`entries_to_keep` does
+        not match :ref:`trade.SceneData.field_size()` for given field
+
 .. py:function:: magnum.scenetools.absolute_field_transformations2d
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
     :raise IndexError: If :p:`field_id` negative or not less than
