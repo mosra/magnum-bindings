@@ -612,6 +612,9 @@
 .. py:property:: magnum.trade.AbstractSceneConverter.mesh_count
     :raise AssertionError: If no conversion is in progress
 
+.. py:property:: magnum.trade.AbstractSceneConverter.scene_count
+    :raise AssertionError: If no conversion is in progress
+
 .. py:function:: magnum.trade.AbstractSceneConverter.add
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If adding the data fails
@@ -619,6 +622,15 @@
 .. py:function:: magnum.trade.AbstractSceneConverter.set_mesh_attribute_name
     :raise AssertionError: If no conversion is in progress
     :raise AssertionError: If :p:`attribute` is not custom
+
+.. py:function:: magnum.trade.AbstractSceneConverter.set_default_scene
+    :raise AssertionError: If no conversion is in progress
+    :raise AssertionError: If :p:`id` is negative or not less than
+        :ref:`scene_count`
+
+.. py:function:: magnum.trade.AbstractSceneConverter.set_scene_field_name
+    :raise AssertionError: If no conversion is in progress
+    :raise AssertionError: If :p:`field` is not custom
 
 .. py:function:: magnum.trade.AbstractSceneConverter.add_importer_contents
     :raise AssertionError: If no conversion is in progress

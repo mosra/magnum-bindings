@@ -31,7 +31,7 @@ import unittest
 
 from corrade import containers, pluginmanager
 from magnum import *
-from magnum import primitives, trade
+from magnum import primitives, scenetools, trade
 import magnum
 
 class ImageData(unittest.TestCase):
@@ -1840,6 +1840,87 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "not a custom attribute"):
                 converter.set_mesh_attribute_name(trade.MeshAttribute.POSITION, 'foo')
 
+    def test_batch_add_scene(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene("A default scene that's empty")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+            converter.add(scene, "A default scene that's empty")
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn("A default scene that's empty", f.read())
+
+    def test_batch_set_default_scene(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = importer.scene("A default scene that's empty")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+            converter.add(scene, "A default scene that's empty")
+            converter.set_default_scene(0)
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn('"scene": 0', f.read())
+
+    def test_batch_set_default_scene_out_of_range(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(AssertionError, "index 1 out of range for 0 scenes"):
+                converter.set_default_scene(1)
+
+    def test_batch_set_scene_field_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        # Keep only the single custom numeric attribute in the scene (plus
+        # hierarchy and transformation that's required by glTF)
+        # TODO clean up once there's a possibility to create scenes from
+        # scratch
+        scene = scenetools.filter_only_fields(importer.scene("A scene"),             [
+            trade.SceneField.PARENT,
+            trade.SceneField.TRANSLATION,
+            importer.scene_field_for_name('aNumber'),
+        ])
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+            converter.set_scene_field_name(importer.scene_field_for_name('aNumber'), 'aNumber')
+            converter.add(scene)
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn('"aNumber":', f.read())
+
+    def test_batch_set_scene_field_name_not_custom(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(AssertionError, "not a custom field"):
+                converter.set_scene_field_name(trade.SceneField.SCALING, 'foo')
+
     def test_batch_add_importer_contents(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
@@ -1908,6 +1989,8 @@ class SceneConverter(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
         mesh = importer.mesh('Custom mesh attribute')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+        scene = importer.scene("A default scene that's empty")
 
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
         self.assertFalse(converter.is_converting)
@@ -1920,6 +2003,14 @@ class SceneConverter(unittest.TestCase):
             converter.add(mesh)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.set_mesh_attribute_name(trade.MeshAttribute.CUSTOM(1), 'foobar')
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.scene_count
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add(scene)
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.set_default_scene(0)
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.set_scene_field_name(trade.SceneField.CUSTOM(1), 'foobar')
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.add_importer_contents(importer)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):

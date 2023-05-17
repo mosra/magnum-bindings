@@ -1826,6 +1826,48 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
         }, "End converting a scene to a file")
+        .def("set_default_scene", [](Trade::AbstractSceneConverter& self, const UnsignedInt id) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(id >= self.sceneCount()) {
+                PyErr_Format(PyExc_AssertionError, "index %u out of range for %u scenes", id, self.sceneCount());
+                throw py::error_already_set{};
+            }
+
+            self.setDefaultScene(id);
+        }, "Set default scene", py::arg("id"))
+        .def_property_readonly("scene_count", [](Trade::AbstractSceneConverter& self) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            return self.sceneCount();
+        }, "Count of added scenes")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("add", [](Trade::AbstractSceneConverter& self, const Trade::SceneData& scene, const std::string& name) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(const Containers::Optional<UnsignedInt> out = self.add(scene, name))
+                return *out;
+
+            PyErr_SetString(PyExc_RuntimeError, "adding the scene failed");
+            throw py::error_already_set{};
+        }, "Add a scene", py::arg("scene"), py::arg("name") = std::string{})
+        .def("set_scene_field_name", [](Trade::AbstractSceneConverter& self, const Trade::SceneField field, const std::string& name) {
+            if(!Trade::isSceneFieldCustom(field)) {
+                PyErr_SetString(PyExc_AssertionError, "not a custom field");
+                throw py::error_already_set{};
+            }
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            self.setSceneFieldName(field, name);
+        }, "Set name of a custom scene field", py::arg("field"), py::arg("name"))
         .def_property_readonly("mesh_count", [](Trade::AbstractSceneConverter& self) {
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
