@@ -602,7 +602,7 @@
 
     For compatibility with :ref:`os.path`, on Windows this function converts
     all backslashes in :p:`filename` to forward slashes before passing it to
-    :dox:`Trade::AbstractSceneConverter::beginFike()`, which expects forward
+    :dox:`Trade::AbstractSceneConverter::beginFile()`, which expects forward
     slashes as directory separators on all platforms.
 
 .. py:function:: magnum.trade.AbstractSceneConverter.end_file
