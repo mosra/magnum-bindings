@@ -184,6 +184,9 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
 }
 
 template<class T> void bitArrayView(py::class_<Containers::BasicBitArrayView<T>, Containers::PyArrayViewHolder<Containers::BasicBitArrayView<T>>>& c) {
+    /* Implicitly convertible from a BitArray */
+    py::implicitly_convertible<Containers::BitArray, Containers::BasicBitArrayView<T>>();
+
     c
         /* Constructor */
         .def(py::init(), "Default constructor")
@@ -678,9 +681,6 @@ template<unsigned dimensions, class T> void stridedBitArrayView(py::class_<Conta
 
 template<class T> void stridedBitArrayView1D(py::class_<Containers::BasicStridedBitArrayView<1, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<1, T>>>& c) {
     c
-        .def(py::init([](Containers::BitArray& other) {
-            return pyArrayViewHolder(Containers::BasicStridedBitArrayView<1, T>{Containers::BasicBitArrayView<T>{other}}, other.size() ? py::cast(other) : py::none{});
-        }), "Construct a view on a bit array", py::arg("array"))
         .def(py::init([](Containers::BasicBitArrayView<T>& other) {
             return pyArrayViewHolder(Containers::BasicStridedBitArrayView<1, T>{other}, pyObjectHolderFor<Containers::PyArrayViewHolder>(other).owner);
         }), "Construct from a bit array view", py::arg("view"))
