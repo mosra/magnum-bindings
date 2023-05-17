@@ -27,4 +27,7 @@ import os
 import sys
 
 # TODO: do this differently / more robustly
-sys.path = [os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY_DIR', '../../../../build'), 'src/python')] + sys.path
+sys.path = [
+    os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY_DIR', '../../../../build'), 'src/python'),
+    os.path.join(os.path.dirname(__file__), os.environ.get('CMAKE_BINARY_DIR', '../../../../build'), 'src/python/Release')
+] + sys.path

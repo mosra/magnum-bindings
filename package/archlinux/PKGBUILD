@@ -13,22 +13,28 @@ provides=('magnum-bindings-git')
 
 _rootdir=$startdir/../../
 
+_buildtype=Release
+# _buildtype=Debug
+
 build() {
     mkdir -p "$_rootdir/build"
     cd "$_rootdir/build"
 
+    # Only one of these is built
     cmake .. \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CONFIGURATION_TYPES="Release;Debug;RelWithDebInfo" \
+        -DCMAKE_CROSS_CONFIGS=all \
+        -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O2 -g -DNDEBUG -fno-omit-frame-pointer" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DMAGNUM_WITH_PYTHON=ON \
         -DMAGNUM_BUILD_TESTS=ON \
-        -G Ninja
-    ninja
+        -G "Ninja Multi-Config"
+    ninja all:$_buildtype
 }
 
 check() {
     cd "$_rootdir/build"
-    CORRADE_TEST_COLOR=ON ctest --output-on-failure
+    CORRADE_TEST_COLOR=ON ctest --output-on-failure -C $_buildtype
 
     cd "$_rootdir/src/python/corrade"
     python -m unittest -v
@@ -43,9 +49,9 @@ check() {
 package() {
     # Helper headers
     cd "$_rootdir/build"
-    DESTDIR="$pkgdir/" ninja install
+    DESTDIR="$pkgdir/" ninja install:$_buildtype
 
     # Native and python packages
-    cd "$_rootdir/build/src/python"
+    cd "$_rootdir/build/src/python/$_buildtype"
     python setup.py install --root="$pkgdir" --prefix=/usr
 }

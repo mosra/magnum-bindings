@@ -3,7 +3,10 @@ import sys
 from typing import List
 
 # TODO make this less brittle
-sys.path = [os.path.join(os.path.dirname(__file__), '../../build/src/python/')] + sys.path
+sys.path = [
+    os.path.join(os.path.dirname(__file__), '../../build/src/python/'),
+    os.path.join(os.path.dirname(__file__), '../../build/src/python/Release')
+] + sys.path
 
 import corrade
 import corrade.containers
