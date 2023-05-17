@@ -38,6 +38,10 @@
 .. py:function:: magnum.meshtools.duplicate
     :raise AssertionError: If :p:`mesh` is not indexed
 
+.. py:function:: magnum.meshtools.filter_attributes
+    :raise AssertionError: If size of :p:`attributes_to_keep` is different than
+        :p:`mesh` attribute count
+
 .. py:function:: magnum.meshtools.generate_indices
     :raise AssertionError: If :p:`mesh` is not :ref:`MeshPrimitive.LINE_STRIP`,
         :ref:`MeshPrimitive.LINE_LOOP`, :ref:`MeshPrimitive.TRIANGLE_STRIP` or

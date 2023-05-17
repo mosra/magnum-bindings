@@ -25,8 +25,9 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for std::vector */
-#include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/ArrayViewStl.h>
+#include <Corrade/Containers/BitArrayView.h>
+#include <Corrade/Containers/Optional.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/MeshTools/CompressIndices.h>
@@ -131,6 +132,17 @@ void meshtools(py::module_& m) {
 
             return MeshTools::duplicate(mesh);
         }, "Duplicate indexed mesh data", py::arg("mesh"))
+        .def("filter_attributes", [](const Trade::MeshData& mesh, const Containers::BitArrayView attributesToKeep) {
+            if(attributesToKeep.size() != mesh.attributeCount()) {
+                PyErr_Format(PyExc_AssertionError, "expected %u bits but got %zu", mesh.attributeCount(), attributesToKeep.size());
+                throw py::error_already_set{};
+            }
+
+            /* If the mesh already has an owner, use that instead to avoid
+               long reference chains */
+            py::object meshOwner = pyObjectHolderFor<Trade::PyDataHolder>(mesh).owner;
+            return Trade::pyDataHolder(MeshTools::filterAttributes(mesh, attributesToKeep), meshOwner.is_none() ? py::cast(mesh) : std::move(meshOwner));
+        }, "Filter a mesh to contain only the selected subset of attributes", py::arg("mesh"), py::arg("attributes_to_keep"))
         .def("filter_except_attributes", [](const Trade::MeshData& mesh, const std::vector<Trade::MeshAttribute> attributes) {
             /* If the mesh already has an owner, use that instead to avoid
                long reference chains */

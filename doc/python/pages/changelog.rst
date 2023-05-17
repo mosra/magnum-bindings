@@ -109,6 +109,7 @@ Changelog
     as flags and not just as an enum
 -   Exposed :ref:`meshtools.compress_indices()`, :ref:`meshtools.concatenate()`,
     :ref:`meshtools.copy()`, :ref:`meshtools.duplicate()`,
+    :ref:`meshtools.filter_attributes()`,
     :ref:`meshtools.filter_except_attributes()`,
     :ref:`meshtools.filter_only_attributes()`,
     :ref:`meshtools.generate_indices()`, :ref:`meshtools.interleave()`,

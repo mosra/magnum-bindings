@@ -27,6 +27,7 @@ import os
 import sys
 import unittest
 
+from corrade import containers
 from magnum import *
 from magnum import meshtools, primitives, trade
 
@@ -105,6 +106,41 @@ class GenerateIndices(unittest.TestCase):
             meshtools.generate_indices(mesh)
 
 class Filter(unittest.TestCase):
+    def test(self):
+        mesh = primitives.cube_solid()
+        mesh_refcount = sys.getrefcount(mesh)
+        self.assertEqual(mesh.attribute_count(), 2)
+        self.assertTrue(mesh.has_attribute(trade.MeshAttribute.NORMAL))
+
+        attributes_to_keep = containers.BitArray.value_init(mesh.attribute_count())
+        attributes_to_keep[mesh.attribute_id(trade.MeshAttribute.NORMAL)] = True
+
+        filtered = meshtools.filter_attributes(mesh, attributes_to_keep)
+        filtered_refcount = sys.getrefcount(filtered)
+        self.assertEqual(filtered.attribute_count(), 1)
+        self.assertTrue(filtered.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+        self.assertIs(filtered.owner, mesh)
+
+        # Subsequent filtering will still reference the original mesh, not the
+        # intermediates
+        filtered2 = meshtools.filter_attributes(filtered, containers.BitArray.direct_init(filtered.attribute_count(), True))
+        self.assertEqual(filtered2.attribute_count(), 1)
+        self.assertTrue(filtered2.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 2)
+        self.assertIs(filtered2.owner, mesh)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
+
+    def test_invalid_size(self):
+        with self.assertRaisesRegex(AssertionError, "expected 2 bits but got 3"):
+            meshtools.filter_attributes(primitives.cube_solid(), containers.BitArray.value_init(3))
+
     def test_only_attributes(self):
         mesh = primitives.cube_solid()
         mesh_refcount = sys.getrefcount(mesh)
