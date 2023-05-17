@@ -183,17 +183,6 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
     enableBetterBufferProtocol<Containers::ArrayView<T>, arrayViewBufferProtocol>(c);
 }
 
-template<class T> void mutableArrayView(py::class_<Containers::ArrayView<T>, Containers::PyArrayViewHolder<Containers::ArrayView<T>>>& c) {
-    c
-        .def("__setitem__", [](const Containers::ArrayView<T>& self, std::size_t i, const T& value) {
-            if(i >= self.size()) {
-                PyErr_SetNone(PyExc_IndexError);
-                throw py::error_already_set{};
-            }
-            self[i] = value;
-        }, "Set a value at given position", py::arg("i"), py::arg("value"));
-}
-
 template<class T> void bitArrayView(py::class_<Containers::BasicBitArrayView<T>, Containers::PyArrayViewHolder<Containers::BasicBitArrayView<T>>>& c) {
     c
         /* Constructor */
@@ -232,17 +221,6 @@ template<class T> void bitArrayView(py::class_<Containers::BasicBitArrayView<T>,
             auto sliced = self.slice(calculated.start, calculated.stop);
             return pyCastButNotShitty(Containers::pyArrayViewHolder(sliced, sliced.size() ? pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner : py::none{}));
         }, "Slice the view", py::arg("slice"));
-}
-
-template<class T> void mutableBitArrayView(py::class_<Containers::BasicBitArrayView<T>, Containers::PyArrayViewHolder<Containers::BasicBitArrayView<T>>>& c) {
-    c
-        .def("__setitem__", [](const Containers::BasicBitArrayView<T>& self, std::size_t i, bool value) {
-            if(i >= self.size()) {
-                PyErr_SetNone(PyExc_IndexError);
-                throw py::error_already_set{};
-            }
-            self.set(i, value);
-        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
 }
 
 /* Tuple for given dimension */
@@ -646,17 +624,6 @@ template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Contai
         }, "Transpose two dimensions", py::arg("a"), py::arg("b"));
 }
 
-void mutableStridedArrayView1D(py::class_<Containers::PyStridedArrayView<1, char>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, char>>>& c) {
-    c
-        .def("__setitem__", [](const Containers::PyStridedArrayView<1, char>& self, const std::size_t i, py::handle value) {
-            if(i >= self.size()) {
-                PyErr_SetNone(PyExc_IndexError);
-                throw py::error_already_set{};
-            }
-            self.setitem(&self[i], value);
-        }, "Set a value at given position", py::arg("i"), py::arg("value"));
-}
-
 template<unsigned dimensions> void mutableStridedArrayViewND(py::class_<Containers::PyStridedArrayView<dimensions, char>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, char>>>& c) {
     c
         .def("__setitem__", [](const Containers::PyStridedArrayView<dimensions, char>& self, const typename DimensionsTuple<dimensions, std::size_t>::Type& iTuple, py::handle value) {
@@ -766,17 +733,6 @@ template<unsigned dimensions, class T> void stridedBitArrayViewND(py::class_<Con
         }, "Transpose two dimensions", py::arg("a"), py::arg("b"));
 }
 
-void mutableStridedBitArrayView1D(py::class_<Containers::BasicStridedBitArrayView<1, char>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<1, char>>>& c) {
-    c
-        .def("__setitem__", [](const Containers::BasicStridedBitArrayView<1, char>& self, const std::size_t i, bool value) {
-            if(i >= self.size()) {
-                PyErr_SetNone(PyExc_IndexError);
-                throw py::error_already_set{};
-            }
-            self.set(i, value);
-        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
-}
-
 template<unsigned dimensions> void mutableStridedBitArrayViewND(py::class_<Containers::BasicStridedBitArrayView<dimensions, char>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<dimensions, char>>>& c) {
     c
         .def("__setitem__", [](const Containers::BasicStridedBitArrayView<dimensions, char>& self, const typename DimensionsTuple<dimensions, std::size_t>::Type& iTuple, bool value) {
@@ -854,7 +810,14 @@ void containers(py::module_& m) {
     py::class_<Containers::ArrayView<char>, Containers::PyArrayViewHolder<Containers::ArrayView<char>>> mutableArrayView_{m,
         "MutableArrayView", "Mutable array view", py::buffer_protocol{}};
     arrayView(mutableArrayView_);
-    mutableArrayView(mutableArrayView_);
+    mutableArrayView_
+        .def("__setitem__", [](const Containers::ArrayView<char>& self, std::size_t i, const char& value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self[i] = value;
+        }, "Set a value at given position", py::arg("i"), py::arg("value"));
 
     py::class_<Containers::BitArrayView, Containers::PyArrayViewHolder<Containers::BitArrayView>> bitArrayView_{m,
         "BitArrayView", "Bit array view"};
@@ -863,7 +826,14 @@ void containers(py::module_& m) {
     py::class_<Containers::MutableBitArrayView, Containers::PyArrayViewHolder<Containers::MutableBitArrayView>> mutableBitArrayView_{m,
         "MutableBitArrayView", "Mutable bit array view"};
     bitArrayView(mutableBitArrayView_);
-    mutableBitArrayView(mutableBitArrayView_);
+    mutableBitArrayView_
+        .def("__setitem__", [](const Containers::MutableBitArrayView& self, std::size_t i, bool value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.set(i, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
 
     /* These have to be defined before StridedArrayView types in order to have
        them ready for the return type of sliceBit() */
@@ -904,7 +874,14 @@ void containers(py::module_& m) {
     stridedBitArrayViewND(mutableStridedBitArrayView3D_);
     stridedBitArrayView(mutableStridedBitArrayView4D_);
     stridedBitArrayViewND(mutableStridedBitArrayView4D_);
-    mutableStridedBitArrayView1D(mutableStridedBitArrayView1D_);
+    mutableStridedBitArrayView1D_
+        .def("__setitem__", [](const Containers::BasicStridedBitArrayView<1, char>& self, const std::size_t i, bool value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.set(i, value);
+        }, "Set a bit at given position", py::arg("i"), py::arg("value"));
     mutableStridedBitArrayViewND(mutableStridedBitArrayView2D_);
     mutableStridedBitArrayViewND(mutableStridedBitArrayView3D_);
     mutableStridedBitArrayViewND(mutableStridedBitArrayView4D_);
@@ -942,7 +919,14 @@ void containers(py::module_& m) {
     stridedArrayViewND(mutableStridedArrayView3D_);
     stridedArrayView(mutableStridedArrayView4D_);
     stridedArrayViewND(mutableStridedArrayView4D_);
-    mutableStridedArrayView1D(mutableStridedArrayView1D_);
+    mutableStridedArrayView1D_
+        .def("__setitem__", [](const Containers::PyStridedArrayView<1, char>& self, const std::size_t i, py::handle value) {
+            if(i >= self.size()) {
+                PyErr_SetNone(PyExc_IndexError);
+                throw py::error_already_set{};
+            }
+            self.setitem(&self[i], value);
+        }, "Set a value at given position", py::arg("i"), py::arg("value"));
     mutableStridedArrayViewND(mutableStridedArrayView2D_);
     mutableStridedArrayViewND(mutableStridedArrayView3D_);
     mutableStridedArrayViewND(mutableStridedArrayView4D_);
