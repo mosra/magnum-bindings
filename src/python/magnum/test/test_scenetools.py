@@ -23,12 +23,150 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import sys
 import unittest
 
 from corrade import containers
 from magnum import *
 from magnum import scenetools, trade
 import magnum
+
+class Filter(unittest.TestCase):
+    def test_fields(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+
+        self.assertEqual(scene.field_count, 3)
+        self.assertTrue(scene.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(scene.has_field(trade.SceneField.MESH))
+
+        fields_to_keep = containers.BitArray.value_init(scene.field_count)
+        fields_to_keep[scene.field_id(trade.SceneField.TRANSLATION)] = True
+        fields_to_keep[scene.field_id(trade.SceneField.MESH)] = True
+
+        filtered = scenetools.filter_fields(scene, fields_to_keep)
+        filtered_refcount = sys.getrefcount(filtered)
+        self.assertEqual(filtered.field_count, 2)
+        self.assertTrue(filtered.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+        self.assertIs(filtered.owner, scene)
+
+        # Subsequent filtering will still reference the original scene, not the
+        # intermediates
+        filtered2 = scenetools.filter_fields(filtered, containers.BitArray.direct_init(filtered.field_count, True))
+        self.assertEqual(filtered2.field_count, 2)
+        self.assertTrue(filtered2.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered2.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 2)
+        self.assertIs(filtered2.owner, scene)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_fields_invalid_size(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+
+        with self.assertRaisesRegex(AssertionError, "expected 3 bits but got 4"):
+            scenetools.filter_fields(scene, containers.BitArray.value_init(4))
+
+    def test_only_fields(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+
+        self.assertEqual(scene.field_count, 3)
+
+        # Fields that are not present in the mesh are deliberately ignored
+        filtered = scenetools.filter_only_fields(scene, [trade.SceneField.LIGHT, trade.SceneField.MESH, trade.SceneField.TRANSLATION])
+        filtered_refcount = sys.getrefcount(filtered)
+        self.assertEqual(filtered.field_count, 2)
+        self.assertTrue(filtered.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+        self.assertIs(filtered.owner, scene)
+
+        # Subsequent filtering will still reference the original scene, not the
+        # intermediates
+        filtered2 = scenetools.filter_only_fields(filtered, [trade.SceneField.MESH, trade.SceneField.TRANSLATION])
+        self.assertEqual(filtered2.field_count, 2)
+        self.assertTrue(filtered2.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered2.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 2)
+        self.assertIs(filtered2.owner, scene)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
+
+    def test_except_fields(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+        scene_refcount = sys.getrefcount(scene)
+
+        self.assertEqual(scene.field_count, 3)
+
+        # Fields that are not present in the mesh are deliberately ignored
+        filtered = scenetools.filter_except_fields(scene, [trade.SceneField.SKIN, trade.SceneField.PARENT])
+        filtered_refcount = sys.getrefcount(filtered)
+        self.assertEqual(filtered.field_count, 2)
+        self.assertTrue(filtered.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+        self.assertIs(filtered.owner, scene)
+
+        # Subsequent filtering will still reference the original scene, not the
+        # intermediates
+        filtered2 = scenetools.filter_except_fields(filtered, [trade.SceneField.PARENT])
+        self.assertEqual(filtered2.field_count, 2)
+        self.assertTrue(filtered2.has_field(trade.SceneField.TRANSLATION))
+        self.assertTrue(filtered2.has_field(trade.SceneField.MESH))
+        self.assertEqual(sys.getrefcount(filtered), filtered_refcount)
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 2)
+        self.assertIs(filtered2.owner, scene)
+
+        del filtered
+        self.assertEqual(sys.getrefcount(scene), scene_refcount + 1)
+
+        del filtered2
+        self.assertEqual(sys.getrefcount(scene), scene_refcount)
 
 class Hierarchy(unittest.TestCase):
     def test_absolute_field_transformations2d(self):

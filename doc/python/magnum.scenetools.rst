@@ -23,6 +23,10 @@
     DEALINGS IN THE SOFTWARE.
 ..
 
+.. py:function:: magnum.scenetools.filter_fields
+    :raise AssertionError: If size of :p:`fields_to_keep` is different than
+        :ref:`trade.SceneData.field_count`
+
 .. py:function:: magnum.scenetools.absolute_field_transformations2d
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
     :raise IndexError: If :p:`field_id` negative or not less than

@@ -25,12 +25,17 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> /* for std::vector */
-#include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/ArrayViewStl.h>
+#include <Corrade/Containers/BitArrayView.h>
+#include <Corrade/Containers/Optional.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
+#include <Magnum/SceneTools/Filter.h>
 #include <Magnum/SceneTools/Hierarchy.h>
 #include <Magnum/Trade/SceneData.h>
+
+#include "Corrade/PythonBindings.h"
+#include "Magnum/Trade/PythonBindings.h"
 
 #include "magnum/bootstrap.h"
 
@@ -46,6 +51,29 @@ void scenetools(py::module_& m) {
     #endif
 
     m
+        .def("filter_fields", [](const Trade::SceneData& scene, const Containers::BitArrayView fieldsToKeep) {
+            if(fieldsToKeep.size() != scene.fieldCount()) {
+                PyErr_Format(PyExc_AssertionError, "expected %u bits but got %zu", scene.fieldCount(), fieldsToKeep.size());
+                throw py::error_already_set{};
+            }
+
+            /* If the scene already has an owner, use that instead to avoid
+               long reference chains */
+            py::object sceneOwner = pyObjectHolderFor<Trade::PyDataHolder>(scene).owner;
+            return Trade::pyDataHolder(SceneTools::filterFields(scene, fieldsToKeep), sceneOwner.is_none() ? py::cast(scene) : std::move(sceneOwner));
+        }, "Filter a scene to contain only the selected subset of fields", py::arg("scene"), py::arg("fields_to_keep"))
+        .def("filter_only_fields", [](const Trade::SceneData& scene, const std::vector<Trade::SceneField> fields) {
+            /* If the scene already has an owner, use that instead to avoid
+               long reference chains */
+            py::object sceneOwner = pyObjectHolderFor<Trade::PyDataHolder>(scene).owner;
+            return Trade::pyDataHolder(SceneTools::filterOnlyFields(scene, fields), sceneOwner.is_none() ? py::cast(scene) : std::move(sceneOwner));
+        }, "Filter a scene to contain only the selected subset of named fields", py::arg("scene"), py::arg("fields"))
+        .def("filter_except_fields", [](const Trade::SceneData& scene, const std::vector<Trade::SceneField> fields) {
+            /* If the scene already has an owner, use that instead to avoid
+               long reference chains */
+            py::object sceneOwner = pyObjectHolderFor<Trade::PyDataHolder>(scene).owner;
+            return Trade::pyDataHolder(SceneTools::filterExceptFields(scene, fields), sceneOwner.is_none() ? py::cast(scene) : std::move(sceneOwner));
+        }, "Filter a scene to contain everything the selected subset of named fields", py::arg("scene"), py::arg("fields"))
         .def("absolute_field_transformations2d", [](const Trade::SceneData& scene, Trade::SceneField field, const Matrix3& globalTransformation) {
             const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(field);
             if(!fieldId) {
