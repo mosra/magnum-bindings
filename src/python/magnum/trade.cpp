@@ -1532,6 +1532,11 @@ void trade(py::module_& m) {
         }, "Importer flags")
         .def_property_readonly("is_opened", &Trade::AbstractImporter::isOpened, "Whether any file is opened")
         .def("open_data", [](Trade::AbstractImporter& self, Containers::ArrayView<const char> data) {
+            if(!(self.features() >= Trade::ImporterFeature::OpenData)) {
+                PyErr_SetString(PyExc_AssertionError, "feature not supported");
+                throw py::error_already_set{};
+            }
+
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
             if(self.openData(data)) return;
@@ -1759,6 +1764,11 @@ void trade(py::module_& m) {
             self.setFlags(flags);
         }, "Converter flags")
         .def("convert", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh) {
+            if(!(self.features() >= Trade::SceneConverterFeature::ConvertMesh)) {
+                PyErr_SetString(PyExc_AssertionError, "mesh conversion not supported");
+                throw py::error_already_set{};
+            }
+
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
             Containers::Optional<Trade::MeshData> out = self.convert(mesh);
@@ -1769,6 +1779,11 @@ void trade(py::module_& m) {
             return out;
         }, "Convert a mesh", py::arg("mesh"))
         .def("convert_in_place", [](Trade::AbstractSceneConverter& self, Trade::MeshData& mesh) {
+            if(!(self.features() >= Trade::SceneConverterFeature::ConvertMeshInPlace)) {
+                PyErr_SetString(PyExc_AssertionError, "mesh conversion not supported");
+                throw py::error_already_set{};
+            }
+
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
             if(!self.convertInPlace(mesh)) {
@@ -1779,6 +1794,12 @@ void trade(py::module_& m) {
         /** @todo conversion to data */
         /** @todo drop std::string in favor of our own string caster */
         .def("convert_to_file", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& filename) {
+            if(!(self.features() >= (Trade::SceneConverterFeature::ConvertMeshToFile)) &&
+               !(self.features() >= (Trade::SceneConverterFeature::ConvertMultipleToFile|Trade::SceneConverterFeature::AddMeshes))) {
+                PyErr_SetString(PyExc_AssertionError, "mesh conversion not supported");
+                throw py::error_already_set{};
+            }
+
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
             bool out = self.convertToFile(mesh,
@@ -1801,6 +1822,12 @@ void trade(py::module_& m) {
         /** @todo begin/end (MeshOptimizer), begin/end data */
         /** @todo drop std::string in favor of our own string caster */
         .def("begin_file", [](Trade::AbstractSceneConverter& self, const std::string& filename) {
+            if(!(self.features() >= Trade::SceneConverterFeature::ConvertMultipleToFile) &&
+               !(self.features() >=  Trade::SceneConverterFeature::ConvertMeshToFile)) {
+                PyErr_SetString(PyExc_AssertionError, "feature not supported");
+                throw py::error_already_set{};
+            }
+
             if(!self.beginFile(
                 #ifdef CORRADE_TARGET_WINDOWS
                 /* To allow people to conveniently use Python's os.path, we
@@ -1828,6 +1855,10 @@ void trade(py::module_& m) {
             }
         }, "End converting a scene to a file")
         .def("set_default_scene", [](Trade::AbstractSceneConverter& self, const UnsignedInt id) {
+            if(!(self.features() >= Trade::SceneConverterFeature::AddScenes)) {
+                PyErr_SetString(PyExc_AssertionError, "feature not supported");
+                throw py::error_already_set{};
+            }
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
                 throw py::error_already_set{};
@@ -1848,6 +1879,10 @@ void trade(py::module_& m) {
         }, "Count of added scenes")
         /** @todo drop std::string in favor of our own string caster */
         .def("add", [](Trade::AbstractSceneConverter& self, const Trade::SceneData& scene, const std::string& name) {
+            if(!(self.features() >= Trade::SceneConverterFeature::AddScenes)) {
+                PyErr_SetString(PyExc_AssertionError, "scene conversion not supported");
+                throw py::error_already_set{};
+            }
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
                 throw py::error_already_set{};
@@ -1859,12 +1894,16 @@ void trade(py::module_& m) {
             throw py::error_already_set{};
         }, "Add a scene", py::arg("scene"), py::arg("name") = std::string{})
         .def("set_scene_field_name", [](Trade::AbstractSceneConverter& self, const Trade::SceneField field, const std::string& name) {
-            if(!Trade::isSceneFieldCustom(field)) {
-                PyErr_SetString(PyExc_AssertionError, "not a custom field");
+            if(!(self.features() >= Trade::SceneConverterFeature::AddScenes)) {
+                PyErr_SetString(PyExc_AssertionError, "feature not supported");
                 throw py::error_already_set{};
             }
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(!Trade::isSceneFieldCustom(field)) {
+                PyErr_SetString(PyExc_AssertionError, "not a custom field");
                 throw py::error_already_set{};
             }
             self.setSceneFieldName(field, name);
@@ -1878,6 +1917,13 @@ void trade(py::module_& m) {
         }, "Count of added meshes")
         /** @todo drop std::string in favor of our own string caster */
         .def("add", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& name) {
+            if(!(self.features() >= Trade::SceneConverterFeature::AddMeshes) &&
+               !(self.features() & (Trade::SceneConverterFeature::ConvertMesh|
+                                    Trade::SceneConverterFeature::ConvertMeshToData|
+                                    Trade::SceneConverterFeature::ConvertMeshToFile))) {
+                PyErr_SetString(PyExc_AssertionError, "mesh conversion not supported");
+                throw py::error_already_set{};
+            }
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
                 throw py::error_already_set{};
@@ -1890,12 +1936,25 @@ void trade(py::module_& m) {
         }, "Add a mesh", py::arg("mesh"), py::arg("name") = std::string{})
         /** @todo mesh levels */
         .def("set_mesh_attribute_name", [](Trade::AbstractSceneConverter& self, const Trade::MeshAttribute attribute, const std::string& name) {
-            if(!Trade::isMeshAttributeCustom(attribute)) {
-                PyErr_SetString(PyExc_AssertionError, "not a custom attribute");
+            if(!(self.features() & (Trade::SceneConverterFeature::AddMeshes|
+                                    Trade::SceneConverterFeature::ConvertMesh|
+                                    Trade::SceneConverterFeature::ConvertMeshInPlace|
+                                    Trade::SceneConverterFeature::ConvertMeshToData|
+                                    Trade::SceneConverterFeature::ConvertMeshToFile))) {
+                PyErr_SetString(PyExc_AssertionError, "feature not supported");
                 throw py::error_already_set{};
             }
-            if(!self.isConverting()) {
+            /* Unless single mesh conversion is supported, allow this function
+               to be called only if begin*() was called before */
+            if(!(self.features() & (Trade::SceneConverterFeature::ConvertMesh|
+                                    Trade::SceneConverterFeature::ConvertMeshInPlace|
+                                    Trade::SceneConverterFeature::ConvertMeshToData|
+                                    Trade::SceneConverterFeature::ConvertMeshToFile)) && !self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(!Trade::isMeshAttributeCustom(attribute)) {
+                PyErr_SetString(PyExc_AssertionError, "not a custom attribute");
                 throw py::error_already_set{};
             }
             self.setMeshAttributeName(attribute, name);
@@ -1903,6 +1962,10 @@ void trade(py::module_& m) {
         .def("add_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(!importer.isOpened()) {
+                PyErr_SetString(PyExc_AssertionError, "the importer is not opened");
                 throw py::error_already_set{};
             }
             /** @todo check if contents present in the file are supported? or
@@ -1915,6 +1978,10 @@ void trade(py::module_& m) {
         .def("add_supported_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(!importer.isOpened()) {
+                PyErr_SetString(PyExc_AssertionError, "the importer is not opened");
                 throw py::error_already_set{};
             }
             /** @todo check if contents present in the file are supported? or

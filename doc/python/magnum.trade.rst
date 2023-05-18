@@ -374,6 +374,8 @@
     behavior.
 
 .. py:function:: magnum.trade.AbstractImporter.open_data
+    :raise AssertionError: If :ref:`trade.ImporterFeatures.OPEN_DATA` is not
+        supported
     :raise RuntimeError: If file opening fails
 
 .. py:function:: magnum.trade.AbstractImporter.open_file
@@ -584,12 +586,21 @@
     behavior.
 
 .. py:function:: magnum.trade.AbstractSceneConverter.convert
+    :raise AssertionError: If :ref:`trade.SceneConverterFeatures.CONVERT_MESH`
+        is not supported
     :raise RuntimeError: If conversion fails
 
 .. py:function:: magnum.trade.AbstractSceneConverter.convert_in_place
+    :raise AssertionError: If :ref:`trade.SceneConverterFeatures.CONVERT_MESH_IN_PLACE`
+        is not supported
     :raise RuntimeError: If conversion fails
 
 .. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file
+    :raise AssertionError: If neither
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` nor the
+        combination of :ref:`SceneConverterFeatures.CONVERT_MULTIPLE_TO_FILE`
+        and :ref:`SceneConverterFeatures.ADD_MESHES`
+        is supported
     :raise RuntimeError: If conversion fails
 
     For compatibility with :ref:`os.path`, on Windows this function converts
@@ -598,6 +609,9 @@
     forward slashes as directory separators on all platforms.
 
 .. py:function:: magnum.trade.AbstractSceneConverter.begin_file
+    :raise AssertionError: If neither
+        :ref:`SceneConverterFeatures.CONVERT_MULTIPLE_TO_FILE` nor
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` is supported
     :raise RuntimeError: If beginning the conversion fails
 
     For compatibility with :ref:`os.path`, on Windows this function converts
@@ -616,19 +630,36 @@
     :raise AssertionError: If no conversion is in progress
 
 .. py:function:: magnum.trade.AbstractSceneConverter.add
+    :raise AssertionError: If corresponding
+        :ref:`SceneConverterFeatures.ADD_* <SceneConverterFeatures>` is not
+        supported, or alternatively at least one of
+        :ref:`SceneConverterFeatures.CONVERT_MESH`,
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_DATA` or
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` is not supported
+        for meshes
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If adding the data fails
 
 .. py:function:: magnum.trade.AbstractSceneConverter.set_mesh_attribute_name
+    :raise AssertionError: If none of
+        :ref:`SceneConverterFeatures.ADD_MESHES`,
+        :ref:`SceneConverterFeatures.CONVERT_MESH`,
+        :ref:`SceneConverterFeatures.CONVERT_MESH_IN_PLACE`,
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_DATA` or
+        :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` is supported
     :raise AssertionError: If no conversion is in progress
     :raise AssertionError: If :p:`attribute` is not custom
 
 .. py:function:: magnum.trade.AbstractSceneConverter.set_default_scene
+    :raise AssertionError: If :ref:`trade.SceneConverterFeatures.ADD_SCENES`
+        is not supported
     :raise AssertionError: If no conversion is in progress
     :raise AssertionError: If :p:`id` is negative or not less than
         :ref:`scene_count`
 
 .. py:function:: magnum.trade.AbstractSceneConverter.set_scene_field_name
+    :raise AssertionError: If :ref:`trade.SceneConverterFeatures.ADD_SCENES`
+        is not supported
     :raise AssertionError: If no conversion is in progress
     :raise AssertionError: If :p:`field` is not custom
 
@@ -637,5 +668,6 @@
     :raise RuntimeError: If adding the importer contents fails
 
 .. py:function:: magnum.trade.AbstractSceneConverter.add_supported_importer_contents
+    :raise AssertionError: If :p:`importer` is not opened
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If adding the importer contents fails

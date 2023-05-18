@@ -1424,6 +1424,12 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "opening data failed"):
             importer.open_data(b'')
 
+    def test_open_data_not_supported(self):
+        importer = trade.ImporterManager().load_and_instantiate('AnySceneImporter')
+
+        with self.assertRaisesRegex(AssertionError, "feature not supported"):
+            importer.open_data(b'')
+
     def test_scene(self):
         # importer refcounting tested in image2d
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1719,6 +1725,12 @@ class SceneConverter(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "conversion failed"):
             converted_mesh = converter.convert(mesh)
 
+    def test_mesh_not_supported(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with self.assertRaisesRegex(AssertionError, "mesh conversion not supported"):
+            converter.convert(primitives.cube_solid())
+
     def test_mesh_in_place(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -1747,6 +1759,12 @@ class SceneConverter(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "conversion failed"):
             converter.convert_in_place(mesh)
 
+    def test_mesh_in_place_not_supported(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with self.assertRaisesRegex(AssertionError, "mesh conversion not supported"):
+            converter.convert_in_place(primitives.cube_solid())
+
     def test_mesh_to_file(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -1768,6 +1786,17 @@ class SceneConverter(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(RuntimeError, "conversion failed"):
                 converter.convert_to_file(mesh, os.path.join(tmp, "mesh.obj"))
+
+    def test_mesh_to_file_not_supported(self):
+        converter_manager = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = converter_manager.load_and_instantiate('MeshOptimizerSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(AssertionError, "mesh conversion not supported"):
+                converter.convert_to_file(primitives.cube_solid(), os.path.join(tmp, "mesh.foo"))
 
     def test_batch_file(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1812,6 +1841,17 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "ending the conversion failed"):
                 converter.end_file()
 
+    def test_batch_file_not_supported(self):
+        converter_manager = trade.SceneConverterManager()
+        if 'MeshOptimizerSceneConverter' not in converter_manager.plugin_list:
+            self.skipTest("MeshOptimizerSceneConverter plugin not available")
+
+        converter = converter_manager.load_and_instantiate('MeshOptimizerSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(AssertionError, "feature not supported"):
+                converter.begin_file(os.path.join(tmp, "mesh.foo"))
+
     def test_batch_add_mesh_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
@@ -1823,6 +1863,11 @@ class SceneConverter(unittest.TestCase):
             converter.begin_file(os.path.join(tmp, "mesh.ply"))
             with self.assertRaisesRegex(RuntimeError, "adding the mesh failed"):
                 converter.add(mesh)
+
+    def test_batch_add_mesh_not_supported(self):
+        # TODO implement once there's a converter that doesn't support meshes
+        #   or has only in-place conversion
+        pass
 
     def test_batch_set_mesh_attribute_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1850,6 +1895,10 @@ class SceneConverter(unittest.TestCase):
 
             with self.assertRaisesRegex(AssertionError, "not a custom attribute"):
                 converter.set_mesh_attribute_name(trade.MeshAttribute.POSITION, 'foo')
+
+    def test_batch_set_mesh_attribute_name_not_supported(self):
+        # TODO implement once there's a converter that doesn't support meshes
+        pass
 
     def test_batch_add_scene(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1892,6 +1941,25 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "adding the scene failed"):
                 converter.add(scene)
 
+    def test_batch_add_scene_not_supported(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "scene.ply"))
+
+            with self.assertRaisesRegex(AssertionError, "scene conversion not supported"):
+                converter.add(scene)
+
     def test_batch_set_default_scene(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
@@ -1918,6 +1986,15 @@ class SceneConverter(unittest.TestCase):
 
             with self.assertRaisesRegex(AssertionError, "index 1 out of range for 0 scenes"):
                 converter.set_default_scene(1)
+
+    def test_batch_set_default_scene_not_supported(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "scene.ply"))
+
+            with self.assertRaisesRegex(AssertionError, "feature not supported"):
+                converter.set_default_scene(0)
 
     def test_batch_set_scene_field_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -1954,6 +2031,15 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "not a custom field"):
                 converter.set_scene_field_name(trade.SceneField.SCALING, 'foo')
 
+    def test_batch_set_scene_field_name_not_supported(self):
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "scene.ply"))
+
+            with self.assertRaisesRegex(AssertionError, "feature not supported"):
+                converter.set_scene_field_name(trade.SceneField.CUSTOM(1), 'foo')
+
     def test_batch_add_importer_contents(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
@@ -1981,6 +2067,17 @@ class SceneConverter(unittest.TestCase):
             converter.begin_file(os.path.join(tmp, "file.ply"))
 
             with self.assertRaisesRegex(RuntimeError, "adding importer contents failed"):
+                converter.add_importer_contents(importer)
+
+    def test_batch_add_importer_contents_not_opened(self):
+        importer = trade.ImporterManager().load_and_instantiate('AnySceneImporter')
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.gltf"))
+
+            with self.assertRaisesRegex(AssertionError, "the importer is not opened"):
                 converter.add_importer_contents(importer)
 
     def test_batch_add_supported_importer_contents(self):
@@ -2014,6 +2111,17 @@ class SceneConverter(unittest.TestCase):
             converter.begin_file(filename)
 
             with self.assertRaisesRegex(RuntimeError, "adding importer contents failed"):
+                converter.add_supported_importer_contents(importer)
+
+    def test_batch_add_supported_importer_contents_not_opened(self):
+        importer = trade.ImporterManager().load_and_instantiate('AnySceneImporter')
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.gltf"))
+
+            with self.assertRaisesRegex(AssertionError, "the importer is not opened"):
                 converter.add_supported_importer_contents(importer)
 
     def test_batch_no_conversion_in_progress(self):
