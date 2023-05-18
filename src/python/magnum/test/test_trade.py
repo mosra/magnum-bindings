@@ -1851,11 +1851,36 @@ class SceneConverter(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             filename = os.path.join(tmp, "scene.gltf")
             converter.begin_file(filename)
+            self.assertEqual(converter.scene_count, 0)
+
             converter.add(scene, "A default scene that's empty")
+            self.assertEqual(converter.scene_count, 1)
+
             converter.end_file()
 
             with open(filename, 'r') as f:
                 self.assertIn("A default scene that's empty", f.read())
+
+    def test_batch_add_scene_failed(self):
+        # Static builds with non-static plugins cause assertions with non-owned
+        # array deleters used by PrimitiveImporter, skip in that case
+        if magnum.BUILD_STATIC:
+            self.skipTest("dynamic PrimitiveImporter doesn't work with a static build")
+
+        importer = trade.ImporterManager().load_and_instantiate('PrimitiveImporter')
+        importer.open_data(containers.ArrayView())
+
+        scene = importer.scene(0)
+        self.assertFalse(scene.is_3d)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "scene.gltf")
+            converter.begin_file(filename)
+
+            with self.assertRaisesRegex(RuntimeError, "adding the scene failed"):
+                converter.add(scene)
 
     def test_batch_set_default_scene(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
