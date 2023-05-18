@@ -1775,7 +1775,8 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_RuntimeError, "conversion failed");
                 throw py::error_already_set{};
             }
-        }, "Convert a mesh", py::arg("mesh"))
+        }, "Convert a mesh in-place", py::arg("mesh"))
+        /** @todo conversion to data */
         /** @todo drop std::string in favor of our own string caster */
         .def("convert_to_file", [](Trade::AbstractSceneConverter& self, const Trade::MeshData& mesh, const std::string& filename) {
             /** @todo log redirection -- but we'd need assertions to not be

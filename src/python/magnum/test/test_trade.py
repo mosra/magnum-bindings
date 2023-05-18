@@ -1887,8 +1887,7 @@ class SceneConverter(unittest.TestCase):
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            filename = os.path.join(tmp, "scene.gltf")
-            converter.begin_file(filename)
+            converter.begin_file(os.path.join(tmp, "scene.gltf"))
 
             with self.assertRaisesRegex(RuntimeError, "adding the scene failed"):
                 converter.add(scene)
@@ -1915,8 +1914,7 @@ class SceneConverter(unittest.TestCase):
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            filename = os.path.join(tmp, "scene.gltf")
-            converter.begin_file(filename)
+            converter.begin_file(os.path.join(tmp, "scene.gltf"))
 
             with self.assertRaisesRegex(AssertionError, "index 1 out of range for 0 scenes"):
                 converter.set_default_scene(1)
@@ -1951,8 +1949,7 @@ class SceneConverter(unittest.TestCase):
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            filename = os.path.join(tmp, "scene.gltf")
-            converter.begin_file(filename)
+            converter.begin_file(os.path.join(tmp, "scene.gltf"))
 
             with self.assertRaisesRegex(AssertionError, "not a custom field"):
                 converter.set_scene_field_name(trade.SceneField.SCALING, 'foo')
@@ -1964,8 +1961,7 @@ class SceneConverter(unittest.TestCase):
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            filename = os.path.join(tmp, "two-meshes.gltf")
-            converter.begin_file(filename)
+            converter.begin_file(os.path.join(tmp, "two-meshes.gltf"))
             self.assertEqual(converter.mesh_count, 0)
 
             # Nothing like that in the file
@@ -1982,8 +1978,7 @@ class SceneConverter(unittest.TestCase):
         converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            filename = os.path.join(tmp, "two-meshes.gltf")
-            converter.begin_file(filename)
+            converter.begin_file(os.path.join(tmp, "file.ply"))
 
             with self.assertRaisesRegex(RuntimeError, "adding importer contents failed"):
                 converter.add_importer_contents(importer)
