@@ -1001,9 +1001,20 @@ class SceneData(unittest.TestCase):
         self.assertEqual(pointer[1], 0xdeadbeef)
 
     def test_data_access_not_mutable(self):
-        pass
-        # TODO implement once there's a way to get immutable SceneData, either
-        #   by "deserializing" a binary blob or via some SceneTools API
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
+
+        scene = scenetools.filter_except_fields(importer.scene(0), [trade.SceneField.SKIN])
+        self.assertEqual(scene.data_flags, trade.DataFlags.NONE)
+
+        with self.assertRaisesRegex(AttributeError, "scene data is not mutable"):
+            scene.mutable_mapping(0)
+        with self.assertRaisesRegex(AttributeError, "scene data is not mutable"):
+            scene.mutable_mapping(trade.SceneField.PARENT)
+        with self.assertRaisesRegex(AttributeError, "scene data is not mutable"):
+            scene.mutable_field(0)
+        with self.assertRaisesRegex(AttributeError, "scene data is not mutable"):
+            scene.mutable_field(trade.SceneField.PARENT)
 
     def test_field_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
