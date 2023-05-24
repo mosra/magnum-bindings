@@ -2066,6 +2066,66 @@ class SceneConverter(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "feature not supported"):
                 converter.set_scene_field_name(trade.SceneField.CUSTOM(1), 'foo')
 
+    def test_batch_add_image2d(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+
+        image = importer.image2d(0)
+
+        image_converter_manager = trade.ImageConverterManager()
+        scene_converter_manager = trade.SceneConverterManager()
+        scene_converter_manager.register_external_manager(image_converter_manager)
+
+        converter = scene_converter_manager.load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "file.gltf")
+            converter.begin_file(filename)
+            self.assertEqual(converter.image2d_count, 0)
+
+            converter.add(image, "A PNG image")
+            self.assertEqual(converter.image2d_count, 1)
+
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn("A PNG image", f.read())
+
+    def test_batch_add_image2d_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+
+        image = importer.image2d(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+        # Nonsense image converter
+        converter.configuration['imageConverter'] = 'ThisIsNoImageConverter'
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.gltf"))
+
+            with self.assertRaisesRegex(RuntimeError, "adding the image failed"):
+                converter.add(image)
+
+    def test_batch_add_image2d_not_supported(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), "rgba_dxt1.dds"))
+        compressed_image = importer.image2d(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.ply"))
+
+            with self.assertRaisesRegex(AssertionError, "2D image conversion not supported"):
+                converter.add(image)
+            with self.assertRaisesRegex(AssertionError, "compressed 2D image conversion not supported"):
+                converter.add(compressed_image)
+
     def test_batch_add_importer_contents(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'two-meshes.gltf'))
@@ -2157,6 +2217,10 @@ class SceneConverter(unittest.TestCase):
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
         scene = importer.scene("A default scene that's empty")
 
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+
         converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
         self.assertFalse(converter.is_converting)
 
@@ -2176,6 +2240,10 @@ class SceneConverter(unittest.TestCase):
             converter.set_default_scene(0)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.set_scene_field_name(trade.SceneField.CUSTOM(1), 'foobar')
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.image2d_count
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add(image)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.add_importer_contents(importer)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):

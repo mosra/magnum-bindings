@@ -1973,6 +1973,36 @@ void trade(py::module_& m) {
             }
             self.setMeshAttributeName(attribute, name);
         }, "Set name of a custom mesh attribute", py::arg("attribute"), py::arg("name"))
+        /** @todo 1D images, once we have data & plugins to test with */
+        .def_property_readonly("image2d_count", [](Trade::AbstractSceneConverter& self) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            return self.image2DCount();
+        }, "Count of added 2D images")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("add", [](Trade::AbstractSceneConverter& self, const Trade::ImageData2D& image, const std::string& name) {
+            if(!image.isCompressed() && !(self.features() & Trade::SceneConverterFeature::AddImages2D)) {
+                PyErr_SetString(PyExc_AssertionError, "2D image conversion not supported");
+                throw py::error_already_set{};
+            }
+            if(image.isCompressed() && !(self.features() & Trade::SceneConverterFeature::AddCompressedImages2D)) {
+                PyErr_SetString(PyExc_AssertionError, "compressed 2D image conversion not supported");
+                throw py::error_already_set{};
+            }
+
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(const Containers::Optional<UnsignedInt> out = self.add(image, name))
+                return *out;
+
+            PyErr_SetString(PyExc_RuntimeError, "adding the image failed");
+            throw py::error_already_set{};
+        }, "Add a 2D image", py::arg("image"), py::arg("name") = std::string{})
+        /** @todo 3D images, once we have data & plugins to test with */
         .def("add_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
