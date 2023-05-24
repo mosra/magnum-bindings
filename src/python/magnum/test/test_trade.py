@@ -1645,7 +1645,33 @@ class ImageConverter(unittest.TestCase):
         converter.flags = trade.ImageConverterFlags.VERBOSE
         self.assertEqual(converter.flags, trade.ImageConverterFlags.VERBOSE)
 
+    # TODO test also 1D and 3D variants for more robustness
+
     def test_image2d(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+        self.assertEqual(image.size, Vector2i(3, 2))
+
+        converter = trade.ImageConverterManager().load_and_instantiate('StbResizeImageConverter')
+        converter.configuration['size'] = "1 1"
+
+        converted = converter.convert(image)
+        self.assertEqual(converted.size, Vector2i(1, 1))
+
+    def test_image2d_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        image = importer.image2d(0)
+        self.assertEqual(image.size, Vector2i(3, 2))
+
+        converter = trade.ImageConverterManager().load_and_instantiate('StbResizeImageConverter')
+        # not setting any size
+
+        with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+            converter.convert(image)
+
+    def test_image2d_to_file(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
         image = importer.image2d(0)
@@ -1656,7 +1682,7 @@ class ImageConverter(unittest.TestCase):
             converter.convert_to_file(image, os.path.join(tmp, "image.png"))
             self.assertTrue(os.path.exists(os.path.join(tmp, "image.png")))
 
-    def test_image2d_failed(self):
+    def test_image2d_to_file_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
         image = importer.image2d(0)

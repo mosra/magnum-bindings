@@ -539,6 +539,9 @@
     raising an exception. See particular function documentation for detailed
     behavior.
 
+.. py:function:: magnum.trade.AbstractImageConverter.convert
+    :raise RuntimeError: If image conversion fails
+
 .. py:function:: magnum.trade.AbstractImageConverter.convert_to_file
     :raise RuntimeError: If image conversion fails
 

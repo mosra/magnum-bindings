@@ -447,6 +447,17 @@ template<class R, Containers::Optional<R>(Trade::AbstractImporter::*f)(UnsignedI
 
 /* Can't be named just checkResult() because the AbstractSceneConverter
    overload would confuse GCC 4.8 */
+template<class R, class T, Containers::Optional<R>(Trade::AbstractImageConverter::*f)(const T&)> R checkImageConverterResult(Trade::AbstractImageConverter& self, const T& image) {
+    /** @todo log redirection -- but we'd need assertions to not be part of
+        that so when it dies, the user can still see why */
+    Containers::Optional<R> out = (self.*f)(image);
+    if(!out) {
+        PyErr_SetString(PyExc_RuntimeError, "conversion failed");
+        throw py::error_already_set{};
+    }
+
+    return *std::move(out);
+}
 /** @todo drop std::string in favor of our own string caster */
 template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::StringView)> void checkImageConverterResult(Trade::AbstractImageConverter& self, const T& image, const std::string& filename) {
     /** @todo log redirection -- but we'd need assertions to not be part of
@@ -1678,6 +1689,9 @@ void trade(py::module_& m) {
         }, [](Trade::AbstractImageConverter& self, Trade::ImageConverterFlag flags) {
             self.setFlags(flags);
         }, "Converter flags")
+        .def("convert", checkImageConverterResult<Trade::ImageData1D, ImageView1D, &Trade::AbstractImageConverter::convert>, "Convert a 1D image", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData2D, ImageView2D, &Trade::AbstractImageConverter::convert>, "Convert a 2D image", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData3D, ImageView3D, &Trade::AbstractImageConverter::convert>, "Convert a 3D image", py::arg("image"))
         .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
