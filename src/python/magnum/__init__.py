@@ -80,8 +80,11 @@ __all__ = [
     'PixelFormat', 'PixelStorage',
     'CompressedPixelFormat',
     'Image1D', 'Image2D', 'Image3D',
+    'CompressedImage1D', 'CompressedImage2D', 'CompressedImage3D',
     'ImageView1D', 'ImageView2D', 'ImageView3D',
     'MutableImageView1D', 'MutableImageView2D', 'MutableImageView3D',
+    'CompressedImageView1D', 'CompressedImageView2D', 'CompressedImageView3D',
+    'MutableCompressedImageView1D', 'MutableCompressedImageView2D', 'MutableCompressedImageView3D',
 
     'SamplerFilter', 'SamplerMipmap', 'SamplerWrapping',
 

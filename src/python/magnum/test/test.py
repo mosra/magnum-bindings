@@ -183,6 +183,35 @@ class Image(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to this pixel format is not implemented yet, sorry"):
             a.pixels
 
+class CompressedImage(unittest.TestCase):
+    def test_init_empty(self):
+        a = CompressedImage2D()
+        self.assertEqual(a.size, Vector2i())
+        self.assertEqual(a.format, CompressedPixelFormat(0))
+
+    @unittest.skip("No way to create a non-empty Image at the moment")
+    def test_data_access(self):
+        # Tested in test_gl_gl.Framebuffer.test_read_image instead
+        a = CompressedImage2D(CompressedPixelFormat.BC1_RGB_UNORM, Vector2i(3, 17)) # TODO
+        a_refcount = sys.getrefcount(a)
+
+        data = a.data
+        self.assertEqual(len(data), 3*17*1)
+        self.assertIs(data.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+    def test_data_access_empty(self):
+        a = CompressedImage2D()
+        a_refcount = sys.getrefcount(a)
+
+        data = a.data
+        self.assertEqual(len(data), 0)
+        self.assertIs(data.owner, None)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
 class ImageView(unittest.TestCase):
     def test_init(self):
         # 2x4 RGB pixels, padded for alignment
@@ -512,6 +541,140 @@ class ImageView(unittest.TestCase):
 
         with self.assertRaisesRegex(NotImplementedError, "access to this pixel format is not implemented yet, sorry"):
             a.pixels
+
+class CompressedImageView(unittest.TestCase):
+    def test_init(self):
+        # Four 64-bit blocks
+        data = (b'01234567'
+                b'89abcdef'
+                b'FEDCBA98'
+                b'76543210')
+        data_refcount = sys.getrefcount(data)
+
+        a = CompressedImageView2D(CompressedPixelFormat.BC1_RGB_UNORM, (4, 16), data)
+        self.assertEqual(a.size, Vector2i(4, 16))
+        self.assertEqual(a.format, CompressedPixelFormat.BC1_RGB_UNORM)
+        self.assertEqual(a.owner, data)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+        del a
+        self.assertEqual(sys.getrefcount(data), data_refcount)
+
+    def test_init_empty(self):
+        a = MutableCompressedImageView1D(CompressedPixelFormat.ASTC_4X4_RGBA_UNORM, 32)
+        self.assertEqual(a.size, 32)
+        self.assertEqual(a.owner, None)
+
+    def test_init_mutable(self):
+        # Four 64-bit blocks
+        data = bytearray(b'01234567'
+                         b'89abcdef'
+                         b'FEDCBA98'
+                         b'76543210')
+        data_refcount = sys.getrefcount(data)
+
+        a = MutableCompressedImageView2D(CompressedPixelFormat.BC4_R_SNORM, (8, 8), data)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+        # Back to immutable
+        b = CompressedImageView2D(a)
+        self.assertEqual(b.size, Vector2i(8, 8))
+        self.assertEqual(b.format, CompressedPixelFormat.BC4_R_SNORM)
+        self.assertEqual(len(b.data), 32)
+        self.assertIs(b.owner, data)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 2)
+
+    @unittest.skip("No way to create a non-empty Image at the moment")
+    def test_init_image(self):
+        # TODO adapt from ImageView.test_init_image
+        pass
+
+    def test_init_image_empty(self):
+        a = CompressedImage2D()
+        a_refcount = sys.getrefcount(a)
+
+        view = CompressedImageView2D(a)
+        self.assertEqual(view.size, (0, 0))
+        self.assertIs(view.owner, None)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+        mview = MutableCompressedImageView2D(a)
+        self.assertEqual(mview.size, (0, 0))
+        self.assertIs(mview.owner, None)
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+    def test_data_access(self):
+        # Two 128-bit blocks
+        data = (b'0123456789abcdef'
+                b'FEDCBA9876543210')
+        data_refcount = sys.getrefcount(data)
+
+        a = CompressedImageView2D(CompressedPixelFormat.BC7_RGBA_UNORM, (8, 4), data)
+        a_refcount = sys.getrefcount(a)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+        a_data = a.data
+        self.assertEqual(len(a_data), 32)
+        self.assertEqual(a_data[9], '9')
+        self.assertEqual(a_data[20], 'B')
+        self.assertIs(a_data.owner, data)
+        # The data references the original data as an owner, not the view
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 2)
+
+        del a_data
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+    def test_mutable_data_access(self):
+        # Two 128-bit blocks
+        data = bytearray(b'0123456789abcdef'
+                         b'FEDCBA9876543210')
+        data_refcount = sys.getrefcount(data)
+
+        a = MutableCompressedImageView2D(CompressedPixelFormat.BC6H_RGB_SFLOAT, (4, 8), data)
+        a_refcount = sys.getrefcount(a)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+        a_data = a.data
+        self.assertEqual(len(a_data), 32)
+        self.assertEqual(a_data[9], '9')
+        self.assertEqual(a_data[20], 'B')
+        self.assertIs(a_data.owner, data)
+        # The data references the original data as an owner, not the view
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 2)
+
+        a_data[9] = '_'
+        a_data[20] = '_'
+        self.assertEqual(data, b'012345678_abcdef'
+                               b'FEDC_A9876543210')
+
+        del a_data
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+    def test_set_data(self):
+        # Two 128-bit blocks
+        data = (b'0123456789ABCDEF'
+                b'fedcba9876543210')
+        data_refcount = sys.getrefcount(data)
+
+        a = CompressedImageView2D(CompressedPixelFormat.BC3_RGBA_SRGB, (4, 8), data)
+        self.assertIs(a.owner, data)
+        self.assertEqual(sys.getrefcount(data), data_refcount + 1)
+
+        data2 = (b'0123456789abcdef'
+                 b'FEDCBA9876543210')
+        data2_refcount = sys.getrefcount(data2)
+
+        # Replacing the data should disown the original object and point to the
+        # new one
+        a.data = data2
+        self.assertEqual(bytes(a.data),
+            b'0123456789abcdef'
+            b'FEDCBA9876543210')
+        self.assertIs(a.owner, data2)
+        self.assertEqual(sys.getrefcount(data), data_refcount)
+        self.assertEqual(sys.getrefcount(data2), data2_refcount + 1)
 
 class UtilityCopy(unittest.TestCase):
     def test_1d(self):

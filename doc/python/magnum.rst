@@ -83,6 +83,23 @@
 
     See :ref:`Image2D` for more information.
 
+.. py:class:: magnum.CompressedImage1D
+
+    See :ref:`CompressedImage2D` for more information.
+
+.. py:class:: magnum.CompressedImage2D
+
+    An owning counterpart to :ref:`CompressedImageView2D` /
+    :ref:`MutableCompressedImageView2D`. Holds its own data buffer, thus
+    doesn't have an equivalent to :ref:`CompressedImageView2D.owner`. The
+    :ref:`data` view allows mutable access. Implicitly convertible to
+    :ref:`CompressedImageView2D` / :ref:`MutableCompressedImageView2D`, so all
+    APIs consuming image views work with this type as well.
+
+.. py:class:: magnum.CompressedImage3D
+
+    See :ref:`CompressedImage2D` for more information.
+
 .. py:class:: magnum.ImageView1D
 
     See :ref:`ImageView2D` for more information.
@@ -191,6 +208,91 @@
 
 .. py:function:: magnum.MutableImageView3D.__init__(self, arg0: magnum.MutableImageView3D)
     :raise RuntimeError: If :ref:`trade.ImageData3D.is_compressed` is :py:`True`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData3D` in the :ref:`trade` module.
+
+.. py:class:: magnum.CompressedImageView1D
+
+    See :ref:`CompressedImageView2D` for more information.
+
+.. py:class:: magnum.CompressedImageView2D
+
+    :TODO: remove this line once m.css stops ignoring first caption on a page
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    Similarly to :ref:`corrade.containers.ArrayView` (and unlike in C++), the
+    view keeps a reference to the original memory owner object in the
+    :ref:`owner` field, meaning that calling :py:`del` on the original object
+    will *not* invalidate the view. Slicing a view creates a new view
+    referencing the same original object, without any dependency on the
+    previous view. That means a long chained slicing operation will not cause
+    increased memory usage.
+
+    The :ref:`owner` is :py:`None` if the view is empty.
+
+.. py:class:: magnum.CompressedImageView3D
+
+    See :ref:`CompressedImageView2D` for more information.
+
+.. py:class:: magnum.MutableCompressedImageView1D
+
+    See :ref:`CompressedImageView2D` for more information. The only difference
+    to the non-mutable variant is that it's possible to modify the image
+    through :ref:`data`.
+
+.. py:class:: magnum.MutableCompressedImageView2D
+
+    See :ref:`CompressedImageView2D` for more information. The only difference
+    to the non-mutable variant is that it's possible to modify the image
+    through :ref:`data`.
+
+.. py:class:: magnum.MutableImageView3D
+
+    See :ref:`CompressedImageView2D` for more information. The only difference
+    to the non-mutable variant is that it's possible to modify the image
+    through :ref:`data`.
+
+.. py:function:: magnum.CompressedImageView1D.__init__(self, arg0: magnum.CompressedImageView1D)
+    :raise RuntimeError: If :ref:`trade.ImageData1D.is_compressed` is
+        :py:`False`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData1D` in the :ref:`trade` module.
+
+.. py:function:: magnum.CompressedImageView2D.__init__(self, arg0: magnum.CompressedImageView2D)
+    :raise RuntimeError: If :ref:`trade.ImageData2D.is_compressed` is
+        :py:`False`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData2D` in the :ref:`trade` module.
+
+.. py:function:: magnum.CompressedImageView3D.__init__(self, arg0: magnum.CompressedImageView3D)
+    :raise RuntimeError: If :ref:`trade.ImageData3D.is_compressed` is
+        :py:`False`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData3D` in the :ref:`trade` module.
+
+.. py:function:: magnum.MutableCompressedImageView1D.__init__(self, arg0: magnum.MutableCompressedImageView1D)
+    :raise RuntimeError: If :ref:`trade.ImageData1D.is_compressed` is
+        :py:`False`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData1D` in the :ref:`trade` module.
+
+.. py:function:: magnum.MutableCompressedImageView2D.__init__(self, arg0: magnum.MutableCompressedImageView2D)
+    :raise RuntimeError: If :ref:`trade.ImageData2D.is_compressed` is
+        :py:`True`
+
+    This function is used to implement implicit conversion from
+    :ref:`trade.ImageData2D` in the :ref:`trade` module.
+
+.. py:function:: magnum.MutableCompressedImageView3D.__init__(self, arg0: magnum.MutableCompressedImageView3D)
+    :raise RuntimeError: If :ref:`trade.ImageData3D.is_compressed` is
+        :py:`False`
 
     This function is used to implement implicit conversion from
     :ref:`trade.ImageData3D` in the :ref:`trade` module.

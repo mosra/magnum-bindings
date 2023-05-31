@@ -170,6 +170,75 @@ template<class T> void imageViewFromMutable(py::class_<T, PyImageViewHolder<T>>&
         }), "Construct from a mutable view");
 }
 
+template<class T> void compressedImage(py::class_<T>& c) {
+    c
+        /* Constructors. Only the ones that are *not* taking an Array, as
+           Python has no way to "move" it in */
+        .def(py::init(), "Construct an image placeholder")
+
+        /* Properties */
+        .def_property_readonly("format", &T::format, "Format of compressed pixel data")
+        .def_property_readonly("size", [](T& self) {
+            return PyDimensionTraits<T::Dimensions, Int>::from(self.size());
+        }, "Image size")
+        .def_property_readonly("data", [](T& self) {
+            return Containers::pyArrayViewHolder(self.data(), self.data() ? py::cast(self) : py::none{});
+        }, "Raw image data");
+}
+
+template<class T> void compressedImageView(py::class_<T, PyImageViewHolder<T>>& c) {
+    /*
+        Missing APIs:
+
+        Type, ErasedType, Dimensions
+    */
+
+    py::implicitly_convertible<CompressedImage<T::Dimensions>, T>();
+
+    c
+        /* Constructors. The variants *not* taking an array view have to be
+           first, otherwise things fail on systems that don't have numpy
+           installed. See imageView() above for details */
+        .def(py::init([](CompressedPixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
+            return T{format, size};
+        }), "Construct an empty view")
+        .def(py::init([](CompressedPixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
+        }), "Constructor")
+        .def(py::init([](CompressedImage<T::Dimensions>& image) {
+            return pyImageViewHolder(T{image}, image.data() ? py::cast(image) : py::none{});
+        }), "Construct a view on an image")
+        .def(py::init([](const CompressedImageView<T::Dimensions, typename T::Type>& other) {
+            return pyImageViewHolder(CompressedImageView<T::Dimensions, typename T::Type>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
+        }), "Construct from any type convertible to an image view")
+
+        /* Properties */
+        .def_property_readonly("format", &T::format, "Format of compressedpixel data")
+        .def_property_readonly("size", [](T& self) {
+            return PyDimensionTraits<T::Dimensions, Int>::from(self.size());
+        }, "Image size")
+        .def_property("data", [](T& self) {
+            return Containers::pyArrayViewHolder(self.data(), pyObjectHolderFor<PyImageViewHolder>(self).owner);
+        }, [](T& self, const Containers::ArrayView<typename T::Type>& data) {
+            self.setData(data);
+            pyObjectHolderFor<PyImageViewHolder>(self).owner =
+            pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner;
+        }, "Raw image data")
+
+        .def_property_readonly("owner", [](T& self) {
+            return pyObjectHolderFor<PyImageViewHolder>(self).owner;
+        }, "Memory owner");
+}
+
+template<class T> void compressedImageViewFromMutable(py::class_<T, PyImageViewHolder<T>>& c) {
+    py::implicitly_convertible<BasicMutableCompressedImageView<T::Dimensions>, T>();
+
+    c
+        .def(py::init([](const BasicMutableCompressedImageView<T::Dimensions>& other) {
+            return pyImageViewHolder(BasicCompressedImageView<T::Dimensions>(other), pyObjectHolderFor<PyImageViewHolder>(other).owner);
+        }), "Construct from a mutable view");
+}
+
 void magnum(py::module_& m) {
     m.attr("BUILD_DEPRECATED") =
         #ifdef MAGNUM_BUILD_DEPRECATED
@@ -540,6 +609,13 @@ void magnum(py::module_& m) {
     image(image2D);
     image(image3D);
 
+    py::class_<CompressedImage1D> compressedImage1D{m, "CompressedImage1D", "One-dimensional compressed image"};
+    py::class_<CompressedImage2D> compressedImage2D{m, "CompressedImage2D", "Two-dimensional compressed image"};
+    py::class_<CompressedImage3D> compressedImage3D{m, "CompressedImage3D", "Three-dimensional compressed image"};
+    compressedImage(compressedImage1D);
+    compressedImage(compressedImage2D);
+    compressedImage(compressedImage3D);
+
     py::class_<ImageView1D, PyImageViewHolder<ImageView1D>> imageView1D{m, "ImageView1D", "One-dimensional image view"};
     py::class_<ImageView2D, PyImageViewHolder<ImageView2D>> imageView2D{m, "ImageView2D", "Two-dimensional image view"};
     py::class_<ImageView3D, PyImageViewHolder<ImageView3D>> imageView3D{m, "ImageView3D", "Three-dimensional image view"};
@@ -557,6 +633,24 @@ void magnum(py::module_& m) {
     imageViewFromMutable(imageView1D);
     imageViewFromMutable(imageView2D);
     imageViewFromMutable(imageView3D);
+
+    py::class_<CompressedImageView1D, PyImageViewHolder<CompressedImageView1D>> compressedImageView1D{m, "CompressedImageView1D", "One-dimensional compressed image view"};
+    py::class_<CompressedImageView2D, PyImageViewHolder<CompressedImageView2D>> compressedImageView2D{m, "CompressedImageView2D", "Two-dimensional compressed image view"};
+    py::class_<CompressedImageView3D, PyImageViewHolder<CompressedImageView3D>> compressedImageView3D{m, "CompressedImageView3D", "Three-dimensional compressed image view"};
+    py::class_<MutableCompressedImageView1D, PyImageViewHolder<MutableCompressedImageView1D>> mutableCompressedImageView1D{m, "MutableCompressedImageView1D", "One-dimensional mutable compressed image view"};
+    py::class_<MutableCompressedImageView2D, PyImageViewHolder<MutableCompressedImageView2D>> mutableCompressedImageView2D{m, "MutableCompressedImageView2D", "Two-dimensional mutable compressed image view"};
+    py::class_<MutableCompressedImageView3D, PyImageViewHolder<MutableCompressedImageView3D>> mutableCompressedImageView3D{m, "MutableCompressedImageView3D", "Three-dimensional mutable compressed image view"};
+
+    compressedImageView(compressedImageView1D);
+    compressedImageView(compressedImageView2D);
+    compressedImageView(compressedImageView3D);
+    compressedImageView(mutableCompressedImageView1D);
+    compressedImageView(mutableCompressedImageView2D);
+    compressedImageView(mutableCompressedImageView3D);
+
+    compressedImageViewFromMutable(compressedImageView1D);
+    compressedImageViewFromMutable(compressedImageView2D);
+    compressedImageViewFromMutable(compressedImageView3D);
 
     py::enum_<SamplerFilter>{m, "SamplerFilter", "Texture sampler filtering"}
         .value("NEAREST", SamplerFilter::Nearest)

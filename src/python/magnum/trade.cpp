@@ -177,6 +177,22 @@ template<UnsignedInt dimensions, class T> PyObject* implicitlyConvertibleToImage
     return r;
 }
 
+template<UnsignedInt dimensions, class T> PyObject* implicitlyConvertibleToCompressedImageView(PyObject* obj, PyTypeObject*) {
+    py::detail::make_caster<Trade::ImageData<dimensions>> caster;
+    if(!caster.load(obj, false)) {
+        return nullptr;
+    }
+
+    Trade::ImageData<dimensions>& data = caster;
+    if(!data.isCompressed()) {
+        PyErr_SetString(PyExc_RuntimeError, "image is not compressed");
+        throw py::error_already_set{};
+    }
+
+    auto r = pyCastButNotShitty(pyImageViewHolder(CompressedImageView<dimensions, T>(data), py::reinterpret_borrow<py::object>(obj))).release().ptr();
+    return r;
+}
+
 template<UnsignedInt dimensions, class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>> imagePixelsView(Trade::ImageData<dimensions>& image, const Containers::ArrayView<T> data, const Containers::StridedArrayView<dimensions + 1, T>& pixels) {
     const PixelFormat format = image.format();
     const std::size_t itemsize = pixelFormatSize(format);
@@ -218,6 +234,14 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
         auto tinfo = py::detail::get_type_info(typeid(ImageView<dimensions, const char>));
         CORRADE_INTERNAL_ASSERT(tinfo);
         tinfo->implicit_conversions.push_back(implicitlyConvertibleToImageView<dimensions, const char>);
+    } {
+        auto tinfo = py::detail::get_type_info(typeid(CompressedImageView<dimensions, char>));
+        CORRADE_INTERNAL_ASSERT(tinfo);
+        tinfo->implicit_conversions.push_back(implicitlyConvertibleToCompressedImageView<dimensions, char>);
+    } {
+        auto tinfo = py::detail::get_type_info(typeid(CompressedImageView<dimensions, const char>));
+        CORRADE_INTERNAL_ASSERT(tinfo);
+        tinfo->implicit_conversions.push_back(implicitlyConvertibleToCompressedImageView<dimensions, const char>);
     }
 
     c

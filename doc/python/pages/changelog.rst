@@ -58,6 +58,8 @@ Changelog
 -   Exposed the :ref:`CompressedPixelFormat` enum, various pixel-format-related
     helper APIs are now properties on :ref:`PixelFormat` and
     :ref:`CompressedPixelFormat`
+-   Exposed :ref:`CompressedImage2D`, :ref:`CompressedImageView2D`,
+    :ref:`MutableCompressedImageView2D` and their 1D and 3D counterparts
 -   Exposed :ref:`Color3.from_xyz()`, :ref:`Color3.from_linear_rgb_int()`,
     :ref:`Color3.to_xyz()`, :ref:`Color3.to_linear_rgb_int()` and equivalent
     APIs on :ref:`Color4`

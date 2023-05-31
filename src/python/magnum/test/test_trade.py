@@ -81,14 +81,20 @@ class ImageData(unittest.TestCase):
         view = ImageView2D(image)
         mutable_view = MutableImageView2D(image)
 
+        with self.assertRaisesRegex(RuntimeError, "image is not compressed"):
+            CompressedImageView2D(image)
+        with self.assertRaisesRegex(RuntimeError, "image is not compressed"):
+            MutableCompressedImageView2D(image)
+
     def test_convert_view_compressed(self):
         # The only way to get an image instance is through a manager
         importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), "rgba_dxt1.dds"))
         image = importer.image2d(0)
 
-        # No compressed-image-related APIs exposed ATM, so just verifying the
-        # uncompressed ones fail properly
+        view = CompressedImageView2D(image)
+        mutable_view = MutableCompressedImageView2D(image)
+
         with self.assertRaisesRegex(RuntimeError, "image is compressed"):
             view = ImageView2D(image)
         with self.assertRaisesRegex(RuntimeError, "image is compressed"):
