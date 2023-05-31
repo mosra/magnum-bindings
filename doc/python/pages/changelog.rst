@@ -55,6 +55,7 @@ Changelog
     :ref:`Matrix3.projection()`
 -   Exposed remaining vector/scalar, exponential and other functions in the
     :ref:`math <magnum.math>` library
+-   Exposed the :ref:`CompressedPixelFormat` enum
 -   Exposed :ref:`Color3.from_xyz()`, :ref:`Color3.from_linear_rgb_int()`,
     :ref:`Color3.to_xyz()`, :ref:`Color3.to_linear_rgb_int()` and equivalent
     APIs on :ref:`Color4`

@@ -81,6 +81,13 @@
 .. py:property:: magnum.trade.ImageData3D.format
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 
+.. py:property:: magnum.trade.ImageData1D.compressed_format
+    :raise AttributeError: If :ref:`is_compressed` is :py:`False`
+.. py:property:: magnum.trade.ImageData2D.compressed_format
+    :raise AttributeError: If :ref:`is_compressed` is :py:`False`
+.. py:property:: magnum.trade.ImageData3D.compressed_format
+    :raise AttributeError: If :ref:`is_compressed` is :py:`False`
+
 .. py:property:: magnum.trade.ImageData1D.pixel_size
     :raise AttributeError: If :ref:`is_compressed` is :py:`True`
 .. py:property:: magnum.trade.ImageData2D.pixel_size

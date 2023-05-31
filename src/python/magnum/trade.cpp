@@ -246,6 +246,14 @@ template<UnsignedInt dimensions> void imageData(py::class_<Trade::ImageData<dime
 
             return self.format();
         }, "Format of pixel data")
+        .def_property_readonly("compressed_format", [](Trade::ImageData<dimensions>& self) {
+            if(!self.isCompressed()) {
+                PyErr_SetString(PyExc_AttributeError, "image is not compressed");
+                throw py::error_already_set{};
+            }
+
+            return self.compressedFormat();
+        }, "Format of compressed pixel data")
         .def_property_readonly("pixel_size", [](Trade::ImageData<dimensions>& self) {
             if(self.isCompressed()) {
                 PyErr_SetString(PyExc_AttributeError, "image is compressed");

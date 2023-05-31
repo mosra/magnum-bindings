@@ -78,6 +78,7 @@ __all__ = [
     'MeshPrimitive', 'MeshIndexType',
 
     'PixelFormat', 'PixelStorage',
+    'CompressedPixelFormat',
     'Image1D', 'Image2D', 'Image3D',
     'ImageView1D', 'ImageView2D', 'ImageView3D',
     'MutableImageView1D', 'MutableImageView2D', 'MutableImageView3D',

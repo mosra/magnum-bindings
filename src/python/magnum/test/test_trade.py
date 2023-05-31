@@ -48,6 +48,9 @@ class ImageData(unittest.TestCase):
         self.assertEqual(image.size, Vector2i(3, 2))
         self.assertIsNone(image.owner)
 
+        with self.assertRaisesRegex(AttributeError, "image is not compressed"):
+            image.compressed_format
+
     def test_compressed(self):
         # The only way to get an image instance is through a manager
         importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
@@ -55,10 +58,9 @@ class ImageData(unittest.TestCase):
         image = importer.image2d(0)
         self.assertEqual(len(image.data), 8)
         self.assertTrue(image.is_compressed)
-        # TODO: compressed properties
+        self.assertEqual(image.compressed_format, CompressedPixelFormat.BC1_RGBA_UNORM)
+        # TODO: remaining compressed properties
 
-        # No compressed-image-related APIs exposed ATM, so just verifying the
-        # uncompressed ones fail properly
         with self.assertRaisesRegex(AttributeError, "image is compressed"):
             image.storage
         with self.assertRaisesRegex(AttributeError, "image is compressed"):
