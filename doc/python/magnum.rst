@@ -38,6 +38,34 @@
     :data TARGET_EGL: EGL target
     :data TARGET_VK: Vulkan interoperability
 
+.. py:enum:: magnum.PixelFormat
+
+    The ``size``, ``channel_format``, ``channel_count``, ``is_normalized``,
+    ``is_integral``, ``is_floating_point``, ``is_srgb``,
+    ``is_depth_or_stencil`` and ``is_implementation_specific`` properties match
+    :dox:`pixelFormatSize()`, :dox:`pixelFormatChannelFormat()` and other
+    helpers.
+
+    .. code:: pycon
+
+        >>> PixelFormat.RGB8_SRGB.channel_count
+        3
+        >>> PixelFormat.RGB16F.is_floating_point
+        True
+
+.. py:enum:: magnum.CompressedPixelFormat
+
+    The ``block_size``, ``block_data_size`` and ``is_implementation_specific``
+    properties match :dox:`compressedPixelFormatBlockSize()`,
+    :dox:`compressedPixelFormatBlockDataSize()` and other helpers.
+
+    .. code:: pycon
+
+        >>> CompressedPixelFormat.ASTC_6X5_RGBA_SRGB.block_size
+        Vector(6, 5, 1)
+        >>> CompressedPixelFormat.ASTC_6X5_RGBA_SRGB.block_data_size
+        16
+
 .. py:class:: magnum.Image1D
 
     See :ref:`Image2D` for more information.

@@ -32,6 +32,68 @@ from magnum import *
 
 # tests also corrade.utility.copy() in UtilityCopy
 
+class PixelFormat_(unittest.TestCase):
+    def test_properties(self):
+        self.assertEqual(PixelFormat.RGB16_SNORM.size, 3*2)
+        self.assertEqual(PixelFormat.RG32F.channel_format, PixelFormat.R32F)
+        self.assertEqual(PixelFormat.RGBA16_SNORM.channel_count, 4)
+        self.assertTrue(PixelFormat.RGBA8_UNORM.is_normalized)
+        self.assertFalse(PixelFormat.RGBA16F.is_normalized)
+        self.assertTrue(PixelFormat.RGB8I.is_integral)
+        self.assertFalse(PixelFormat.RGB8_SNORM.is_integral)
+        self.assertTrue(PixelFormat.RGB16F.is_floating_point)
+        self.assertFalse(PixelFormat.R8_SRGB.is_floating_point)
+        self.assertTrue(PixelFormat.RG8_SRGB.is_srgb)
+        self.assertFalse(PixelFormat.RG8_UNORM.is_srgb)
+        self.assertTrue(PixelFormat.DEPTH32F.is_depth_or_stencil)
+        self.assertFalse(PixelFormat.RG32I.is_depth_or_stencil)
+        self.assertTrue(PixelFormat(0x80000001).is_implementation_specific)
+        self.assertFalse(PixelFormat.RG32I.is_implementation_specific)
+
+    def test_properties_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "can't determine size of an implementation-specific format"):
+            PixelFormat(0x80000000).size
+        with self.assertRaisesRegex(AssertionError, "can't determine channel format of an implementation-specific format"):
+            PixelFormat(0x80000000).channel_format
+        with self.assertRaisesRegex(AssertionError, "can't determine channel count of an implementation-specific format"):
+            PixelFormat(0x80000000).channel_count
+        with self.assertRaisesRegex(AssertionError, "can't determine type of an implementation-specific format"):
+            PixelFormat(0x80000000).is_normalized
+        with self.assertRaisesRegex(AssertionError, "can't determine type of an implementation-specific format"):
+            PixelFormat(0x80000000).is_integral
+        with self.assertRaisesRegex(AssertionError, "can't determine type of an implementation-specific format"):
+            PixelFormat(0x80000000).is_floating_point
+        with self.assertRaisesRegex(AssertionError, "can't determine colorspace of an implementation-specific format"):
+            PixelFormat(0x80000000).is_srgb
+        with self.assertRaisesRegex(AssertionError, "can't determine type of an implementation-specific format"):
+            PixelFormat(0x80000000).is_depth_or_stencil
+
+        with self.assertRaisesRegex(AssertionError, "can't determine channel format of a depth/stencil format"):
+            PixelFormat.DEPTH32F.channel_format
+        with self.assertRaisesRegex(AssertionError, "can't determine channel count of a depth/stencil format"):
+            PixelFormat.DEPTH32F.channel_count
+        with self.assertRaisesRegex(AssertionError, "can't determine type of a depth/stencil format"):
+            PixelFormat.DEPTH32F.is_normalized
+        with self.assertRaisesRegex(AssertionError, "can't determine type of a depth/stencil format"):
+            PixelFormat.DEPTH32F.is_integral
+        with self.assertRaisesRegex(AssertionError, "can't determine type of a depth/stencil format"):
+            PixelFormat.STENCIL8UI.is_floating_point
+        with self.assertRaisesRegex(AssertionError, "can't determine colorspace of a depth/stencil format"):
+            PixelFormat.DEPTH32F_STENCIL8UI.is_srgb
+
+class CompressedPixelFormat_(unittest.TestCase):
+    def test_properties(self):
+        self.assertEqual(CompressedPixelFormat.ASTC_5X4_RGBA_UNORM.block_size, (5, 4, 1))
+        self.assertEqual(CompressedPixelFormat.ASTC_5X4_RGBA_UNORM.block_data_size, 128/8)
+        self.assertTrue(CompressedPixelFormat(0x80000001).is_implementation_specific)
+        self.assertFalse(CompressedPixelFormat.BC1_RGB_SRGB.is_implementation_specific)
+
+    def test_properties_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "can't determine size of an implementation-specific format"):
+            CompressedPixelFormat(0x80000000).block_size
+        with self.assertRaisesRegex(AssertionError, "can't determine size of an implementation-specific format"):
+            CompressedPixelFormat(0x80000000).block_data_size
+
 class PixelStorage_(unittest.TestCase):
     def test_init(self):
         a = PixelStorage()

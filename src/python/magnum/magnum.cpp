@@ -302,7 +302,92 @@ void magnum(py::module_& m) {
         .value("STENCIL8UI", PixelFormat::Stencil8UI)
         .value("DEPTH16_UNORM_STENCIL8UI", PixelFormat::Depth16UnormStencil8UI)
         .value("DEPTH24_UNORM_STENCIL8UI", PixelFormat::Depth24UnormStencil8UI)
-        .value("DEPTH32F_STENCIL8UI", PixelFormat::Depth32FStencil8UI);
+        .value("DEPTH32F_STENCIL8UI", PixelFormat::Depth32FStencil8UI)
+        .def_property_readonly("size", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine size of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            return pixelFormatSize(self);
+        }, "Size of given pixel format")
+        .def_property_readonly("channel_format", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine channel format of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine channel format of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return pixelFormatChannelFormat(self);
+        }, "Channel format of given pixel format")
+        .def_property_readonly("channel_count", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine channel count of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine channel count of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return pixelFormatChannelCount(self);
+        }, "Channel format of given pixel format")
+        .def_property_readonly("is_normalized", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return isPixelFormatNormalized(self);
+        }, "Whether given pixel format is normalized")
+        .def_property_readonly("is_integral", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return isPixelFormatIntegral(self);
+        }, "Whether given pixel format is integral")
+        .def_property_readonly("is_floating_point", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return isPixelFormatFloatingPoint(self);
+        }, "Whether given pixel format is floating-point")
+        .def_property_readonly("is_srgb", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine colorspace of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            if(isPixelFormatDepthOrStencil(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine colorspace of a depth/stencil format");
+                throw py::error_already_set{};
+            }
+            return isPixelFormatSrgb(self);
+        }, "Whether given pixel format is sRGB")
+        .def_property_readonly("is_depth_or_stencil", [](PixelFormat self) {
+            if(isPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine type of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            return isPixelFormatDepthOrStencil(self);
+        }, "Whether given pixel format is depth or stencil")
+        .def_property_readonly("is_implementation_specific", [](PixelFormat self) {
+            return isPixelFormatImplementationSpecific(self);
+        }, "Whether given pixel format wraps an implementation-specific identifier")
+        /** @todo wrap/unwrap, similarly to custom MeshAttribute etc in Trade */
+        ;
 
     py::enum_<CompressedPixelFormat>{m, "CompressedPixelFormat", "Format of compressed pixel data"}
         .value("BC1_RGB_UNORM", CompressedPixelFormat::Bc1RGBUnorm)
@@ -410,7 +495,26 @@ void magnum(py::module_& m) {
         .value("PVRTC_RGB_4PP_UNORM", CompressedPixelFormat::PvrtcRGB4bppUnorm)
         .value("PVRTC_RGB_4PP_SRGB", CompressedPixelFormat::PvrtcRGB4bppSrgb)
         .value("PVRTC_RGBA_4PP_UNORM", CompressedPixelFormat::PvrtcRGBA4bppUnorm)
-        .value("PVRTC_RGBA_4PP_SRGB", CompressedPixelFormat::PvrtcRGBA4bppSrgb);
+        .value("PVRTC_RGBA_4PP_SRGB", CompressedPixelFormat::PvrtcRGBA4bppSrgb)
+        .def_property_readonly("block_size", [](CompressedPixelFormat self) {
+            if(isCompressedPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine size of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            return compressedPixelFormatBlockSize(self);
+        }, "Block size of given compressed pixel format")
+        .def_property_readonly("block_data_size", [](CompressedPixelFormat self) {
+            if(isCompressedPixelFormatImplementationSpecific(self)) {
+                PyErr_SetString(PyExc_AssertionError, "can't determine size of an implementation-specific format");
+                throw py::error_already_set{};
+            }
+            return compressedPixelFormatBlockDataSize(self);
+        }, "Block data size of given compressed pixel format")
+        .def_property_readonly("is_implementation_specific", [](CompressedPixelFormat self) {
+            return isCompressedPixelFormatImplementationSpecific(self);
+        }, "Whether given compressed pixel format wraps an implementation-specific identifier")
+        /** @todo wrap/unwrap, similarly to custom MeshAttribute etc in Trade */
+        ;
 
     py::class_<PixelStorage>{m, "PixelStorage", "Pixel storage parameters"}
         .def(py::init(), "Default constructor")
