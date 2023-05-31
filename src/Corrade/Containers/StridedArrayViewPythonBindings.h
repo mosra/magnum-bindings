@@ -133,6 +133,10 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::template broadcasted<dimension>(size), format, itemsize, getitem, setitem};
         }
 
+        template<unsigned dimension, unsigned count> PyStridedArrayView<dimensions + count - 1, T> expanded(const Containers::Size<count>& size) const {
+            return PyStridedArrayView<dimensions + count - 1, T>{StridedArrayView<dimensions, T>::template expanded<dimension>(size), format, itemsize, getitem, setitem};
+        }
+
         /* has to be public as it's accessed by the bindings directly */
         const char* format;
         std::size_t itemsize;

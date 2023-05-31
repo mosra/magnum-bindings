@@ -374,6 +374,23 @@ template<> struct StridedOperation<1> {
         PyErr_Format(PyExc_IndexError, "dimension %u out of range for a %iD view", dimension, dimensions);
         throw py::error_already_set{};
     }
+    template<unsigned count, template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions + count - 1, T> expanded(const View<dimensions, T>& view, unsigned dimension, const typename DimensionsTuple<count, std::size_t>::Type& size) {
+        if(dimension == 0) {
+            Containers::Size<count> iSize{NoInit};
+            std::size_t totalSize = 1;
+            for(std::size_t i = 0; i != count; ++i) {
+                iSize[i] = dimensionsTupleGet<std::size_t>(size, i);
+                totalSize *= iSize[i];
+            }
+            if(totalSize != Containers::Size<dimensions>{view.size()}[0]) {
+                PyErr_Format(PyExc_ValueError, "total size %zu doesn't match dimension %u with %zu elements", totalSize, dimension, Containers::Size<dimensions>{view.size()}[0]);
+                throw py::error_already_set{};
+            }
+            return view.template expanded<0>(iSize);
+        }
+        PyErr_Format(PyExc_IndexError, "dimension %u out of range for a %iD view", dimension, dimensions);
+        throw py::error_already_set{};
+    }
 };
 template<> struct StridedOperation<2> {
     template<template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions, T> transposed(const View<dimensions, T>& view, unsigned a, unsigned b) {
@@ -397,6 +414,22 @@ template<> struct StridedOperation<2> {
             return view.template broadcasted<1>(size);
         }
         return StridedOperation<1>::broadcasted(view, dimension, size);
+    }
+    template<unsigned count, template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions + count - 1, T> expanded(const View<dimensions, T>& view, unsigned dimension, const typename DimensionsTuple<count, std::size_t>::Type& size) {
+        if(dimension == 1) {
+            Containers::Size<count> iSize{NoInit};
+            std::size_t totalSize = 1;
+            for(std::size_t i = 0; i != count; ++i) {
+                iSize[i] = dimensionsTupleGet<std::size_t>(size, i);
+                totalSize *= iSize[i];
+            }
+            if(totalSize != view.size()[1]) {
+                PyErr_Format(PyExc_ValueError, "total size %zu doesn't match dimension %u with %zu elements", totalSize, dimension, view.size()[1]);
+                throw py::error_already_set{};
+            }
+            return view.template expanded<1>(iSize);
+        }
+        return StridedOperation<1>::expanded<count>(view, dimension, size);
     }
 };
 template<> struct StridedOperation<3> {
@@ -423,6 +456,22 @@ template<> struct StridedOperation<3> {
             return view.template broadcasted<2>(size);
         }
         return StridedOperation<2>::broadcasted(view, dimension, size);
+    }
+    template<unsigned count, template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions + count - 1, T> expanded(const View<dimensions, T>& view, unsigned dimension, const typename DimensionsTuple<count, std::size_t>::Type& size) {
+        if(dimension == 2) {
+            Containers::Size<count> iSize{NoInit};
+            std::size_t totalSize = 1;
+            for(std::size_t i = 0; i != count; ++i) {
+                iSize[i] = dimensionsTupleGet<std::size_t>(size, i);
+                totalSize *= iSize[i];
+            }
+            if(totalSize != view.size()[2]) {
+                PyErr_Format(PyExc_ValueError, "total size %zu doesn't match dimension %u with %zu elements", totalSize, dimension, view.size()[2]);
+                throw py::error_already_set{};
+            }
+            return view.template expanded<2>(iSize);
+        }
+        return StridedOperation<2>::expanded<count>(view, dimension, size);
     }
 };
 template<> struct StridedOperation<4> {
@@ -452,6 +501,22 @@ template<> struct StridedOperation<4> {
             return view.template broadcasted<3>(size);
         }
         return StridedOperation<3>::broadcasted(view, dimension, size);
+    }
+    template<unsigned count, template<unsigned, class> class View, unsigned dimensions, class T> static View<dimensions + count - 1, T> expanded(const View<dimensions, T>& view, unsigned dimension, const typename DimensionsTuple<count, std::size_t>::Type& size) {
+        if(dimension == 3) {
+            Containers::Size<count> iSize{NoInit};
+            std::size_t totalSize = 1;
+            for(std::size_t i = 0; i != count; ++i) {
+                iSize[i] = dimensionsTupleGet<std::size_t>(size, i);
+                totalSize *= iSize[i];
+            }
+            if(totalSize != view.size()[3]) {
+                PyErr_Format(PyExc_ValueError, "total size %zu doesn't match dimension %u with %zu elements", totalSize, dimension, view.size()[3]);
+                throw py::error_already_set{};
+            }
+            return view.template expanded<3>(iSize);
+        }
+        return StridedOperation<3>::expanded<count>(view, dimension, size);
     }
 };
 
@@ -589,7 +654,37 @@ template<class T> void stridedArrayView1D(py::class_<Containers::PyStridedArrayV
                 throw py::error_already_set{};
             }
             return self.getitem(&self[i]);
-        }, "Value at given position", py::arg("i"));
+        }, "Value at given position", py::arg("i"))
+
+        /* Fancy operations */
+        .def("expanded", [](const Containers::PyStridedArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::PyStridedArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<3>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::PyStridedArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<4>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
+}
+
+template<class T> void stridedArrayView2D(py::class_<Containers::PyStridedArrayView<2, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<2, T>>>& c) {
+    c
+        /* Fancy operations */
+        .def("expanded", [](const Containers::PyStridedArrayView<2, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<2>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::PyStridedArrayView<2, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<2>::expanded<3>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
+}
+
+template<class T> void stridedArrayView3D(py::class_<Containers::PyStridedArrayView<3, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<3, T>>>& c) {
+    c
+        /* Fancy operations */
+        .def("expanded", [](const Containers::PyStridedArrayView<3, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<3>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
 }
 
 template<unsigned dimensions, class T> void stridedArrayViewND(py::class_<Containers::PyStridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>>>& c) {
@@ -695,7 +790,37 @@ template<class T> void stridedBitArrayView1D(py::class_<Containers::BasicStrided
                 throw py::error_already_set{};
             }
             return self[i];
-        }, "Bit at given position", py::arg("i"));
+        }, "Bit at given position", py::arg("i"))
+
+        /* Fancy operations */
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<3>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<1, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<1>::expanded<4>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
+}
+
+template<class T> void stridedBitArrayView2D(py::class_<Containers::BasicStridedBitArrayView<2, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<2, T>>>& c) {
+    c
+        /* Fancy operations */
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<2, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<2>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"))
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<2, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<2>::expanded<3>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
+}
+
+template<class T> void stridedBitArrayView3D(py::class_<Containers::BasicStridedBitArrayView<3, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<3, T>>>& c) {
+    c
+        /* Fancy operations */
+        .def("expanded", [](const Containers::BasicStridedBitArrayView<3, T>& self, unsigned dimension, const std::tuple<std::size_t, std::size_t>& size) {
+            return Containers::pyArrayViewHolder(StridedOperation<3>::expanded<2>(self, dimension, size), pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner);
+        }, "Expand a dimension", py::arg("dimension"), py::arg("size"));
 }
 
 template<unsigned dimensions, class T> void stridedBitArrayViewND(py::class_<Containers::BasicStridedBitArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<dimensions, T>>>& c) {
@@ -852,8 +977,10 @@ void containers(py::module_& m) {
             return pyArrayViewHolder(Containers::StridedBitArrayView1D{other}, pyObjectHolderFor<Containers::PyArrayViewHolder>(other).owner);
         }), "Construct from a bit array view", py::arg("view"));
     stridedBitArrayView(stridedBitArrayView2D_);
+    stridedBitArrayView2D(stridedBitArrayView2D_);
     stridedBitArrayViewND(stridedBitArrayView2D_);
     stridedBitArrayView(stridedBitArrayView3D_);
+    stridedBitArrayView3D(stridedBitArrayView3D_);
     stridedBitArrayViewND(stridedBitArrayView3D_);
     stridedBitArrayView(stridedBitArrayView4D_);
     stridedBitArrayViewND(stridedBitArrayView4D_);
@@ -869,8 +996,10 @@ void containers(py::module_& m) {
     stridedBitArrayView(mutableStridedBitArrayView1D_);
     stridedBitArrayView1D(mutableStridedBitArrayView1D_);
     stridedBitArrayView(mutableStridedBitArrayView2D_);
+    stridedBitArrayView2D(mutableStridedBitArrayView2D_);
     stridedBitArrayViewND(mutableStridedBitArrayView2D_);
     stridedBitArrayView(mutableStridedBitArrayView3D_);
+    stridedBitArrayView3D(mutableStridedBitArrayView3D_);
     stridedBitArrayViewND(mutableStridedBitArrayView3D_);
     stridedBitArrayView(mutableStridedBitArrayView4D_);
     stridedBitArrayViewND(mutableStridedBitArrayView4D_);
@@ -897,8 +1026,10 @@ void containers(py::module_& m) {
     stridedArrayView(stridedArrayView1D_);
     stridedArrayView1D(stridedArrayView1D_);
     stridedArrayView(stridedArrayView2D_);
+    stridedArrayView2D(stridedArrayView2D_);
     stridedArrayViewND(stridedArrayView2D_);
     stridedArrayView(stridedArrayView3D_);
+    stridedArrayView3D(stridedArrayView3D_);
     stridedArrayViewND(stridedArrayView3D_);
     stridedArrayView(stridedArrayView4D_);
     stridedArrayViewND(stridedArrayView4D_);
@@ -914,8 +1045,10 @@ void containers(py::module_& m) {
     stridedArrayView(mutableStridedArrayView1D_);
     stridedArrayView1D(mutableStridedArrayView1D_);
     stridedArrayView(mutableStridedArrayView2D_);
+    stridedArrayView2D(mutableStridedArrayView2D_);
     stridedArrayViewND(mutableStridedArrayView2D_);
     stridedArrayView(mutableStridedArrayView3D_);
+    stridedArrayView3D(mutableStridedArrayView3D_);
     stridedArrayViewND(mutableStridedArrayView3D_);
     stridedArrayView(mutableStridedArrayView4D_);
     stridedArrayViewND(mutableStridedArrayView4D_);

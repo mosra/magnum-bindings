@@ -410,6 +410,24 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(c.stride, (0,))
         self.assertEqual(bytes(c), b'33333')
 
+        d2 = containers.StridedArrayView1D(a).expanded(0, (2, 4))
+        self.assertIsInstance(d2, containers.StridedArrayView2D)
+        self.assertEqual(d2.size, (2, 4))
+        self.assertEqual(d2.stride, (4, 1))
+        self.assertEqual(bytes(d2), b'01234567')
+
+        d3 = containers.StridedArrayView1D(a).expanded(0, (2, 2, 2))
+        self.assertIsInstance(d3, containers.StridedArrayView3D)
+        self.assertEqual(d3.size, (2, 2, 2))
+        self.assertEqual(d3.stride, (4, 2, 1))
+        self.assertEqual(bytes(d3), b'01234567')
+
+        d4 = containers.StridedArrayView1D(a).expanded(0, (2, 1, 2, 2))
+        self.assertIsInstance(d4, containers.StridedArrayView4D)
+        self.assertEqual(d4.size, (2, 1, 2, 2))
+        self.assertEqual(d4.stride, (4, 4, 2, 1))
+        self.assertEqual(bytes(d4), b'01234567')
+
     def test_ops_invalid(self):
         a = b'00'
 
@@ -419,8 +437,12 @@ class StridedArrayView1D(unittest.TestCase):
             containers.StridedArrayView1D().flipped(1)
         with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
             containers.StridedArrayView1D(a).broadcasted(1, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
+            containers.StridedArrayView1D(a).expanded(1, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 0 with 2 elements"):
             containers.StridedArrayView1D(a).broadcasted(0, 3)
+        with self.assertRaisesRegex(ValueError, "total size 3 doesn't match dimension 0 with 2 elements"):
+            containers.StridedArrayView1D(a).expanded(0, (1, 3))
 
     def test_convert_memoryview(self):
         a = b'World is hell!'
@@ -722,6 +744,18 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(d.stride, (8, 0))
         self.assertEqual(bytes(d), b'3377bb')
 
+        e3 = containers.StridedArrayView2D(v).expanded(1, (2, 4))
+        self.assertIsInstance(e3, containers.StridedArrayView3D)
+        self.assertEqual(e3.size, (3, 2, 4))
+        self.assertEqual(e3.stride, (8, 4, 1))
+        self.assertEqual(bytes(e3), b'01234567456789ab89abcdef')
+
+        e4 = containers.StridedArrayView2D(v).expanded(0, (1, 3, 1))
+        self.assertIsInstance(e4, containers.StridedArrayView4D)
+        self.assertEqual(e4.size, (1, 3, 1, 8))
+        self.assertEqual(e4.stride, (24, 8, 8, 1))
+        self.assertEqual(bytes(e4), b'01234567456789ab89abcdef')
+
     def test_ops_invalid(self):
         a = b'00'
         v = memoryview(a).cast('b', shape=[1, 2])
@@ -732,10 +766,16 @@ class StridedArrayView2D(unittest.TestCase):
             containers.StridedArrayView2D().flipped(2)
         with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
             containers.StridedArrayView2D(v).broadcasted(2, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
+            containers.StridedArrayView2D(v).expanded(2, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 1 with 2 elements"):
             containers.StridedArrayView2D(v).broadcasted(1, 3)
         with self.assertRaisesRegex(IndexError, "dimensions 0, 2 can't be transposed in a 2D view"):
             containers.StridedArrayView2D().transposed(0, 2)
+        with self.assertRaisesRegex(ValueError, "total size 2 doesn't match dimension 0 with 1 elements"):
+            containers.StridedArrayView2D(v).expanded(0, (1, 2))
+        with self.assertRaisesRegex(ValueError, "total size 4 doesn't match dimension 1 with 2 elements"):
+            containers.StridedArrayView2D(v).expanded(1, (2, 1, 2))
 
     def test_convert_memoryview(self):
         a = memoryview(b'01234567'
@@ -838,6 +878,12 @@ class StridedArrayView3D(unittest.TestCase):
         self.assertEqual(f.stride, (24, 8, 0))
         self.assertEqual(bytes(f), b'000004444488888ccccc0000044444')
 
+        g4 = containers.StridedArrayView3D(v).expanded(2, (2, 4))
+        self.assertIsInstance(g4, containers.StridedArrayView4D)
+        self.assertEqual(g4.size, (2, 3, 2, 4))
+        self.assertEqual(g4.stride, (24, 8, 4, 1))
+        self.assertEqual(bytes(g4), b'01234567456789ab89abcdefcdef012301234567456789ab')
+
     def test_ops_invalid(self):
         a = b'00'
         v = memoryview(a).cast('b', shape=[1, 1, 2])
@@ -848,10 +894,16 @@ class StridedArrayView3D(unittest.TestCase):
             containers.StridedArrayView3D().flipped(3)
         with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
             containers.StridedArrayView3D(v).broadcasted(3, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
+            containers.StridedArrayView3D(v).expanded(3, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 2 with 2 elements"):
             containers.StridedArrayView3D(v).broadcasted(2, 3)
         with self.assertRaisesRegex(IndexError, "dimensions 1, 3 can't be transposed in a 3D view"):
             containers.StridedArrayView3D().transposed(1, 3)
+        with self.assertRaisesRegex(ValueError, "total size 2 doesn't match dimension 0 with 1 elements"):
+            containers.StridedArrayView3D(v).expanded(0, (1, 2))
+        with self.assertRaisesRegex(ValueError, "total size 3 doesn't match dimension 2 with 2 elements"):
+            containers.StridedArrayView3D(v).expanded(2, (3, 1))
 
 # This is just a dumb copy of the above with one dimension inserted at the
 # second place.
@@ -1713,6 +1765,45 @@ class StridedBitArrayView1D(unittest.TestCase):
         self.assertEqual(c[3], True)
         self.assertEqual(c[4], True)
 
+        d2 = v.expanded(0, (2, 4))
+        self.assertIsInstance(d2, containers.StridedBitArrayView2D)
+        self.assertEqual(d2.size, (2, 4))
+        self.assertEqual(d2.stride, (32, 8))
+        self.assertEqual(d2[0][0], True)
+        self.assertEqual(d2[0][1], True)
+        self.assertEqual(d2[0][2], True)
+        self.assertEqual(d2[0][3], True)
+        self.assertEqual(d2[1][0], False)
+        self.assertEqual(d2[1][1], False)
+        self.assertEqual(d2[1][2], True)
+        self.assertEqual(d2[1][3], False)
+
+        d3 = v.expanded(0, (2, 2, 2))
+        self.assertIsInstance(d3, containers.StridedBitArrayView3D)
+        self.assertEqual(d3.size, (2, 2, 2))
+        self.assertEqual(d3.stride, (32, 16, 8))
+        self.assertEqual(d3[0][0][0], True)
+        self.assertEqual(d3[0][0][1], True)
+        self.assertEqual(d3[0][1][0], True)
+        self.assertEqual(d3[0][1][1], True)
+        self.assertEqual(d3[1][0][0], False)
+        self.assertEqual(d3[1][0][1], False)
+        self.assertEqual(d3[1][1][0], True)
+        self.assertEqual(d3[1][1][1], False)
+
+        d4 = v.expanded(0, (2, 1, 2, 2))
+        self.assertIsInstance(d4, containers.StridedBitArrayView4D)
+        self.assertEqual(d4.size, (2, 1, 2, 2))
+        self.assertEqual(d4.stride, (32, 32, 16, 8))
+        self.assertEqual(d4[0][0][0][0], True)
+        self.assertEqual(d4[0][0][0][1], True)
+        self.assertEqual(d4[0][0][1][0], True)
+        self.assertEqual(d4[0][0][1][1], True)
+        self.assertEqual(d4[1][0][0][0], False)
+        self.assertEqual(d4[1][0][0][1], False)
+        self.assertEqual(d4[1][0][1][0], True)
+        self.assertEqual(d4[1][0][1][1], False)
+
     def test_ops_invalid(self):
         v = containers.StridedArrayView1D(b'00').slice_bit(0)
 
@@ -1720,8 +1811,12 @@ class StridedBitArrayView1D(unittest.TestCase):
             containers.StridedBitArrayView1D().flipped(1)
         with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
             v.broadcasted(1, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 1 out of range for a 1D view"):
+            v.expanded(1, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 0 with 2 elements"):
             v.broadcasted(0, 3)
+        with self.assertRaisesRegex(ValueError, "total size 3 doesn't match dimension 0 with 2 elements"):
+            v.expanded(0, (1, 3))
 
 class StridedBitArrayView2D(unittest.TestCase):
     def test_init(self):
@@ -1993,6 +2088,32 @@ class StridedBitArrayView2D(unittest.TestCase):
         self.assertEqual(d[2, 1], False)
         self.assertEqual(d[3, 1], False)
 
+        d3 = a.expanded(1, (2, 2))
+        self.assertIsInstance(d3, containers.StridedBitArrayView3D)
+        self.assertEqual(d3.size, (2, 2, 2))
+        self.assertEqual(d3.stride, (32, 16, 8))
+        self.assertEqual(d3[0][0][0], True)
+        self.assertEqual(d3[0][0][1], True)
+        self.assertEqual(d3[0][1][0], True)
+        self.assertEqual(d3[0][1][1], True)
+        self.assertEqual(d3[1][0][0], False)
+        self.assertEqual(d3[1][0][1], False)
+        self.assertEqual(d3[1][1][0], True)
+        self.assertEqual(d3[1][1][1], False)
+
+        d4 = a.expanded(1, (1, 2, 2))
+        self.assertIsInstance(d4, containers.StridedBitArrayView4D)
+        self.assertEqual(d4.size, (2, 1, 2, 2))
+        self.assertEqual(d4.stride, (32, 32, 16, 8))
+        self.assertEqual(d4[0][0][0][0], True)
+        self.assertEqual(d4[0][0][0][1], True)
+        self.assertEqual(d4[0][0][1][0], True)
+        self.assertEqual(d4[0][0][1][1], True)
+        self.assertEqual(d4[1][0][0][0], False)
+        self.assertEqual(d4[1][0][0][1], False)
+        self.assertEqual(d4[1][0][1][0], True)
+        self.assertEqual(d4[1][0][1][1], False)
+
     def test_ops_invalid(self):
         v = containers.StridedArrayView2D(memoryview(b'00').cast('b', shape=[1, 2])).slice_bit(0)
 
@@ -2002,8 +2123,14 @@ class StridedBitArrayView2D(unittest.TestCase):
             containers.StridedBitArrayView2D().transposed(2, 1)
         with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
             v.broadcasted(2, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 2 out of range for a 2D view"):
+            v.expanded(2, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 1 with 2 elements"):
             v.broadcasted(1, 3)
+        with self.assertRaisesRegex(ValueError, "total size 2 doesn't match dimension 0 with 1 elements"):
+            v.expanded(0, (1, 2))
+        with self.assertRaisesRegex(ValueError, "total size 4 doesn't match dimension 1 with 2 elements"):
+            v.expanded(1, (2, 1, 2))
 
 # Multi-dimensional behavior is tested extensively for StridedBitArrayView2D,
 # this checks just what differs, like constructors and fancy operations
@@ -2072,6 +2199,19 @@ class StridedBitArrayView3D(unittest.TestCase):
         self.assertEqual(d[2, 0, 1], False)
         self.assertEqual(d[3, 0, 1], False)
 
+        e4 = a.expanded(2, (2, 2))
+        self.assertIsInstance(e4, containers.StridedBitArrayView4D)
+        self.assertEqual(e4.size, (2, 1, 2, 2))
+        self.assertEqual(e4.stride, (32, 32, 16, 8))
+        self.assertEqual(e4[0][0][0][0], True)
+        self.assertEqual(e4[0][0][0][1], True)
+        self.assertEqual(e4[0][0][1][0], True)
+        self.assertEqual(e4[0][0][1][1], True)
+        self.assertEqual(e4[1][0][0][0], False)
+        self.assertEqual(e4[1][0][0][1], False)
+        self.assertEqual(e4[1][0][1][0], True)
+        self.assertEqual(e4[1][0][1][1], False)
+
     def test_ops_invalid(self):
         v = containers.StridedArrayView3D(memoryview(b'00').cast('b', shape=[1, 1, 2])).slice_bit(0)
 
@@ -2081,8 +2221,14 @@ class StridedBitArrayView3D(unittest.TestCase):
             containers.StridedBitArrayView3D().transposed(2, 3)
         with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
             v.broadcasted(3, 3)
+        with self.assertRaisesRegex(IndexError, "dimension 3 out of range for a 3D view"):
+            v.expanded(3, (1, 2))
         with self.assertRaisesRegex(ValueError, "can't broadcast dimension 2 with 2 elements"):
             v.broadcasted(2, 3)
+        with self.assertRaisesRegex(ValueError, "total size 3 doesn't match dimension 0 with 1 elements"):
+            v.expanded(0, (1, 3))
+        with self.assertRaisesRegex(ValueError, "total size 6 doesn't match dimension 2 with 2 elements"):
+            v.expanded(2, (2, 3))
 
 # This is just a dumb copy of the above with one dimension inserted at the
 # second place.
