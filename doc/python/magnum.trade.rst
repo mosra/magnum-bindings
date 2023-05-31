@@ -206,9 +206,10 @@
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
 
-.. py:function:: magnum.trade.MeshData.attribute_id
+.. py:function:: magnum.trade.MeshData.attribute_id(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_id(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
 
@@ -216,34 +217,42 @@
     :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
     calling :ref:`attribute_id()` and catching an exception if not found.
 
-.. py:function:: magnum.trade.MeshData.attribute_format
+.. py:function:: magnum.trade.MeshData.attribute_format(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_format(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
-.. py:function:: magnum.trade.MeshData.attribute_offset
+.. py:function:: magnum.trade.MeshData.attribute_offset(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_offset(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
-.. py:function:: magnum.trade.MeshData.attribute_stride
+.. py:function:: magnum.trade.MeshData.attribute_stride(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_stride(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
-.. py:function:: magnum.trade.MeshData.attribute_array_size
+.. py:function:: magnum.trade.MeshData.attribute_array_size(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute_array_size(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
-.. py:function:: magnum.trade.MeshData.attribute
+.. py:function:: magnum.trade.MeshData.attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+.. py:function:: magnum.trade.MeshData.attribute(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
-.. py:function:: magnum.trade.MeshData.mutable_attribute
+.. py:function:: magnum.trade.MeshData.mutable_attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+    :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:function:: magnum.trade.MeshData.mutable_attribute(self, name: magnum.trade.MeshAttribute, id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
@@ -315,36 +324,49 @@
 .. py:function:: magnum.trade.SceneData.field_name
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
-.. py:function:: magnum.trade.SceneData.field_flags
+.. py:function:: magnum.trade.SceneData.field_flags(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.field_flags(self, name: magnum.trade.SceneField)
     :raise KeyError: If :p:`name` does not exist
-.. py:function:: magnum.trade.SceneData.field_type
+.. py:function:: magnum.trade.SceneData.field_type(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.field_type(self, name: magnum.trade.SceneField)
     :raise KeyError: If :p:`name` does not exist
-.. py:function:: magnum.trade.SceneData.field_size
+.. py:function:: magnum.trade.SceneData.field_size(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.field_size(self, name: magnum.trade.SceneField)
     :raise KeyError: If :p:`name` does not exist
-.. py:function:: magnum.trade.SceneData.field_array_size
+.. py:function:: magnum.trade.SceneData.field_array_size(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.field_array_size(self, name: magnum.trade.SceneField)
     :raise KeyError: If :p:`name` does not exist
 .. py:function:: magnum.trade.SceneData.field_id
     :raise KeyError: If :p:`name` does not exist
-.. py:function:: magnum.trade.SceneData.field_object_offset
+.. py:function:: magnum.trade.SceneData.field_object_offset(self, field_id: int, object: int, offset: int)
     :raise IndexError: If :p:`field_id` is negative or not less than
         :ref:`field_count`
+    :raise IndexError: If :p:`object` is negative or not less than
+        :ref:`mapping_bound`
+    :raise IndexError: If :p:`offset` is negative or larger than
+        :ref:`field_size()` for given field
+    :raise LookupError: If :p:`object` is not found
+.. py:function:: magnum.trade.SceneData.field_object_offset(self, field_name: magnum.trade.SceneField, object: int, offset: int)
     :raise KeyError: If :p:`field_name` does not exist
     :raise IndexError: If :p:`object` is negative or not less than
         :ref:`mapping_bound`
     :raise IndexError: If :p:`offset` is negative or larger than
         :ref:`field_size()` for given field
     :raise LookupError: If :p:`object` is not found
-.. py:function:: magnum.trade.SceneData.has_field_object
+.. py:function:: magnum.trade.SceneData.has_field_object(self, field_id: int, object: int)
     :raise IndexError: If :p:`field_id` is negative or not less than
         :ref:`field_count`
+    :raise IndexError: If :p:`object` is negative or not less than
+        :ref:`mapping_bound`
+.. py:function:: magnum.trade.SceneData.has_field_object(self, field_name: magnum.trade.SceneField, object: int)
     :raise KeyError: If :p:`field_name` does not exist
     :raise IndexError: If :p:`object` is negative or not less than
         :ref:`mapping_bound`
@@ -410,12 +432,13 @@
     :raise AssertionError: If no file is opened
     :raise IndexError: If :p:`id` is negative or not less than :ref:`object_count`
 
-.. TODO this needs distinction by parameter names, at least
-
-.. py:function:: magnum.trade.AbstractImporter.scene
+.. py:function:: magnum.trade.AbstractImporter.scene(self, id: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If scene import fails
     :raise IndexError: If :p:`id` is negative or not less than :ref:`scene`
+.. py:function:: magnum.trade.AbstractImporter.scene(self, name: str)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If scene import fails
     :raise KeyError: If :p:`name` was not found
 
 .. py:property:: magnum.trade.AbstractImporter.mesh_count
@@ -429,13 +452,19 @@
     :raise AssertionError: If no file is opened
     :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
 
-.. TODO this needs distinction by parameter names, at least
-
-.. py:function:: magnum.trade.AbstractImporter.mesh
+.. py:function:: magnum.trade.AbstractImporter.mesh(self, id: int, level: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If mesh import fails
     :raise IndexError: If :p:`id` is negative or not less than :ref:`mesh_count`
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`mesh_level_count()` for this mesh
+
+.. py:function:: magnum.trade.AbstractImporter.mesh(self, name: str, level: int)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If mesh import fails
     :raise KeyError: If :p:`name` was not found
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`mesh_level_count()` for this mesh
 
 .. py:property:: magnum.trade.AbstractImporter.texture_count
     :raise AssertionError: If no file is opened
@@ -445,12 +474,13 @@
     :raise AssertionError: If no file is opened
     :raise IndexError: If :p:`id` is negative or not less than :ref:`texture_count`
 
-.. TODO this needs distinction by parameter names, at least
-
-.. py:function:: magnum.trade.AbstractImporter.texture
+.. py:function:: magnum.trade.AbstractImporter.texture(self, id: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If texture import fails
     :raise IndexError: If :p:`id` is negative or not less than :ref:`texture_count`
+.. py:function:: magnum.trade.AbstractImporter.texture(self, name: str)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If texture import fails
     :raise KeyError: If :p:`name` was not found
 
 .. py:property:: magnum.trade.AbstractImporter.image1d_count
@@ -493,26 +523,45 @@
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
 
-.. TODO this needs distinction by parameter names, at least
-
-.. py:function:: magnum.trade.AbstractImporter.image1d
+.. py:function:: magnum.trade.AbstractImporter.image1d(self, id: int, level: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image1d_count`
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image1d_level_count()` for this image
+.. py:function:: magnum.trade.AbstractImporter.image1d(self, name: str, level: int)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
     :raise KeyError: If :p:`name` was not found
-.. py:function:: magnum.trade.AbstractImporter.image2d
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image1d_level_count()` for this image
+.. py:function:: magnum.trade.AbstractImporter.image2d(self, id: int, level: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image2d_count`
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image2d_level_count()` for this image
+.. py:function:: magnum.trade.AbstractImporter.image2d(self, name: str, level: int)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
     :raise KeyError: If :p:`name` was not found
-.. py:function:: magnum.trade.AbstractImporter.image3d
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image2d_level_count()` for this image
+.. py:function:: magnum.trade.AbstractImporter.image3d(self, id: int, level: int)
     :raise AssertionError: If no file is opened
     :raise RuntimeError: If image import fails
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`image3d_count`
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image3d_level_count()` for this image
+.. py:function:: magnum.trade.AbstractImporter.image3d(self, name: str, level: int)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If image import fails
     :raise KeyError: If :p:`name` was not found
+    :raise IndexError: If :p:`level` is negative or not less than
+        :ref:`image3d_level_count()` for this image
 
 .. py:class:: magnum.trade.ImageConverterManager
     :summary: Manager for :ref:`AbstractImageConverter` plugin instances
@@ -546,10 +595,30 @@
     raising an exception. See particular function documentation for detailed
     behavior.
 
-.. py:function:: magnum.trade.AbstractImageConverter.convert
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView1D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView2D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView3D)
     :raise RuntimeError: If image conversion fails
 
-.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.ImageView1D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.ImageView2D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.ImageView3D, filename: str)
     :raise RuntimeError: If image conversion fails
 
     For compatibility with :ref:`os.path`, on Windows this function converts
@@ -595,17 +664,17 @@
     raising an exception. See particular function documentation for detailed
     behavior.
 
-.. py:function:: magnum.trade.AbstractSceneConverter.convert
+.. py:function:: magnum.trade.AbstractSceneConverter.convert(self, mesh: magnum.trade.MeshData)
     :raise AssertionError: If :ref:`trade.SceneConverterFeatures.CONVERT_MESH`
         is not supported
     :raise RuntimeError: If conversion fails
 
-.. py:function:: magnum.trade.AbstractSceneConverter.convert_in_place
+.. py:function:: magnum.trade.AbstractSceneConverter.convert_in_place(self, mesh: magnum.trade.MeshData)
     :raise AssertionError: If :ref:`trade.SceneConverterFeatures.CONVERT_MESH_IN_PLACE`
         is not supported
     :raise RuntimeError: If conversion fails
 
-.. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file
+.. py:function:: magnum.trade.AbstractSceneConverter.convert_to_file(self, mesh: magnum.trade.MeshData, filename: str)
     :raise AssertionError: If neither
         :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` nor the
         combination of :ref:`SceneConverterFeatures.CONVERT_MULTIPLE_TO_FILE`
@@ -639,14 +708,27 @@
 .. py:property:: magnum.trade.AbstractSceneConverter.scene_count
     :raise AssertionError: If no conversion is in progress
 
-.. py:function:: magnum.trade.AbstractSceneConverter.add
-    :raise AssertionError: If corresponding
-        :ref:`SceneConverterFeatures.ADD_* <SceneConverterFeatures>` is not
+.. py:function:: magnum.trade.AbstractSceneConverter.add(self, scene: magnum.trade.SceneData, name: str)
+    :raise AssertionError: If :ref:`SceneConverterFeatures.ADD_SCENES` is not
+        supported
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the data fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add(self, mesh: magnum.trade.MeshData, name: str)
+    :raise AssertionError: If :ref:`SceneConverterFeatures.ADD_MESHES` is not
         supported, or alternatively at least one of
         :ref:`SceneConverterFeatures.CONVERT_MESH`,
         :ref:`SceneConverterFeatures.CONVERT_MESH_TO_DATA` or
         :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` is not supported
-        for meshes
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the data fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add(self, image: magnum.trade.ImageData2D, name: str)
+    :raise AssertionError: If :ref:`ImageData2D.is_compressed` is :py:`False`
+        and :ref:`SceneConverterFeatures.ADD_IMAGES2D` is not supported
+    :raise AssertionError: If :ref:`ImageData2D.is_compressed` is :py:`True`
+        and :ref:`SceneConverterFeatures.ADD_COMPRESSED_IMAGES2D` is not
+        supported
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If adding the data fails
 

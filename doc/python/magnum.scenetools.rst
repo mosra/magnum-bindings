@@ -47,16 +47,26 @@
     :raise AssertionError: If :p:`scene` does not have
         :ref:`trade.SceneField.PARENT`
 
-.. py:function:: magnum.scenetools.absolute_field_transformations2d
+.. py:function:: magnum.scenetools.absolute_field_transformations2d(scene: magnum.trade.SceneData, field: magnum.trade.SceneField, global_transformation: magnum.Matrix3)
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
+    :raise AssertionError: If :p:`scene` is not 2D
+    :raise AssertionError: If :p:`scene` does not have
+        :ref:`trade.SceneField.PARENT`
+
+.. py:function:: magnum.scenetools.absolute_field_transformations2d(scene: magnum.trade.SceneData, field_id: int, global_transformation: magnum.Matrix3)
     :raise IndexError: If :p:`field_id` negative or not less than
         :ref:`trade.SceneData.field_count`
     :raise AssertionError: If :p:`scene` is not 2D
     :raise AssertionError: If :p:`scene` does not have
         :ref:`trade.SceneField.PARENT`
 
-.. py:function:: magnum.scenetools.absolute_field_transformations3d
+.. py:function:: magnum.scenetools.absolute_field_transformations3d(scene: magnum.trade.SceneData, field: magnum.trade.SceneField, global_transformation: magnum.Matrix4)
     :raise KeyError: If :p:`field` does not exist in :p:`scene`
+    :raise AssertionError: If :p:`scene` is not 2D
+    :raise AssertionError: If :p:`scene` does not have
+        :ref:`trade.SceneField.PARENT`
+
+.. py:function:: magnum.scenetools.absolute_field_transformations3d(scene: magnum.trade.SceneData, field_id: int, global_transformation: magnum.Matrix4)
     :raise IndexError: If :p:`field_id` negative or not less than
         :ref:`trade.SceneData.field_count`
     :raise AssertionError: If :p:`scene` is not 2D

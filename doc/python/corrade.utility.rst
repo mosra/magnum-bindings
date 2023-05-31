@@ -29,7 +29,7 @@
 .. py:function:: corrade.utility.ConfigurationGroup.group
     :raise KeyError: If group :p:`name` doesn't exist
 
-.. py:function:: corrade.utility.Configuration.__init__
+.. py:function:: corrade.utility.Configuration.__init__(self, filename: str)
     :raise IOError: If :p:`filename` contains a parse error
 
 .. py:function:: corrade.utility.Configuration.save
