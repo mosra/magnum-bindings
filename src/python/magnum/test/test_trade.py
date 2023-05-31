@@ -1664,8 +1664,11 @@ class ImageConverter(unittest.TestCase):
         converter = trade.ImageConverterManager().load_and_instantiate('StbResizeImageConverter')
         converter.configuration['size'] = "1 1"
 
-        converted = converter.convert(image)
-        self.assertEqual(converted.size, Vector2i(1, 1))
+        # Both ImageView and ImageData should work
+        converted1 = converter.convert(image)
+        converted2 = converter.convert(ImageView2D(image))
+        self.assertEqual(converted1.size, Vector2i(1, 1))
+        self.assertEqual(converted2.size, Vector2i(1, 1))
 
     def test_image2d_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
@@ -1679,6 +1682,31 @@ class ImageConverter(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "conversion failed"):
             converter.convert(image)
 
+    def test_compressed_image2d(self):
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgba_dxt1.dds'))
+        image = importer.image2d(0)
+        self.assertTrue(image.is_compressed)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('BcDecImageConverter')
+
+        # Both ImageData and CompressedImageView should work
+        converted1 = converter.convert(image)
+        converted2 = converter.convert(CompressedImageView2D(image))
+        self.assertFalse(converted1.is_compressed)
+        self.assertFalse(converted2.is_compressed)
+
+    def test_compressed_image2d_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgba_dxt1.dds'))
+        image = importer.image2d(0)
+        self.assertTrue(image.is_compressed)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('EtcDecImageConverter')
+
+        with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+            converter.convert(image)
+
     def test_image2d_to_file(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
@@ -1687,8 +1715,11 @@ class ImageConverter(unittest.TestCase):
         converter = trade.ImageConverterManager().load_and_instantiate('StbImageConverter')
 
         with tempfile.TemporaryDirectory() as tmp:
-            converter.convert_to_file(image, os.path.join(tmp, "image.png"))
-            self.assertTrue(os.path.exists(os.path.join(tmp, "image.png")))
+            # Both ImageData and ImageView should work
+            converter.convert_to_file(image, os.path.join(tmp, "image1.png"))
+            converter.convert_to_file(ImageView2D(image), os.path.join(tmp, "image2.png"))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "image1.png")))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "image2.png")))
 
     def test_image2d_to_file_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
@@ -1700,6 +1731,35 @@ class ImageConverter(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(RuntimeError, "conversion failed"):
                 converter.convert_to_file(image, os.path.join(tmp, "image.hdr"))
+
+    def test_compressed_image2d_to_file(self):
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgba_dxt1.dds'))
+        image = importer.image2d(0)
+        self.assertTrue(image.is_compressed)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('KtxImageConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            # Both ImageData and CompressedImageView should work
+            converter.convert_to_file(image, os.path.join(tmp, "image1.ktx2"))
+            converter.convert_to_file(CompressedImageView2D(image), os.path.join(tmp, "image2.ktx2"))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "image1.ktx2")))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "image2.ktx2")))
+
+    def test_compressed_image2d_to_file_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('DdsImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgba_dxt1.dds'))
+        image = importer.image2d(0)
+        self.assertTrue(image.is_compressed)
+
+        converter = trade.ImageConverterManager().load_and_instantiate('KtxImageConverter')
+        # Set something stupid in the config to make it fail
+        converter.configuration['swizzle'] = "haha"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "conversion failed"):
+                converter.convert_to_file(image, os.path.join(tmp, "image.ktx2"))
 
 class SceneConverter(unittest.TestCase):
     def test_scenecontents_for_importer(self):

@@ -595,12 +595,48 @@
     raising an exception. See particular function documentation for detailed
     behavior.
 
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.trade.ImageData1D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.trade.ImageData2D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.trade.ImageData3D)
+    :raise RuntimeError: If image conversion fails
 .. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView1D)
     :raise RuntimeError: If image conversion fails
 .. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView2D)
     :raise RuntimeError: If image conversion fails
 .. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.ImageView3D)
     :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.CompressedImageView1D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.CompressedImageView2D)
+    :raise RuntimeError: If image conversion fails
+.. py:function:: magnum.trade.AbstractImageConverter.convert(self, image: magnum.CompressedImageView3D)
+    :raise RuntimeError: If image conversion fails
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.trade.ImageData1D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.trade.ImageData2D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.trade.ImageData3D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
 
 .. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.ImageView1D, filename: str)
     :raise RuntimeError: If image conversion fails
@@ -619,6 +655,30 @@
     forward slashes as directory separators on all platforms.
 
 .. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.ImageView3D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.CompressedImageView1D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.CompressedImageView2D, filename: str)
+    :raise RuntimeError: If image conversion fails
+
+    For compatibility with :ref:`os.path`, on Windows this function converts
+    all backslashes in :p:`filename` to forward slashes before passing it to
+    :dox:`Trade::AbstractImageConverter::convertToFile()`, which expects
+    forward slashes as directory separators on all platforms.
+
+.. py:function:: magnum.trade.AbstractImageConverter.convert_to_file(self, image: magnum.CompressedImageView3D, filename: str)
     :raise RuntimeError: If image conversion fails
 
     For compatibility with :ref:`os.path`, on Windows this function converts

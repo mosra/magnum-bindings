@@ -1721,12 +1721,28 @@ void trade(py::module_& m) {
         }, [](Trade::AbstractImageConverter& self, Trade::ImageConverterFlag flags) {
             self.setFlags(flags);
         }, "Converter flags")
+        /* ImageData overloads should be first so they correctly dispatch to
+           either a compressed or a non-compressed overload. With the views
+           being first it'd just pick whichever of them is earliest as
+           ImageData is implicitly convertible to each. */
+        .def("convert", checkImageConverterResult<Trade::ImageData1D, Trade::ImageData1D, &Trade::AbstractImageConverter::convert>, "Convert a 1D image data", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData2D, Trade::ImageData2D, &Trade::AbstractImageConverter::convert>, "Convert a 2D image data", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData3D, Trade::ImageData3D, &Trade::AbstractImageConverter::convert>, "Convert a 3D image data", py::arg("image"))
         .def("convert", checkImageConverterResult<Trade::ImageData1D, ImageView1D, &Trade::AbstractImageConverter::convert>, "Convert a 1D image", py::arg("image"))
         .def("convert", checkImageConverterResult<Trade::ImageData2D, ImageView2D, &Trade::AbstractImageConverter::convert>, "Convert a 2D image", py::arg("image"))
         .def("convert", checkImageConverterResult<Trade::ImageData3D, ImageView3D, &Trade::AbstractImageConverter::convert>, "Convert a 3D image", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData1D, CompressedImageView1D, &Trade::AbstractImageConverter::convert>, "Convert a compressed 1D image", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData2D, CompressedImageView2D, &Trade::AbstractImageConverter::convert>, "Convert a compressed 2D image", py::arg("image"))
+        .def("convert", checkImageConverterResult<Trade::ImageData3D, CompressedImageView3D, &Trade::AbstractImageConverter::convert>, "Convert a compressed 3D image", py::arg("image"))
+        .def("convert_to_file", checkImageConverterResult<Trade::ImageData1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image data to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<Trade::ImageData2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image data to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<Trade::ImageData3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image data to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 1D image to a file", py::arg("image"), py::arg("filename"))
         .def("convert_to_file", checkImageConverterResult<ImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 2D image to a file", py::arg("image"), py::arg("filename"))
-        .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"));
+        .def("convert_to_file", checkImageConverterResult<ImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a 3D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<CompressedImageView1D, &Trade::AbstractImageConverter::convertToFile>, "Convert a compressed 1D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<CompressedImageView2D, &Trade::AbstractImageConverter::convertToFile>, "Convert a compressed 2D image to a file", py::arg("image"), py::arg("filename"))
+        .def("convert_to_file", checkImageConverterResult<CompressedImageView3D, &Trade::AbstractImageConverter::convertToFile>, "Convert a compressed 3D image to a file", py::arg("image"), py::arg("filename"));
     corrade::plugin(abstractImageConverter);
 
     py::class_<PluginManager::Manager<Trade::AbstractImageConverter>, PluginManager::AbstractManager> imageConverterManager{m, "ImageConverterManager", "Manager for image converter plugins"};
