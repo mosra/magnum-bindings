@@ -1493,8 +1493,9 @@ class Importer(unittest.TestCase):
 
         # Asking for custom mesh attribute names should work even if not
         # opened, returns None
-        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
-        # backwards compatibility to avoid this mess
+        # TODO clean up once the compatibilitySkinningAttributes option is
+        #   gone (until then it'll still return different IDs, regardless of it
+        #   being enabled)
         if magnum.BUILD_DEPRECATED:
             self.assertIsNone(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(9)))
         else:
@@ -1508,8 +1509,9 @@ class Importer(unittest.TestCase):
         self.assertEqual(importer.mesh_for_name('Indexed mesh'), 0)
 
         # It should work after opening
-        # TODO once configuration is exposed, disable the JOINTS/WEIGHTS
-        # backwards compatibility to avoid this mess
+        # TODO clean up once the compatibilitySkinningAttributes option is
+        #   gone (until then it'll still return different IDs, regardless of it
+        #   being enabled)
         if magnum.BUILD_DEPRECATED:
             self.assertEqual(importer.mesh_attribute_name(trade.MeshAttribute.CUSTOM(10)), "_CUSTOM_MATRIX_ATTRIBUTE")
             self.assertEqual(importer.mesh_attribute_for_name("_CUSTOM_MATRIX_ATTRIBUTE"), trade.MeshAttribute.CUSTOM(10))
@@ -1960,7 +1962,8 @@ class SceneConverter(unittest.TestCase):
 
     def test_batch_add_mesh_not_supported(self):
         # TODO implement once there's a converter that doesn't support meshes
-        #   or has only in-place conversion
+        #   or has only in-place conversion (MeshOptimizerSceneConverter
+        #   support this with begin())
         pass
 
     def test_batch_set_mesh_attribute_name(self):
