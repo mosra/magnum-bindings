@@ -955,12 +955,25 @@ void trade(py::module_& m) {
         }, "Mutable indices")
         .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount, "Vertex count")
         /* Has to be a function instead of a property because there's an
-           overload taking a name */
+           overload taking a morph target ID and an overload taking a name */
         .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount), "Attribute array count")
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Int) const>(&Trade::MeshData::attributeCount), "Attribute array count for given morph target",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("morph_target_id"))
         /** @todo direct access to MeshAttributeData, once making custom
             MeshData is desired */
-        .def("has_attribute", &Trade::MeshData::hasAttribute, "Whether the mesh has given attribute", py::arg("name"))
-        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"))
+        .def("has_attribute", &Trade::MeshData::hasAttribute, "Whether the mesh has given attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("morph_target_id") = -1)
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute, Int) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("morph_target_id") = -1)
 
         /* IMPORTANT: due to pybind11 behavioral differences on (already EOL'd)
            Python 3.7 the following overloads need to have the MeshAttribute
@@ -974,12 +987,16 @@ void trade(py::module_& m) {
             }
             return self.attributeName(id);
         }, "Attribute name", py::arg("id"))
-        .def("attribute_id", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+        .def("attribute_id", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return *found;
             PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
-        }, "Absolute ID of a named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Absolute ID of a named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute_id", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -987,12 +1004,16 @@ void trade(py::module_& m) {
             }
             return self.attributeId(id);
         }, "Attribute ID in a set of attributes of the same name", py::arg("id"))
-        .def("attribute_format", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+        .def("attribute_format", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeFormat(*found);
             PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
-        }, "Format of a named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Format of a named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute_format", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1000,12 +1021,16 @@ void trade(py::module_& m) {
             }
             return self.attributeFormat(id);
         }, "Attribute format", py::arg("id"))
-        .def("attribute_offset", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+        .def("attribute_offset", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeOffset(*found);
             PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
-        }, "Offset of a named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Offset of a named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute_offset", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1013,12 +1038,16 @@ void trade(py::module_& m) {
             }
             return self.attributeOffset(id);
         }, "Attribute offset", py::arg("id"))
-        .def("attribute_stride", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+        .def("attribute_stride", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeStride(*found);
             PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
-        }, "Stride of a named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Stride of a named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute_stride", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1026,12 +1055,16 @@ void trade(py::module_& m) {
             }
             return self.attributeStride(id);
         }, "Attribute stride", py::arg("id"))
-        .def("attribute_array_size", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id))
+        .def("attribute_array_size", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeArraySize(*found);
             PyErr_SetNone(PyExc_KeyError);
             throw py::error_already_set{};
-        }, "Array size of a named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Array size of a named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute_array_size", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1039,8 +1072,8 @@ void trade(py::module_& m) {
             }
             return self.attributeArraySize(id);
         }, "Attribute array size", py::arg("id"))
-        .def("attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
+        .def("attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId);
             if(!found) {
                 PyErr_SetNone(PyExc_KeyError);
                 throw py::error_already_set{};
@@ -1052,7 +1085,11 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return meshAttributeView(self, *found, self.attribute(*found));
-        }, "Data for given named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Data for given named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("attribute", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
@@ -1066,8 +1103,8 @@ void trade(py::module_& m) {
             }
             return meshAttributeView(self, id, self.attribute(id));
         }, "Data for given attribute", py::arg("id"))
-        .def("mutable_attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id) {
-            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id);
+        .def("mutable_attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId);
             if(!found) {
                 PyErr_SetNone(PyExc_KeyError);
                 throw py::error_already_set{};
@@ -1083,7 +1120,11 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             return meshAttributeView(self, *found, self.mutableAttribute(*found));
-        }, "Mutable data for given named attribute", py::arg("name"), py::arg("id") = 0)
+        }, "Mutable data for given named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
         .def("mutable_attribute", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);

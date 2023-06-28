@@ -267,6 +267,7 @@ class MeshData(unittest.TestCase):
 
         self.assertEqual(mesh.vertex_count, 3)
         self.assertEqual(mesh.attribute_count(), 9)
+        self.assertEqual(mesh.attribute_count(morph_target_id=37), 0)
 
         # Attribute properties by ID
         self.assertEqual(mesh.attribute_name(2), trade.MeshAttribute.POSITION)
@@ -292,11 +293,12 @@ class MeshData(unittest.TestCase):
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.COLOR))
         self.assertTrue(mesh.has_attribute(trade.MeshAttribute.POSITION))
         self.assertFalse(mesh.has_attribute(trade.MeshAttribute.TANGENT))
+        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.POSITION, morph_target_id=37))
         self.assertEqual(mesh.attribute_count(trade.MeshAttribute.POSITION), 1)
         self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TEXTURE_COORDINATES), 2)
         self.assertEqual(mesh.attribute_count(trade.MeshAttribute.TANGENT), 0)
         self.assertEqual(mesh.attribute_id(trade.MeshAttribute.POSITION), 2)
-        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 1), 4)
+        self.assertEqual(mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, id=1), 4)
         self.assertEqual(mesh.attribute_format(trade.MeshAttribute.COLOR), VertexFormat.VECTOR3UB_NORMALIZED)
         self.assertEqual(mesh.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_INT)
         self.assertEqual(mesh.attribute_offset(trade.MeshAttribute.COLOR), 20)
@@ -631,19 +633,35 @@ class MeshData(unittest.TestCase):
 
         # Access by existing name + OOB ID
         with self.assertRaises(KeyError):
-            mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
         with self.assertRaises(KeyError):
-            mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, 2)
+            mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
+
+        # Access by existing name + OOB morph target ID
+        with self.assertRaises(KeyError):
+            mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
+        with self.assertRaises(KeyError):
+            mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
 
     def test_attribute_access_array(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')

@@ -187,8 +187,8 @@ void meshtools(py::module_& m) {
             #endif
             py::arg("float_epsilon") = Math::TypeTraits<Float>::epsilon(),
             py::arg("double_epsilon") = Math::TypeTraits<Double>::epsilon())
-        .def("transform2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, MeshTools::InterleaveFlag flags) {
-            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id);
+        .def("transform2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "position attribute not found");
                 throw py::error_already_set{};
@@ -200,15 +200,19 @@ void meshtools(py::module_& m) {
             /** @todo check that the positions aren't impl-specific once
                 it's possible to test */
 
-            return MeshTools::transform2D(mesh, transformation, id, flags);
-        }, "Transform 2D positions in a mesh data", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
-        .def("transform2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id) {
+            return MeshTools::transform2D(mesh, transformation, id, morphTargetId, flags);
+        }, "Transform 2D positions in a mesh data", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+        .def("transform2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
                 throw py::error_already_set{};
             }
 
-            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id);
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "position attribute not found");
                 throw py::error_already_set{};
@@ -218,10 +222,14 @@ void meshtools(py::module_& m) {
                 throw py::error_already_set{};
             }
 
-            MeshTools::transform2DInPlace(mesh, transformation, id);
-        }, "Transform 2D positions in a mesh data in-place", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0)
-        .def("transform3d", [](const Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id, MeshTools::InterleaveFlag flags) {
-            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id);
+            MeshTools::transform2DInPlace(mesh, transformation, id, morphTargetId);
+        }, "Transform 2D positions in a mesh data in-place", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
+        .def("transform3d", [](const Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "position attribute not found");
                 throw py::error_already_set{};
@@ -233,15 +241,19 @@ void meshtools(py::module_& m) {
             /** @todo check that the positions, normals, ... aren't
                 impl-specific once it's possible to test */
 
-            return MeshTools::transform3D(mesh, transformation, id, flags);
-        }, "Transform 3D positions, normals, tangents and bitangents in a mesh data", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
-        .def("transform3d_in_place", [](Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id) {
+            return MeshTools::transform3D(mesh, transformation, id, morphTargetId, flags);
+        }, "Transform 3D positions, normals, tangents and bitangents in a mesh data", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+        .def("transform3d_in_place", [](Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
                 throw py::error_already_set{};
             }
 
-            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id);
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "position attribute not found");
                 throw py::error_already_set{};
@@ -251,9 +263,9 @@ void meshtools(py::module_& m) {
                 throw py::error_already_set{};
             }
 
-            const Containers::Optional<UnsignedInt> tangentAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Tangent, id);
-            const Containers::Optional<UnsignedInt> bitangentAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Bitangent, id);
-            const Containers::Optional<UnsignedInt> normalAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Normal, id);
+            const Containers::Optional<UnsignedInt> tangentAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Tangent, id, morphTargetId);
+            const Containers::Optional<UnsignedInt> bitangentAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Bitangent, id, morphTargetId);
+            const Containers::Optional<UnsignedInt> normalAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Normal, id, morphTargetId);
             if(tangentAttributeId &&
                (mesh.attributeFormat(*tangentAttributeId) != VertexFormat::Vector3 &&
                 mesh.attributeFormat(*tangentAttributeId) != VertexFormat::Vector4))
@@ -270,10 +282,14 @@ void meshtools(py::module_& m) {
                 throw py::error_already_set{};
             }
 
-            MeshTools::transform3DInPlace(mesh, transformation, id);
-        }, "Transform 3D position, normals, tangents and bitangents in a mesh data in-place", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0)
-        .def("transform_texture_coordinates2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, MeshTools::InterleaveFlag flags) {
-            const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id);
+            MeshTools::transform3DInPlace(mesh, transformation, id, morphTargetId);
+        }, "Transform 3D position, normals, tangents and bitangents in a mesh data in-place", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1)
+        .def("transform_texture_coordinates2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
+            const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id, morphTargetId);
             if(!textureCoordinateAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "texture coordinates attribute not found");
                 throw py::error_already_set{};
@@ -281,15 +297,19 @@ void meshtools(py::module_& m) {
             /** @todo check that the texture coordinates aren't impl-specific
                 once it's possible to test */
 
-            return MeshTools::transformTextureCoordinates2D(mesh, transformation, id, flags);
-        }, "Transform 2D texture coordinates in a mesh data", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
-        .def("transform_texture_coordinates2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id) {
+            return MeshTools::transformTextureCoordinates2D(mesh, transformation, id, morphTargetId, flags);
+        }, "Transform 2D texture coordinates in a mesh data", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+        .def("transform_texture_coordinates2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
                 throw py::error_already_set{};
             }
 
-            const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id);
+            const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id, morphTargetId);
             if(!textureCoordinateAttributeId) {
                 PyErr_SetString(PyExc_KeyError, "texture coordinates attribute not found");
                 throw py::error_already_set{};
@@ -299,8 +319,12 @@ void meshtools(py::module_& m) {
                 throw py::error_already_set{};
             }
 
-            MeshTools::transformTextureCoordinates2DInPlace(mesh, transformation, id);
-        }, "Transform 2D texture coordinates in a mesh data in-place", py::arg("mesh"), py::arg("transformation"), py::arg("id") = 0);
+            MeshTools::transformTextureCoordinates2DInPlace(mesh, transformation, id, morphTargetId);
+        }, "Transform 2D texture coordinates in a mesh data in-place", py::arg("mesh"), py::arg("transformation"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1);
 }
 
 }

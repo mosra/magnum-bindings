@@ -49,38 +49,44 @@
 
 .. py:function:: magnum.meshtools.transform2d
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.POSITION` of index :p:`id`
+        :ref:`trade.MeshAttribute.POSITION` of index :p:`id` (and in morph
+        target :p:`morph_target_id` if not :py:`-1`)
     :raise AssertionError: If :ref:`trade.MeshAttribute.POSITION` are not 2D
 
 .. py:function:: magnum.meshtools.transform2d_in_place
     :raise AssertionError: If :p:`mesh` vertex data aren't
         :ref:`trade.DataFlags.MUTABLE`
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.POSITION` of index :p:`id`
+        :ref:`trade.MeshAttribute.POSITION` of index :p:`id` (and in morph
+        target :p:`morph_target_id` if not :py:`-1`)
     :raise AssertionError: If :ref:`trade.MeshAttribute.POSITION` are not
         :ref:`VertexFormat.VECTOR2`
 
 .. py:function:: magnum.meshtools.transform3d
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.POSITION` of index :p:`id`
+        :ref:`trade.MeshAttribute.POSITION` of index :p:`id` (and in morph
+        target :p:`morph_target_id` if not :py:`-1`)
     :raise AssertionError: If :ref:`trade.MeshAttribute.POSITION` are not 3D
 
 .. py:function:: magnum.meshtools.transform3d_in_place
     :raise AssertionError: If :p:`mesh` vertex data aren't
         :ref:`trade.DataFlags.MUTABLE`
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.POSITION` of index :p:`id`
+        :ref:`trade.MeshAttribute.POSITION` of index :p:`id` (and in morph
+        target :p:`morph_target_id` if not :py:`-1`)
     :raise AssertionError: If :ref:`trade.MeshAttribute.POSITION` are not
         :ref:`VertexFormat.VECTOR3`
 
 .. py:function:: magnum.meshtools.transform_texture_coordinates2d
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.TEXTURE_COORDINATES` of index :p:`id`
+        :ref:`trade.MeshAttribute.TEXTURE_COORDINATES` of index :p:`id` (and in
+        morph target :p:`morph_target_id` if not :py:`-1`)
 
 .. py:function:: magnum.meshtools.transform_texture_coordinates2d_in_place
     :raise AssertionError: If :p:`mesh` vertex data aren't
         :ref:`trade.DataFlags.MUTABLE`
     :raise KeyError: If :p:`mesh` doesn't have
-        :ref:`trade.MeshAttribute.TEXTURE_COORDINATES` of index :p:`id`
+        :ref:`trade.MeshAttribute.TEXTURE_COORDINATES` of index :p:`id` (and in
+        morph target :p:`morph_target_id` if not :py:`-1`)
     :raise AssertionError: If :ref:`trade.MeshAttribute.TEXTURE_COORDINATES`
         are not :ref:`VertexFormat.VECTOR2`

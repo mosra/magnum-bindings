@@ -209,9 +209,9 @@
 .. py:function:: magnum.trade.MeshData.attribute_id(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute_id(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute_id(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 
     Compared to the C++ API, there's no
     :dox:`Trade::MeshData::findAttributeId()`, the desired workflow is instead
@@ -220,41 +220,41 @@
 .. py:function:: magnum.trade.MeshData.attribute_format(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute_format(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute_format(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 .. py:function:: magnum.trade.MeshData.attribute_offset(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute_offset(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute_offset(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 .. py:function:: magnum.trade.MeshData.attribute_stride(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute_stride(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute_stride(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 .. py:function:: magnum.trade.MeshData.attribute_array_size(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute_array_size(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute_array_size(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 .. py:function:: magnum.trade.MeshData.attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
-.. py:function:: magnum.trade.MeshData.attribute(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.attribute(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
 .. py:function:: magnum.trade.MeshData.mutable_attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlags.MUTABLE`
-.. py:function:: magnum.trade.MeshData.mutable_attribute(self, name: magnum.trade.MeshAttribute, id: int)
+.. py:function:: magnum.trade.MeshData.mutable_attribute(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
-        :ref:`attribute_count()` for :p:`name`
+        :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlags.MUTABLE`
 

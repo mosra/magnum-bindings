@@ -248,6 +248,9 @@ class RemoveDuplicates(unittest.TestCase):
         self.assertEqual(single_point.vertex_count, 1)
 
 class Transform(unittest.TestCase):
+    # TODO test everything with explicit morph target once there's support in
+    #   some importer
+
     def test_2d(self):
         mesh = primitives.line2d()
         self.assertEqual(mesh.attribute(trade.MeshAttribute.POSITION)[0], (0.0, 0.0))
@@ -293,18 +296,33 @@ class Transform(unittest.TestCase):
     def test_no_attribute(self):
         mesh = meshtools.copy(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
 
+        # ID not found
         with self.assertRaisesRegex(KeyError, "position attribute not found"):
-            meshtools.transform2d(mesh, Matrix3(), 1)
+            meshtools.transform2d(mesh, Matrix3(), id=1)
         with self.assertRaisesRegex(KeyError, "position attribute not found"):
-            meshtools.transform2d_in_place(mesh, Matrix3(), 1)
+            meshtools.transform2d_in_place(mesh, Matrix3(), id=1)
         with self.assertRaisesRegex(KeyError, "position attribute not found"):
-            meshtools.transform3d(mesh, Matrix4(), 1)
+            meshtools.transform3d(mesh, Matrix4(), id=1)
         with self.assertRaisesRegex(KeyError, "position attribute not found"):
-            meshtools.transform3d_in_place(mesh, Matrix4(), 1)
+            meshtools.transform3d_in_place(mesh, Matrix4(), id=1)
         with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
-            meshtools.transform_texture_coordinates2d(mesh, Matrix3(), 1)
+            meshtools.transform_texture_coordinates2d(mesh, Matrix3(), id=1)
         with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
-            meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3(), 1)
+            meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3(), id=1)
+
+        # Morph target not found
+        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+            meshtools.transform2d(mesh, Matrix3(), morph_target_id=37)
+        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+            meshtools.transform2d_in_place(mesh, Matrix3(), morph_target_id=37)
+        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+            meshtools.transform3d(mesh, Matrix4(), morph_target_id=37)
+        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+            meshtools.transform3d_in_place(mesh, Matrix4(), morph_target_id=37)
+        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+            meshtools.transform_texture_coordinates2d(mesh, Matrix3(), morph_target_id=37)
+        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+            meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3(), morph_target_id=37)
 
     def test_not_2d_not_3d(self):
         mesh2d = primitives.line2d()
@@ -341,6 +359,8 @@ class Transform(unittest.TestCase):
             meshtools.transform2d_in_place(importer.mesh('packed positions'), Matrix3())
         with self.assertRaisesRegex(AssertionError, "positions are not VECTOR3"):
             meshtools.transform3d_in_place(importer.mesh('packed positions'), Matrix4())
+        # TODO test also with an explicit ID and morph target ID to verify it's
+        #   correctly propagated
         with self.assertRaisesRegex(AssertionError, "normals are not VECTOR3"):
             meshtools.transform3d_in_place(importer.mesh('packed normals'), Matrix4())
         with self.assertRaisesRegex(AssertionError, "tangents are not VECTOR3 or VECTOR4"):
