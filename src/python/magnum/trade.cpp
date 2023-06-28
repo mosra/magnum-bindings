@@ -957,19 +957,9 @@ void trade(py::module_& m) {
         /* Has to be a function instead of a property because there's an
            overload taking a morph target ID and an overload taking a name */
         .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)() const>(&Trade::MeshData::attributeCount), "Attribute array count")
-        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Int) const>(&Trade::MeshData::attributeCount), "Attribute array count for given morph target",
-            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
-            py::kw_only{}, /* new in pybind11 2.6 */
-            #endif
-            py::arg("morph_target_id"))
         /** @todo direct access to MeshAttributeData, once making custom
             MeshData is desired */
         .def("has_attribute", &Trade::MeshData::hasAttribute, "Whether the mesh has given attribute", py::arg("name"),
-            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
-            py::kw_only{}, /* new in pybind11 2.6 */
-            #endif
-            py::arg("morph_target_id") = -1)
-        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute, Int) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"),
             #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
@@ -980,6 +970,16 @@ void trade(py::module_& m) {
            overload *before* the UnsignedInt overload, otherwise the integer
            overload gets picked even if an enum is passed from Python, causing
            massive suffering */
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Trade::MeshAttribute, Int) const>(&Trade::MeshData::attributeCount), "Count of given named attribute", py::arg("name"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("morph_target_id") = -1)
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MeshData::*)(Int) const>(&Trade::MeshData::attributeCount), "Attribute array count for given morph target",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("morph_target_id"))
         .def("attribute_name", [](Trade::MeshData& self, UnsignedInt id) {
             if(id >= self.attributeCount()) {
                 PyErr_SetNone(PyExc_IndexError);
