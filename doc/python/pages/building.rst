@@ -204,7 +204,7 @@ following commands, the resulting HTML overview is located in
 =========================
 
 In ``package/ci/`` there is a ``circleci.yml`` file that compiles and tests the
-bindings on Linux GCC 4.8 + CMake 3.4 and on macOS, online at
+bindings on Linux GCC 4.8 + CMake 3.5 and on macOS, online at
 https://circleci.com/gh/mosra/magnum-bindings. For Windows there is an
 ``appveyor.yml`` testing on Windows with MSVC, online at
 https://ci.appveyor.com/project/mosra/magnum-bindings. Code coverage for both

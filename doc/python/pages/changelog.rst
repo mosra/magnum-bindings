@@ -35,6 +35,11 @@ Changelog
 `Changes since 2020.06`_
 ========================
 
+-   Minimal supported CMake version is now 3.5, changed from 3.4, since CMake
+    3.27+ warns if a compatibility with CMake below 3.5 is requested. Older
+    versions are not supported anymore and all workarounds for them were
+    removed. This is a conservative change, as there are no known supported
+    distributions which would have anything older than 3.5.
 -   Exposed the :ref:`corrade.BUILD_DEPRECATED` and
     :ref:`magnum.BUILD_DEPRECATED` constants, as some features may work
     differently depending on these being enabled or not and it's useful to be

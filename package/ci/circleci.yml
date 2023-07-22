@@ -33,7 +33,8 @@ commands:
         command: |
           apt update
           if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
-          apt install -y git ninja-build $LCOV_PACKAGES << parameters.extra >>
+          # libidn11 needed by CMake
+          apt install -y git ninja-build libidn11 $LCOV_PACKAGES << parameters.extra >>
 
   install-base-macos:
     parameters:
@@ -60,17 +61,27 @@ commands:
           echo 'export CC=gcc-4.8' >> $BASH_ENV
           echo 'export CXX=g++-4.8' >> $BASH_ENV
 
-  install-cmake-3_4:
+  install-cmake:
+    parameters:
+      version:
+        type: string
+      sudo:
+        type: string
+        default: ""
     steps:
     - run:
-        name: Install CMake 3.4
+        name: Install CMake << parameters.version >>
         command: |
-          apt install -y wget libidn11
+          version_short=<< parameters.version >>
+          version_short="${version_short%.*}"
+          << parameters.sudo >> apt install -y wget
           mkdir -p $HOME/cmake && cd $HOME/cmake
-          wget -nc --no-check-certificate https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz
-          tar --strip-components=1 -xzf cmake-3.4.3-Linux-x86_64.tar.gz
+          wget -nc --no-check-certificate https://cmake.org/files/v$version_short/cmake-<< parameters.version >>-Linux-x86_64.tar.gz
+          tar --strip-components=1 -xzf cmake-<< parameters.version >>-Linux-x86_64.tar.gz
           echo 'export PATH=$HOME/cmake/bin:$PATH' >> $BASH_ENV
-          source $BASH_ENV && cmake --version | grep 3.4
+          source $BASH_ENV
+          cmake --version | grep << parameters.version >>
+          ctest --version | grep << parameters.version >>
 
   install-python-3_6:
     # Can't use the python3.6 docker image because there I can't install GCC
@@ -221,7 +232,8 @@ jobs:
     - install-base-linux:
         extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev
     - install-gcc-4_8
-    - install-cmake-3_4
+    - install-cmake:
+        version: "3.5.2"
     - install-python-3_6
     - install-pybind11
     - install-meshoptimizer
@@ -243,7 +255,8 @@ jobs:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev wget unzip
     - install-gcc-4_8
-    - install-cmake-3_4
+    - install-cmake:
+        version: "3.5.2"
     - install-python-3_6
     - install-pybind11
     - install-meshoptimizer
@@ -267,7 +280,8 @@ jobs:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev wget unzip
     - install-gcc-4_8
-    - install-cmake-3_4
+    - install-cmake:
+        version: "3.5.2"
     - install-python-3_6
     - install-pybind11
     - install-meshoptimizer
@@ -292,7 +306,8 @@ jobs:
     - install-base-linux:
         extra: libsdl2-dev libglfw3-dev
     - install-gcc-4_8
-    - install-cmake-3_4
+    - install-cmake:
+        version: "3.5.2"
     - install-python-3_6
     - install-pybind11
     - install-meshoptimizer
