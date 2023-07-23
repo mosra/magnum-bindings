@@ -1144,8 +1144,8 @@ class Quaternion_(unittest.TestCase):
         self.assertAlmostEqual(float(Deg(a.angle())), float(Deg(45.0)), 4)
 
     def test_functions(self):
-        a = math.angle(Quaterniond.rotation(Deg(45.0), Vector3d.x_axis()),
-                       Quaterniond.rotation(Deg(75.0), Vector3d.x_axis()))
+        a = math.half_angle(Quaterniond.rotation(Deg(45.0), Vector3d.x_axis()),
+                            Quaterniond.rotation(Deg(75.0), Vector3d.x_axis()))
         self.assertEqual(Deg(a), Deg(15.0))
 
     def test_properties(self):
