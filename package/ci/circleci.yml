@@ -15,10 +15,10 @@ executors:
   ubuntu-18_04:
     docker:
     - image: ubuntu:bionic-20220427
-  # Anything below 11.7 is deprecated as of June 6th 2022
-  xcode-11_7:
+  # Anything below 12.5.1 is deprecated as of August 2023
+  xcode-12_5:
     macos:
-      xcode: 11.7.0
+      xcode: 12.5.1
 
 commands:
   install-base-linux:
@@ -316,7 +316,7 @@ jobs:
     - lcov
 
   macos-gl:
-    executor: xcode-11_7
+    executor: xcode-12_5
     environment:
       CMAKE_CXX_FLAGS: --coverage
       PLATFORM_GL_API: CGL
@@ -329,7 +329,7 @@ jobs:
     - lcov
 
   macos-gles3:
-    executor: xcode-11_7
+    executor: xcode-12_5
     environment:
       CMAKE_CXX_FLAGS: --coverage
       PLATFORM_GL_API: EGL
@@ -346,7 +346,7 @@ jobs:
     - lcov
 
   macos-static:
-    executor: xcode-11_7
+    executor: xcode-12_5
     environment:
       # STUPID yml interprets unquoted ON as a boolean
       BUILD_STATIC: "ON"
