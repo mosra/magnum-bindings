@@ -1411,7 +1411,7 @@ class Importer(unittest.TestCase):
             importer.mesh_level_count(0)
         with self.assertRaises(IndexError):
             importer.mesh_name(0)
-        with self.assertRaisesRegex(IndexError, "ID out of bounds"):
+        with self.assertRaisesRegex(IndexError, "ID out of range"):
             importer.mesh(0)
 
         with self.assertRaises(IndexError):
@@ -1433,13 +1433,13 @@ class Importer(unittest.TestCase):
         with self.assertRaises(IndexError):
             importer.image3d_name(0)
 
-        with self.assertRaisesRegex(IndexError, "ID out of bounds"):
+        with self.assertRaisesRegex(IndexError, "ID out of range"):
             importer.image1d(0)
-        with self.assertRaisesRegex(IndexError, "level out of bounds"):
+        with self.assertRaisesRegex(IndexError, "level out of range"):
             importer.image2d(0, 1)
-        with self.assertRaisesRegex(IndexError, "ID out of bounds"):
+        with self.assertRaisesRegex(IndexError, "ID out of range"):
             importer.image2d(1)
-        with self.assertRaisesRegex(IndexError, "ID out of bounds"):
+        with self.assertRaisesRegex(IndexError, "ID out of range"):
             importer.image3d(0)
 
     def test_open_failed(self):
@@ -1566,7 +1566,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        with self.assertRaisesRegex(IndexError, "level out of bounds"):
+        with self.assertRaisesRegex(IndexError, "level out of range"):
             importer.mesh('Non-indexed mesh', 1)
 
     def test_mesh_failed(self):
@@ -1629,7 +1629,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
 
-        with self.assertRaisesRegex(IndexError, "level out of bounds"):
+        with self.assertRaisesRegex(IndexError, "level out of range"):
             importer.image2d(0, 1)
 
     def test_image2d_by_name(self):

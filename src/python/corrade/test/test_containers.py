@@ -354,7 +354,7 @@ class StridedArrayView1D(unittest.TestCase):
         data = b'hello'
         data_refcount = sys.getrefcount(data)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         a = containers.StridedArrayView1D(data)[7:8]
         self.assertEqual(a.size, (0, ))
 
@@ -1158,7 +1158,7 @@ class BitArray(unittest.TestCase):
         a = containers.BitArray.value_init(5)
         a_refcount = sys.getrefcount(a)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         b = a[7:8]
         self.assertEqual(len(b), 0)
         self.assertEqual(b.offset, 5)
@@ -1200,7 +1200,7 @@ class BitArray(unittest.TestCase):
         a = containers.BitArray.value_init(5)
         a_refcount = sys.getrefcount(a)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         b = a[7:8:2]
         self.assertEqual(len(b), 0)
         self.assertEqual(b.offset, 5)
@@ -1360,7 +1360,7 @@ class BitArrayView(unittest.TestCase):
         data = containers.BitArray.value_init(5)
         data_refcount = sys.getrefcount(data)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         b = containers.BitArrayView(data)[7:8]
         self.assertEqual(len(b), 0)
         self.assertEqual(b.offset, 5)
@@ -1411,7 +1411,7 @@ class BitArrayView(unittest.TestCase):
         a = containers.BitArray.value_init(5)
         a_refcount = sys.getrefcount(a)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         b = containers.BitArrayView(a)[7:8:2]
         self.assertEqual(len(b), 0)
         self.assertEqual(b.offset, 5)
@@ -1663,7 +1663,7 @@ class StridedBitArrayView1D(unittest.TestCase):
         data = containers.BitArray.value_init(5)
         data_refcount = sys.getrefcount(data)
 
-        # Because this is out of bounds, slice.start = slice.stop
+        # Because this is out of range, slice.start = slice.stop
         b = containers.StridedBitArrayView1D(data)[7:8]
         self.assertEqual(len(b), 0)
         self.assertEqual(b.offset, 5)
