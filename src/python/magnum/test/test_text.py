@@ -58,7 +58,11 @@ class Font(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             font.line_height
         with self.assertRaisesRegex(AssertionError, "no file opened"):
+            font.glyph_count
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
             font.glyph_id('A')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            font.glyph_size(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             font.glyph_advance(0)
         # fill_glyph_cache() not tested as it needs a GL context; assuming it's
@@ -88,7 +92,9 @@ class Font(unittest.TestCase):
         self.assertEqual(font.ascent, 17.011186599731445)
         self.assertEqual(font.descent, -4.322147846221924)
         self.assertEqual(font.line_height, 21.33333396911621)
+        self.assertEqual(font.glyph_count, 671)
         self.assertEqual(font.glyph_id('A'), 36)
+        self.assertEqual(font.glyph_size(36), (12.0, 14.0))
         self.assertEqual(font.glyph_advance(36), (11.7136, 0.0))
 
         # Deleting the font should decrease manager refcount again
@@ -102,3 +108,14 @@ class Font(unittest.TestCase):
             font.open_data(f.read(), 16.0)
 
         self.assertEqual(font.size, 16.0)
+
+    def test_glyph_oob(self):
+        font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+
+        font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+        self.assertEqual(font.glyph_count, 671)
+
+        with self.assertRaises(IndexError):
+            font.glyph_size(671)
+        with self.assertRaises(IndexError):
+            font.glyph_advance(671)

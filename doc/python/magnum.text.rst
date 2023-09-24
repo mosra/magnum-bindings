@@ -73,9 +73,17 @@
     :raise AssertionError: If no file is opened
 .. py:property:: magnum.text.AbstractFont.line_height
     :raise AssertionError: If no file is opened
+.. py:property:: magnum.text.AbstractFont.glyph_count
+    :raise AssertionError: If no file is opened
 .. py:function:: magnum.text.AbstractFont.glyph_id
     :raise AssertionError: If no file is opened
+.. py:function:: magnum.text.AbstractFont.glyph_size
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`glyph` is negative or not less than
+        :ref:`glyph_count`
 .. py:function:: magnum.text.AbstractFont.glyph_advance
     :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`glyph` is negative or not less than
+        :ref:`glyph_count`
 .. py:function:: magnum.text.AbstractFont.fill_glyph_cache
     :raise AssertionError: If no file is opened

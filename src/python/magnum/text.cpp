@@ -60,6 +60,17 @@ template<class R, class Arg1, R(Text::AbstractFont::*f)(Arg1)> R checkOpened(Tex
     }
     return (self.*f)(arg1);
 }
+template<class R, R(Text::AbstractFont::*f)(UnsignedInt)> R checkOpenedBounds(Text::AbstractFont& self, UnsignedInt glyph) {
+    if(!self.isOpened()) {
+        PyErr_SetString(PyExc_AssertionError, "no file opened");
+        throw py::error_already_set{};
+    }
+    if(glyph >= self.glyphCount()) {
+        PyErr_SetNone(PyExc_IndexError);
+        throw py::error_already_set{};
+    }
+    return (self.*f)(glyph);
+}
 
 }
 
@@ -136,8 +147,10 @@ void text(py::module_& m) {
         .def_property_readonly("ascent", checkOpened<Float, &Text::AbstractFont::ascent>, "Font ascent")
         .def_property_readonly("descent", checkOpened<Float, &Text::AbstractFont::descent>, "Font descent")
         .def_property_readonly("line_height", checkOpened<Float, &Text::AbstractFont::lineHeight>, "Line height")
+        .def_property_readonly("glyph_count", checkOpened<UnsignedInt, &Text::AbstractFont::glyphCount>, "Total count of glyphs in the font")
         .def("glyph_id", checkOpened<UnsignedInt, char32_t, &Text::AbstractFont::glyphId>, "Glyph ID for given character", py::arg("character"))
-        .def("glyph_advance", checkOpened<Vector2, UnsignedInt, &Text::AbstractFont::glyphAdvance>, "Glyph advance", py::arg("glyph"))
+        .def("glyph_size", checkOpenedBounds<Vector2, &Text::AbstractFont::glyphSize>, "Glyph size in pixels", py::arg("glyph"))
+        .def("glyph_advance", checkOpenedBounds<Vector2, &Text::AbstractFont::glyphAdvance>, "Glyph advance in pixels", py::arg("glyph"))
         .def("fill_glyph_cache", [](Text::AbstractFont& self, Text::AbstractGlyphCache& cache, const std::string& characters) {
             if(!self.isOpened()) {
                 PyErr_SetString(PyExc_AssertionError, "no file opened");
