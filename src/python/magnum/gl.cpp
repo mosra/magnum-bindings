@@ -28,6 +28,7 @@
 #include <Corrade/Containers/ArrayView.h>
 #include <Corrade/Containers/StringIterable.h>
 #include <Corrade/Containers/StringStl.h>
+#include <Corrade/Containers/PairStl.h> /** @todo drop once Containers::Pair is exposed directly */
 #include <Magnum/Image.h>
 #include <Magnum/ImageView.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -300,7 +301,10 @@ void gl(py::module_& m) {
         ;
     m
         .def("version", static_cast<GL::Version(*)(Int, Int)>(GL::version), "Enum value from major and minor version number", py::arg("major"), py::arg("minor"))
-        .def("version", static_cast<std::pair<Int, Int>(*)(GL::Version)>(GL::version), "Major and minor version number from enum value", py::arg("version"))
+        .def("version", [](GL::Version version) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<Int, Int>(GL::version(version));
+        }, "Major and minor version number from enum value", py::arg("version"))
         .def("is_version_es", GL::isVersionES, "Whether given version is OpenGL ES or WebGL");
 
     /* Context */

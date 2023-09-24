@@ -25,6 +25,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <Corrade/Containers/PairStl.h>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Range.h>
 
@@ -53,7 +54,10 @@ template<class T> void range(py::module_& m, py::class_<T>& c) {
         }, "Construct a zero range")
         .def(py::init(), "Default constructor")
         .def(py::init<typename T::VectorType, typename T::VectorType>(), "Construct a range from minimal and maximal coordinates")
-        .def(py::init<std::pair<typename T::VectorType, typename T::VectorType>>(), "Construct a range from minimal and maximal coordinates")
+        .def(py::init([](const std::pair<typename T::VectorType, typename T::VectorType>& minmax) {
+            /** @todo bind Containers::Pair directly */
+            return T{minmax};
+        }), "Construct a range from minimal and maximal coordinates")
 
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")

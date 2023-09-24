@@ -121,7 +121,22 @@ class Functions(unittest.TestCase):
         self.assertAlmostEqual(sincos[0], 1.0)
         self.assertAlmostEqual(sincos[1], 0.0)
 
-    def test_scalar(self):
+    def test_scalar_integer(self):
+        self.assertEqual(math.min(15, 3), 3)
+        self.assertEqual(math.max(15, 3), 15)
+        self.assertEqual(math.minmax(15, 3), (3, 15))
+        self.assertEqual(math.clamp(7, -1, 5), 5)
+
+        self.assertEqual(math.sign(-15), -1)
+        self.assertEqual(math.abs(-15), 15)
+
+        self.assertEqual(math.lerp(2, 5, 0.5), 3)
+        self.assertEqual(math.lerp(2, 5, True), 5)
+        self.assertEqual(math.select(2, 5, 1.0), 5)
+
+        self.assertEqual(math.fma(2.0, 3.0, 0.75), 6.75)
+
+    def test_scalar_float(self):
         self.assertFalse(math.isinf(math.nan))
         self.assertFalse(math.isnan(math.inf))
         self.assertTrue(math.isinf(math.inf))
@@ -143,11 +158,8 @@ class Functions(unittest.TestCase):
 
         self.assertEqual(math.lerp(2.0, 5.0, 0.5), 3.5)
         self.assertEqual(math.lerp(2.0, 5.0, False), 2.0)
-        self.assertEqual(math.lerp(2, 5, 0.5), 3)
-        self.assertEqual(math.lerp(2, 5, True), 5)
         self.assertEqual(math.lerp_inverted(2.0, 5.0, 3.5), 0.5)
         self.assertEqual(math.select(2.0, 5.0, 0.6), 2.0)
-        self.assertEqual(math.select(2, 5, 1.0), 5)
 
         self.assertEqual(math.fma(2.0, 3.0, 0.75), 6.75)
 

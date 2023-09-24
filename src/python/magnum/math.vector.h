@@ -26,6 +26,7 @@
 */
 
 #include <pybind11/operators.h>
+#include <Corrade/Containers/PairStl.h> /** @todo drop once Containers::Pair is exposed directly */
 #include <Corrade/Containers/ScopeGuard.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector4.h>
@@ -212,7 +213,9 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
             return T{Math::max(value, max)};
         }, "Maximum", py::arg("value"), py::arg("max"))
         .def("minmax", [](const T& a, const T& b) {
-            return std::pair<T, T>{Math::minmax(a, b)};
+            /** @todo clean up the cast once minmax() properly returns the
+                input type; bind Containers::Pair directly */
+            return std::pair<T, T>{Containers::Pair<T, T>{Math::minmax(a, b)}};
         }, "Minimum and maximum of two values")
         .def("clamp", [](const T& a, const T& min, const T& max) {
             return T{Math::clamp(a, min, max)};

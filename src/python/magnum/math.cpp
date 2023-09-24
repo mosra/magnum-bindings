@@ -26,6 +26,7 @@
 #include <sstream>
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <Corrade/Containers/PairStl.h> /** @todo drop once Containers::Pair is exposed directly */
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Angle.h>
 #include <Magnum/Math/BitVector.h>
@@ -160,7 +161,10 @@ template<class T> void angle(py::module_& m, py::class_<T>& c) {
         .def("isnan", static_cast<bool(*)(T)>(Math::isNan), "If given number is a NaN")
         .def("min", static_cast<T(*)(T, T)>(Math::min), "Minimum", py::arg("value"), py::arg("min"))
         .def("max", static_cast<T(*)(T, T)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
-        .def("minmax", static_cast<std::pair<T, T>(*)(T, T)>(Math::minmax), "Minimum and maximum of two values")
+        .def("minmax", [](T a, T b) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<T, T>(Math::minmax(a, b));
+        }, "Minimum and maximum of two values")
         .def("clamp", static_cast<T(*)(T, T, T)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
         .def("sign", Math::sign<T>, "Sign")
         .def("abs", static_cast<T(*)(T)>(Math::abs), "Absolute value")
@@ -472,7 +476,10 @@ void math(py::module_& root, py::module_& m) {
 
     /* Functions */
     m
-        .def("div", [](Long x, Long y) { return Math::div(x, y); }, "Integer division with remainder", py::arg("x"), py::arg("y"))
+        .def("div", [](Long x, Long y) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<Long, Long>(Math::div(x, y));
+        }, "Integer division with remainder", py::arg("x"), py::arg("y"))
         /** @todo binomialCoefficient(), asserts are hard to replicate (have an
             internal variant returning an Optional?) */
         .def("popcount", static_cast<UnsignedInt(*)(UnsignedLong)>(Math::popcount), "Count of bits set in a number")
@@ -481,7 +488,8 @@ void math(py::module_& root, py::module_& m) {
         .def("sin", [](Radd angle) { return Math::sin(angle); }, "Sine")
         .def("cos", [](Radd angle) { return Math::cos(angle); }, "Cosine")
         .def("sincos", [](Radd angle) {
-            return Math::sincos(angle);
+            /** @todo bind Containers::Pair directly */
+            return std::pair<Double, Double>(Math::sincos(angle));
         }, "Sine and cosine")
         .def("tan", [](Radd angle) { return Math::tan(angle); }, "Tangent")
         .def("asin", [](Double angle) { return Math::asin(angle); }, "Arc sine")
@@ -496,8 +504,14 @@ void math(py::module_& root, py::module_& m) {
         .def("min", static_cast<Double(*)(Double, Double)>(Math::min), "Minimum", py::arg("value"), py::arg("min"))
         .def("max", static_cast<Long(*)(Long, Long)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
         .def("max", static_cast<Double(*)(Double, Double)>(Math::max), "Maximum", py::arg("value"), py::arg("min"))
-        .def("minmax", static_cast<std::pair<Long, Long>(*)(Long, Long)>(Math::minmax), "Minimum and maximum of two values")
-        .def("minmax", static_cast<std::pair<Double, Double>(*)(Double, Double)>(Math::minmax), "Minimum and maximum of two values")
+        .def("minmax", [](Long a, Long b) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<Long, Long>(Math::minmax(a, b));
+        }, "Minimum and maximum of two values")
+        .def("minmax", [](Double a, Double b) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<Double, Double>(Math::minmax(a, b));
+        }, "Minimum and maximum of two values")
         .def("clamp", static_cast<Long(*)(Long, Long, Long)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
         .def("clamp", static_cast<Double(*)(Double, Double, Double)>(Math::clamp), "Clamp value", py::arg("value"), py::arg("min"), py::arg("max"))
         .def("sign", Math::sign<Long>, "Sign")
