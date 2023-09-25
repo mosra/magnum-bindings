@@ -358,7 +358,10 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
         .def("product", &T::product, "Product of values in the vector")
         .def("min", &T::min, "Minimal value in the vector")
         .def("max", &T::max, "Maximal value in the vector")
-        .def("minmax", &T::minmax, "Minimal and maximal value in the vector")
+        .def("minmax", [](const T& self) {
+            /** @todo bind Containers::Pair directly */
+            return std::pair<typename T::Type, typename T::Type>{self.minmax()};
+        }, "Minimal and maximal value in the vector")
 
         .def("__repr__", repr<T>, "Object representation");
 

@@ -260,7 +260,7 @@ class Vector(unittest.TestCase):
         #self.assertEqual(len(Vector3), 3) TODO: Y not?
         self.assertEqual(len(Vector4i()), 4)
 
-    def test_properties(self):
+    def test_components(self):
         a = Vector2i()
         a.x = 1
         a.y = 2
@@ -320,7 +320,7 @@ class Vector(unittest.TestCase):
         self.assertEqual(a.xyz, Vector3d(0.5, 0.25, 0.125))
         self.assertEqual(a, Vector4d(0.5, 0.25, 0.125, 4.0))
 
-    def test_properties_rgb(self):
+    def test_components_rgb(self):
         a = Vector3()
         a.r = 1.0
         a.g = 2.0
@@ -368,6 +368,19 @@ class Vector(unittest.TestCase):
         # assertAlmostEqual doesn't work on lists so i'm using values directly
         # representable as floats to avoid the need for delta comparison
         self.assertEqual(a, [1.0, 3.25, 3.5, -1.125])
+
+    def test_properties(self):
+        a = Vector3(1.0, 3.5, -13.5)
+        b = Vector3i()
+        self.assertFalse(a.is_zero())
+        self.assertTrue(b.is_zero())
+        self.assertAlmostEqual(a.dot(), 195.5)
+        self.assertEqual(a.flipped(), (-13.5, 3.5, 1.0))
+        self.assertAlmostEqual(a.sum(), -9.0)
+        self.assertEqual(a.product(), -47.25)
+        self.assertEqual(a.min(), -13.5)
+        self.assertEqual(a.max(), 3.5)
+        self.assertEqual(a.minmax(), (-13.5, 3.5))
 
     def test_ops(self):
         self.assertEqual(math.dot(Vector2(0.5, 3.0), Vector2(2.0, 0.5)), 2.5)
