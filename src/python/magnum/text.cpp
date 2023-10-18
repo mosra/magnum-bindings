@@ -90,7 +90,7 @@ void text(py::module_& m) {
     py::class_<Text::AbstractGlyphCache> abstractGlyphCache{m, "AbstractGlyphCache", "Base for glyph caches"};
     abstractGlyphCache
         /** @todo features */
-        .def_property_readonly("texture_size", &Text::AbstractGlyphCache::size, "Glyph cache texture size")
+        .def_property_readonly("size", &Text::AbstractGlyphCache::size, "Glyph cache texture size")
         .def_property_readonly("padding", &Text::AbstractGlyphCache::padding, "Glyph padding")
         /** @todo glyph iteration and population */
         ;

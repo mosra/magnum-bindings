@@ -40,7 +40,7 @@ class GlyphCache(GLTestCase):
     def test(self):
         cache = text.GlyphCache((128, 128), (2, 2))
 
-        self.assertEqual(cache.texture_size, (128, 128))
+        self.assertEqual(cache.size, (128, 128, 1))
         self.assertEqual(cache.padding, (2, 2))
 
         cache_refcount = sys.getrefcount(cache)
@@ -58,7 +58,7 @@ class DistanceFieldGlyphCache(GLTestCase):
     def test(self):
         cache = text.DistanceFieldGlyphCache((1024, 1024), (128, 128), 2)
 
-        self.assertEqual(cache.texture_size, (1024, 1024))
+        self.assertEqual(cache.size, (1024, 1024, 1))
         self.assertEqual(cache.padding, (2, 2))
 
 class Renderer2D(GLTestCase):
