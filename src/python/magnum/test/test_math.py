@@ -1255,7 +1255,37 @@ class Range(unittest.TestCase):
         self.assertEqual(b, Range3D((1.1, 0.3, -1.5), (3.0, 0.4, 7.0)))
 
     def test_methods(self):
-        a = math.join(Range2D(Vector2(), (3.0, 5.0)).translated((1.5, 0.7)),
-                      Range2D((0.3, 2.0), (0.4, 2.1)))
-        self.assertEqual(a, Range2D((0.3, 0.7), (4.5, 5.7)))
-        self.assertEqual(a.center(), Vector2(2.4, 3.2))
+        a1 = Range1D(3.5, 5.0)
+        self.assertEqual(a1.size(), 1.5)
+        self.assertEqual(a1.center(), 4.25)
+        self.assertEqual(a1.translated(1.0), Range1D(4.5, 6.0))
+        self.assertEqual(a1.scaled(2.0), Range1D(7, 10))
+        self.assertEqual(a1.scaled_from_center(2.0), Range1D(2.75, 5.75))
+
+        a2 = Range2Di((1, 3), (3, 7))
+        self.assertEqual(a2.size(), (2, 4))
+        self.assertEqual(a2.center(), (2, 5))
+        self.assertEqual(a2.translated((1, 2)), Range2Di((2, 5), (4, 9)))
+        self.assertEqual(a2.scaled((2, 4)), Range2Di((2, 12), (6, 28)))
+        self.assertEqual(a2.scaled_from_center((2, 4)), Range2Di((0, -3), (4, 13)))
+
+        # Verify that both integer and float variants work. There isn't
+        # anything else special about the 3D variant to need thorough testing.
+        a3 = Range3Dd(((1.0, 0.2, 0.3), (1.0, 2.0, 3.0)))
+        self.assertEqual(a3.size(), (0.0, 1.8, 2.7))
+        self.assertEqual(a3.center(), (1.0, 1.1, 1.65))
+        self.assertEqual(a3.translated((0.1, 0.2, 0.3)), Range3Dd((1.1, 0.4, 0.6), (1.1, 2.2, 3.3)))
+        self.assertEqual(a3.scaled((2.0, 0.5, 1.0/3.0)), Range3Dd((2.0, 0.1, 0.1), (2.0, 1.0, 1.0)))
+        self.assertEqual(a3.scaled_from_center((2.0, 0.5, 1.0/3.0)), Range3Dd((1.0, 0.65, 1.2), (1.0, 1.55, 2.1)))
+
+    def test_functions(self):
+        a = Range2D((1.5, 0.7), (4.5, 5.7))
+        b = Range2D((0.3, 2.0), (3.0, 2.1))
+        c = Range2D((0.3, 2.0), (0.4, 2.1))
+        self.assertEqual(math.join(a, b), Range2D((0.3, 0.7), (4.5, 5.7)))
+        self.assertEqual(math.intersect(a, b), Range2D((1.5, 2.0), (3.0, 2.1)))
+        self.assertEqual(math.intersect(a, c), Range2D())
+        self.assertTrue(math.intersects(a, b))
+        self.assertFalse(math.intersects(a, c))
+
+        # There's no difference in behavior for the 1D and 3D variants
