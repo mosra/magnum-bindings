@@ -74,4 +74,4 @@ class Renderer2D(GLTestCase):
         renderer.reserve(16)
         renderer.render("hello")
 
-        self.assertEqual(renderer.rectangle, Range2D((0.0625, -0.0625), (2.4807, 0.875)))
+        self.assertEqual(renderer.rectangle, Range2D((0.0, -0.270134), (2.50727, 1.0632)))
