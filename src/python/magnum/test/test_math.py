@@ -1267,7 +1267,9 @@ class Range(unittest.TestCase):
         self.assertEqual(a2.center(), (2, 5))
         self.assertEqual(a2.translated((1, 2)), Range2Di((2, 5), (4, 9)))
         self.assertEqual(a2.scaled((2, 4)), Range2Di((2, 12), (6, 28)))
+        self.assertEqual(a2.scaled(2), Range2Di((2, 6), (6, 14)))
         self.assertEqual(a2.scaled_from_center((2, 4)), Range2Di((0, -3), (4, 13)))
+        self.assertEqual(a2.scaled_from_center(2), Range2Di((0, 1), (4, 9)))
 
         # Verify that both integer and float variants work. There isn't
         # anything else special about the 3D variant to need thorough testing.
@@ -1276,7 +1278,9 @@ class Range(unittest.TestCase):
         self.assertEqual(a3.center(), (1.0, 1.1, 1.65))
         self.assertEqual(a3.translated((0.1, 0.2, 0.3)), Range3Dd((1.1, 0.4, 0.6), (1.1, 2.2, 3.3)))
         self.assertEqual(a3.scaled((2.0, 0.5, 1.0/3.0)), Range3Dd((2.0, 0.1, 0.1), (2.0, 1.0, 1.0)))
+        self.assertEqual(a3.scaled(2.0), Range3Dd((2.0, 0.4, 0.6), (2.0, 4.0, 6.0)))
         self.assertEqual(a3.scaled_from_center((2.0, 0.5, 1.0/3.0)), Range3Dd((1.0, 0.65, 1.2), (1.0, 1.55, 2.1)))
+        self.assertEqual(a3.scaled_from_center(2.0), Range3Dd((1.0, -0.7, -1.05), (1.0, 2.9, 4.35)))
 
     def test_functions(self):
         a = Range2D((1.5, 0.7), (4.5, 5.7))

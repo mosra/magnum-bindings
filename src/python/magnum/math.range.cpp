@@ -78,8 +78,8 @@ template<class T> void range(py::module_& m, py::class_<T>& c) {
         .def("center", &T::center, "Range center")
         .def("translated", &T::translated, "Translated range")
         .def("padded", &T::padded, "Padded ange")
-        .def("scaled", &T::scaled, "Scaled range")
-        .def("scaled_from_center", &T::scaledFromCenter, "Range scaled from the center")
+        .def("scaled", static_cast<T(T::*)(const typename T::VectorType&) const>(&T::scaled), "Scaled range")
+        .def("scaled_from_center", static_cast<T(T::*)(const typename T::VectorType&) const>(&T::scaledFromCenter), "Range scaled from the center")
 
         .def("contains", static_cast<bool(T::*)(const typename T::VectorType&) const>(&T::contains),
             "Whether given point is contained inside the range")
@@ -100,6 +100,12 @@ template<class T> void range(py::module_& m, py::class_<T>& c) {
         .def("intersects", [](const T& a, const T& b) {
             return Math::intersects(a, b);
         }, "Whether two ranges intersect");
+}
+
+template<class T> void rangeND(py::class_<T>& c) {
+    c
+        .def("scaled", static_cast<T(T::*)(typename T::VectorType::Type) const>(&T::scaled), "Scaled range")
+        .def("scaled_from_center", static_cast<T(T::*)(typename T::VectorType::Type) const>(&T::scaledFromCenter), "Range scaled from the center");
 }
 
 template<class T> void range2D(py::class_<T>& c) {
@@ -354,6 +360,13 @@ void mathRange(py::module_& root, py::module_& m) {
     range(m, range1Dd);
     range(m, range2Dd);
     range(m, range3Dd);
+
+    rangeND(range2D_);
+    rangeND(range2Di);
+    rangeND(range2Dd);
+    rangeND(range3D_);
+    rangeND(range3Di);
+    rangeND(range3Dd);
 
     range2D(range2D_);
     range2D(range2Di);
