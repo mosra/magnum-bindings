@@ -229,3 +229,325 @@
     :py:`Matrix4.translation(vec)` will return a translation matrix, while
     :py:`mat.translation` is a read-write property accessing the fourth column
     of the matrix. Similarly for the :ref:`Matrix3` class.
+
+.. For pickling, because py::pickle() doesn't seem to have a way to set the
+   __setstate__ / __getstate__ docs directly FFS
+
+.. py:function:: magnum.Deg.__getstate__
+    :summary: Dumps the in-memory representation as a float
+.. py:function:: magnum.Rad.__getstate__
+    :summary: Dumps the in-memory representation as a float
+
+.. py:function:: magnum.BitVector2.__getstate__
+    :summary: Dumps the in-memory representation of vector bits
+.. py:function:: magnum.BitVector3.__getstate__
+    :summary: Dumps the in-memory representation of vector bits
+.. py:function:: magnum.BitVector4.__getstate__
+    :summary: Dumps the in-memory representation of vector bits
+
+.. py:function:: magnum.Vector2.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector3.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector4.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector2d.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector3d.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector4d.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector2i.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector3i.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector4i.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector2ui.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector3ui.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Vector4ui.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Color3.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+.. py:function:: magnum.Color4.__getstate__
+    :summary: Dumps the in-memory representation of vector components
+
+.. py:function:: magnum.Matrix2x2.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix2x3.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix2x4.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x2.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x3.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x4.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x2.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x3.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x4.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix2x2d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix2x3d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix2x4d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x2d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x3d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3x4d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x2d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x3d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4x4d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+
+.. py:function:: magnum.Matrix3.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix3d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+.. py:function:: magnum.Matrix4d.__getstate__
+    :summary: Dumps the in-memory representation of matrix components
+
+.. py:function:: magnum.Quaternion.__getstate__
+    :summary: Dumps the in-memory representation of quaternion components
+.. py:function:: magnum.Quaterniond.__getstate__
+    :summary: Dumps the in-memory representation of quaternion components
+
+.. py:function:: magnum.Range1D.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range2D.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range3D.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range1Dd.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range2Dd.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range3Dd.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range1Di.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range2Di.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+.. py:function:: magnum.Range3Di.__getstate__
+    :summary: Dumps the in-memory representation of range min/max components
+
+.. py:function:: magnum.Deg.__setstate__
+    :summary: Uses the float as the in-memory representation
+.. py:function:: magnum.Rad.__setstate__
+    :summary: Uses the float as the in-memory representation
+
+.. py:function:: magnum.BitVector2.__setstate__
+    :summary: Treats the data as the in-memory representation of vector bits
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.BitVector3.__setstate__
+    :summary: Treats the data as the in-memory representation of vector bits
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.BitVector4.__setstate__
+    :summary: Treats the data as the in-memory representation of vector bits
+    :raise ValueError: If the data size doesn't match type size
+
+.. py:function:: magnum.Vector2.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector3.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector4.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector2d.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector3d.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector4d.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector2i.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector3i.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector4i.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector2ui.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector3ui.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Vector4ui.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Color3.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Color4.__setstate__
+    :summary: Treats the data as the in-memory representation of vector
+        components
+    :raise ValueError: If the data size doesn't match type size
+
+.. py:function:: magnum.Matrix2x2.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix2x3.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix2x4.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x2.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x3.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x4.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x2.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x3.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x4.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix2x2d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix2x3d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix2x4d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x2d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x3d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3x4d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x2d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x3d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4x4d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+
+.. py:function:: magnum.Matrix3.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix3d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Matrix4d.__setstate__
+    :summary: Treats the data as the in-memory representation of matrix
+        components
+    :raise ValueError: If the data size doesn't match type size
+
+.. py:function:: magnum.Quaternion.__setstate__
+    :summary: Treats the data as the in-memory representation of quaternion
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Quaterniond.__setstate__
+    :summary: Treats the data as the in-memory representation of quaternion
+        components
+    :raise ValueError: If the data size doesn't match type size
+
+.. py:function:: magnum.Range1D.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range2D.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range3D.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range1Dd.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range2Dd.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range3Dd.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range1Di.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range2Di.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size
+.. py:function:: magnum.Range3Di.__setstate__
+    :summary: Treats the data as the in-memory representation of range min/max
+        components
+    :raise ValueError: If the data size doesn't match type size

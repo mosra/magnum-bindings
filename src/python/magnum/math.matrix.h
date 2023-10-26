@@ -67,6 +67,24 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
         .def(py::init(), "Default constructor")
         .def(py::init<typename T::Type>(), "Construct a matrix with one value for all components")
 
+        /* Pickling */
+        .def(py::pickle(
+            [](const T& self) {
+                return py::bytes(reinterpret_cast<const char*>(self.data()), sizeof(T));
+            },
+            [](const py::bytes& data) {
+                const std::size_t size = PyBytes_GET_SIZE(data.ptr());
+                if(size != sizeof(T)) {
+                    PyErr_Format(PyExc_ValueError, "expected %zu bytes but got %zi", sizeof(T), size);
+                    throw py::error_already_set{};
+                }
+                T out;
+                /** @todo gah is there really no other way to access contents? */
+                std::memcpy(out.data(), PyBytes_AS_STRING(data.ptr()), sizeof(T));
+                return out;
+            }
+        ))
+
         /* Operators */
         .def(-py::self, "Negated matrix")
         .def(py::self += py::self, "Add and assign a matrix")

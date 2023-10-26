@@ -116,6 +116,16 @@ template<class T> void angle(py::module_& m, py::class_<T>& c) {
         .def(py::self <= py::self, "Less than or equal comparison")
         .def(py::self >= py::self, "Greater than or equal comparison")
 
+        /* Pickling */
+        .def(py::pickle(
+            [](const T& self) {
+                return typename T::Type(self);
+            },
+            [](typename T::Type data) {
+                return T(data);
+            }
+        ))
+
         /* Arithmetic ops. Need to use lambdas because the C++ functions return
            the Unit base class :( */
         .def("__neg__", [](const T& self) -> T {
@@ -194,6 +204,24 @@ template<class T> void bitVector(py::module_& m, py::class_<T>& c) {
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")
         .def(py::self != py::self, "Non-equality comparison")
+
+        /* Pickling */
+        .def(py::pickle(
+            [](const T& self) {
+                return py::bytes(reinterpret_cast<const char*>(self.data()), sizeof(T));
+            },
+            [](const py::bytes& data) {
+                const std::size_t size = PyBytes_GET_SIZE(data.ptr());
+                if(size != sizeof(T)) {
+                    PyErr_Format(PyExc_ValueError, "expected %zu bytes but got %zi", sizeof(T), size);
+                    throw py::error_already_set{};
+                }
+                T out;
+                /** @todo gah is there really no other way to access contents? */
+                std::memcpy(out.data(), PyBytes_AS_STRING(data.ptr()), sizeof(T));
+                return out;
+            }
+        ))
 
         /* Member functions */
         .def("all", &T::all, "Whether all bits are set")
@@ -313,6 +341,24 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
         /* Comparison */
         .def(py::self == py::self, "Equality comparison")
         .def(py::self != py::self, "Non-equality comparison")
+
+        /* Pickling */
+        .def(py::pickle(
+            [](const T& self) {
+                return py::bytes(reinterpret_cast<const char*>(self.data()), sizeof(T));
+            },
+            [](const py::bytes& data) {
+                const std::size_t size = PyBytes_GET_SIZE(data.ptr());
+                if(size != sizeof(T)) {
+                    PyErr_Format(PyExc_ValueError, "expected %zu bytes but got %zi", sizeof(T), size);
+                    throw py::error_already_set{};
+                }
+                T out;
+                /** @todo gah is there really no other way to access contents? */
+                std::memcpy(out.data(), PyBytes_AS_STRING(data.ptr()), sizeof(T));
+                return out;
+            }
+        ))
 
         /* Operators */
         .def(-py::self, "Negated quaternion")

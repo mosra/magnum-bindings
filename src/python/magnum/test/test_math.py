@@ -24,6 +24,7 @@
 #
 
 import array
+import pickle
 import unittest
 
 from magnum import *
@@ -37,6 +38,12 @@ class Angle(unittest.TestCase):
         self.assertEqual(a, Deg(0.0))
         self.assertEqual(b, Rad(0.0))
         self.assertEqual(c, Deg(90.0))
+
+    def test_pickle(self):
+        data = pickle.dumps(Deg(45.0))
+        self.assertEqual(pickle.loads(data), Deg(45.0))
+
+    # There's no way for this pickle to fail
 
     def test_conversion(self):
         self.assertEqual(Rad(Deg(90.0)), Rad(math.pi_half))
@@ -79,6 +86,12 @@ class BitVector(unittest.TestCase):
         self.assertEqual(a, BitVector2(0b00))
         self.assertEqual(b, BitVector2(0b00))
         self.assertEqual(c, BitVector2(0b11))
+
+    def test_pickle(self):
+        data = pickle.dumps(BitVector4(0b1010))
+        self.assertEqual(pickle.loads(data), BitVector4(0b1010))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
 
     def test_length(self):
         self.assertEqual(BitVector3.__len__(), 3)
@@ -245,6 +258,12 @@ class Vector(unittest.TestCase):
         self.assertEqual(c, Vector2i(44, -3))
         self.assertEqual(d, Vector3(1.0, 0.3, 1.1))
         self.assertEqual(e, Vector4d(1.0, 0.3, 1.1, 0.5))
+
+    def test_pickle(self):
+        data = pickle.dumps(Vector4d(1.0, 0.3, 1.1, 0.5))
+        self.assertEqual(pickle.loads(data), Vector4d(1.0, 0.3, 1.1, 0.5))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
 
     def test_convert(self):
         a = Vector2i(Vector2(4.3, 3.1))
@@ -500,6 +519,12 @@ class Color3_(unittest.TestCase):
         self.assertEqual(blue,   Color3(0.0, 0.0, 0.5))
         self.assertEqual(yellow, Color3(1.0, 1.0, 0.5))
 
+    def test_pickle(self):
+        data = pickle.dumps(Color3(0.107177, 0.160481, 0.427))
+        self.assertEqual(pickle.loads(data), Color3(0.107177, 0.160481, 0.427))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
+
     def test_srgb(self):
         # Cross-checked with C++ tests
         a = Color3.from_srgb_int(0xf32a80)
@@ -575,6 +600,12 @@ class Color4_(unittest.TestCase):
         yellow = Color4.yellow(0.5, 0.75)
         self.assertEqual(blue,   Color4(0.0, 0.0, 0.5, 0.75))
         self.assertEqual(yellow, Color4(1.0, 1.0, 0.5, 0.75))
+
+    def test_pickle(self):
+        data = pickle.dumps(Color4(0.107177, 0.160481, 0.427, 0.5))
+        self.assertEqual(pickle.loads(data), Color4(0.107177, 0.160481, 0.427, 0.5))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
 
     def test_srgb(self):
         # Cross-checked with C++ tests
@@ -824,6 +855,16 @@ class Matrix(unittest.TestCase):
                                       (0.0, 2.0, 0.0, 0.0),
                                       (0.0, 0.0, 3.0, 0.0)))
 
+    def test_pickle(self):
+        data = pickle.dumps(Matrix3x2((1.0, 2.0),
+                                      (3.0, 4.0),
+                                      (5.0, 6.0)))
+        self.assertEqual(pickle.loads(data), Matrix3x2((1.0, 2.0),
+                                                       (3.0, 4.0),
+                                                       (5.0, 6.0)))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
+
     def test_convert(self):
         a = Matrix2x3d(Matrix2x3((1.0, 2.0, 3.0),
                                  (4.0, 5.0, 6.0)))
@@ -971,6 +1012,16 @@ class Matrix3_(unittest.TestCase):
         c = Matrix3.scaling((1.0, 2.0))
         self.assertEqual(c.scaling(), Vector2(1.0, 2.0))
 
+    def test_pickle(self):
+        data = pickle.dumps(Matrix3((1.0, 2.0, 3.0),
+                                    (4.0, 5.0, 6.0),
+                                    (7.0, 8.0, 9.0)))
+        self.assertEqual(pickle.loads(data), Matrix3((1.0, 2.0, 3.0),
+                                                     (4.0, 5.0, 6.0),
+                                                     (7.0, 8.0, 9.0)))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
+
     def test_properties(self):
         a = Matrix3.translation(Vector2.y_axis(-5.0))@Matrix3.rotation(Deg(45.0))
         self.assertEqual(a.right, Vector2(0.707107, 0.707107))
@@ -1074,6 +1125,18 @@ class Matrix4_(unittest.TestCase):
                                      (9.0, 10.0, 11.0, 12.0),
                                      (13.0, 14.0, 15.0, 16.0)))
 
+    def test_pickle(self):
+        data = pickle.dumps(Matrix4((1.0, 2.0, 3.0, 4.0),
+                                    (5.0, 6.0, 7.0, 8.0),
+                                    (9.0, 10.0, 11.0, 12.0),
+                                    (13.0, 14.0, 15.0, 16.0)))
+        self.assertEqual(pickle.loads(data), Matrix4((1.0, 2.0, 3.0, 4.0),
+                                                     (5.0, 6.0, 7.0, 8.0),
+                                                     (9.0, 10.0, 11.0, 12.0),
+                                                     (13.0, 14.0, 15.0, 16.0)))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
+
     def test_static_methods(self):
         a = Matrix4.translation((0.0, -1.0, 2.0))
         self.assertEqual(a[3].xyz, Vector3(0.0, -1.0, 2.0))
@@ -1162,6 +1225,12 @@ class Quaternion_(unittest.TestCase):
         self.assertEqual(a, Quaternion((0.382683, 0.0, 0.0), 0.92388))
         self.assertEqual(a.to_matrix(), Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
 
+    def test_pickle(self):
+        data = pickle.dumps(Quaternion((1.0, 2.0, 3.0), 4.0))
+        self.assertEqual(pickle.loads(data), Quaternion((1.0, 2.0, 3.0), 4.0))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
+
     def test_methods(self):
         a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())
         self.assertEqual(a.inverted(),
@@ -1235,6 +1304,12 @@ class Range(unittest.TestCase):
         c = Range2D.from_center((4.0, 1.25), (1.0, 0.25))
         self.assertEqual(c.min, Vector2(3.0, 1.0))
         self.assertEqual(c.max, Vector2(5.0, 1.5))
+
+    def test_pickle(self):
+        data = pickle.dumps(Range2D((1.0, 0.3), (2.0, 0.6)))
+        self.assertEqual(pickle.loads(data), Range2D((1.0, 0.3), (2.0, 0.6)))
+
+    # TODO how to test pickle failure?! direct __setstate__ doesn't work :/
 
     def test_properties(self):
         a = Range2D((1.0, 0.2), (2.0, 0.4))
