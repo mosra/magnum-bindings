@@ -61,16 +61,16 @@ class Concatenate(unittest.TestCase):
             meshtools.concatenate([])
 
     def test_invalid_primitive(self):
-        with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
+        with self.assertRaisesRegex(AssertionError, "MeshPrimitive.TRIANGLE_STRIP is not supported, turn it into a plain indexed mesh first"):
             meshtools.concatenate([primitives.cube_solid(), primitives.plane_solid()])
         # Should check that also for the first argument
-        with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
+        with self.assertRaisesRegex(AssertionError, "MeshPrimitive.TRIANGLE_STRIP is not supported, turn it into a plain indexed mesh first"):
             meshtools.concatenate([primitives.plane_solid()])
 
     def test_inconsistent_primitive(self):
-        with self.assertRaisesRegex(AssertionError, "inconsistent mesh primitive"):
+        with self.assertRaisesRegex(AssertionError, "expected MeshPrimitive.TRIANGLES but got MeshPrimitive.LINES in mesh 1"):
             meshtools.concatenate([primitives.cube_solid(), primitives.line3d()])
-        with self.assertRaisesRegex(AssertionError, "inconsistent mesh primitive"):
+        with self.assertRaisesRegex(AssertionError, "expected MeshPrimitive.LINES but got MeshPrimitive.TRIANGLES in mesh 1"):
             meshtools.concatenate([primitives.line3d(), primitives.cube_solid()])
 
 class Duplicate(unittest.TestCase):
@@ -102,7 +102,7 @@ class GenerateIndices(unittest.TestCase):
         mesh = primitives.cube_solid()
         self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
 
-        with self.assertRaisesRegex(AssertionError, "invalid mesh primitive"):
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLES"):
             meshtools.generate_indices(mesh)
 
 class Filter(unittest.TestCase):
@@ -297,44 +297,44 @@ class Transform(unittest.TestCase):
         mesh = meshtools.copy(primitives.square_solid(primitives.SquareFlags.TEXTURE_COORDINATES))
 
         # ID not found
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
             meshtools.transform2d(mesh, Matrix3(), id=1)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
             meshtools.transform2d_in_place(mesh, Matrix3(), id=1)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
             meshtools.transform3d(mesh, Matrix4(), id=1)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
             meshtools.transform3d_in_place(mesh, Matrix4(), id=1)
-        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no texture coordinates with index 1"):
             meshtools.transform_texture_coordinates2d(mesh, Matrix3(), id=1)
-        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no texture coordinates with index 1"):
             meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3(), id=1)
 
         # Morph target not found
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
             meshtools.transform2d(mesh, Matrix3(), morph_target_id=37)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
             meshtools.transform2d_in_place(mesh, Matrix3(), morph_target_id=37)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
             meshtools.transform3d(mesh, Matrix4(), morph_target_id=37)
-        with self.assertRaisesRegex(KeyError, "position attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
             meshtools.transform3d_in_place(mesh, Matrix4(), morph_target_id=37)
-        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no texture coordinates with index 0 in morph target 37"):
             meshtools.transform_texture_coordinates2d(mesh, Matrix3(), morph_target_id=37)
-        with self.assertRaisesRegex(KeyError, "texture coordinates attribute not found"):
+        with self.assertRaisesRegex(KeyError, "the mesh has no texture coordinates with index 0 in morph target 37"):
             meshtools.transform_texture_coordinates2d_in_place(mesh, Matrix3(), morph_target_id=37)
 
     def test_not_2d_not_3d(self):
         mesh2d = primitives.line2d()
         mesh3d = primitives.line3d()
 
-        with self.assertRaisesRegex(AssertionError, "positions are not 2D"):
+        with self.assertRaisesRegex(AssertionError, "expected 2D positions but got VertexFormat.VECTOR3"):
             meshtools.transform2d(mesh3d, Matrix3())
-        with self.assertRaisesRegex(AssertionError, "positions are not VECTOR2"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR2 positions but got VertexFormat.VECTOR3"):
             meshtools.transform2d_in_place(mesh3d, Matrix3())
-        with self.assertRaisesRegex(AssertionError, "positions are not 3D"):
+        with self.assertRaisesRegex(AssertionError, "expected 3D positions but got VertexFormat.VECTOR2"):
             meshtools.transform3d(mesh2d, Matrix4())
-        with self.assertRaisesRegex(AssertionError, "positions are not VECTOR3"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR3 positions but got VertexFormat.VECTOR2"):
             meshtools.transform3d_in_place(mesh2d, Matrix4())
 
     def test_not_float(self):
@@ -355,17 +355,17 @@ class Transform(unittest.TestCase):
         self.assertEqual(packed_texcoords.attribute(trade.MeshAttribute.TEXTURE_COORDINATES)[1], (-0.5, 0.0))
 
         # TODO test 2D position with something that's actually 2D
-        with self.assertRaisesRegex(AssertionError, "positions are not VECTOR2"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR2 positions but got VertexFormat.VECTOR3US"):
             meshtools.transform2d_in_place(importer.mesh('packed positions'), Matrix3())
-        with self.assertRaisesRegex(AssertionError, "positions are not VECTOR3"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR3 positions but got VertexFormat.VECTOR3US"):
             meshtools.transform3d_in_place(importer.mesh('packed positions'), Matrix4())
         # TODO test also with an explicit ID and morph target ID to verify it's
         #   correctly propagated
-        with self.assertRaisesRegex(AssertionError, "normals are not VECTOR3"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR3 normals but got VertexFormat.VECTOR3S_NORMALIZED"):
             meshtools.transform3d_in_place(importer.mesh('packed normals'), Matrix4())
-        with self.assertRaisesRegex(AssertionError, "tangents are not VECTOR3 or VECTOR4"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR3 or VertexFormat.VECTOR4 tangents but got VertexFormat.VECTOR4S_NORMALIZED"):
             meshtools.transform3d_in_place(importer.mesh('packed tangents'), Matrix4())
-        with self.assertRaisesRegex(AssertionError, "texture coordinates are not VECTOR2"):
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR2 texture coordinates but got VertexFormat.VECTOR2US_NORMALIZED"):
             meshtools.transform_texture_coordinates2d_in_place(importer.mesh('packed texcoords'), Matrix3())
 
     def test_in_place_not_mutable(self):

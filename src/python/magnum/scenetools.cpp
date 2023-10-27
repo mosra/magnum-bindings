@@ -86,7 +86,7 @@ void scenetools(py::module_& m) {
             for(std::size_t i = 0; i != entriesToKeep.size(); ++i) {
                 const Containers::Optional<UnsignedInt> fieldId = scene.findFieldId(entriesToKeep[i].first());
                 if(!fieldId) {
-                    PyErr_Format(PyExc_AssertionError, "field at index %zu not found", i, scene.fieldCount());
+                    PyErr_Format(PyExc_AssertionError, "%S not found among %u fields", py::cast(entriesToKeep[i].first()).ptr(), scene.fieldCount());
                     throw py::error_already_set{};
                 }
                 if(usedFields[*fieldId]) {

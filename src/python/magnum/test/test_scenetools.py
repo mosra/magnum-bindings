@@ -228,7 +228,7 @@ class Filter(unittest.TestCase):
             scenetools.filter_field_entries(scene, [
                 (8, containers.BitArrayView())
             ])
-        with self.assertRaisesRegex(AssertionError, "field at index 1 not found"):
+        with self.assertRaisesRegex(AssertionError, "SceneField.LIGHT not found among 8 fields"):
             scenetools.filter_field_entries(scene, [
                 (trade.SceneField.CAMERA, containers.BitArray.value_init(2)),
                 (trade.SceneField.LIGHT, containers.BitArrayView())

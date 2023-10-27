@@ -105,11 +105,11 @@ void meshtools(py::module_& m) {
                    mesh.primitive() == MeshPrimitive::TriangleStrip ||
                    mesh.primitive() == MeshPrimitive::TriangleFan)
                 {
-                    PyErr_SetString(PyExc_AssertionError, "invalid mesh primitive");
+                    PyErr_Format(PyExc_AssertionError, "%S is not supported, turn it into a plain indexed mesh first", py::cast(mesh.primitive()).ptr());
                     throw py::error_already_set{};
                 }
                 if(mesh.primitive() != primitive) {
-                    PyErr_SetString(PyExc_AssertionError, "inconsistent mesh primitive");
+                    PyErr_Format(PyExc_AssertionError, "expected %S but got %S in mesh %zu", py::cast(primitive).ptr(), py::cast(mesh.primitive()).ptr(), i);
                     throw py::error_already_set{};
                 }
             }
@@ -161,7 +161,7 @@ void meshtools(py::module_& m) {
                mesh.primitive() != MeshPrimitive::TriangleStrip &&
                mesh.primitive() != MeshPrimitive::TriangleFan)
             {
-                PyErr_SetString(PyExc_AssertionError, "invalid mesh primitive");
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
                 throw py::error_already_set{};
             }
             /** @todo check that the indices aren't impl-specific once it's
@@ -190,11 +190,14 @@ void meshtools(py::module_& m) {
         .def("transform2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
             const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "position attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             if(vertexFormatComponentCount(mesh.attributeFormat(*positionAttributeId)) != 2) {
-                PyErr_SetString(PyExc_AssertionError, "positions are not 2D");
+                PyErr_Format(PyExc_AssertionError, "expected 2D positions but got %S", py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
                 throw py::error_already_set{};
             }
             /** @todo check that the positions aren't impl-specific once
@@ -214,11 +217,14 @@ void meshtools(py::module_& m) {
 
             const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "position attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             if(mesh.attributeFormat(*positionAttributeId) != VertexFormat::Vector2) {
-                PyErr_SetString(PyExc_AssertionError, "positions are not VECTOR2");
+                PyErr_Format(PyExc_AssertionError, "expected %S positions but got %S", py::cast(VertexFormat::Vector2).ptr(), py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
                 throw py::error_already_set{};
             }
 
@@ -231,11 +237,14 @@ void meshtools(py::module_& m) {
         .def("transform3d", [](const Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
             const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "position attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             if(vertexFormatComponentCount(mesh.attributeFormat(*positionAttributeId)) != 3) {
-                PyErr_SetString(PyExc_AssertionError, "mesh positions are not 3D");
+                PyErr_Format(PyExc_AssertionError, "expected 3D positions but got %S", py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
                 throw py::error_already_set{};
             }
             /** @todo check that the positions, normals, ... aren't
@@ -255,11 +264,14 @@ void meshtools(py::module_& m) {
 
             const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
             if(!positionAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "position attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             if(mesh.attributeFormat(*positionAttributeId) != VertexFormat::Vector3) {
-                PyErr_SetString(PyExc_AssertionError, "positions are not VECTOR3");
+                PyErr_Format(PyExc_AssertionError, "expected %S positions but got %S", py::cast(VertexFormat::Vector3).ptr(), py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
                 throw py::error_already_set{};
             }
 
@@ -270,15 +282,15 @@ void meshtools(py::module_& m) {
                (mesh.attributeFormat(*tangentAttributeId) != VertexFormat::Vector3 &&
                 mesh.attributeFormat(*tangentAttributeId) != VertexFormat::Vector4))
             {
-                PyErr_SetString(PyExc_AssertionError, "tangents are not VECTOR3 or VECTOR4");
+                PyErr_Format(PyExc_AssertionError, "expected %S or %S tangents but got %S", py::cast(VertexFormat::Vector3).ptr(), py::cast(VertexFormat::Vector4).ptr(), py::cast(mesh.attributeFormat(*tangentAttributeId)).ptr());
                 throw py::error_already_set{};
             }
             if(bitangentAttributeId && mesh.attributeFormat(*bitangentAttributeId) != VertexFormat::Vector3) {
-                PyErr_SetString(PyExc_AssertionError, "bitangents are not VECTOR3");
+                PyErr_Format(PyExc_AssertionError, "expected %S bitangents but got %S", py::cast(VertexFormat::Vector3).ptr(), py::cast(mesh.attributeFormat(*bitangentAttributeId)).ptr());
                 throw py::error_already_set{};
             }
             if(normalAttributeId && mesh.attributeFormat(*normalAttributeId) != VertexFormat::Vector3) {
-                PyErr_SetString(PyExc_AssertionError, "normals are not VECTOR3");
+                PyErr_Format(PyExc_AssertionError, "expected %S normals but got %S", py::cast(VertexFormat::Vector3).ptr(), py::cast(mesh.attributeFormat(*normalAttributeId)).ptr());
                 throw py::error_already_set{};
             }
 
@@ -291,7 +303,10 @@ void meshtools(py::module_& m) {
         .def("transform_texture_coordinates2d", [](const Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
             const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id, morphTargetId);
             if(!textureCoordinateAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "texture coordinates attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no texture coordinates with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no texture coordinates with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             /** @todo check that the texture coordinates aren't impl-specific
@@ -311,11 +326,14 @@ void meshtools(py::module_& m) {
 
             const Containers::Optional<UnsignedInt> textureCoordinateAttributeId = mesh.findAttributeId(Trade::MeshAttribute::TextureCoordinates, id, morphTargetId);
             if(!textureCoordinateAttributeId) {
-                PyErr_SetString(PyExc_KeyError, "texture coordinates attribute not found");
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no texture coordinates with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no texture coordinates with index %u in morph target %i", id, morphTargetId);
                 throw py::error_already_set{};
             }
             if(mesh.attributeFormat(*textureCoordinateAttributeId) != VertexFormat::Vector2) {
-                PyErr_SetString(PyExc_AssertionError, "texture coordinates are not VECTOR2");
+                PyErr_Format(PyExc_AssertionError, "expected %S texture coordinates but got %S", py::cast(VertexFormat::Vector2).ptr(), py::cast(mesh.attributeFormat(*textureCoordinateAttributeId)).ptr());
                 throw py::error_already_set{};
             }
 

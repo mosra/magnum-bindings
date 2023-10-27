@@ -198,7 +198,7 @@ class ImageData(unittest.TestCase):
         image = importer.image2d(0)
         self.assertEqual(image.format, PixelFormat.DEPTH32F_STENCIL8UI)
 
-        with self.assertRaisesRegex(NotImplementedError, "access to this pixel format is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to PixelFormat.DEPTH32F_STENCIL8UI is not implemented yet, sorry"):
             image.pixels
 
 class MeshData(unittest.TestCase):
@@ -597,70 +597,75 @@ class MeshData(unittest.TestCase):
 
         mesh = importer.mesh(0)
 
-        # Access by OOB ID
-        with self.assertRaises(IndexError):
+        # Access by OOB ID. Deprecated build contains additional 2 backwards
+        # compatibility skinning attributes.
+        if magnum.BUILD_DEPRECATED:
+            indexOutOfRangeMessage = "index 11 out of range for 11 attributes"
+        else:
+            indexOutOfRangeMessage = "index 9 out of range for 9 attributes"
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_name(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_id(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_format(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_offset(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_stride(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute_array_size(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.attribute(mesh.attribute_count())
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, indexOutOfRangeMessage):
             mesh.mutable_attribute(mesh.attribute_count())
 
         # Access by nonexistent name
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute_id(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute_format(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute_offset(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute_stride(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute_array_size(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.attribute(trade.MeshAttribute.TANGENT)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TANGENT attributes"):
             mesh.mutable_attribute(trade.MeshAttribute.TANGENT)
 
         # Access by existing name + OOB ID
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 2 out of range for 2 MeshAttribute.TEXTURE_COORDINATES attributes"):
             mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, id=2)
 
         # Access by existing name + OOB morph target ID
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute_id(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute_format(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute_offset(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute_stride(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute_array_size(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.attribute(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "index 0 out of range for 0 MeshAttribute.TEXTURE_COORDINATES attributes in morph target 37"):
             mesh.mutable_attribute(trade.MeshAttribute.TEXTURE_COORDINATES, morph_target_id=37)
 
     def test_attribute_access_array(self):
@@ -688,13 +693,13 @@ class MeshData(unittest.TestCase):
         mesh = importer.mesh(0)
         custom_attribute_id = mesh.attribute_id(custom_attribute)
 
-        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX2X2 is not implemented yet, sorry"):
             mesh.attribute(custom_attribute_id)
-        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX2X2 is not implemented yet, sorry"):
             mesh.mutable_attribute(custom_attribute_id)
-        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX2X2 is not implemented yet, sorry"):
             mesh.attribute(custom_attribute)
-        with self.assertRaisesRegex(NotImplementedError, "access to this vertex format is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX2X2 is not implemented yet, sorry"):
             mesh.mutable_attribute(custom_attribute)
 
 class SceneData(unittest.TestCase):
@@ -1049,79 +1054,79 @@ class SceneData(unittest.TestCase):
         scene = importer.scene(0)
 
         # Access by OOB field ID
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_name(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_flags(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_type(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_size(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_array_size(scene.field_count)
-        with self.assertRaisesRegex(IndexError, "field out of range"):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.has_field_object(scene.field_count, 0)
-        with self.assertRaisesRegex(IndexError, "field out of range"):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field_object_offset(scene.field_count, 0)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.mapping(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.mutable_mapping(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.field(scene.field_count)
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 fields"):
             scene.mutable_field(scene.field_count)
 
         # Access by nonexistent field name
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_id(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_flags(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_type(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_size(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_array_size(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.has_field_object(trade.SceneField.SCALING, 0)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field_object_offset(trade.SceneField.SCALING, 0)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.mapping(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.mutable_mapping(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.field(trade.SceneField.SCALING)
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "SceneField.SCALING not found among 8 fields"):
             scene.mutable_field(trade.SceneField.SCALING)
 
         # OOB object ID
-        with self.assertRaisesRegex(IndexError, "object out of range"):
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 objects"):
             scene.has_field_object(0, 4) # PARENT
-        with self.assertRaisesRegex(IndexError, "object out of range"):
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 objects"):
             scene.has_field_object(trade.SceneField.PARENT, 4)
-        with self.assertRaisesRegex(IndexError, "object out of range"):
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 objects"):
             scene.field_object_offset(0, 4) # PARENT
-        with self.assertRaisesRegex(IndexError, "object out of range"):
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 objects"):
             scene.field_object_offset(trade.SceneField.PARENT, 4)
 
         # Lookup error
-        with self.assertRaises(LookupError):
+        with self.assertRaisesRegex(LookupError, "object 1 not found in field SceneField.CAMERA starting at offset 0"):
             scene.field_object_offset(4, 1) # CAMERA
-        with self.assertRaises(LookupError):
+        with self.assertRaisesRegex(LookupError, "object 1 not found in field SceneField.CAMERA starting at offset 0"):
             scene.field_object_offset(trade.SceneField.CAMERA, 1)
 
         # Lookup error due to field offset being at the end
-        with self.assertRaises(LookupError):
+        with self.assertRaisesRegex(LookupError, "object 1 not found in field SceneField.PARENT starting at offset 4"):
             scene.field_object_offset(0, 1, scene.field_size(0)) # PARENT
-        with self.assertRaises(LookupError):
+        with self.assertRaisesRegex(LookupError, "object 1 not found in field SceneField.PARENT starting at offset 4"):
             scene.field_object_offset(trade.SceneField.PARENT, 1, scene.field_size(trade.SceneField.PARENT))
 
         # OOB field offset (offset == size is allowed, tested above)
-        with self.assertRaisesRegex(IndexError, "offset out of range"):
+        with self.assertRaisesRegex(IndexError, "offset 5 out of range for a field of size 4"):
             scene.field_object_offset(0, 1, scene.field_size(0) + 1) # PARENT
-        with self.assertRaisesRegex(IndexError, "offset out of range"):
+        with self.assertRaisesRegex(IndexError, "offset 5 out of range for a field of size 4"):
             scene.field_object_offset(trade.SceneField.PARENT, 1, scene.field_size(trade.SceneField.PARENT) + 1)
 
     def test_field_access_array(self):
@@ -1138,13 +1143,13 @@ class SceneData(unittest.TestCase):
         scene = importer.scene(0)
         string_field_id = scene.field_id(string_field)
 
-        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to SceneFieldType.STRING_OFFSET32 is not implemented yet, sorry"):
             scene.field(string_field_id)
-        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to SceneFieldType.STRING_OFFSET32 is not implemented yet, sorry"):
             scene.mutable_field(string_field_id)
-        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to SceneFieldType.STRING_OFFSET32 is not implemented yet, sorry"):
             scene.field(string_field)
-        with self.assertRaisesRegex(NotImplementedError, "access to this scene field type is not implemented yet, sorry"):
+        with self.assertRaisesRegex(NotImplementedError, "access to SceneFieldType.STRING_OFFSET32 is not implemented yet, sorry"):
             scene.mutable_field(string_field)
 
 class TextureData(unittest.TestCase):
@@ -1397,50 +1402,54 @@ class Importer(unittest.TestCase):
             importer.image3d('')
 
     def test_index_oob(self):
-        importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
-        importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
+        texture_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        texture_importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
-        with self.assertRaises(IndexError):
-            importer.scene_name(0)
-        with self.assertRaises(IndexError):
-            importer.object_name(0)
-        with self.assertRaises(IndexError):
-            importer.scene(0)
+        mesh_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        mesh_importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        with self.assertRaises(IndexError):
-            importer.mesh_level_count(0)
-        with self.assertRaises(IndexError):
-            importer.mesh_name(0)
-        with self.assertRaisesRegex(IndexError, "ID out of range"):
-            importer.mesh(0)
+        scene_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        scene_importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
-        with self.assertRaises(IndexError):
-            importer.texture_name(0)
-        with self.assertRaises(IndexError):
-            importer.texture(0)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
+            scene_importer.scene_name(3)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            scene_importer.object_name(5)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
+            scene_importer.scene(3)
 
-        with self.assertRaises(IndexError):
-            importer.image1d_level_count(0)
-        with self.assertRaises(IndexError):
-            importer.image2d_level_count(1)
-        with self.assertRaises(IndexError):
-            importer.image3d_level_count(0)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            mesh_importer.mesh_level_count(5)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            mesh_importer.mesh_name(5)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            mesh_importer.mesh(5)
 
-        with self.assertRaises(IndexError):
-            importer.image1d_name(0)
-        with self.assertRaises(IndexError):
-            importer.image2d_name(1)
-        with self.assertRaises(IndexError):
-            importer.image3d_name(0)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
+            texture_importer.texture_name(3)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
+            texture_importer.texture(3)
 
-        with self.assertRaisesRegex(IndexError, "ID out of range"):
-            importer.image1d(0)
-        with self.assertRaisesRegex(IndexError, "level out of range"):
-            importer.image2d(0, 1)
-        with self.assertRaisesRegex(IndexError, "ID out of range"):
-            importer.image2d(1)
-        with self.assertRaisesRegex(IndexError, "ID out of range"):
-            importer.image3d(0)
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image1d_level_count(0)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 entries"):
+            texture_importer.image2d_level_count(2)
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image3d_level_count(0)
+
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image1d_name(0)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 entries"):
+            texture_importer.image2d_name(2)
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image3d_name(0)
+
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image1d(0)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 entries"):
+            texture_importer.image2d(2)
+        with self.assertRaisesRegex(IndexError, "index 0 out of range for 0 entries"):
+            texture_importer.image3d(0)
 
     def test_open_failed(self):
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
@@ -1493,7 +1502,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 3 entries"):
             importer.scene('Nonexistent')
 
     def test_scene_failed(self):
@@ -1545,7 +1554,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(IndexError, "level 1 out of range for 1 entries"):
             importer.mesh(0, 1)
 
     def test_mesh_by_name(self):
@@ -1559,14 +1568,14 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 5 entries"):
             importer.mesh('Nonexistent')
 
     def test_mesh_by_name_level_oob(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
-        with self.assertRaisesRegex(IndexError, "level out of range"):
+        with self.assertRaisesRegex(IndexError, "level 1 out of range for 1 entries"):
             importer.mesh('Non-indexed mesh', 1)
 
     def test_mesh_failed(self):
@@ -1589,7 +1598,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 3 entries"):
             importer.texture('Nonexistent')
 
     def test_texture_failed(self):
@@ -1624,12 +1633,12 @@ class Importer(unittest.TestCase):
         del importer
         self.assertEqual(sys.getrefcount(manager), manager_refcount)
 
-    def test_image_level_oob(self):
+    def test_image2d_level_oob(self):
         # importer refcounting tested in image2d
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
 
-        with self.assertRaisesRegex(IndexError, "level out of range"):
+        with self.assertRaisesRegex(IndexError, "level 1 out of range for 1 entries"):
             importer.image2d(0, 1)
 
     def test_image2d_by_name(self):
@@ -1643,7 +1652,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
 
-        with self.assertRaises(KeyError):
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 2 entries"):
             importer.image2d('Nonexistent')
 
     def test_image2d_data(self):
