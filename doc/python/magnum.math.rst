@@ -230,6 +230,146 @@
     :py:`mat.translation` is a read-write property accessing the fourth column
     of the matrix. Similarly for the :ref:`Matrix3` class.
 
+.. py:function:: magnum.Matrix2x2.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix2x2d.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix3x3.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix3x3d.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix4x4.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix4x4d.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix3.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix3d.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix4.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+.. py:function:: magnum.Matrix4d.inverted_orthogonal
+    :raise ValueError: If the matrix is not orthogonal
+
+.. py:function:: magnum.Matrix3.reflection
+    :raise ValueError: If :p:`normal` is not normalized
+.. py:function:: magnum.Matrix3d.reflection
+    :raise ValueError: If :p:`normal` is not normalized
+.. py:function:: magnum.Matrix4.reflection
+    :raise ValueError: If :p:`normal` is not normalized
+.. py:function:: magnum.Matrix4d.reflection
+    :raise ValueError: If :p:`normal` is not normalized
+.. py:function:: magnum.Matrix3.rotation(self)
+    :raise ValueError: If the normalized rotation part is not orthogonal
+.. py:function:: magnum.Matrix3d.rotation(self)
+    :raise ValueError: If the normalized rotation part is not orthogonal
+.. py:function:: magnum.Matrix4.rotation(self)
+    :raise ValueError: If the normalized rotation part is not orthogonal
+.. py:function:: magnum.Matrix4d.rotation(self)
+    :raise ValueError: If the normalized rotation part is not orthogonal
+.. py:function:: magnum.Matrix3.rotation_normalized
+    :raise ValueError: If the rotation part is not orthogonal
+.. py:function:: magnum.Matrix3d.rotation_normalized
+    :raise ValueError: If the rotation part is not orthogonal
+.. py:function:: magnum.Matrix4.rotation_normalized
+    :raise ValueError: If the rotation part is not orthogonal
+.. py:function:: magnum.Matrix4d.rotation_normalized
+    :raise ValueError: If the rotation part is not orthogonal
+.. py:function:: magnum.Matrix3.uniform_scaling_squared
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix3d.uniform_scaling_squared
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix4.uniform_scaling_squared
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix4d.uniform_scaling_squared
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix3.uniform_scaling
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix3d.uniform_scaling
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix4.uniform_scaling
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix4d.uniform_scaling
+    :raise ValueError: If the matrix doesn't have uniform scaling
+.. py:function:: magnum.Matrix3.inverted_rigid
+    :raise ValueError: If the matrix doesn't represent a rigid transformation
+.. py:function:: magnum.Matrix3d.inverted_rigid
+    :raise ValueError: If the matrix doesn't represent a rigid transformation
+.. py:function:: magnum.Matrix4.inverted_rigid
+    :raise ValueError: If the matrix doesn't represent a rigid transformation
+.. py:function:: magnum.Matrix4d.inverted_rigid
+    :raise ValueError: If the matrix doesn't represent a rigid transformation
+
+.. py:function:: magnum.math.half_angle(normalized_a: magnum.Quaternion, normalized_b: magnum.Quaternion)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.half_angle(normalized_a: magnum.Quaterniond, normalized_b: magnum.Quaterniond)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.lerp(normalized_a: magnum.Quaternion, normalized_b: magnum.Quaternion, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.lerp(normalized_a: magnum.Quaterniond, normalized_b: magnum.Quaterniond, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.lerp_shortest_path(normalized_a: magnum.Quaternion, normalized_b: magnum.Quaternion, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.lerp_shortest_path(normalized_a: magnum.Quaterniond, normalized_b: magnum.Quaterniond, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.slerp(normalized_a: magnum.Quaternion, normalized_b: magnum.Quaternion, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.slerp(normalized_a: magnum.Quaterniond, normalized_b: magnum.Quaterniond, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.slerp_shortest_path(normalized_a: magnum.Quaternion, normalized_b: magnum.Quaternion, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.math.slerp_shortest_path(normalized_a: magnum.Quaterniond, normalized_b: magnum.Quaterniond, t: float)
+    :raise ValueError: If either of the quaternions is not normalized
+.. py:function:: magnum.Quaternion.rotation(angle: magnum.Rad, normalized_axis: magnum.Vector3)
+    :raise ValueError: If :p:`normalized_axis` is not normalized
+.. py:function:: magnum.Quaterniond.rotation(angle: magnum.Rad, normalized_axis: magnum.Vector3d)
+    :raise ValueError: If :p:`normalized_axis` is not normalized
+.. py:function:: magnum.Quaternion.from_matrix
+    :raise ValueError: If :p:`matrix` is not a rotation
+.. py:function:: magnum.Quaterniond.from_matrix
+    :raise ValueError: If :p:`matrix` is not a rotation
+.. py:function:: magnum.Quaternion.angle
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaterniond.angle
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaternion.axis
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaterniond.axis
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaternion.inverted_normalized
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaterniond.inverted_normalized
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaternion.transform_vector_normalized
+    :raise ValueError: If the quaternion is not normalized
+.. py:function:: magnum.Quaterniond.transform_vector_normalized
+    :raise ValueError: If the quaternion is not normalized
+
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector2, normalized_b: magnum.Vector2)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector2d, normalized_b: magnum.Vector2d)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector3, normalized_b: magnum.Vector3)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector3d, normalized_b: magnum.Vector3d)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector4, normalized_b: magnum.Vector4)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.math.angle(normalized_a: magnum.Vector4d, normalized_b: magnum.Vector4d)
+    :raise ValueError: If either of the vectors is not normalized
+.. py:function:: magnum.Vector2.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+.. py:function:: magnum.Vector2d.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+.. py:function:: magnum.Vector3.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+.. py:function:: magnum.Vector3d.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+.. py:function:: magnum.Vector4.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+.. py:function:: magnum.Vector4d.projected_onto_normalized
+    :raise ValueError: If :p:`line` is not normalized
+
 .. For pickling, because py::pickle() doesn't seem to have a way to set the
    __setstate__ / __getstate__ docs directly FFS
 

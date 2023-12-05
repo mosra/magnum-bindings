@@ -302,27 +302,60 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
         .def("dot", static_cast<typename T::Type(*)(const T&, const T&)>(&Math::dot),
             "Dot product between two quaternions")
         .def("half_angle", [](const T& normalizedA, const T& normalizedB) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "quaternions %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
             /** @todo switch back to angle() once it's reintroduced with the
                 correct output again */
             return Radd(Math::halfAngle(normalizedA, normalizedB));
         }, "Angle between normalized quaternions", py::arg("normalized_a"), py::arg("normalized_b"))
-        .def("lerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerp),
-            "Linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
-        .def("lerp_shortest_path", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerpShortestPath),
-            "Linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
-        .def("slerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::slerp),
-            "Spherical linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
-        .def("slerp_shortest_path", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::slerpShortestPath),
-            "Spherical linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
-        ;
+        .def("lerp", [](const T& normalizedA, const T& normalizedB, typename T::Type t) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "quaternions %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::lerp(normalizedA, normalizedB, t);
+        }, "Linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("lerp_shortest_path", [](const T& normalizedA, const T& normalizedB, typename T::Type t) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "quaternions %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::lerpShortestPath(normalizedA, normalizedB, t);
+        }, "Linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("slerp", [](const T& normalizedA, const T& normalizedB, typename T::Type t) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "quaternions %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::slerp(normalizedA, normalizedB, t);
+        }, "Spherical linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
+        .def("slerp_shortest_path", [](const T& normalizedA, const T& normalizedB, typename T::Type t) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "quaternions %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::slerpShortestPath(normalizedA, normalizedB, t);
+        }, "Spherical linear shortest-path interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"));
 
     c
         /* Constructors */
-        .def_static("rotation", [](Radd angle, const Math::Vector3<typename T::Type>& axis) {
-            return T::rotation(Math::Rad<typename T::Type>(angle), axis);
+        .def_static("rotation", [](Radd angle, const Math::Vector3<typename T::Type>& normalizedAxis) {
+            if(!normalizedAxis.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "axis %S is not normalized", py::cast(normalizedAxis).ptr());
+                throw py::error_already_set{};
+            }
+            return T::rotation(Math::Rad<typename T::Type>(angle), normalizedAxis);
         }, "Rotation quaternion", py::arg("angle"), py::arg("normalized_axis"))
-        .def_static("from_matrix", &T::fromMatrix,
-            "Create a quaternion from rotation matrix", py::arg("matrix"))
+        .def_static("from_matrix", [](const Math::Matrix3x3<typename T::Type>& matrix) {
+            /* Same as the check in fromMatrix() */
+            if(std::abs(matrix.determinant() - typename T::Type(1)) >= typename T::Type(3)*Math::TypeTraits<typename T::Type>::epsilon()) {
+                PyErr_Format(PyExc_ValueError, "the matrix is not a rotation:\n%S", py::cast(matrix).ptr());
+                throw py::error_already_set{};
+            }
+            return T::fromMatrix(matrix);
+        }, "Create a quaternion from rotation matrix", py::arg("matrix"))
         .def_static("zero_init", []() {
             return T{Math::ZeroInit};
         }, "Construct a zero-initialized quaternion")
@@ -385,10 +418,19 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
         .def("is_normalized", &T::isNormalized,
             "Whether the quaternion is normalized")
         .def("angle", [](const T& self) {
+            if(!self.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "%S is not normalized", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
             return Radd(self.angle());
         }, "Rotation angle of a unit quaternion")
-        .def("axis", &T::axis,
-            "Rotation axis of a unit quaternion")
+        .def("axis", [](const T& self) {
+            if(!self.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "%S is not normalized", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.axis();
+        }, "Rotation axis of a unit quaternion")
         .def("to_matrix", &T::toMatrix,
             "Convert to a rotation matrix")
         .def("dot", &T::dot,
@@ -401,12 +443,22 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             "Conjugated quaternion")
         .def("inverted", &T::inverted,
             "Inverted quaternion")
-        .def("inverted_normalized", &T::invertedNormalized,
-            "Inverted normalized quaternion")
+        .def("inverted_normalized", [](const T& self) {
+            if(!self.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "%S is not normalized", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.invertedNormalized();
+        }, "Inverted normalized quaternion")
         .def("transform_vector", &T::transformVector,
             "Rotate a vector with a quaternion", py::arg("vector"))
-        .def("transform_vector_normalized", &T::transformVectorNormalized,
-            "Rotate a vector with a normalized quaternion", py::arg("vector"))
+        .def("transform_vector_normalized", [](const T& self, const Math::Vector3<typename T::Type>& vector) {
+            if(!self.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "%S is not normalized", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.transformVectorNormalized(vector);
+        }, "Rotate a vector with a normalized quaternion", py::arg("vector"))
 
         /* Properties */
         .def_property("vector",

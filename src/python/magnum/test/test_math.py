@@ -402,14 +402,26 @@ class Vector(unittest.TestCase):
         self.assertEqual(a.minmax(), (-13.5, 3.5))
 
     def test_ops(self):
+        a = Vector2(0.707107, 0.707107)
+        b = Vector2(1.0, 0.0)
+
         self.assertEqual(math.dot(Vector2(0.5, 3.0), Vector2(2.0, 0.5)), 2.5)
-        self.assertEqual(Deg(math.angle(
-            Vector2(0.5, 3.0).normalized(),
-            Vector2(2.0, 0.5).normalized())), Deg(66.5014333443446))
+        self.assertEqual(Deg(math.angle(a, b)), Deg(44.9999807616716))
         self.assertEqual(Vector3(1.0, 2.0, 0.3).projected(Vector3.y_axis()),
                          Vector3.y_axis(2.0))
         self.assertEqual(Vector3(1.0, 2.0, 0.3).projected_onto_normalized(Vector3.y_axis()),
                          Vector3.y_axis(2.0))
+
+    def test_ops_invalid(self):
+        a = Vector2(0.707107, 0.707107)
+        b = Vector2(1.0, 0.0)
+
+        with self.assertRaisesRegex(ValueError, "vectors Vector\\(1.41421, 1.41421\\) and Vector\\(1, 0\\) are not normalized"):
+            math.angle(a*2.0, b)
+        with self.assertRaisesRegex(ValueError, "vectors Vector\\(0.707107, 0.707107\\) and Vector\\(2, 0\\) are not normalized"):
+            math.angle(a, b*2.0)
+        with self.assertRaisesRegex(ValueError, "line Vector\\(2, 0.5\\) is not normalized"):
+            Vector2(0.5, 3.0).projected_onto_normalized(Vector2(2.0, 0.5))
 
     def test_ops_number_on_the_left(self):
         self.assertEqual(2.0*Vector2(1.0, -3.0), Vector2(2.0, -6.0))
@@ -938,6 +950,13 @@ class Matrix(unittest.TestCase):
             (0.0, -1.0),
             (1.0, 0.0)))
 
+    def test_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, """the matrix is not orthogonal:
+Matrix\\(4, 0,
+       0, 2\\)"""):
+            Matrix2x2((4.0, 0.0),
+                      (0.0, 2.0)).inverted_orthogonal()
+
     def test_repr(self):
         a = Matrix2x3((1.0, 2.0, 3.0),
                       (4.0, 5.0, 6.0))
@@ -1039,6 +1058,10 @@ class Matrix3_(unittest.TestCase):
                                     Vector3(4.0, 5.0, 0.0),
                                     Vector3(7.0, 8.0, 1.0)))
 
+    def test_static_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, "normal Vector\\(2, 0\\) is not normalized"):
+            Matrix3.reflection(Vector2(2.0, 0.0))
+
     def test_pickle(self):
         data = pickle.dumps(Matrix3((1.0, 2.0, 3.0),
                                     (4.0, 5.0, 6.0),
@@ -1090,6 +1113,29 @@ class Matrix3_(unittest.TestCase):
         self.assertEqual(a.transposed(), Matrix3.rotation(Deg(-45.0)))
         self.assertEqual(b.inverted(), Matrix3.scaling(Vector2(1/3.0)))
         self.assertEqual(a.inverted_orthogonal(), Matrix3.rotation(Deg(-45.0)))
+
+    def test_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, """the rotation part is not orthogonal:
+Matrix\\(3, 0,
+       0, 3\\)"""):
+            Matrix3.scaling(Vector2(3.0)).rotation_normalized()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0,
+       0, 2\\)"""):
+            Matrix3.scaling((3.0, 2.0)).uniform_scaling_squared()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0,
+       0, 2\\)"""):
+            Matrix3.scaling((3.0, 2.0)).uniform_scaling()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't represent a rigid transformation:
+Matrix\\(3, 0, 0,
+       0, 3, 0,
+       0, 0, 1\\)"""):
+            Matrix3.scaling(Vector2(3.0)).inverted_rigid()
+        with self.assertRaisesRegex(ValueError, """the normalized rotation part is not orthogonal:
+Matrix\\(1, 0.894427,
+       0, 0.447214\\)"""):
+            Matrix3.shearing_x(2.0).rotation()
 
     def test_methods_return_type(self):
         self.assertIsInstance(Matrix3.zero_init(), Matrix3)
@@ -1244,6 +1290,10 @@ class Matrix4_(unittest.TestCase):
                                       Vector4(9.0, 10.0, 11.0, 0.0),
                                       Vector4(13.0, 14.0, 15.0, 1.0)))
 
+    def test_static_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, "normal Vector\\(2, 0, 0\\) is not normalized"):
+            Matrix4.reflection(Vector3(2.0, 0.0, 0.0))
+
     def test_pickle(self):
         data = pickle.dumps(Matrix4((1.0, 2.0, 3.0, 4.0),
                                     (5.0, 6.0, 7.0, 8.0),
@@ -1316,6 +1366,44 @@ class Matrix4_(unittest.TestCase):
         self.assertIsInstance(Matrix4().transposed(), Matrix4)
         self.assertIsInstance(Matrix4().inverted(), Matrix4)
 
+    def test_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, """the rotation part is not orthogonal:
+Matrix\\(3, 0, 0,
+       0, 3, 0,
+       0, 0, 3\\)"""):
+            Matrix4.scaling(Vector3(3.0)).rotation_normalized()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0, 0,
+       0, 2, 0,
+       0, 0, 3\\)"""):
+            Matrix4.scaling((3.0, 2.0, 3.0)).uniform_scaling_squared()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0, 0,
+       0, 3, 0,
+       0, 0, 2\\)"""):
+            Matrix4.scaling((3.0, 3.0, 2.0)).uniform_scaling_squared()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0, 0,
+       0, 2, 0,
+       0, 0, 3\\)"""):
+            Matrix4.scaling((3.0, 2.0, 3.0)).uniform_scaling()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't have uniform scaling:
+Matrix\\(3, 0, 0,
+       0, 3, 0,
+       0, 0, 2\\)"""):
+            Matrix4.scaling((3.0, 3.0, 2.0)).uniform_scaling()
+        with self.assertRaisesRegex(ValueError, """the matrix doesn't represent a rigid transformation:
+Matrix\\(3, 0, 0, 0,
+       0, 3, 0, 0,
+       0, 0, 3, 0,
+       0, 0, 0, 1\\)"""):
+            Matrix4.scaling(Vector3(3.0)).inverted_rigid()
+        with self.assertRaisesRegex(ValueError, """the normalized rotation part is not orthogonal:
+Matrix\\(1, 0.816497, 0,
+       0, 0.408248, 0,
+       0, 0.408248, 1\\)"""):
+            Matrix4.shearing_xz(2.0, 1.0).rotation()
+
     # conversion from buffer is tested in test_math_numpy, array.array is
     # one-dimensional and I don't want to drag numpy here just for one test
 
@@ -1366,6 +1454,15 @@ class Quaternion_(unittest.TestCase):
         b = Quaternion.from_matrix(Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
         self.assertEqual(a, Quaternion((0.382683, 0.0, 0.0), 0.92388))
 
+    def test_static_methods_invalid(self):
+        with self.assertRaisesRegex(ValueError, "axis Vector\\(2, 0, 1\\) is not normalized"):
+            Quaternion.rotation(Deg(35.0), Vector3(2.0, 0.0, 1.0))
+        with self.assertRaisesRegex(ValueError, """the matrix is not a rotation:
+Matrix\\(2, 0, 0,
+       0, 2, 0,
+       0, 0, 2\\)"""):
+            Quaternion.from_matrix(Matrix4.scaling(Vector3(2.0)).rotation_scaling())
+
     def test_pickle(self):
         data = pickle.dumps(Quaternion((1.0, 2.0, 3.0), 4.0))
         self.assertEqual(pickle.loads(data), Quaternion((1.0, 2.0, 3.0), 4.0))
@@ -1386,6 +1483,18 @@ class Quaternion_(unittest.TestCase):
         self.assertEqual(a.transform_vector(Vector3.y_axis()), Vector3(0.0, 0.707107, 0.707107))
         self.assertEqual(a.transform_vector_normalized(Vector3.y_axis()), Vector3(0.0, 0.707107, 0.707107))
 
+    def test_methods_invalid(self):
+        a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())*3.0
+
+        with self.assertRaisesRegex(ValueError, "Quaternion\\({1.14805, 0, 0}, 2.77164\\) is not normalized"):
+            a.angle()
+        with self.assertRaisesRegex(ValueError, "Quaternion\\({1.14805, 0, 0}, 2.77164\\) is not normalized"):
+            a.axis()
+        with self.assertRaisesRegex(ValueError, "Quaternion\\({1.14805, 0, 0}, 2.77164\\) is not normalized"):
+            a.inverted_normalized()
+        with self.assertRaisesRegex(ValueError, "Quaternion\\({1.14805, 0, 0}, 2.77164\\) is not normalized"):
+            a.transform_vector_normalized(Vector3())
+
     def test_functions(self):
         a = Quaternion.rotation(Deg(45.0), Vector3d.x_axis())
         b = Quaternion.rotation(Deg(-145.0), Vector3d.x_axis())
@@ -1395,6 +1504,33 @@ class Quaternion_(unittest.TestCase):
         self.assertEqual(math.lerp_shortest_path(a, b, 0.25), Quaternion((-0.647912, 0.0, 0.0), -0.761715))
         self.assertEqual(math.slerp(a, b, 0.25), Quaternion((-0.0218149, 0.0, 0.0), 0.99976))
         self.assertEqual(math.slerp_shortest_path(a, b, 0.25), Quaternion((-0.691513, 0.0, 0.0), -0.722364))
+
+    def test_functions_invalid(self):
+        a = Quaternion.rotation(Deg(45.0), Vector3d.x_axis())
+        b = Quaternion.rotation(Deg(-145.0), Vector3d.x_axis())
+        a_invalid = a*3.0
+        b_invalid = b*0.5
+
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({1.14805, 0, 0}, 2.77164\\) and Quaternion\\({-0.953717, -0, -0}, 0.300706\\) are not normalized"):
+            math.half_angle(a_invalid, b)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({0.382683, 0, 0}, 0.92388\\) and Quaternion\\({-0.476858, -0, -0}, 0.150353\\) are not normalized"):
+            math.half_angle(a, b_invalid)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({1.14805, 0, 0}, 2.77164\\) and Quaternion\\({-0.953717, -0, -0}, 0.300706\\) are not normalized"):
+            math.lerp(a_invalid, b, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({0.382683, 0, 0}, 0.92388\\) and Quaternion\\({-0.476858, -0, -0}, 0.150353\\) are not normalized"):
+            math.lerp(a, b_invalid, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({1.14805, 0, 0}, 2.77164\\) and Quaternion\\({-0.953717, -0, -0}, 0.300706\\) are not normalized"):
+            math.lerp_shortest_path(a_invalid, b, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({0.382683, 0, 0}, 0.92388\\) and Quaternion\\({-0.476858, -0, -0}, 0.150353\\) are not normalized"):
+            math.lerp_shortest_path(a, b_invalid, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({1.14805, 0, 0}, 2.77164\\) and Quaternion\\({-0.953717, -0, -0}, 0.300706\\) are not normalized"):
+            math.slerp(a_invalid, b, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({0.382683, 0, 0}, 0.92388\\) and Quaternion\\({-0.476858, -0, -0}, 0.150353\\) are not normalized"):
+            math.slerp(a, b_invalid, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({1.14805, 0, 0}, 2.77164\\) and Quaternion\\({-0.953717, -0, -0}, 0.300706\\) are not normalized"):
+            math.slerp_shortest_path(a_invalid, b, 0.25)
+        with self.assertRaisesRegex(ValueError, "quaternions Quaternion\\({0.382683, 0, 0}, 0.92388\\) and Quaternion\\({-0.476858, -0, -0}, 0.150353\\) are not normalized"):
+            math.slerp_shortest_path(a, b_invalid, 0.25)
 
     def test_properties(self):
         a = Quaternion()

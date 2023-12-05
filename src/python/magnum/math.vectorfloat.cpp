@@ -57,8 +57,13 @@ template<class T> void vectorFloat(py::module_& m, py::class_<T>& c) {
             return T{Math::fma(a, b, c)};
         }, "Fused multiply-add")
 
-        .def("angle", [](const T& a, const T& b) { return Radd(Math::angle(a, b)); },
-            "Angle between normalized vectors", py::arg("normalized_a"), py::arg("normalized_b"));
+        .def("angle", [](const T& normalizedA, const T& normalizedB) {
+            if(!normalizedA.isNormalized() || !normalizedB.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "vectors %S and %S are not normalized", py::cast(normalizedA).ptr(), py::cast(normalizedB).ptr());
+                throw py::error_already_set{};
+            }
+            return Radd(Math::angle(normalizedA, normalizedB));
+        }, "Angle between normalized vectors", py::arg("normalized_a"), py::arg("normalized_b"));
 
     c
         .def("is_normalized", &T::isNormalized, "Whether the vector is normalized")
@@ -74,6 +79,10 @@ template<class T> void vectorFloat(py::module_& m, py::class_<T>& c) {
             return self.projected(line);
         }, "Vector projected onto a line", py::arg("line"))
         .def("projected_onto_normalized", [](const T& self, const T& line) {
+            if(!line.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "line %S is not normalized", py::cast(line).ptr());
+                throw py::error_already_set{};
+            }
             return self.projectedOntoNormalized(line);
         }, "Vector projected onto a normalized line", py::arg("line"));
 }

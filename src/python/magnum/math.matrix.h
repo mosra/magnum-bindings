@@ -266,7 +266,13 @@ template<class T, class ...Args> void everyMatrix(py::class_<T, Args...>& c) {
             return self.adjugate();
         }, "Adjugate matrix")
         .def("inverted", &T::inverted, "Inverted matrix")
-        .def("inverted_orthogonal", &T::invertedOrthogonal, "Inverted orthogonal matrix")
+        .def("inverted_orthogonal", [](const T& self) {
+            if(!self.isOrthogonal()) {
+                PyErr_Format(PyExc_ValueError, "the matrix is not orthogonal:\n%S", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.invertedOrthogonal();
+        }, "Inverted orthogonal matrix")
         .def("__matmul__", [](const T& self, const T& other) -> T {
             return self*other;
         }, "Multiply a matrix")
@@ -570,8 +576,13 @@ template<class T> void matrices(
     matrix3
         /* Constructors. The translation() / scaling() / rotation() are handled
            below as they conflict with member functions. */
-        .def_static("reflection", &Math::Matrix3<T>::reflection,
-            "2D reflection matrix", py::arg("normal"))
+        .def_static("reflection", [](const Math::Vector2<T>& normal) {
+            if(!normal.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "normal %S is not normalized", py::cast(normal).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::Matrix3<T>::reflection(normal);
+        }, "2D reflection matrix", py::arg("normal"))
         .def_static("shearing_x", &Math::Matrix3<T>::shearingX,
             "2D shearing matrix along the X axis", py::arg("amount"))
         .def_static("shearing_y", &Math::Matrix3<T>::shearingY,
@@ -605,16 +616,43 @@ template<class T> void matrices(
             "2D rotation and scaling part of the matrix")
         .def("rotation_shear", &Math::Matrix3<T>::rotationShear,
             "2D rotation and shear part of the matrix")
-        .def("rotation_normalized", &Math::Matrix3<T>::rotationNormalized,
-            "2D rotation part of the matrix assuming there is no scaling")
+        .def("rotation_normalized", [](const Math::Matrix3<T>& self) {
+            /* Same as implementation of rotationNormalized() */
+            const Math::Matrix2x2<T> rotationScaling = self.rotationScaling();
+            if(!rotationScaling.isOrthogonal()) {
+                PyErr_Format(PyExc_ValueError, "the rotation part is not orthogonal:\n%S", py::cast(rotationScaling).ptr());
+                throw py::error_already_set{};
+            }
+            return rotationScaling;
+        }, "2D rotation part of the matrix assuming there is no scaling")
         .def("scaling_squared", &Math::Matrix3<T>::scalingSquared,
             "Non-uniform scaling part of the matrix, squared")
-        .def("uniform_scaling_squared", &Math::Matrix3<T>::uniformScalingSquared,
-            "Uniform scaling part of the matrix, squared")
-        .def("uniform_scaling", &Math::Matrix3<T>::uniformScaling,
-            "Uniform scaling part of the matrix")
-        .def("inverted_rigid", &Math::Matrix3<T>::invertedRigid,
-             "Inverted rigid transformation matrix")
+        .def("uniform_scaling_squared", [](const Math::Matrix3<T>& self) {
+            /* Same as implementation of uniformScalingSquared() */
+            const T scalingSquared = self[0].xy().dot();
+            if(!Math::TypeTraits<T>::equals(self[1].xy().dot(), scalingSquared)) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't have uniform scaling:\n%S", py::cast(self.rotationScaling()).ptr());
+                throw py::error_already_set{};
+            }
+            return scalingSquared;
+        }, "Uniform scaling part of the matrix, squared")
+        .def("uniform_scaling", [](const Math::Matrix3<T>& self) {
+            /* Same as implementation of uniformScalingSquared(), which
+               uniformScaling() delegates to */
+            const T scalingSquared = self[0].xy().dot();
+            if(!Math::TypeTraits<T>::equals(self[1].xy().dot(), scalingSquared)) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't have uniform scaling:\n%S", py::cast(self.rotationScaling()).ptr());
+                throw py::error_already_set{};
+            };
+            return std::sqrt(scalingSquared);
+        }, "Uniform scaling part of the matrix")
+        .def("inverted_rigid", [](const Math::Matrix3<T>& self) {
+            if(!self.isRigidTransformation()) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't represent a rigid transformation:\n%S", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.invertedRigid();
+        }, "Inverted rigid transformation matrix")
         .def("transform_vector", &Math::Matrix3<T>::transformVector,
             "Transform a 2D vector with the matrix", py::arg("vector"))
         .def("transform_point", &Math::Matrix3<T>::transformPoint,
@@ -719,7 +757,15 @@ Overloaded function.
             .def_static("_srotation", [](Radd angle) {
                 return Math::Matrix3<T>::rotation(Math::Rad<T>(angle));
             })
-            .def("_irotation", static_cast<Math::Matrix2x2<T>(Math::Matrix3<T>::*)() const>(&Math::Matrix3<T>::rotation))
+            .def("_irotation", [](const Math::Matrix3<T>& self) {
+                /* Same as implementation of rotation() */
+                const Math::Matrix2x2<T> rotationShear = self.rotationShear();
+                if(!rotationShear.isOrthogonal()) {
+                    PyErr_Format(PyExc_ValueError, "the normalized rotation part is not orthogonal:\n%S", py::cast(rotationShear).ptr());
+                    throw py::error_already_set{};
+                }
+                return rotationShear;
+            })
             .def("rotation", [matrix3](const py::args& args, const py::kwargs& kwargs) {
                 if(py::len(args) && py::isinstance<Math::Matrix3<T>>(args[0])) {
                     return matrix3.attr("_irotation")(*args, **kwargs);
@@ -759,8 +805,13 @@ Overloaded function.
         .def_static("rotation_z", [](Radd angle) {
             return Math::Matrix4<T>::rotationZ(Math::Rad<T>(angle));
         }, "3D rotation matrix around the Z axis", py::arg("angle"))
-        .def_static("reflection", &Math::Matrix4<T>::reflection,
-            "3D reflection matrix", py::arg("normal"))
+        .def_static("reflection", [](const Math::Vector3<T>& normal) {
+            if(!normal.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "normal %S is not normalized", py::cast(normal).ptr());
+                throw py::error_already_set{};
+            }
+            return Math::Matrix4<T>::reflection(normal);
+        }, "3D reflection matrix", py::arg("normal"))
         .def_static("shearing_xy", &Math::Matrix4<T>::shearingXY,
             "3D shearing matrix along the XY plane", py::arg("amount_x"), py::arg("amount_y"))
         .def_static("shearing_xz", &Math::Matrix4<T>::shearingXZ,
@@ -809,18 +860,49 @@ Overloaded function.
             "3D rotation and scaling part of the matrix")
         .def("rotation_shear", &Math::Matrix4<T>::rotationShear,
             "3D rotation and shear part of the matrix")
-        .def("rotation_normalized", &Math::Matrix4<T>::rotationNormalized,
-            "3D rotation part of the matrix assuming there is no scaling")
+        .def("rotation_normalized", [](const Math::Matrix4<T>& self) {
+            /* Same as implementation of rotationNormalized() */
+            const Math::Matrix3x3<T> rotationScaling = self.rotationScaling();
+            if(!rotationScaling.isOrthogonal()) {
+                PyErr_Format(PyExc_ValueError, "the rotation part is not orthogonal:\n%S", py::cast(rotationScaling).ptr());
+                throw py::error_already_set{};
+            }
+            return rotationScaling;
+        }, "3D rotation part of the matrix assuming there is no scaling")
         .def("scaling_squared", &Math::Matrix4<T>::scalingSquared,
             "Non-uniform scaling part of the matrix, squared")
-        .def("uniform_scaling_squared", &Math::Matrix4<T>::uniformScalingSquared,
-            "Uniform scaling part of the matrix, squared")
-        .def("uniform_scaling", &Math::Matrix4<T>::uniformScaling,
-            "Uniform scaling part of the matrix")
+        .def("uniform_scaling_squared", [](const Math::Matrix4<T>& self) {
+            /* Same as implementation of uniformScalingSquared() */
+            const T scalingSquared = self[0].xyz().dot();
+            if(!Math::TypeTraits<T>::equals(self[1].xyz().dot(), scalingSquared) ||
+               !Math::TypeTraits<T>::equals(self[2].xyz().dot(), scalingSquared)
+            ) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't have uniform scaling:\n%S", py::cast(self.rotationScaling()).ptr());
+                throw py::error_already_set{};
+            }
+            return scalingSquared;
+        }, "Uniform scaling part of the matrix, squared")
+        .def("uniform_scaling", [](const Math::Matrix4<T>& self) {
+            /* Same as implementation of uniformScalingSquared(), which
+               uniformScaling() delegates to */
+            const T scalingSquared = self[0].xyz().dot();
+            if(!Math::TypeTraits<T>::equals(self[1].xyz().dot(), scalingSquared) ||
+               !Math::TypeTraits<T>::equals(self[2].xyz().dot(), scalingSquared)
+            ) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't have uniform scaling:\n%S", py::cast(self.rotationScaling()).ptr());
+                throw py::error_already_set{};
+            }
+            return std::sqrt(scalingSquared);
+        }, "Uniform scaling part of the matrix")
         .def("normal_matrix", &Math::Matrix4<T>::normalMatrix,
              "Normal matrix")
-        .def("inverted_rigid", &Math::Matrix4<T>::invertedRigid,
-             "Inverted rigid transformation matrix")
+        .def("inverted_rigid", [](const Math::Matrix4<T>& self) {
+            if(!self.isRigidTransformation()) {
+                PyErr_Format(PyExc_ValueError, "the matrix doesn't represent a rigid transformation:\n%S", py::cast(self).ptr());
+                throw py::error_already_set{};
+            }
+            return self.invertedRigid();
+        }, "Inverted rigid transformation matrix")
         .def("transform_vector", &Math::Matrix4<T>::transformVector,
             "Transform a 3D vector with the matrix", py::arg("vector"))
         .def("transform_point", &Math::Matrix4<T>::transformPoint,
@@ -928,10 +1010,22 @@ Overloaded function.
 
             /* Static/member rotation(). Pybind doesn't support that natively,
                so we create a rotation(*args, **kwargs) and dispatch ourselves. */
-            .def_static("_srotation", [](Radd angle, const Math::Vector3<T>& axis) {
-                return Math::Matrix4<T>::rotation(Math::Rad<T>(angle), axis);
+            .def_static("_srotation", [](Radd angle, const Math::Vector3<T>& normalizedAxis) {
+                if(!normalizedAxis.isNormalized()) {
+                    PyErr_Format(PyExc_ValueError, "axis %S is not normalized", py::cast(normalizedAxis).ptr());
+                    throw py::error_already_set{};
+                }
+                return Math::Matrix4<T>::rotation(Math::Rad<T>(angle), normalizedAxis);
             })
-            .def("_irotation", static_cast<Math::Matrix3x3<T>(Math::Matrix4<T>::*)() const>(&Math::Matrix4<T>::rotation))
+            .def("_irotation", [](const Math::Matrix4<T>& self) {
+                /* Same as implementation of rotation() */
+                const Math::Matrix3x3<T> rotationShear = self.rotationShear();
+                if(!rotationShear.isOrthogonal()) {
+                    PyErr_Format(PyExc_ValueError, "the normalized rotation part is not orthogonal:\n%S", py::cast(rotationShear).ptr());
+                    throw py::error_already_set{};
+                }
+                return rotationShear;
+            })
             .def("rotation", [matrix4](const py::args& args, const py::kwargs& kwargs) {
                 if(py::len(args) && py::isinstance<Math::Matrix4<T>>(args[0])) {
                     return matrix4.attr("_irotation")(*args, **kwargs);
