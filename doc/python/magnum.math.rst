@@ -324,6 +324,10 @@
     :raise ValueError: If :p:`normalized_axis` is not normalized
 .. py:function:: magnum.Quaterniond.rotation(angle: magnum.Rad, normalized_axis: magnum.Vector3d)
     :raise ValueError: If :p:`normalized_axis` is not normalized
+.. py:function:: magnum.Quaternion.reflection
+    :raise ValueError: If :p:`normal` is not normalized
+.. py:function:: magnum.Quaterniond.reflection
+    :raise ValueError: If :p:`normal` is not normalized
 .. py:function:: magnum.Quaternion.from_matrix
     :raise ValueError: If :p:`matrix` is not a rotation
 .. py:function:: magnum.Quaterniond.from_matrix

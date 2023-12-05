@@ -348,6 +348,13 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             }
             return T::rotation(Math::Rad<typename T::Type>(angle), normalizedAxis);
         }, "Rotation quaternion", py::arg("angle"), py::arg("normalized_axis"))
+        .def_static("reflection", [](const Math::Vector3<typename T::Type>& normal) {
+            if(!normal.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "normal %S is not normalized", py::cast(normal).ptr());
+                throw py::error_already_set{};
+            }
+            return T::reflection(normal);
+        }, "Reflection quaternion", py::arg("normal"))
         .def_static("from_matrix", [](const Math::Matrix3x3<typename T::Type>& matrix) {
             /* Same as the check in fromMatrix() */
             if(std::abs(matrix.determinant() - typename T::Type(1)) >= typename T::Type(3)*Math::TypeTraits<typename T::Type>::epsilon()) {
@@ -459,6 +466,8 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             }
             return self.transformVectorNormalized(vector);
         }, "Rotate a vector with a normalized quaternion", py::arg("vector"))
+        .def("reflect_vector", &T::reflectVector,
+            "Reflect a vector with a reflection quaternion", py::arg("vector"))
 
         /* Properties */
         .def_property("vector",

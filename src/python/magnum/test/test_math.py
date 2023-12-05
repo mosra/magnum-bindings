@@ -1454,9 +1454,14 @@ class Quaternion_(unittest.TestCase):
         b = Quaternion.from_matrix(Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
         self.assertEqual(a, Quaternion((0.382683, 0.0, 0.0), 0.92388))
 
+        c = Quaternion.reflection(Vector3.x_axis())
+        self.assertEqual(c, Quaternion((1.0, 0.0, 0.0), 0.0))
+
     def test_static_methods_invalid(self):
         with self.assertRaisesRegex(ValueError, "axis Vector\\(2, 0, 1\\) is not normalized"):
             Quaternion.rotation(Deg(35.0), Vector3(2.0, 0.0, 1.0))
+        with self.assertRaisesRegex(ValueError, "normal Vector\\(2, 0, 1\\) is not normalized"):
+            Quaternion.reflection(Vector3(2.0, 0.0, 1.0))
         with self.assertRaisesRegex(ValueError, """the matrix is not a rotation:
 Matrix\\(2, 0, 0,
        0, 2, 0,
@@ -1482,6 +1487,9 @@ Matrix\\(2, 0, 0,
         self.assertEqual(a.inverted_normalized(), Quaternion.rotation(Deg(45.0), -Vector3.x_axis()))
         self.assertEqual(a.transform_vector(Vector3.y_axis()), Vector3(0.0, 0.707107, 0.707107))
         self.assertEqual(a.transform_vector_normalized(Vector3.y_axis()), Vector3(0.0, 0.707107, 0.707107))
+
+        b = Quaternion.reflection(Vector3.x_axis())
+        self.assertEqual(b.reflect_vector(Vector3.x_axis()), (-1.0, 0.0, 0.0))
 
     def test_methods_invalid(self):
         a = Quaternion.rotation(Deg(45.0), Vector3.x_axis())*3.0
