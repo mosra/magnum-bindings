@@ -60,7 +60,7 @@ template<class T, class ...Args> void everyRectangularMatrix(py::class_<T, Args.
     c
         .def_static("from_diagonal", [](const typename VectorTraits<T::DiagonalSize, typename T::Type>::Type& vector) {
             return T::fromDiagonal(vector);
-        }, "Construct a diagonal matrix")
+        }, "Construct a diagonal matrix", py::arg("diagonal"))
         .def_static("zero_init", []() {
             return T{Math::ZeroInit};
         }, "Construct a zero-filled matrix")
@@ -571,7 +571,7 @@ template<class T> void matrices(
         /* Constructors. The translation() / scaling() / rotation() are handled
            below as they conflict with member functions. */
         .def_static("reflection", &Math::Matrix3<T>::reflection,
-            "2D reflection matrix")
+            "2D reflection matrix", py::arg("normal"))
         .def_static("shearing_x", &Math::Matrix3<T>::shearingX,
             "2D shearing matrix along the X axis", py::arg("amount"))
         .def_static("shearing_y", &Math::Matrix3<T>::shearingY,
@@ -616,9 +616,9 @@ template<class T> void matrices(
         .def("inverted_rigid", &Math::Matrix3<T>::invertedRigid,
              "Inverted rigid transformation matrix")
         .def("transform_vector", &Math::Matrix3<T>::transformVector,
-            "Transform a 2D vector with the matrix")
+            "Transform a 2D vector with the matrix", py::arg("vector"))
         .def("transform_point", &Math::Matrix3<T>::transformPoint,
-            "Transform a 2D point with the matrix")
+            "Transform a 2D point with the matrix", py::arg("vector"))
 
         /* Properties. The translation is handled below together with a static
            translation(). */
@@ -642,7 +642,7 @@ template<class T> void matrices(
             R"(scaling(*args, **kwargs)
 Overloaded function.
 
-1. scaling(arg0: _magnum.Vector2) -> _magnum.Matrix3
+1. scaling(vector: _magnum.Vector2) -> _magnum.Matrix3
 
 2D scaling matrix
 
@@ -653,7 +653,7 @@ Non-uniform scaling part of the matrix
             R"(scaling(*args, **kwargs)
 Overloaded function.
 
-1. scaling(arg0: _magnum.Vector2d) -> _magnum.Matrix3d
+1. scaling(vector: _magnum.Vector2d) -> _magnum.Matrix3d
 
 2D scaling matrix
 
@@ -665,7 +665,7 @@ Non-uniform scaling part of the matrix
             R"(rotation(*args, **kwargs)
 Overloaded function.
 
-1. rotation(arg0: _magnum.Rad) -> _magnum.Matrix3
+1. rotation(angle: _magnum.Rad) -> _magnum.Matrix3
 
 2D rotation matrix
 
@@ -676,7 +676,7 @@ Overloaded function.
             R"(rotation(*args, **kwargs)
 Overloaded function.
 
-1. rotation(arg0: _magnum.Rad) -> _magnum.Matrix3d
+1. rotation(angle: _magnum.Rad) -> _magnum.Matrix3d
 
 2D rotation matrix
 
@@ -689,14 +689,14 @@ Overloaded function.
             R"(_stranslation(*args, **kwargs)
 Overloaded function.
 
-1. translation(arg0: _magnum.Vector2) -> _magnum.Matrix3
+1. translation(vector: _magnum.Vector2) -> _magnum.Matrix3
 
 2D translation matrix
 )",
             R"(_stranslation(*args, **kwargs)
 Overloaded function.
 
-1. translation(arg0: _magnum.Vector2d) -> _magnum.Matrix3d
+1. translation(vector: _magnum.Vector2d) -> _magnum.Matrix3d
 
 2D translation matrix
 )"};
@@ -752,15 +752,15 @@ Overloaded function.
            below as they conflict with member functions. */
         .def_static("rotation_x", [](Radd angle) {
             return Math::Matrix4<T>::rotationX(Math::Rad<T>(angle));
-        }, "3D rotation matrix around the X axis")
+        }, "3D rotation matrix around the X axis", py::arg("angle"))
         .def_static("rotation_y", [](Radd angle) {
             return Math::Matrix4<T>::rotationY(Math::Rad<T>(angle));
-        }, "3D rotation matrix around the Y axis")
+        }, "3D rotation matrix around the Y axis", py::arg("angle"))
         .def_static("rotation_z", [](Radd angle) {
             return Math::Matrix4<T>::rotationZ(Math::Rad<T>(angle));
-        }, "3D rotation matrix around the Z axis")
+        }, "3D rotation matrix around the Z axis", py::arg("angle"))
         .def_static("reflection", &Math::Matrix4<T>::reflection,
-            "3D reflection matrix")
+            "3D reflection matrix", py::arg("normal"))
         .def_static("shearing_xy", &Math::Matrix4<T>::shearingXY,
             "3D shearing matrix along the XY plane", py::arg("amount_x"), py::arg("amount_y"))
         .def_static("shearing_xz", &Math::Matrix4<T>::shearingXZ,
@@ -822,9 +822,9 @@ Overloaded function.
         .def("inverted_rigid", &Math::Matrix4<T>::invertedRigid,
              "Inverted rigid transformation matrix")
         .def("transform_vector", &Math::Matrix4<T>::transformVector,
-            "Transform a 3D vector with the matrix")
+            "Transform a 3D vector with the matrix", py::arg("vector"))
         .def("transform_point", &Math::Matrix4<T>::transformPoint,
-            "Transform a 3D point with the matrix")
+            "Transform a 3D point with the matrix", py::arg("vector"))
 
         /* Properties. The translation is handled below together with a static
            translation(). */
@@ -852,7 +852,7 @@ Overloaded function.
             R"(scaling(*args, **kwargs)
 Overloaded function.
 
-1. scaling(arg0: _magnum.Vector3) -> _magnum.Matrix4
+1. scaling(vector: _magnum.Vector3) -> _magnum.Matrix4
 
 3D scaling matrix
 
@@ -863,7 +863,7 @@ Non-uniform scaling part of the matrix
             R"(scaling(*args, **kwargs)
 Overloaded function.
 
-1. scaling(arg0: _magnum.Vector3d) -> _magnum.Matrix4d
+1. scaling(vector: _magnum.Vector3d) -> _magnum.Matrix4d
 
 2D scaling matrix
 
@@ -876,7 +876,7 @@ Non-uniform scaling part of the matrix
             R"(rotation(*args, **kwargs)
 Overloaded function.
 
-1. rotation(arg0: _magnum.Rad, arg1: _magnum.Vector3) -> _magnum.Matrix4
+1. rotation(angle: _magnum.Rad, normalized_axis: _magnum.Vector3) -> _magnum.Matrix4
 
 3D rotation matrix
 
@@ -887,7 +887,7 @@ Overloaded function.
             R"(rotation(*args, **kwargs)
 Overloaded function.
 
-1. rotation(arg0: _magnum.Rad, arg1: _magnum.Vector3d) -> _magnum.Matrix4d
+1. rotation(angle: _magnum.Rad, normalized_axis: _magnum.Vector3d) -> _magnum.Matrix4d
 
 3D rotation matrix
 
@@ -901,14 +901,14 @@ Overloaded function.
             R"(_stranslation(*args, **kwargs)
 Overloaded function.
 
-1. translation(arg0: _magnum.Vector3) -> _magnum.Matrix4
+1. translation(vector: _magnum.Vector3) -> _magnum.Matrix4
 
 3D translation matrix
 )",
             R"(_stranslation(*args, **kwargs)
 Overloaded function.
 
-1. translation(arg0: _magnum.Vector3d) -> _magnum.Matrix4d
+1. translation(vector: _magnum.Vector3d) -> _magnum.Matrix4d
 
 3D translation matrix
 )"};

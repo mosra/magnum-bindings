@@ -301,10 +301,10 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
     m
         .def("dot", static_cast<typename T::Type(*)(const T&, const T&)>(&Math::dot),
             "Dot product between two quaternions")
-        .def("half_angle", [](const T& a, const T& b) {
+        .def("half_angle", [](const T& normalizedA, const T& normalizedB) {
             /** @todo switch back to angle() once it's reintroduced with the
                 correct output again */
-            return Radd(Math::halfAngle(a, b));
+            return Radd(Math::halfAngle(normalizedA, normalizedB));
         }, "Angle between normalized quaternions", py::arg("normalized_a"), py::arg("normalized_b"))
         .def("lerp", static_cast<T(*)(const T&, const T&, typename T::Type)>(&Math::lerp),
             "Linear interpolation of two quaternions", py::arg("normalized_a"), py::arg("normalized_b"), py::arg("t"))
@@ -320,9 +320,9 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
         /* Constructors */
         .def_static("rotation", [](Radd angle, const Math::Vector3<typename T::Type>& axis) {
             return T::rotation(Math::Rad<typename T::Type>(angle), axis);
-        }, "Rotation quaternion")
+        }, "Rotation quaternion", py::arg("angle"), py::arg("normalized_axis"))
         .def_static("from_matrix", &T::fromMatrix,
-            "Create a quaternion from rotation matrix")
+            "Create a quaternion from rotation matrix", py::arg("matrix"))
         .def_static("zero_init", []() {
             return T{Math::ZeroInit};
         }, "Construct a zero-initialized quaternion")
@@ -404,9 +404,9 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
         .def("inverted_normalized", &T::invertedNormalized,
             "Inverted normalized quaternion")
         .def("transform_vector", &T::transformVector,
-            "Rotate a vector with a quaternion")
+            "Rotate a vector with a quaternion", py::arg("vector"))
         .def("transform_vector_normalized", &T::transformVectorNormalized,
-            "Rotate a vector with a normalized quaternion")
+            "Rotate a vector with a normalized quaternion", py::arg("vector"))
 
         /* Properties */
         .def_property("vector",

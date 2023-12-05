@@ -69,13 +69,13 @@ template<class T> void vectorFloat(py::module_& m, py::class_<T>& c) {
         .def("normalized", static_cast<T(T::*)() const>(&T::normalized),
              "Normalized vector (of unit length)")
         .def("resized", static_cast<T(T::*)(typename T::Type) const>(&T::resized),
-             "Resized vector")
+             "Resized vector", py::arg("length"))
         .def("projected", [](const T& self, const T& line) {
             return self.projected(line);
-        }, "Vector projected onto a line")
+        }, "Vector projected onto a line", py::arg("line"))
         .def("projected_onto_normalized", [](const T& self, const T& line) {
             return self.projectedOntoNormalized(line);
-        }, "Vector projected onto a normalized line");
+        }, "Vector projected onto a normalized line", py::arg("line"));
 }
 
 template<class T> void vectorsFloat(py::module_& m, py::class_<Math::Vector2<T>>& vector2_, py::class_<Math::Vector3<T>>& vector3_, py::class_<Math::Vector4<T>>& vector4_) {
