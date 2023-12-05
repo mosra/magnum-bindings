@@ -20,7 +20,7 @@ cd pybind11-%PYBIND% || exit /b
 mkdir -p build && cd build || exit /b
 cmake .. ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
-    -DPYBIND11_PYTHON_VERSION=3.6 ^
+    -DPYBIND11_PYTHON_VERSION=3.%PYTHON% ^
     -DPYBIND11_TEST=OFF ^
     -G Ninja || exit /b
 ninja install || exit /b
@@ -113,7 +113,7 @@ cmake .. ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/SDL ^
-    -DPYBIND11_PYTHON_VERSION=3.6 ^
+    -DPYBIND11_PYTHON_VERSION=3.%PYTHON% ^
     -DMAGNUM_WITH_PYTHON=ON ^
     -DMAGNUM_BUILD_TESTS=ON ^
     %COMPILER_EXTRA% -G Ninja || exit /b
