@@ -884,13 +884,13 @@ void trade(py::module_& m) {
 
     py::class_<Trade::MeshData, Trade::PyDataHolder<Trade::MeshData>>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
-        .def_property_readonly("index_data_flags", [](Trade::MeshData& self) {
+        .def_property_readonly("index_data_flags", [](const Trade::MeshData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.indexDataFlags()));
         }, "Index data flags")
-        .def_property_readonly("vertex_data_flags", [](Trade::MeshData& self) {
+        .def_property_readonly("vertex_data_flags", [](const Trade::MeshData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.vertexDataFlags()));
         }, "Vertex data flags")
-        .def_property_readonly("index_data", [](Trade::MeshData& self) {
+        .def_property_readonly("index_data", [](const Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.indexData(), py::cast(self));
         }, "Raw index data")
         .def_property_readonly("mutable_index_data", [](Trade::MeshData& self) {
@@ -902,7 +902,7 @@ void trade(py::module_& m) {
         }, "Mutable raw index data")
         /** @todo direct access to MeshAttributeData, once making custom
             MeshData is desired */
-        .def_property_readonly("vertex_data", [](Trade::MeshData& self) {
+        .def_property_readonly("vertex_data", [](const Trade::MeshData& self) {
             return Containers::pyArrayViewHolder(self.vertexData(), py::cast(self));
         }, "Raw vertex data")
         .def_property_readonly("mutable_vertex_data", [](Trade::MeshData& self) {
@@ -913,35 +913,35 @@ void trade(py::module_& m) {
             return Containers::pyArrayViewHolder(self.mutableVertexData(), py::cast(self));
         }, "Mutable raw vertex data")
         .def_property_readonly("is_indexed", &Trade::MeshData::isIndexed, "Whether the mesh is indexed")
-        .def_property_readonly("index_count", [](Trade::MeshData& self) {
+        .def_property_readonly("index_count", [](const Trade::MeshData& self) {
             if(!self.isIndexed()) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
             return self.indexCount();
         }, "Index count")
-        .def_property_readonly("index_type", [](Trade::MeshData& self) {
+        .def_property_readonly("index_type", [](const Trade::MeshData& self) {
             if(!self.isIndexed()) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
             return self.indexType();
         }, "Index type")
-        .def_property_readonly("index_offset", [](Trade::MeshData& self) {
+        .def_property_readonly("index_offset", [](const Trade::MeshData& self) {
             if(!self.isIndexed()) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
             return self.indexOffset();
         }, "Index offset")
-        .def_property_readonly("index_stride", [](Trade::MeshData& self) {
+        .def_property_readonly("index_stride", [](const Trade::MeshData& self) {
             if(!self.isIndexed()) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
             return self.indexStride();
         }, "Index stride")
-        .def_property_readonly("indices", [](Trade::MeshData& self) {
+        .def_property_readonly("indices", [](/*const*/ Trade::MeshData& self) {
             if(!self.isIndexed()) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
@@ -986,14 +986,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("morph_target_id"))
-        .def("attribute_name", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_name", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeName(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute name", py::arg("id"))
-        .def("attribute_id", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute_id", [](const Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return *found;
 
@@ -1008,14 +1008,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute_id", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_id", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeId(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute ID in a set of attributes of the same name", py::arg("id"))
-        .def("attribute_format", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute_format", [](const Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeFormat(*found);
 
@@ -1030,14 +1030,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute_format", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_format", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeFormat(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute format", py::arg("id"))
-        .def("attribute_offset", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute_offset", [](const Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeOffset(*found);
 
@@ -1052,14 +1052,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute_offset", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_offset", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeOffset(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute offset", py::arg("id"))
-        .def("attribute_stride", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute_stride", [](const Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeStride(*found);
 
@@ -1074,14 +1074,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute_stride", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_stride", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeStride(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute stride", py::arg("id"))
-        .def("attribute_array_size", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute_array_size", [](const Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId))
                 return self.attributeArraySize(*found);
 
@@ -1096,14 +1096,14 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute_array_size", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute_array_size", [](const Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount())
                 return self.attributeArraySize(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
             throw py::error_already_set{};
         }, "Attribute array size", py::arg("id"))
-        .def("attribute", [](Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
+        .def("attribute", [](/*const*/ Trade::MeshData& self, Trade::MeshAttribute name, UnsignedInt id, Int morphTargetId) {
             if(const Containers::Optional<UnsignedInt> found = self.findAttributeId(name, id, morphTargetId)) {
                 /** @todo handle arrays (return a 2D view, and especially
                     annotate the return type properly in the docs) */
@@ -1125,7 +1125,7 @@ void trade(py::module_& m) {
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             py::arg("id") = 0, py::arg("morph_target_id") = -1)
-        .def("attribute", [](Trade::MeshData& self, UnsignedInt id) {
+        .def("attribute", [](/*const*/ Trade::MeshData& self, UnsignedInt id) {
             if(id < self.attributeCount()) {
                 /** @todo handle arrays (return a 2D view, and especially
                     annotate the return type properly in the docs) */
@@ -1336,7 +1336,7 @@ void trade(py::module_& m) {
     corrade::enumOperators(sceneFieldFlag);
 
     py::class_<Trade::SceneData, Trade::PyDataHolder<Trade::SceneData>>{m, "SceneData", "Scene data"}
-        .def_property_readonly("data_flags", [](Trade::SceneData& self) {
+        .def_property_readonly("data_flags", [](const Trade::SceneData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.dataFlags()));
         }, "Data flags")
         /** @todo expose raw data at all? compared to meshes there's no use
@@ -1353,70 +1353,70 @@ void trade(py::module_& m) {
            overload *before* the UnsignedInt overload, otherwise the integer
            overload gets picked even if an enum is passed from Python, causing
            massive suffering */
-        .def("field_name", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field_name", [](const Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return self.fieldName(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Field name", py::arg("id"))
-        .def("field_flags", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+        .def("field_flags", [](const Trade::SceneData& self, Trade::SceneField fieldName) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName))
                 return Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(self.fieldFlags(*foundField)));
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Flags of a named field", py::arg("name"))
-        .def("field_flags", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field_flags", [](const Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(self.fieldFlags(id)));
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Field flags", py::arg("id"))
-        .def("field_type", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+        .def("field_type", [](const Trade::SceneData& self, Trade::SceneField fieldName) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName))
                 return self.fieldType(*foundField);
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Type of a named field", py::arg("name"))
-        .def("field_type", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field_type", [](const Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return self.fieldType(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Field type", py::arg("id"))
-        .def("field_size", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+        .def("field_size", [](const Trade::SceneData& self, Trade::SceneField fieldName) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName))
                 return self.fieldSize(*foundField);
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Number of entries in a named field", py::arg("name"))
-        .def("field_size", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field_size", [](const Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return self.fieldSize(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Number of entries in a field", py::arg("id"))
-        .def("field_array_size", [](Trade::SceneData& self, Trade::SceneField fieldName) {
+        .def("field_array_size", [](const Trade::SceneData& self, Trade::SceneField fieldName) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName))
             return self.fieldArraySize(*foundField);
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Array size of a named field", py::arg("name"))
-        .def("field_array_size", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field_array_size", [](const Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return self.fieldArraySize(id);
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Field array size", py::arg("id"))
-        .def("field_id", [](Trade::SceneData& self, Trade::SceneField name) {
+        .def("field_id", [](const Trade::SceneData& self, Trade::SceneField name) {
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name))
                 return *found;
 
@@ -1424,7 +1424,7 @@ void trade(py::module_& m) {
             throw py::error_already_set{};
         }, "Absolute ID of a named field", py::arg("name"))
         .def("has_field", &Trade::SceneData::hasField, "Whether the scene has given field")
-        .def("field_object_offset", [](Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object, std::size_t offset) {
+        .def("field_object_offset", [](const Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object, std::size_t offset) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName)) {
                 if(object >= self.mappingBound()) {
                     PyErr_Format(PyExc_IndexError, "index %llu out of range for %llu objects", object, self.mappingBound());
@@ -1444,7 +1444,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Offset of an object in given name field", py::arg("field_name"), py::arg("object"), py::arg("offset") = 0)
-        .def("field_object_offset", [](Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object, std::size_t offset) {
+        .def("field_object_offset", [](const Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object, std::size_t offset) {
             if(fieldId >= self.fieldCount()) {
                 PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", fieldId, self.fieldCount());
                 throw py::error_already_set{};
@@ -1463,7 +1463,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_LookupError, "object %llu not found in field %S starting at offset %zu", object, py::cast(self.fieldName(fieldId)).ptr(), offset);
             throw py::error_already_set{};
         }, "Offset of an object in given field", py::arg("field_id"), py::arg("object"), py::arg("offset") = 0)
-        .def("has_field_object", [](Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object) {
+        .def("has_field_object", [](const Trade::SceneData& self, Trade::SceneField fieldName, UnsignedLong object) {
             if(const Containers::Optional<UnsignedInt> foundField = self.findFieldId(fieldName)) {
                 if(object >= self.mappingBound()) {
                     PyErr_Format(PyExc_IndexError, "index %llu out of range for %llu objects", object, self.mappingBound());
@@ -1475,7 +1475,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(fieldName).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Whether a scene field has given object", py::arg("field_name"), py::arg("object"))
-        .def("has_field_object", [](Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object) {
+        .def("has_field_object", [](const Trade::SceneData& self, UnsignedInt fieldId, UnsignedLong object) {
             if(fieldId >= self.fieldCount()) {
                 PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", fieldId, self.fieldCount());
                 throw py::error_already_set{};
@@ -1486,7 +1486,7 @@ void trade(py::module_& m) {
             }
             return self.hasFieldObject(fieldId, object);
         }, "Whether a scene field has given object", py::arg("field_id"), py::arg("object"))
-        .def("mapping", [](Trade::SceneData& self, Trade::SceneField name) {
+        .def("mapping", [](/*const*/ Trade::SceneData& self, Trade::SceneField name) {
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name)) {
                 return sceneMappingView(self, self.mapping(*found));
             }
@@ -1494,7 +1494,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Object mapping data for given named field", py::arg("name"))
-        .def("mapping", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("mapping", [](/*const*/ Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
                 return sceneMappingView(self, self.mapping(id));
 
@@ -1523,7 +1523,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
         }, "Mutable object mapping data for given field", py::arg("name"))
-        .def("field", [](Trade::SceneData& self, Trade::SceneField name) {
+        .def("field", [](/*const*/ Trade::SceneData& self, Trade::SceneField name) {
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name)) {
                 /** @todo handle arrays (return a 2D (bit) view) */
                 if(self.fieldArraySize(*found) != 0) {
@@ -1539,7 +1539,7 @@ void trade(py::module_& m) {
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
             throw py::error_already_set{};
         }, "Data for given named field", py::arg("name"))
-        .def("field", [](Trade::SceneData& self, UnsignedInt id) {
+        .def("field", [](/*const*/ Trade::SceneData& self, UnsignedInt id) {
             if(id >= self.fieldCount()) {
                 PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
                 throw py::error_already_set{};
