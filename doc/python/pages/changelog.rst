@@ -150,6 +150,9 @@ Changelog
     to index and attribute data, together with :ref:`VertexFormat`,
     :ref:`trade.DataFlags`, :ref:`trade.AbstractImporter.mesh_attribute_name()`
     and :ref:`trade.AbstractImporter.mesh_attribute_for_name()`
+-   Exposed the whole interface of :ref:`trade.MaterialData` including typed
+    access to attribute data, together with
+    :ref:`trade.AbstractImporter.material()` and related importer APIs
 -   Exposed the whole interface of :ref:`trade.SceneData` including typed
     access to mapping and field data, together with
     :ref:`trade.AbstractImporter.scene()` and related importer APIs

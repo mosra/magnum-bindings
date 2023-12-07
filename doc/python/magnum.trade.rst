@@ -258,6 +258,310 @@
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlags.MUTABLE`
 
+.. py:enum:: magnum.trade.MaterialLayer
+
+    The equivalent to C++ :dox:`Trade::materialLayerName()` is the ``string``
+    property, as ``name`` is reserved for the Python enum name.
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: pycon
+
+        >>> layer = trade.MaterialLayer.CLEAR_COAT
+        >>> layer.name
+        'CLEAR_COAT'
+        >>> layer.string
+        'ClearCoat'
+
+.. py:enum:: magnum.trade.MaterialAttribute
+
+    The equivalent to C++ :dox:`Trade::materialAttributeName()` is the
+    ``string`` property, as ``name`` is reserved for the Python enum name.
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: pycon
+
+        >>> attribute = trade.MaterialAttribute.BASE_COLOR_TEXTURE_MATRIX
+        >>> attribute.name
+        'BASE_COLOR_TEXTURE_MATRIX'
+        >>> attribute.string
+        'BaseColorTextureMatrix'
+
+.. py:enum:: magnum.trade.MaterialTextureSwizzle
+
+    The ``component_count`` property matches :dox:`Trade::materialTextureSwizzleComponentCount()`.
+
+    ..
+        >>> from magnum import trade
+
+    .. code:: pycon
+
+        >>> trade.MaterialTextureSwizzle.GA.component_count
+        2
+
+.. py:class:: magnum.trade.MaterialData
+
+    :TODO: remove this line once m.css stops ignoring first caption on a page
+
+    `Attribute data access`_
+    ========================
+
+    The class makes use of Python's dynamic nature and provides direct access
+    to attribute data in their concrete types via :ref:`attribute()`:
+
+    ..
+        >>> import os
+        >>> from magnum import trade
+        >>> importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        >>> importer.open_file('../../src/python/magnum/test/material.gltf')
+
+    .. code:: pycon
+
+        >>> material = importer.material(0)
+        >>> material.attribute(trade.MaterialAttribute.BASE_COLOR)
+        Vector(0.3, 0.4, 0.5, 0.8)
+        >>> material.attribute(trade.MaterialAttribute.DOUBLE_SIDED)
+        True
+
+.. py:function:: magnum.trade.MaterialData.attribute_data_offset(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or *greater* than
+        :ref:`layer_count`
+.. py:function:: magnum.trade.MaterialData.layer_id(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.layer_id(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.layer_name(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+
+.. py:function:: magnum.trade.MaterialData.layer_factor(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+.. py:function:: magnum.trade.MaterialData.layer_factor(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.layer_factor(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_swizzle(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_swizzle(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_swizzle(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_matrix(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_matrix(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_matrix(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_coordinates(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_coordinates(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_coordinates(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_layer(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_layer(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.layer_factor_texture_layer(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :ref:`MaterialAttribute.LAYER_FACTOR_TEXTURE` isn't
+        present in :p:`layer`
+
+.. py:function:: magnum.trade.MaterialData.attribute_count(self, layer: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+.. py:function:: magnum.trade.MaterialData.attribute_count(self, layer: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.attribute_count(self, layer: magnum.trade.MaterialLayer)
+    :raise KeyError: If :p:`layer` doesn't exist
+
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: int, name: str)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: int, name: magnum.trade.MaterialAttribute)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: str, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: str, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: magnum.trade.MaterialLayer, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+.. py:function:: magnum.trade.MaterialData.has_attribute(self, layer: magnum.trade.MaterialLayer, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: int, name: str)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: int, name: magnum.trade.MaterialAttribute)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: str, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: str, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: magnum.trade.MaterialLayer, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, layer: magnum.trade.MaterialLayer, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, name: str)
+    :raise KeyError: If :p:`name` isn't present in the base material
+.. py:function:: magnum.trade.MaterialData.attribute_id(self, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`name` isn't present in the base material
+
+.. py:function:: magnum.trade.MaterialData.attribute_name(self, layer: int, id: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_name(self, layer: str, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_name(self, layer: magnum.trade.MaterialLayer, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_name(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: int, id: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: int, name: str)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: int, name: magnum.trade.MaterialAttribute)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: str, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: str, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: str, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: magnum.trade.MaterialLayer, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: magnum.trade.MaterialLayer, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, layer: magnum.trade.MaterialLayer, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, name: str)
+    :raise KeyError: If :p:`name` isn't present in the base material
+.. py:function:: magnum.trade.MaterialData.attribute_type(self, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`name` isn't present in the base material
+
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: int, id: int)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: int, name: str)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: int, name: magnum.trade.MaterialAttribute)
+    :raise IndexError: If :p:`layer` is negative or not less than
+        :ref:`layer_count`
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: str, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: str, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: str, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: magnum.trade.MaterialLayer, id: int)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()` for :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: magnum.trade.MaterialLayer, name: str)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, layer: magnum.trade.MaterialLayer, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`layer` doesn't exist
+    :raise KeyError: If :p:`name` isn't present in :p:`layer`
+.. py:function:: magnum.trade.MaterialData.attribute(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`attribute_count()`
+.. py:function:: magnum.trade.MaterialData.attribute(self, name: str)
+    :raise KeyError: If :p:`name` isn't present in the base material
+.. py:function:: magnum.trade.MaterialData.attribute(self, name: magnum.trade.MaterialAttribute)
+    :raise KeyError: If :p:`name` isn't present in the base material
+
 .. py:enum:: magnum.trade.SceneField
 
     The equivalent to C++ :dox:`Trade::sceneFieldCustom()` is creating an enum
@@ -465,6 +769,23 @@
     :raise KeyError: If :p:`name` was not found
     :raise IndexError: If :p:`level` is negative or not less than
         :ref:`mesh_level_count()` for this mesh
+
+.. py:property:: magnum.trade.AbstractImporter.material_count
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.material_for_name
+    :raise AssertionError: If no file is opened
+.. py:function:: magnum.trade.AbstractImporter.material_name
+    :raise AssertionError: If no file is opened
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`material_count`
+
+.. py:function:: magnum.trade.AbstractImporter.material(self, id: int)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If material import fails
+    :raise IndexError: If :p:`id` is negative or not less than :ref:`material_count`
+.. py:function:: magnum.trade.AbstractImporter.material(self, name: str)
+    :raise AssertionError: If no file is opened
+    :raise RuntimeError: If material import fails
+    :raise KeyError: If :p:`name` was not found
 
 .. py:property:: magnum.trade.AbstractImporter.texture_count
     :raise AssertionError: If no file is opened
@@ -765,6 +1086,9 @@
 .. py:property:: magnum.trade.AbstractSceneConverter.mesh_count
     :raise AssertionError: If no conversion is in progress
 
+.. py:property:: magnum.trade.AbstractSceneConverter.material_count
+    :raise AssertionError: If no conversion is in progress
+
 .. py:property:: magnum.trade.AbstractSceneConverter.scene_count
     :raise AssertionError: If no conversion is in progress
 
@@ -780,6 +1104,12 @@
         :ref:`SceneConverterFeatures.CONVERT_MESH`,
         :ref:`SceneConverterFeatures.CONVERT_MESH_TO_DATA` or
         :ref:`SceneConverterFeatures.CONVERT_MESH_TO_FILE` is not supported
+    :raise AssertionError: If no conversion is in progress
+    :raise RuntimeError: If adding the data fails
+
+.. py:function:: magnum.trade.AbstractSceneConverter.add(self, material: magnum.trade.MaterialData, name: str)
+    :raise AssertionError: If :ref:`SceneConverterFeatures.ADD_MATERIALS` is
+        not supported
     :raise AssertionError: If no conversion is in progress
     :raise RuntimeError: If adding the data fails
 

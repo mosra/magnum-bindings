@@ -41,6 +41,7 @@
 #include <Magnum/Trade/AbstractImageConverter.h>
 #include <Magnum/Trade/AbstractSceneConverter.h>
 #include <Magnum/Trade/ImageData.h>
+#include <Magnum/Trade/MaterialData.h>
 #include <Magnum/Trade/MeshData.h>
 #include <Magnum/Trade/SceneData.h>
 #include <Magnum/Trade/TextureData.h>
@@ -533,6 +534,58 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         _c(UnsignedInt)
         /* LCOV_EXCL_STOP */
         #undef _c
+    }
+
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+py::object materialAttribute(const Trade::MaterialData& material, const UnsignedInt layer, const UnsignedInt id) {
+    const Trade::MaterialAttributeType type = material.attributeType(layer, id);
+    switch(type) {
+        #define _ct(enum_, type)                                            \
+            case Trade::MaterialAttributeType::enum_:                       \
+                return py::cast(material.attribute<type>(layer, id));
+        #define _c(type) _ct(type, type)
+        /* LCOV_EXCL_START */
+        _ct(Bool, bool)
+        _c(Float)
+        _c(Deg)
+        _c(Rad)
+        _c(UnsignedInt)
+        _c(Int)
+        _c(UnsignedLong)
+        _c(Long)
+        _c(Vector2)
+        _c(Vector2ui)
+        _c(Vector2i)
+        _c(Vector3)
+        _c(Vector3ui)
+        _c(Vector3i)
+        _c(Vector4)
+        _c(Vector4ui)
+        _c(Vector4i)
+        _c(Matrix2x2)
+        _c(Matrix2x3)
+        _c(Matrix2x4)
+        _c(Matrix3x2)
+        _c(Matrix3x3)
+        _c(Matrix3x4)
+        _c(Matrix4x2)
+        _c(Matrix4x3)
+        /* LCOV_EXCL_STOP */
+        _ct(TextureSwizzle, Trade::MaterialTextureSwizzle)
+        #undef _c
+        #undef _ct
+
+        /** @todo drop std::string in favor of our own string caster */
+        case Trade::MaterialAttributeType::String:
+            return py::cast(std::string{material.attribute<Containers::StringView>(layer, id)});
+
+        case Trade::MaterialAttributeType::Pointer:
+        case Trade::MaterialAttributeType::MutablePointer:
+        case Trade::MaterialAttributeType::Buffer:
+            PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(type).ptr());
+            throw py::error_already_set{};
     }
 
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
@@ -1190,6 +1243,1062 @@ void trade(py::module_& m) {
             return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;
         }, "Memory owner");
 
+    py::enum_<Trade::MaterialLayer>{m, "MaterialLayer", "Material layer name"}
+        .value("CLEAR_COAT", Trade::MaterialLayer::ClearCoat)
+        .def_property_readonly("string", [](Trade::MaterialLayer value) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{Trade::materialLayerName(value)};
+        });
+
+    py::enum_<Trade::MaterialAttribute>{m, "MaterialAttribute", "Material attribute name"}
+        .value("LAYER_NAME", Trade::MaterialAttribute::LayerName)
+        .value("ALPHA_MASK", Trade::MaterialAttribute::AlphaMask)
+        .value("ALPHA_BLEND", Trade::MaterialAttribute::AlphaBlend)
+        .value("DOUBLE_SIDED", Trade::MaterialAttribute::DoubleSided)
+        .value("AMBIENT_COLOR", Trade::MaterialAttribute::AmbientColor)
+        .value("AMBIENT_TEXTURE", Trade::MaterialAttribute::AmbientTexture)
+        .value("AMBIENT_TEXTURE_MATRIX", Trade::MaterialAttribute::AmbientTextureMatrix)
+        .value("AMBIENT_TEXTURE_COORDINATES", Trade::MaterialAttribute::AmbientTextureCoordinates)
+        .value("AMBIENT_TEXTURE_LAYER", Trade::MaterialAttribute::AmbientTextureLayer)
+        .value("DIFFUSE_COLOR", Trade::MaterialAttribute::DiffuseColor)
+        .value("DIFFUSE_TEXTURE", Trade::MaterialAttribute::DiffuseTexture)
+        .value("DIFFUSE_TEXTURE_MATRIX", Trade::MaterialAttribute::DiffuseTextureMatrix)
+        .value("DIFFUSE_TEXTURE_COORDINATES", Trade::MaterialAttribute::DiffuseTextureCoordinates)
+        .value("DIFFUSE_TEXTURE_LAYER", Trade::MaterialAttribute::DiffuseTextureLayer)
+        .value("SPECULAR_COLOR", Trade::MaterialAttribute::SpecularColor)
+        .value("SPECULAR_TEXTURE", Trade::MaterialAttribute::SpecularTexture)
+        .value("SPECULAR_TEXTURE_SWIZZLE", Trade::MaterialAttribute::SpecularTextureSwizzle)
+        .value("SPECULAR_TEXTURE_MATRIX", Trade::MaterialAttribute::SpecularTextureMatrix)
+        .value("SPECULAR_TEXTURE_COORDINATES", Trade::MaterialAttribute::SpecularTextureCoordinates)
+        .value("SPECULAR_TEXTURE_LAYER", Trade::MaterialAttribute::SpecularTextureLayer)
+        .value("SHININESS", Trade::MaterialAttribute::Shininess)
+        .value("BASE_COLOR", Trade::MaterialAttribute::BaseColor)
+        .value("BASE_COLOR_TEXTURE", Trade::MaterialAttribute::BaseColorTexture)
+        .value("BASE_COLOR_TEXTURE_MATRIX", Trade::MaterialAttribute::BaseColorTextureMatrix)
+        .value("BASE_COLOR_TEXTURE_COORDINATES", Trade::MaterialAttribute::BaseColorTextureCoordinates)
+        .value("BASE_COLOR_TEXTURE_LAYER", Trade::MaterialAttribute::BaseColorTextureLayer)
+        .value("METALNESS", Trade::MaterialAttribute::Metalness)
+        .value("METALNESS_TEXTURE", Trade::MaterialAttribute::MetalnessTexture)
+        .value("METALNESS_TEXTURE_SWIZZLE", Trade::MaterialAttribute::MetalnessTextureSwizzle)
+        .value("METALNESS_TEXTURE_MATRIX", Trade::MaterialAttribute::MetalnessTextureMatrix)
+        .value("METALNESS_TEXTURE_COORDINATES", Trade::MaterialAttribute::MetalnessTextureCoordinates)
+        .value("METALNESS_TEXTURE_LAYER", Trade::MaterialAttribute::MetalnessTextureLayer)
+        .value("ROUGHNESS", Trade::MaterialAttribute::Roughness)
+        .value("ROUGHNESS_TEXTURE", Trade::MaterialAttribute::RoughnessTexture)
+        .value("ROUGHNESS_TEXTURE_SWIZZLE", Trade::MaterialAttribute::RoughnessTextureSwizzle)
+        .value("ROUGHNESS_TEXTURE_MATRIX", Trade::MaterialAttribute::RoughnessTextureMatrix)
+        .value("ROUGHNESS_TEXTURE_COORDINATES", Trade::MaterialAttribute::RoughnessTextureCoordinates)
+        .value("ROUGHNESS_TEXTURE_LAYER", Trade::MaterialAttribute::RoughnessTextureLayer)
+        .value("NONE_ROUGHNESS_METALLIC_TEXTURE", Trade::MaterialAttribute::NoneRoughnessMetallicTexture)
+        .value("GLOSSINESS", Trade::MaterialAttribute::Glossiness)
+        .value("GLOSSINESS_TEXTURE", Trade::MaterialAttribute::GlossinessTexture)
+        .value("GLOSSINESS_TEXTURE_SWIZZLE", Trade::MaterialAttribute::GlossinessTextureSwizzle)
+        .value("GLOSSINESS_TEXTURE_MATRIX", Trade::MaterialAttribute::GlossinessTextureMatrix)
+        .value("GLOSSINESS_TEXTURE_COORDINATES", Trade::MaterialAttribute::GlossinessTextureCoordinates)
+        .value("GLOSSINESS_TEXTURE_LAYER", Trade::MaterialAttribute::GlossinessTextureLayer)
+        .value("SPECULAR_GLOSSINESS_TEXTURE", Trade::MaterialAttribute::SpecularGlossinessTexture)
+        .value("NORMAL_TEXTURE", Trade::MaterialAttribute::NormalTexture)
+        .value("NORMAL_TEXTURE_SCALE", Trade::MaterialAttribute::NormalTextureScale)
+        .value("NORMAL_TEXTURE_SWIZZLE", Trade::MaterialAttribute::NormalTextureSwizzle)
+        .value("NORMAL_TEXTURE_MATRIX", Trade::MaterialAttribute::NormalTextureMatrix)
+        .value("NORMAL_TEXTURE_COORDINATES", Trade::MaterialAttribute::NormalTextureCoordinates)
+        .value("NORMAL_TEXTURE_LAYER", Trade::MaterialAttribute::NormalTextureLayer)
+        .value("OCCLUSION_TEXTURE", Trade::MaterialAttribute::OcclusionTexture)
+        .value("OCCLUSION_TEXTURE_STRENGTH", Trade::MaterialAttribute::OcclusionTextureStrength)
+        .value("OCCLUSION_TEXTURE_SWIZZLE", Trade::MaterialAttribute::OcclusionTextureSwizzle)
+        .value("OCCLUSION_TEXTURE_MATRIX", Trade::MaterialAttribute::OcclusionTextureMatrix)
+        .value("OCCLUSION_TEXTURE_COORDINATES", Trade::MaterialAttribute::OcclusionTextureCoordinates)
+        .value("OCCLUSION_TEXTURE_LAYER", Trade::MaterialAttribute::OcclusionTextureLayer)
+        .value("EMISSIVE_COLOR", Trade::MaterialAttribute::EmissiveColor)
+        .value("EMISSIVE_TEXTURE", Trade::MaterialAttribute::EmissiveTexture)
+        .value("EMISSIVE_TEXTURE_MATRIX", Trade::MaterialAttribute::EmissiveTextureMatrix)
+        .value("EMISSIVE_TEXTURE_COORDINATES", Trade::MaterialAttribute::EmissiveTextureCoordinates)
+        .value("EMISSIVE_TEXTURE_LAYER", Trade::MaterialAttribute::EmissiveTextureLayer)
+        .value("LAYER_FACTOR", Trade::MaterialAttribute::LayerFactor)
+        .value("LAYER_FACTOR_TEXTURE", Trade::MaterialAttribute::LayerFactorTexture)
+        .value("LAYER_FACTOR_TEXTURE_SWIZZLE", Trade::MaterialAttribute::LayerFactorTextureSwizzle)
+        .value("LAYER_FACTOR_TEXTURE_MATRIX", Trade::MaterialAttribute::LayerFactorTextureMatrix)
+        .value("LAYER_FACTOR_TEXTURE_COORDINATES", Trade::MaterialAttribute::LayerFactorTextureCoordinates)
+        .value("LAYER_FACTOR_TEXTURE_LAYER", Trade::MaterialAttribute::LayerFactorTextureLayer)
+        .value("TEXTURE_MATRIX", Trade::MaterialAttribute::TextureMatrix)
+        .value("TEXTURE_COORDINATES", Trade::MaterialAttribute::TextureCoordinates)
+        .value("TEXTURE_LAYER", Trade::MaterialAttribute::TextureLayer)
+        .def_property_readonly("string", [](Trade::MaterialAttribute value) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{Trade::materialAttributeName(value)};
+        });
+
+    py::enum_<Trade::MaterialTextureSwizzle>{m, "MaterialTextureSwizzle", "Material texture swizzle"}
+        .value("R", Trade::MaterialTextureSwizzle::R)
+        .value("G", Trade::MaterialTextureSwizzle::G)
+        .value("B", Trade::MaterialTextureSwizzle::B)
+        .value("A", Trade::MaterialTextureSwizzle::A)
+        .value("RG", Trade::MaterialTextureSwizzle::RG)
+        .value("GB", Trade::MaterialTextureSwizzle::GB)
+        .value("GA", Trade::MaterialTextureSwizzle::GA)
+        .value("BA", Trade::MaterialTextureSwizzle::BA)
+        .value("RGB", Trade::MaterialTextureSwizzle::RGB)
+        .value("GBA", Trade::MaterialTextureSwizzle::GBA)
+        .value("RGBA", Trade::MaterialTextureSwizzle::RGBA)
+        .def_property_readonly("component_count", [](Trade::MaterialTextureSwizzle value) {
+            return Trade::materialTextureSwizzleComponentCount(value);
+        });
+
+    py::enum_<Trade::MaterialAttributeType>{m, "MaterialAttributeType", "Material attribute type"}
+        .value("BOOL", Trade::MaterialAttributeType::Bool)
+        .value("FLOAT", Trade::MaterialAttributeType::Float)
+        .value("DEG", Trade::MaterialAttributeType::Deg)
+        .value("RAD", Trade::MaterialAttributeType::Rad)
+        .value("UNSIGNED_INT", Trade::MaterialAttributeType::UnsignedInt)
+        .value("INT", Trade::MaterialAttributeType::Int)
+        .value("UNSIGNED_LONG", Trade::MaterialAttributeType::UnsignedLong)
+        .value("LONG", Trade::MaterialAttributeType::Long)
+        .value("VECTOR2", Trade::MaterialAttributeType::Vector2)
+        .value("VECTOR2UI", Trade::MaterialAttributeType::Vector2ui)
+        .value("VECTOR2I", Trade::MaterialAttributeType::Vector2i)
+        .value("VECTOR3", Trade::MaterialAttributeType::Vector3)
+        .value("VECTOR3UI", Trade::MaterialAttributeType::Vector3ui)
+        .value("VECTOR3I", Trade::MaterialAttributeType::Vector3i)
+        .value("VECTOR4", Trade::MaterialAttributeType::Vector4)
+        .value("VECTOR4UI", Trade::MaterialAttributeType::Vector4ui)
+        .value("VECTOR4I", Trade::MaterialAttributeType::Vector4i)
+        .value("MATRIX2X2", Trade::MaterialAttributeType::Matrix2x2)
+        .value("MATRIX2X3", Trade::MaterialAttributeType::Matrix2x3)
+        .value("MATRIX2X4", Trade::MaterialAttributeType::Matrix2x4)
+        .value("MATRIX3X2", Trade::MaterialAttributeType::Matrix3x2)
+        .value("MATRIX3X3", Trade::MaterialAttributeType::Matrix3x3)
+        .value("MATRIX3X4", Trade::MaterialAttributeType::Matrix3x4)
+        .value("MATRIX4X2", Trade::MaterialAttributeType::Matrix4x2)
+        .value("MATRIX4X3", Trade::MaterialAttributeType::Matrix4x3)
+        .value("POINTER", Trade::MaterialAttributeType::Pointer)
+        .value("MUTABLE_POINTER", Trade::MaterialAttributeType::MutablePointer)
+        .value("STRING", Trade::MaterialAttributeType::String)
+        .value("BUFFER", Trade::MaterialAttributeType::Buffer)
+        .value("TEXTURE_SWIZZLE", Trade::MaterialAttributeType::TextureSwizzle);
+
+    py::enum_<Trade::MaterialType> materialType{m, "MaterialTypes", "Material types"};
+    materialType
+        .value("FLAT", Trade::MaterialType::Flat)
+        .value("PHONG", Trade::MaterialType::Phong)
+        .value("PBR_METALLIC_ROUGHNESS", Trade::MaterialType::PbrMetallicRoughness)
+        .value("PBR_SPECULAR_GLOSSINESS", Trade::MaterialType::PbrSpecularGlossiness)
+        .value("PBR_CLEAR_COAT", Trade::MaterialType::PbrClearCoat);
+    corrade::enumOperators(materialType);
+
+    py::enum_<Trade::MaterialAlphaMode>{m, "MaterialAlphaMode", "Material alpha mode"}
+        .value("OPAQUE", Trade::MaterialAlphaMode::Opaque)
+        .value("MASK", Trade::MaterialAlphaMode::Mask)
+        .value("BLEND", Trade::MaterialAlphaMode::Blend);
+
+    py::class_<Trade::MaterialData, Trade::PyDataHolder<Trade::MaterialData>>{m, "MaterialData", "Material data"}
+        .def_property_readonly("attribute_data_flags", [](const Trade::MaterialData& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.attributeDataFlags()));
+        }, "Attribute data flags")
+        .def_property_readonly("layer_data_flags", [](const Trade::MaterialData& self) {
+            return Trade::DataFlag(Containers::enumCastUnderlyingType(self.layerDataFlags()));
+        }, "Layer data flags")
+        .def_property_readonly("types", [](const Trade::MaterialData& self) {
+            return Trade::MaterialType(Containers::enumCastUnderlyingType(self.types()));
+        }, "Material types")
+        /** @todo as(), how to even implement that? */
+        /** @todo direct access to MaterialAttributeData and layer data, once
+            making custom MaterialData is desirable */
+        .def_property_readonly("layer_count", &Trade::MaterialData::layerCount, "Layer count")
+        .def("attribute_data_offset", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer > self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeDataOffset(layer);
+        }, "Offset of a layer inside attribute data", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_layer", [](const Trade::MaterialData& self, const std::string& layer) {
+            return self.hasLayer(layer);
+        }, "Whether a material has given named layer", py::arg("layer"))
+        .def("has_layer", static_cast<bool(Trade::MaterialData::*)(Trade::MaterialLayer) const>(&Trade::MaterialData::hasLayer), "Whether a material has given named layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_id", [](const Trade::MaterialData& self, const std::string& layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return *found;
+
+            /** @todo may need extra attention when it's no longer a
+                null-terminated std::string */
+            PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+            throw py::error_already_set{};
+        }, "ID of a named layer", py::arg("layer"))
+        .def("layer_id", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return *found;
+
+            PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+            throw py::error_already_set{};
+        }, "ID of a named layer", py::arg("layer"))
+        .def("layer_name", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.layerName(layer)};
+        }, "Layer name", py::arg("layer"))
+
+        /* IMPORTANT: due to pybind11 behavioral differences on (already EOL'd)
+           Python 3.7 the following overloads need to have the MaterialLayer
+           and MaterialAttribute overloads *before* the UnsignedInt overloads,
+           otherwise the integer overload gets picked even if an enum is passed
+           from Python, causing massive suffering */
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor", [](const Trade::MaterialData& self, const std::string& layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.layerFactor(*found);
+
+            /** @todo may need extra attention when it's no longer a
+                null-terminated std::string */
+            PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Factor of a named layer", py::arg("layer"))
+        .def("layer_factor", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.layerFactor(*found);
+
+            PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Factor of a named layer", py::arg("layer"))
+        .def("layer_factor", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactor(layer);
+        }, "Factor of given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor_texture", [](const Trade::MaterialData& self, const std::string& layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTexture(*found);
+        }, "Factor texture ID for a named layer", py::arg("layer"))
+        .def("layer_factor_texture", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTexture(*found);
+        }, "Factor texture ID for a named layer", py::arg("layer"))
+        .def("layer_factor_texture", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(layer, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTexture(layer);
+        }, "Factor texture ID for given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor_texture_swizzle", [](const Trade::MaterialData& self, const std::string& layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureSwizzle(*found);
+        }, "Factor texture swizzle for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_swizzle", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "name %S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureSwizzle(*found);
+        }, "Factor texture swizzle for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_swizzle", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(layer, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureSwizzle(layer);
+        }, "Factor texture swizzle for given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor_texture_matrix", [](const Trade::MaterialData& self, const std::string& layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureMatrix(*found);
+        }, "Factor texture coordinate transformation matrix for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_matrix", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureMatrix(*found);
+        }, "Factor texture coordinate transformation matrix for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_matrix", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(layer, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureMatrix(layer);
+        }, "Factor texture coordinate transformation matrix for given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor_texture_coordinates", [](const Trade::MaterialData& self, const std::string& layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureCoordinates(*found);
+        }, "Factor texture coordinate set for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_coordinates", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureCoordinates(*found);
+        }, "Factor texture coordinate set for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_coordinates", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(layer, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureCoordinates(layer);
+        }, "Factor texture coordinate set for given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("layer_factor_texture_layer", [](const Trade::MaterialData& self, const std::string& layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureLayer(*found);
+        }, "Factor array texture layer for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_layer", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            const Containers::Optional<UnsignedInt> found = self.findLayerId(layer);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(*found, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureLayer(*found);
+        }, "Factor array texture layer for a named layer", py::arg("layer"))
+        .def("layer_factor_texture_layer", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(!self.hasAttribute(layer, Trade::MaterialAttribute::LayerFactorTexture)) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(Trade::MaterialAttribute::LayerFactorTexture).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.layerFactorTextureLayer(layer);
+        }, "Factor array texture layer for given layer", py::arg("layer"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_count", [](const Trade::MaterialData& self, const std::string& layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.attributeCount(*found);
+
+            /** @todo may need extra attention when it's no longer a
+                null-terminated std::string */
+            PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Attribute count in a named layer", py::arg("layer"))
+        .def("attribute_count", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.attributeCount(*found);
+
+            PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Attribute count in a named layer", py::arg("layer"))
+        .def("attribute_count", [](const Trade::MaterialData& self, const UnsignedInt layer) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeCount(layer);
+        }, "Attribute count in given layer", py::arg("layer"))
+        .def("attribute_count", static_cast<UnsignedInt(Trade::MaterialData::*)() const>(&Trade::MaterialData::attributeCount),
+             "Attribute count in the base material")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_attribute", [](const Trade::MaterialData& self, const std::string& layer, const std::string& name) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.hasAttribute(*found, name);
+
+            /** @todo may need extra attention when it's no longer a
+                null-terminated std::string */
+            PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Whether a named material layer has given attribute", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_attribute", [](const Trade::MaterialData& self, const std::string& layer, const Trade::MaterialAttribute name) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.hasAttribute(*found, name);
+
+            /** @todo may need extra attention when it's no longer a
+                null-terminated std::string */
+            PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Whether a named material layer has given attribute", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_attribute", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const std::string& name) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.hasAttribute(*found, name);
+
+            PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Whether a named material layer has given attribute", py::arg("layer"), py::arg("name"))
+        .def("has_attribute", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const Trade::MaterialAttribute name) {
+            if(const Containers::Optional<UnsignedInt> found = self.findLayerId(layer))
+                return self.hasAttribute(*found, name);
+
+            PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+            throw py::error_already_set{};
+        }, "Whether a named material layer has given attribute", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_attribute", [](const Trade::MaterialData& self, const UnsignedInt layer, const std::string& name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            return self.hasAttribute(layer, name);
+        }, "Whether a material layer has given attribute", py::arg("layer"), py::arg("name"))
+        .def("has_attribute", [](const Trade::MaterialData& self, const UnsignedInt layer, const Trade::MaterialAttribute name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            return self.hasAttribute(layer, name);
+        }, "Whether a material layer has given attribute", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("has_attribute", [](const Trade::MaterialData& self, const std::string& name) {
+            return self.hasAttribute(name);
+        }, "Whether the base material has given attribute", py::arg("name"))
+        .def("has_attribute", static_cast<bool(Trade::MaterialData::*)(Trade::MaterialAttribute) const>(&Trade::MaterialData::hasAttribute),
+            "Whether the base material has given attribute", py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_id", [](const Trade::MaterialData& self, const std::string& layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(*foundLayer, name);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %s", name.data(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_id", [](const Trade::MaterialData& self, const std::string& layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(*foundLayer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(name).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_id", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(*foundLayer, name);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in %S", name.data(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_id", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(*foundLayer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(name).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_id", [](const Trade::MaterialData& self, const UnsignedInt layer, const std::string& name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %d", name.data(), layer);
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_id", [](const Trade::MaterialData& self, const UnsignedInt layer, const Trade::MaterialAttribute name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %d", py::cast(name).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_id", [](const Trade::MaterialData& self, const std::string& name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in the base material", name.data());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in the base material", py::arg("name"))
+        .def("attribute_id", [](const Trade::MaterialData& self, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in the base material", py::cast(name).ptr());
+                throw py::error_already_set{};
+            }
+
+            return *found;
+        }, "ID of a named attribute in the base material", py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_name", [](const Trade::MaterialData& self, const std::string& layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %s", id, self.attributeCount(*foundLayer), layer.data());
+                throw py::error_already_set{};
+            }
+
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.attributeName(*foundLayer, id)};
+        }, "Name of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        .def("attribute_name", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in %S", id, self.attributeCount(*foundLayer), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.attributeName(*foundLayer, id)};
+        }, "Name of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        .def("attribute_name", [](const Trade::MaterialData& self, const UnsignedInt layer, const UnsignedInt id) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(layer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %u", id, self.attributeCount(layer), layer);
+                throw py::error_already_set{};
+            }
+
+            return std::string{self.attributeName(layer, id)};
+        }, "Name of an attribute in given material layer", py::arg("layer"), py::arg("id"))
+        .def("attribute_name", [](const Trade::MaterialData& self, const UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in the base material", id, self.attributeCount());
+                throw py::error_already_set{};
+            }
+
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.attributeName(id)};
+        }, "Name of an attribute in the base material", py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const std::string& layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %s", name.data(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, *found);
+        }, "Type of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const std::string& layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(name).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, *found);
+        }, "Type of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const std::string& layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %s", id, self.attributeCount(*foundLayer), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, id);
+        }, "Type of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in %S", name.data(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, *found);
+        }, "Type of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(name).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, *found);
+        }, "Type of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in %S", id, self.attributeCount(*foundLayer), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*foundLayer, id);
+        }, "Type of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const UnsignedInt layer, const std::string& name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %u", name.data(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(layer, *found);
+        }, "Type of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const UnsignedInt layer, const Trade::MaterialAttribute name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(name).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(layer, *found);
+        }, "Type of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const UnsignedInt layer, const UnsignedInt id) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(layer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %u", id, self.attributeCount(layer), layer);
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(layer, id);
+        }, "Type of an attribute in given material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute_type", [](const Trade::MaterialData& self, const std::string& name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in the base material", name.data());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*found);
+        }, "Type of a named attribute in the base material", py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in the base material", py::cast(name).ptr());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(*found);
+        }, "Type of a named attribute in the base material", py::arg("name"))
+        .def("attribute_type", [](const Trade::MaterialData& self, const UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in the base material", id, self.attributeCount());
+                throw py::error_already_set{};
+            }
+
+            return self.attributeType(id);
+        }, "Type of an attribute in the base material", py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const std::string& layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %s", name.data(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, *found);
+        }, "Value of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const std::string& layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %s", py::cast(name).ptr(), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, *found);
+        }, "Value of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const std::string& layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u layers", layer.data(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %s", id, self.attributeCount(*foundLayer), layer.data());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, id);
+        }, "Value of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const std::string& name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in %S", name.data(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, *found);
+        }, "Value of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in %S", py::cast(name).ptr(), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, *found);
+        }, "Value of a named attribute in a named material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const Trade::MaterialLayer layer, const UnsignedInt id) {
+            const Containers::Optional<UnsignedInt> foundLayer = self.findLayerId(layer);
+            if(!foundLayer) {
+                PyErr_Format(PyExc_KeyError, "%S not found among %u layers", py::cast(layer).ptr(), self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(*foundLayer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in %S", id, self.attributeCount(*foundLayer), py::cast(layer).ptr());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, *foundLayer, id);
+        }, "Value of an attribute in a named material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const UnsignedInt layer, const std::string& name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in layer %u", name.data(), layer);
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, layer, *found);
+        }, "Value of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const UnsignedInt layer, const Trade::MaterialAttribute name) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(layer, name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in layer %u", py::cast(name).ptr(), layer);
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, layer, *found);
+        }, "Value of a named attribute in given material layer", py::arg("layer"), py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const UnsignedInt layer, const UnsignedInt id) {
+            if(layer >= self.layerCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u layers", layer, self.layerCount());
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.attributeCount(layer)) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in layer %u", id, self.attributeCount(layer), layer);
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, layer, id);
+        }, "Value of an attribute in given material layer", py::arg("layer"), py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("attribute", [](const Trade::MaterialData& self, const std::string& name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "attribute %s not found in the base material", name.data());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, 0, *found);
+        }, "Value of a named attribute in the base material", py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const Trade::MaterialAttribute name) {
+            const Containers::Optional<UnsignedInt> found = self.findAttributeId(name);
+            if(!found) {
+                PyErr_Format(PyExc_KeyError, "%S not found in the base material", py::cast(name).ptr());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, 0, *found);
+        }, "Value of a named attribute in the base material", py::arg("name"))
+        .def("attribute", [](const Trade::MaterialData& self, const UnsignedInt id) {
+            if(id >= self.attributeCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes in the base material", id, self.attributeCount());
+                throw py::error_already_set{};
+            }
+
+            return materialAttribute(self, 0, id);
+        }, "Value of an attribute in the base material", py::arg("id"))
+
+        .def_property_readonly("is_double_sided", &Trade::MaterialData::isDoubleSided,
+            "Whether a material is double-sided")
+        .def_property_readonly("alpha_mode", &Trade::MaterialData::alphaMode,
+            "Alpha mode")
+        .def_property_readonly("alpha_mask", &Trade::MaterialData::alphaMask,
+            "Alpha mask");
+
     py::class_<Trade::ImageData1D, Trade::PyDataHolder<Trade::ImageData1D>> imageData1D{m, "ImageData1D", "One-dimensional image data"};
     py::class_<Trade::ImageData2D, Trade::PyDataHolder<Trade::ImageData2D>> imageData2D{m, "ImageData2D", "Two-dimensional image data"};
     py::class_<Trade::ImageData3D, Trade::PyDataHolder<Trade::ImageData3D>> imageData3D{m, "ImageData3D", "Three-dimensional image data"};
@@ -1729,6 +2838,58 @@ void trade(py::module_& m) {
             return {};
         }, "String name for given custom mesh attribute", py::arg("name"))
 
+        .def_property_readonly("material_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::materialCount>, "Material count")
+        .def("material_for_name", checkOpenedString<Int, &Trade::AbstractImporter::materialForName>, "Material ID for given name", py::arg("name"))
+        .def("material_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::materialName, &Trade::AbstractImporter::materialCount>, "Material name", py::arg("id"))
+        .def("material", [](Trade::AbstractImporter& self, const UnsignedInt id) {
+            /** @todo drop in favor of the generic helper once the
+                OptionalButAlsoPointer backwards compatibility helper is gone */
+            if(!self.isOpened()) {
+                PyErr_SetString(PyExc_AssertionError, "no file opened");
+                throw py::error_already_set{};
+            }
+
+            if(id >= self.materialCount()) {
+                PyErr_Format(PyExc_IndexError, "index %u out of range for %u entries", id, self.materialCount());
+                throw py::error_already_set{};
+            }
+
+            Containers::Optional<Trade::MaterialData> out = self.material(id);
+            if(!out) {
+                PyErr_SetString(PyExc_RuntimeError, "import failed");
+                throw py::error_already_set{};
+            }
+
+            return *std::move(out);
+        }, "Material", py::arg("id"))
+        /** @todo drop std::string in favor of our own string caster */
+        .def("material", [](Trade::AbstractImporter& self, const std::string& name) {
+            /** @todo drop in favor of the generic helper once the
+                OptionalButAlsoPointer backwards compatibility helper is gone */
+            if(!self.isOpened()) {
+                PyErr_SetString(PyExc_AssertionError, "no file opened");
+                throw py::error_already_set{};
+            }
+
+            const Int id = self.materialForName(name);
+            if(id == -1) {
+                /** @todo may need extra attention when it's no longer a
+                    null-terminated std::string */
+                PyErr_Format(PyExc_KeyError, "name %s not found among %u entries", name.data(), self.materialCount());
+                throw py::error_already_set{};
+            }
+
+            /** @todo log redirection -- but we'd need assertions to not be
+                part of that so when it dies, the user can still see why */
+            Containers::Optional<Trade::MaterialData> out = self.material(id);
+            if(!out) {
+                PyErr_SetString(PyExc_RuntimeError, "import failed");
+                throw py::error_already_set{};
+            }
+
+            return *std::move(out);
+        }, "Material for given name", py::arg("name"))
+
         .def_property_readonly("texture_count", checkOpened<UnsignedInt, &Trade::AbstractImporter::textureCount>, "Texture count")
         .def("texture_for_name", checkOpenedString<Int, &Trade::AbstractImporter::textureForName>, "Texture ID for given name", py::arg("name"))
         .def("texture_name", checkOpenedBoundsReturnsString<UnsignedInt, &Trade::AbstractImporter::textureName, &Trade::AbstractImporter::textureCount>, "Texture name", py::arg("id"))
@@ -2129,6 +3290,29 @@ void trade(py::module_& m) {
             throw py::error_already_set{};
         }, "Add a 2D image", py::arg("image"), py::arg("name") = std::string{})
         /** @todo 3D images, once we have data & plugins to test with */
+        .def_property_readonly("material_count", [](Trade::AbstractSceneConverter& self) {
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            return self.materialCount();
+        }, "Count of added materials")
+        /** @todo drop std::string in favor of our own string caster */
+        .def("add", [](Trade::AbstractSceneConverter& self, const Trade::MaterialData& material, const std::string& name) {
+            if(!(self.features() >= Trade::SceneConverterFeature::AddMaterials)) {
+                PyErr_SetString(PyExc_AssertionError, "material conversion not supported");
+                throw py::error_already_set{};
+            }
+            if(!self.isConverting()) {
+                PyErr_SetString(PyExc_AssertionError, "no conversion in progress");
+                throw py::error_already_set{};
+            }
+            if(const Containers::Optional<UnsignedInt> out = self.add(material, name))
+                return *out;
+
+            PyErr_SetString(PyExc_RuntimeError, "adding the material failed");
+            throw py::error_already_set{};
+        }, "Add a material", py::arg("material"), py::arg("name") = std::string{})
         .def("add_importer_contents", [](Trade::AbstractSceneConverter& self, Trade::AbstractImporter& importer, Trade::SceneContent contents) {
             if(!self.isConverting()) {
                 PyErr_SetString(PyExc_AssertionError, "no conversion in progress");

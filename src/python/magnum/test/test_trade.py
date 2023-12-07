@@ -201,6 +201,409 @@ class ImageData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to PixelFormat.DEPTH32F_STENCIL8UI is not implemented yet, sorry"):
             image.pixels
 
+class MaterialData(unittest.TestCase):
+    def test_layer_properties(self):
+        self.assertEqual(trade.MaterialLayer.CLEAR_COAT.string, "ClearCoat")
+
+    def test_attribute_properties(self):
+        self.assertEqual(trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE.string, "LayerFactorTextureSwizzle")
+
+    def test_texture_swizzle_properties(self):
+        self.assertEqual(trade.MaterialTextureSwizzle.GB.component_count, 2)
+
+    def test(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        # This adds extra Diffuse attributes for BaseColor, don't want
+        importer.configuration['phongMaterialFallback'] = False
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        material = importer.material(0)
+        material_empty = importer.material(1)
+
+        self.assertEqual(material.attribute_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+        self.assertEqual(material.layer_data_flags, trade.DataFlags.OWNED|trade.DataFlags.MUTABLE)
+        self.assertEqual(material.types, trade.MaterialTypes.PBR_METALLIC_ROUGHNESS|trade.MaterialTypes.PBR_CLEAR_COAT)
+
+        self.assertEqual(material.layer_count, 2)
+        self.assertEqual(material.attribute_data_offset(1), 3)
+        self.assertEqual(material.attribute_data_offset(2), 11)
+        self.assertTrue(material.has_layer("ClearCoat"))
+        self.assertFalse(material_empty.has_layer("ClearCoat"))
+        self.assertTrue(material.has_layer(trade.MaterialLayer.CLEAR_COAT))
+        self.assertFalse(material_empty.has_layer(trade.MaterialLayer.CLEAR_COAT))
+        self.assertEqual(material.layer_id("ClearCoat"), 1)
+        self.assertEqual(material.layer_id(trade.MaterialLayer.CLEAR_COAT), 1)
+        self.assertEqual(material.layer_name(1), "ClearCoat")
+        self.assertAlmostEqual(material.layer_factor(1), 0.7)
+        self.assertAlmostEqual(material.layer_factor("ClearCoat"), 0.7)
+        self.assertAlmostEqual(material.layer_factor(trade.MaterialLayer.CLEAR_COAT), 0.7)
+        self.assertEqual(material.layer_factor_texture(1), 2)
+        self.assertEqual(material.layer_factor_texture("ClearCoat"), 2)
+        self.assertEqual(material.layer_factor_texture(trade.MaterialLayer.CLEAR_COAT), 2)
+        # TODO test with something where the swizzle isn't default to verify
+        #   it's querying the right layer
+        self.assertEqual(material.layer_factor_texture_swizzle(1), trade.MaterialTextureSwizzle.R)
+        self.assertEqual(material.layer_factor_texture_swizzle("ClearCoat"), trade.MaterialTextureSwizzle.R)
+        self.assertEqual(material.layer_factor_texture_swizzle(trade.MaterialLayer.CLEAR_COAT), trade.MaterialTextureSwizzle.R)
+        self.assertEqual(material.layer_factor_texture_matrix(1), Matrix3.translation((0.25, -0.5)))
+        self.assertEqual(material.layer_factor_texture_matrix("ClearCoat"), Matrix3.translation((0.25, -0.5)))
+        self.assertEqual(material.layer_factor_texture_matrix(trade.MaterialLayer.CLEAR_COAT), Matrix3.translation((0.25, -0.5)))
+        self.assertEqual(material.layer_factor_texture_coordinates(1), 13)
+        self.assertEqual(material.layer_factor_texture_coordinates("ClearCoat"), 13)
+        self.assertEqual(material.layer_factor_texture_coordinates(trade.MaterialLayer.CLEAR_COAT), 13)
+        # TODO test with something where the layer isn't 0, KHR_image_ktx is
+        #   too annoying
+        self.assertEqual(material.layer_factor_texture_layer(1), 0)
+        self.assertEqual(material.layer_factor_texture_layer("ClearCoat"), 0)
+        self.assertEqual(material.layer_factor_texture_layer(trade.MaterialLayer.CLEAR_COAT), 0)
+
+        self.assertEqual(material.attribute_count(1), 8)
+        self.assertEqual(material.attribute_count("ClearCoat"), 8)
+        self.assertEqual(material.attribute_count(trade.MaterialLayer.CLEAR_COAT), 8)
+        self.assertEqual(material.attribute_count(1), 8)
+        self.assertEqual(material.attribute_count(), 3)
+
+        self.assertTrue(material.has_attribute(1, "LayerFactorTexture"))
+        self.assertFalse(material.has_attribute(1, "LayerFactorTextureSwizzle"))
+        self.assertTrue(material.has_attribute(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE))
+        self.assertFalse(material.has_attribute(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE))
+        self.assertTrue(material.has_attribute("ClearCoat", "LayerFactorTexture"))
+        self.assertFalse(material.has_attribute("ClearCoat", "LayerFactorTextureSwizzle"))
+        self.assertTrue(material.has_attribute("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE))
+        self.assertFalse(material.has_attribute("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE))
+        self.assertTrue(material.has_attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTexture"))
+        self.assertFalse(material.has_attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureSwizzle"))
+        self.assertTrue(material.has_attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE))
+        self.assertFalse(material.has_attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE))
+        self.assertTrue(material.has_attribute("DoubleSided"))
+        self.assertFalse(material.has_attribute("BaseColorTexture"))
+        self.assertTrue(material.has_attribute(trade.MaterialAttribute.DOUBLE_SIDED))
+        self.assertFalse(material.has_attribute(trade.MaterialAttribute.BASE_COLOR_TEXTURE))
+
+        self.assertEqual(material.attribute_id(1, "RoughnessTexture"), 6)
+        self.assertEqual(material.attribute_id(1, trade.MaterialAttribute.ROUGHNESS_TEXTURE), 6)
+        self.assertEqual(material.attribute_id("ClearCoat", "RoughnessTexture"), 6)
+        self.assertEqual(material.attribute_id("ClearCoat", trade.MaterialAttribute.ROUGHNESS_TEXTURE), 6)
+        self.assertEqual(material.attribute_id(trade.MaterialLayer.CLEAR_COAT, "RoughnessTexture"), 6)
+        self.assertEqual(material.attribute_id(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.ROUGHNESS_TEXTURE), 6)
+        self.assertEqual(material.attribute_id("DoubleSided"), 2)
+        self.assertEqual(material.attribute_id(trade.MaterialAttribute.DOUBLE_SIDED), 2)
+
+        self.assertEqual(material.attribute_name(1, 6), "RoughnessTexture")
+        self.assertEqual(material.attribute_name("ClearCoat", 6), "RoughnessTexture")
+        self.assertEqual(material.attribute_name(trade.MaterialLayer.CLEAR_COAT, 6), "RoughnessTexture")
+        self.assertEqual(material.attribute_name(2), "DoubleSided")
+
+        self.assertEqual(material.attribute_type(1, 4), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(1, "LayerFactorTextureMatrix"), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_MATRIX), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type("ClearCoat", 4), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type("ClearCoat", "LayerFactorTextureMatrix"), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_MATRIX), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(trade.MaterialLayer.CLEAR_COAT, 4), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureMatrix"), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_MATRIX), trade.MaterialAttributeType.MATRIX3X3)
+        self.assertEqual(material.attribute_type(2), trade.MaterialAttributeType.BOOL)
+        self.assertEqual(material.attribute_type("DoubleSided"), trade.MaterialAttributeType.BOOL)
+        self.assertEqual(material.attribute_type(trade.MaterialAttribute.DOUBLE_SIDED), trade.MaterialAttributeType.BOOL)
+
+        self.assertEqual(material.attribute(1, 3), 13)
+        self.assertEqual(material.attribute(1, "LayerFactorTextureCoordinates"), 13)
+        self.assertEqual(material.attribute(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_COORDINATES), 13)
+        self.assertEqual(material.attribute("ClearCoat", 3), 13)
+        self.assertEqual(material.attribute("ClearCoat", "LayerFactorTextureCoordinates"), 13)
+        self.assertEqual(material.attribute("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_COORDINATES), 13)
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, 3), 13)
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureCoordinates"), 13)
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_COORDINATES), 13)
+        self.assertEqual(material.attribute(2), True)
+        self.assertEqual(material.attribute("DoubleSided"), True)
+        self.assertEqual(material.attribute(trade.MaterialAttribute.DOUBLE_SIDED), True)
+
+        self.assertTrue(material.is_double_sided)
+        self.assertEqual(material.alpha_mode, trade.MaterialAlphaMode.MASK)
+        self.assertEqual(material.alpha_mask, 0.36899998784065247)
+
+    def test_attribute_access(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        material = importer.material(0)
+
+        # Boolean, scalar, vector, matrix
+        self.assertEqual(material.attribute(trade.MaterialAttribute.DOUBLE_SIDED), True)
+        self.assertEqual(material.attribute(trade.MaterialAttribute.ALPHA_MASK), 0.36899998784065247)
+        self.assertEqual(material.attribute(trade.MaterialAttribute.BASE_COLOR), Vector4(0.3, 0.4, 0.5, 0.8))
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_MATRIX), Matrix3(
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.25, -0.5, 1.0)))
+
+        # Texture swizzle, string
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.ROUGHNESS_TEXTURE_SWIZZLE), trade.MaterialTextureSwizzle.G)
+        self.assertEqual(material.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_NAME), "ClearCoat")
+
+    def test_attribute_access_unsupported_format(self):
+        # TODO test this once Assimp or Ufbx or serialized data loading exists
+        #  to have a Buffer or a Pointer attribute
+        pass
+
+    def test_layer_oob(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        # This adds extra Diffuse attributes for BaseColor, don't want
+        importer.configuration['phongMaterialFallback'] = False
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        material = importer.material(0)
+        material_empty = importer.material(1)
+        material_empty_layer = importer.material(2)
+
+        # TODO these are all printed with '' around except for an IndexError,
+        #   why? Is that implicit behavior of the KeyError? Ugh??
+        # https://stackoverflow.com/a/24999035
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 2 layers"):
+            # Passing 2 works
+            material.attribute_data_offset(3)
+        with self.assertRaisesRegex(KeyError, "FlearFoat not found among 2 layers"):
+            material.layer_id("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_id(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_name(2)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor_texture(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor_texture("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor_texture(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor_texture_swizzle(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor_texture_swizzle("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor_texture_swizzle(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor_texture_matrix(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor_texture_matrix("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor_texture_matrix(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor_texture_coordinates(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor_texture_coordinates("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor_texture_coordinates(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.layer_factor_texture_layer(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.layer_factor_texture_layer("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.layer_factor_texture_layer(trade.MaterialLayer.CLEAR_COAT)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_count(2)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_count("FlearFoat")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_count(trade.MaterialLayer.CLEAR_COAT)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.has_attribute(2, "LayerFactor")
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.has_attribute(2, trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.has_attribute("FlearFoat", "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.has_attribute("FlearFoat", trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.has_attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.has_attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_id(2, "LayerFactor")
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_id(2, trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_id("FlearFoat", "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_id("FlearFoat", trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_id(trade.MaterialLayer.CLEAR_COAT, "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_id(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_name(2, 0)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_name("FlearFoat", 0)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_name(trade.MaterialLayer.CLEAR_COAT, 0)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_type(2, 0)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_type(2, "LayerFactor")
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute_type(2, trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_type("FlearFoat", 0)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_type("FlearFoat", "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute_type("FlearFoat", trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_type(trade.MaterialLayer.CLEAR_COAT, 0)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_type(trade.MaterialLayer.CLEAR_COAT, "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute_type(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR)
+
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute(2, 0)
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute(2, "LayerFactor")
+        with self.assertRaisesRegex(IndexError, "index 2 out of range for 2 layers"):
+            material.attribute(2, trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute("FlearFoat", 0)
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute("FlearFoat", "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "name FlearFoat not found among 2 layers"):
+            material.attribute("FlearFoat", trade.MaterialAttribute.LAYER_FACTOR)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute(trade.MaterialLayer.CLEAR_COAT, 0)
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactor")
+        with self.assertRaisesRegex(KeyError, "MaterialLayer.CLEAR_COAT not found among 1 layers"):
+            material_empty.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR)
+
+    def test_attribute_oob(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        # This adds extra Diffuse attributes for BaseColor, don't want
+        importer.configuration['phongMaterialFallback'] = False
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        material = importer.material(0)
+        material_empty_layer = importer.material(2)
+
+        # TODO these are all printed with '' around except for an IndexError,
+        #   why? Is that implicit behavior of the KeyError? Ugh??
+        # https://stackoverflow.com/a/24999035
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer 0"):
+            material.layer_factor_texture(0)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer ClearCoat"):
+            material_empty_layer.layer_factor_texture("ClearCoat")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in MaterialLayer.CLEAR_COAT"):
+            material_empty_layer.layer_factor_texture(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer 0"):
+            material.layer_factor_texture_swizzle(0)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer ClearCoat"):
+            material_empty_layer.layer_factor_texture_swizzle("ClearCoat")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in MaterialLayer.CLEAR_COAT"):
+            material_empty_layer.layer_factor_texture_swizzle(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer 0"):
+            material.layer_factor_texture_matrix(0)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer ClearCoat"):
+            material_empty_layer.layer_factor_texture_matrix("ClearCoat")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in MaterialLayer.CLEAR_COAT"):
+            material_empty_layer.layer_factor_texture_matrix(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer 0"):
+            material.layer_factor_texture_coordinates(0)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer ClearCoat"):
+            material_empty_layer.layer_factor_texture_coordinates("ClearCoat")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in MaterialLayer.CLEAR_COAT"):
+            material_empty_layer.layer_factor_texture_coordinates(trade.MaterialLayer.CLEAR_COAT)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer 0"):
+            material.layer_factor_texture_layer(0)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in layer ClearCoat"):
+            material_empty_layer.layer_factor_texture_layer("ClearCoat")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE not found in MaterialLayer.CLEAR_COAT"):
+            material_empty_layer.layer_factor_texture_layer(trade.MaterialLayer.CLEAR_COAT)
+
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer 1"):
+            material.attribute_id(1, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer 1"):
+            material.attribute_id(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer ClearCoat"):
+            material.attribute_id("ClearCoat", "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer ClearCoat"):
+            material.attribute_id("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute_id(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute_id(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "attribute DiffuseTexure not found in the base material"):
+            material.attribute_id("DiffuseTexure")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.DIFFUSE_TEXTURE not found in the base material"):
+            material.attribute_id(trade.MaterialAttribute.DIFFUSE_TEXTURE)
+
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer 1"):
+            material.attribute_name(1, 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer ClearCoat"):
+            material.attribute_name("ClearCoat", 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in MaterialLayer.CLEAR_COAT"):
+            material.attribute_name(trade.MaterialLayer.CLEAR_COAT, 8)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 attributes in the base material"):
+            material.attribute_name(3)
+
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer 1"):
+            material.attribute_type(1, 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer ClearCoat"):
+            material.attribute_type("ClearCoat", 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in MaterialLayer.CLEAR_COAT"):
+            material.attribute_type(trade.MaterialLayer.CLEAR_COAT, 8)
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer 1"):
+            material.attribute_type(1, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer ClearCoat"):
+            material.attribute_type("ClearCoat", "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute_type(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer 1"):
+            material.attribute_type(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer ClearCoat"):
+            material.attribute_type("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute_type(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 attributes in the base material"):
+            material.attribute_type(3)
+        with self.assertRaisesRegex(KeyError, "attribute DiffuseTexure not found in the base material"):
+            material.attribute_type("DiffuseTexure")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.DIFFUSE_TEXTURE not found in the base material"):
+            material.attribute_type(trade.MaterialAttribute.DIFFUSE_TEXTURE)
+
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer 1"):
+            material.attribute(1, 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in layer ClearCoat"):
+            material.attribute("ClearCoat", 8)
+        with self.assertRaisesRegex(IndexError, "index 8 out of range for 8 attributes in MaterialLayer.CLEAR_COAT"):
+            material.attribute(trade.MaterialLayer.CLEAR_COAT, 8)
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer 1"):
+            material.attribute(1, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in layer ClearCoat"):
+            material.attribute("ClearCoat", "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "attribute LayerFactorTextureSwizzle not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute(trade.MaterialLayer.CLEAR_COAT, "LayerFactorTextureSwizzle")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer 1"):
+            material.attribute(1, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in layer ClearCoat"):
+            material.attribute("ClearCoat", trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE not found in MaterialLayer.CLEAR_COAT"):
+            material.attribute(trade.MaterialLayer.CLEAR_COAT, trade.MaterialAttribute.LAYER_FACTOR_TEXTURE_SWIZZLE)
+        with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 attributes in the base material"):
+            material.attribute(3)
+        with self.assertRaisesRegex(KeyError, "attribute DiffuseTexure not found in the base material"):
+            material.attribute("DiffuseTexure")
+        with self.assertRaisesRegex(KeyError, "MaterialAttribute.DIFFUSE_TEXTURE not found in the base material"):
+            material.attribute(trade.MaterialAttribute.DIFFUSE_TEXTURE)
+
 class MeshData(unittest.TestCase):
     def test_custom_attribute(self):
         # Creating a custom attribute
@@ -1354,6 +1757,17 @@ class Importer(unittest.TestCase):
             importer.mesh('')
 
         with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.material_count
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.material_for_name('')
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.material_name(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.material(0)
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            importer.material('')
+
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.texture_count
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             importer.texture_for_name('')
@@ -1408,6 +1822,9 @@ class Importer(unittest.TestCase):
         mesh_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         mesh_importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh.gltf'))
 
+        material_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        material_importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
         scene_importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         scene_importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
 
@@ -1424,6 +1841,11 @@ class Importer(unittest.TestCase):
             mesh_importer.mesh_name(5)
         with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
             mesh_importer.mesh(5)
+
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 entries"):
+            material_importer.material_name(4)
+        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 entries"):
+            material_importer.material(4)
 
         with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
             texture_importer.texture_name(3)
@@ -1586,6 +2008,40 @@ class Importer(unittest.TestCase):
             importer.mesh(2)
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.mesh('A broken mesh')
+
+    def test_material(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+        self.assertEqual(importer.material_count, 4)
+        self.assertEqual(importer.material_name(2), 'Material with an empty layer')
+        self.assertEqual(importer.material_for_name('Material with an empty layer'), 2)
+
+        material = importer.material(2)
+        self.assertEqual(material.layer_count, 2)
+
+    def test_material_by_name(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        material = importer.material("Material with an empty layer")
+        self.assertEqual(material.layer_count, 2)
+
+    def test_material_by_name_not_found(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 4 entries"):
+            importer.material('Nonexistent')
+
+    def test_material_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.material(3)
+        with self.assertRaisesRegex(RuntimeError, "import failed"):
+            importer.material("A broken material")
 
     def test_texture(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -2035,6 +2491,54 @@ class SceneConverter(unittest.TestCase):
         # TODO implement once there's a converter that doesn't support meshes
         pass
 
+    def test_batch_add_material(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+        material = importer.material("Material with an empty layer")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "file.gltf")
+            converter.begin_file(filename)
+            self.assertEqual(converter.material_count, 0)
+
+            converter.add(material, "Material with an empty layer")
+            self.assertEqual(converter.material_count, 1)
+
+            converter.end_file()
+
+            with open(filename, 'r') as f:
+                self.assertIn("Material with an empty layer", f.read())
+
+    def test_batch_add_material_failed(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+        # References a texture, which means conversion will fail due to the
+        # texture not being added before
+        material = importer.material(0)
+
+        converter = trade.SceneConverterManager().load_and_instantiate('GltfSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.gltf"))
+
+            with self.assertRaisesRegex(RuntimeError, "adding the material failed"):
+                converter.add(material)
+
+    def test_batch_add_material_not_supported(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+        material = importer.material("Material with an empty layer")
+
+        converter = trade.SceneConverterManager().load_and_instantiate('StanfordSceneConverter')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            converter.begin_file(os.path.join(tmp, "file.ply"))
+
+            with self.assertRaisesRegex(AssertionError, "material conversion not supported"):
+                converter.add(material)
+
     def test_batch_add_scene(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
@@ -2325,6 +2829,8 @@ class SceneConverter(unittest.TestCase):
         mesh = importer.mesh('Custom mesh attribute')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'scene.gltf'))
         scene = importer.scene("A default scene that's empty")
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
+        material = importer.material("Material with an empty layer")
 
         importer = trade.ImporterManager().load_and_instantiate('StbImageImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'rgb.png'))
@@ -2341,6 +2847,10 @@ class SceneConverter(unittest.TestCase):
             converter.add(mesh)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.set_mesh_attribute_name(trade.MeshAttribute.CUSTOM(1), 'foobar')
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.material_count
+        with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
+            converter.add(material)
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):
             converter.scene_count
         with self.assertRaisesRegex(AssertionError, "no conversion in progress"):

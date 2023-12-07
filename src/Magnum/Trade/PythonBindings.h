@@ -29,6 +29,7 @@
 #include <pybind11/pybind11.h>
 
 #include "Magnum/Trade/Data.h"
+#include "Magnum/Trade/MaterialData.h" /* :( */
 #include "Magnum/Trade/MeshData.h" /* :( */
 
 namespace Magnum { namespace Trade {
@@ -38,6 +39,11 @@ namespace Implementation {
 /* For assertions only */
 template<class T> inline bool pyDataFlagsNeedOwner(const T& data) {
     return !(data.dataFlags() & (DataFlag::Owned|DataFlag::Global));
+}
+inline bool pyDataFlagsNeedOwner(const Trade::MaterialData& data) {
+    return
+        !(data.attributeDataFlags() & (DataFlag::Owned|DataFlag::Global)) ||
+        !(data.layerDataFlags() & (DataFlag::Owned|DataFlag::Global));
 }
 inline bool pyDataFlagsNeedOwner(const Trade::MeshData& data) {
     return
