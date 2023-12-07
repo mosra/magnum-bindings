@@ -821,6 +821,12 @@ PYBIND11_MODULE(_magnum, m) {
     magnum::trade(trade);
     #endif
 
+    #ifdef Magnum_MaterialTools_FOUND
+    /* Depends on trade */
+    py::module_ materialtools = m.def_submodule("materialtools");
+    magnum::materialtools(materialtools);
+    #endif
+
     #ifdef Magnum_MeshTools_FOUND
     /* Depends on trade and gl */
     py::module_ meshtools = m.def_submodule("meshtools");

@@ -1382,7 +1382,9 @@ void trade(py::module_& m) {
         .value("PHONG", Trade::MaterialType::Phong)
         .value("PBR_METALLIC_ROUGHNESS", Trade::MaterialType::PbrMetallicRoughness)
         .value("PBR_SPECULAR_GLOSSINESS", Trade::MaterialType::PbrSpecularGlossiness)
-        .value("PBR_CLEAR_COAT", Trade::MaterialType::PbrClearCoat);
+        .value("PBR_CLEAR_COAT", Trade::MaterialType::PbrClearCoat)
+        .value("NONE", Trade::MaterialType{})
+        .value("ALL", Trade::MaterialType(Containers::enumCastUnderlyingType(~Trade::MaterialType{})));
     corrade::enumOperators(materialType);
 
     py::enum_<Trade::MaterialAlphaMode>{m, "MaterialAlphaMode", "Material alpha mode"}

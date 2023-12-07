@@ -64,6 +64,7 @@ foreach(target
     corrade_pluginmanager
     corrade_utility
     magnum_gl
+    magnum_materialtools
     magnum_meshtools
     magnum_primitives
     magnum_scenegraph

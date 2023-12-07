@@ -158,7 +158,8 @@ Changelog
     :ref:`trade.AbstractImporter.scene()` and related importer APIs
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
--   Exposed the :ref:`scenetools` and :ref:`text` libraries
+-   Exposed the :ref:`materialtools`, :ref:`scenetools` and :ref:`text`
+    libraries
 -   Exposed :ref:`utility.copy()` for convenient, fast and safe copying of
     multi-dimensional strided arrays
 -   Exposed the minimal interface of :ref:`utility.ConfigurationGroup` and

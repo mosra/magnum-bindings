@@ -70,6 +70,7 @@ void mathMatrixDouble(py::module_& root, PyTypeObject* metaclass);
 void mathRange(py::module_& root, py::module_& m);
 
 void gl(py::module_& m);
+void materialtools(py::module_& m);
 void meshtools(py::module_& m);
 void primitives(py::module_& m);
 void scenegraph(py::module_& m);

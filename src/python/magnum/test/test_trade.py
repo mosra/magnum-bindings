@@ -1842,10 +1842,10 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
             mesh_importer.mesh(5)
 
-        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 entries"):
-            material_importer.material_name(4)
-        with self.assertRaisesRegex(IndexError, "index 4 out of range for 4 entries"):
-            material_importer.material(4)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            material_importer.material_name(5)
+        with self.assertRaisesRegex(IndexError, "index 5 out of range for 5 entries"):
+            material_importer.material(5)
 
         with self.assertRaisesRegex(IndexError, "index 3 out of range for 3 entries"):
             texture_importer.texture_name(3)
@@ -2013,7 +2013,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
 
         importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
-        self.assertEqual(importer.material_count, 4)
+        self.assertEqual(importer.material_count, 5)
         self.assertEqual(importer.material_name(2), 'Material with an empty layer')
         self.assertEqual(importer.material_for_name('Material with an empty layer'), 2)
 
@@ -2031,7 +2031,7 @@ class Importer(unittest.TestCase):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'material.gltf'))
 
-        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 4 entries"):
+        with self.assertRaisesRegex(KeyError, "name Nonexistent not found among 5 entries"):
             importer.material('Nonexistent')
 
     def test_material_failed(self):

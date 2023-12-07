@@ -39,6 +39,7 @@
     },
     {
       "name": "Material with an empty layer",
+      "emissiveFactor": [0.5, 0.4, 0.3],
       "extensions": {
         "KHR_materials_clearcoat": {}
       }
@@ -46,6 +47,14 @@
     {
       "name": "A broken material",
       "alphaMode": false
+    },
+    {
+      "name": "Specular/glossiness",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "specularFactor": [0.1, 0.2, 0.6]
+        }
+      }
     }
   ],
   "samplers": [

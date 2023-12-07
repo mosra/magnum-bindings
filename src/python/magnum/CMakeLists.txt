@@ -30,6 +30,7 @@ set(CMAKE_FOLDER "Magnum/Python")
 # *Not* REQUIRED
 find_package(Magnum COMPONENTS
     GL
+    MaterialTools
     MeshTools
     Primitives
     SceneGraph
@@ -71,6 +72,9 @@ set(magnum_LIBS )
 set(magnum_gl_SRCS
     gl.cpp)
 
+set(magnum_materialtools_SRCS
+    materialtools.cpp)
+
 set(magnum_meshtools_SRCS
     meshtools.cpp)
 
@@ -105,6 +109,17 @@ if(NOT MAGNUM_BUILD_STATIC)
         target_link_libraries(magnum_gl PRIVATE Magnum::GL)
         set_target_properties(magnum_gl PROPERTIES
             OUTPUT_NAME "gl"
+            LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
+    endif()
+
+    if(Magnum_MaterialTools_FOUND)
+        pybind11_add_module(magnum_materialtools ${pybind11_add_module_SYSTEM} ${magnum_materialtools_SRCS})
+        target_include_directories(magnum_materialtools PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_SOURCE_DIR}/src/python)
+        target_link_libraries(magnum_materialtools PRIVATE Magnum::MaterialTools)
+        set_target_properties(magnum_materialtools PROPERTIES
+            OUTPUT_NAME "materialtools"
             LIBRARY_OUTPUT_DIRECTORY ${output_dir}/magnum)
     endif()
 
@@ -193,6 +208,11 @@ else()
     if(Magnum_GL_FOUND)
         list(APPEND magnum_SRCS ${magnum_gl_SRCS})
         list(APPEND magnum_LIBS Magnum::GL)
+    endif()
+
+    if(Magnum_MaterialTools_FOUND)
+        list(APPEND magnum_SRCS ${magnum_materialtools_SRCS})
+        list(APPEND magnum_LIBS Magnum::MaterialTools)
     endif()
 
     if(Magnum_MeshTools_FOUND)
