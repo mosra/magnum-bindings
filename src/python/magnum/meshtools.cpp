@@ -175,7 +175,7 @@ void meshtools(py::module_& m) {
                 test */
             return MeshTools::interleave(mesh, {}, flags);
         }, "Interleave mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
-        .def("copy", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::copy), "Make a owned copy of the mesh", py::arg("mesh"))
+        .def("copy", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::copy), "Make an owned copy of the mesh", py::arg("mesh"))
         /** @todo check that the indices/vertices aren't impl-specific once
             it's possible to test */
         .def("remove_duplicates", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::removeDuplicates), "Remove mesh data duplicates", py::arg("mesh"))
