@@ -1587,6 +1587,17 @@ class Importer(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "import failed"):
             importer.mesh('A broken mesh')
 
+    def test_texture(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
+        self.assertEqual(importer.texture_count, 3)
+        self.assertEqual(importer.texture_name(1), 'A broken texture')
+        self.assertEqual(importer.texture_for_name('A broken texture'), 1)
+
+        texture = importer.texture(2)
+        self.assertEqual(texture.image, 1)
+
     def test_texture_by_name(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         importer.open_file(os.path.join(os.path.dirname(__file__), 'texture.gltf'))
