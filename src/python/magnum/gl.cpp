@@ -342,7 +342,8 @@ void gl(py::module_& m) {
             .value("TRANSFORM_FEEDBACK", GL::Context::State::TransformFeedback)
             #endif
             .value("ENTER_EXTERNAL", GL::Context::State::EnterExternal)
-            .value("EXIT_EXTERNAL", GL::Context::State::ExitExternal);
+            .value("EXIT_EXTERNAL", GL::Context::State::ExitExternal)
+            .value("ALL", GL::Context::State(Containers::enumCastUnderlyingType(~GL::Context::States{})));
         corrade::enumOperators(contextState);
 
         py::enum_<GL::Context::DetectedDriver> contextDetectedDriver{context, "DetectedDriver", "Detected driver"};
@@ -427,7 +428,7 @@ void gl(py::module_& m) {
                 Extension exposed) */
             .def("reset_state", [](GL::Context& self, GL::Context::State states) {
                 self.resetState(states);
-            }, "Reset internal state tracker", py::arg("states") = GL::Context::State{})
+            }, "Reset internal state tracker", py::arg("states") = GL::Context::State(Containers::enumCastUnderlyingType(~GL::Context::States{})))
             .def_property_readonly("detected_driver", [](GL::Context& self) {
                 return GL::Context::DetectedDriver(UnsignedShort(self.detectedDriver()));
             }, "Detected driver")
