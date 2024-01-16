@@ -91,6 +91,12 @@ endif()
 
 option(MAGNUM_BUILD_TESTS "Build unit tests" OFF)
 
+if(MAGNUM_BUILD_STATIC AND UNIX)
+    # See src/python/corrade/__init__.py.in and the corresponding CMakeLists
+    # for details
+    option(MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "Build Python bindings linking to static libraries with RTLD_GLOBAL enabled for loading" ON)
+endif()
+
 # Backwards compatibility for unprefixed CMake options. If the user isn't
 # explicitly using prefixed options in the first run already, accept the
 # unprefixed options, and remember this decision for subsequent runs

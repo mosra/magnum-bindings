@@ -176,6 +176,12 @@ Changelog
 -   Added a ``MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS`` CMake option for linking
     static plugins to the Python bindings module. See the
     :ref:`building documentation <std:doc:building>` for more information.
+-   Added a ``MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL`` CMake option to make
+    the Python bindings module loaded into the global namespace instead of
+    isolated in order to attempt to solve problems with duplicated globals when
+    static builds of Corrade and Magnum are linked into multiple dynamic
+    modules. See the :ref:`building documentation <std:doc:building>` for more
+    information.
 
 `2020.06`_
 ==========

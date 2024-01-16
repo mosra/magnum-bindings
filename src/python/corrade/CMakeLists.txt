@@ -84,7 +84,9 @@ if(NOT CORRADE_BUILD_STATIC)
 
 # Otherwise put it all into one library so it's easier to install (which is the
 # point of static builds). It also nicely avoids problems with multiply-defined
-# global data.
+# global data. Unless the static libraries are linked into multiple Python
+# modules, that is, which is (on Unix at least) attempted to be solved by the
+# MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL option below.
 else()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/staticconfigure.h.cmake
                    ${CMAKE_CURRENT_BINARY_DIR}/staticconfigure.h)
@@ -102,6 +104,16 @@ else()
     endif()
 endif()
 
+# If the option is enabled, the setdlopenflags() code in __init__.py is used,
+# otherwise it's commented out
+if(MAGNUM_BUILD_STATIC AND UNIX AND MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL)
+    set(_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "")
+else()
+    set(_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "## ")
+endif()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/__init__.py.in
+               ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+
 pybind11_add_module(corrade ${pybind11_add_module_SYSTEM} ${corrade_SRCS})
 target_include_directories(corrade PRIVATE
     ${PROJECT_SOURCE_DIR}/src
@@ -113,7 +125,7 @@ set_target_properties(corrade PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})
 
 file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
+    INPUT ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 
 if(MAGNUM_BUILD_TESTS)
     add_subdirectory(test)

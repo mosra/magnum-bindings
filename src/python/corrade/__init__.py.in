@@ -25,6 +25,14 @@
 
 """Root Corrade module"""
 
+# If MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL is enabled in CMake, the lines
+# below are included, otherwise they are commented out. What it does is a
+# futile attempt to make Corrade (and Magnum) built as static libraries work
+# together when built into multiple dynamic Python modules.
+${_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL}import sys
+${_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL}import ctypes
+${_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL}sys.setdlopenflags(sys.getdlopenflags()|ctypes.RTLD_GLOBAL)
+
 # On Windows, if a known directory layout is detected, add paths containing
 # binaries to the DLL search path
 import platform
@@ -59,3 +67,5 @@ __all__ = [
     # to globals and this would likely cause conflicts (magnum also defines
     # BUILD_*)
 ]
+
+# kate: hl python

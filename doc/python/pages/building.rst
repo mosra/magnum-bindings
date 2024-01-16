@@ -150,13 +150,30 @@ containing location of all built libraries for use with Python setuptools:
 
 In case Corrade or Magnum is built with :dox:`CORRADE_BUILD_STATIC` /
 :dox:`MAGNUM_BUILD_STATIC`, the corresponding bindings are compiled into a
-single dynamic module instead of one module per Corrade/Magnum library. In this
-case, similarly to linking static plugins to Magnum's own command-line
+single dynamic module instead of one module per Corrade/Magnum library.
+
+In this case, similarly to linking static plugins to Magnum's own command-line
 utilities, you can use the ``MAGNUM_PYTHON_BINDINGS_STATIC_PLUGINS`` CMake
 variable to link static plugins to the Python module, assuming Magnum, Magnum
 Plugins and Magnum Bindings are all CMake subprojects. It's a
 semicolon-separated list of existing CMake targets, for example
 ``Magnum::AnyImageImporter;MagnumPlugins::StbImageImporter``.
+
+On Unix platforms, Python by default loads the modules in isolated namespaces.
+That's a good thing to do from a security point of view, nevertheless with
+static builds of Corrade and Magnum it will result in globals duplicated across
+the Corrade and Magnum modules (and also any other Python modules that
+use Magnum natively inside) unable to see each other in order to deduplicate
+themselves, causing strange issues. To solve that, the
+``MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL`` CMake option, which is enabled by
+default on static builds on Unix platforms, overrides Python's module loading
+code to not load them in isolated namespaces using :ref:`sys.setdlopenflags()`.
+The override then happens inside :py:`import corrade` and is in effect for the
+rest of the interpreter lifetime, to affect also any potential other modules
+depending on Magnum loaded later. See also
+:dox:`CORRADE_BUILD_STATIC_UNIQUE_GLOBALS` and
+:dox:`MAGNUM_BUILD_STATIC_UNIQUE_GLOBALS` in Corrade and Magnum for more
+information.
 
 `Running unit tests`_
 ---------------------
