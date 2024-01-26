@@ -112,7 +112,7 @@ else()
     set(_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "## ")
 endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/__init__.py.in
-               ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+               ${output_dir}/corrade/__init__.py)
 
 pybind11_add_module(corrade ${pybind11_add_module_SYSTEM} ${corrade_SRCS})
 target_include_directories(corrade PRIVATE
@@ -123,9 +123,6 @@ target_link_libraries(corrade PRIVATE Corrade::Utility ${corrade_LIBS})
 set_target_properties(corrade PROPERTIES
     OUTPUT_NAME "_corrade"
     LIBRARY_OUTPUT_DIRECTORY ${output_dir})
-
-file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
-    INPUT ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 
 if(MAGNUM_BUILD_TESTS)
     add_subdirectory(test)
