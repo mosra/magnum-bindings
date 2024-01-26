@@ -1452,7 +1452,7 @@ class Quaternion_(unittest.TestCase):
         self.assertEqual(a.to_matrix(), Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
 
         b = Quaternion.from_matrix(Matrix4.rotation_x(Deg(45.0)).rotation_scaling())
-        self.assertEqual(a, Quaternion((0.382683, 0.0, 0.0), 0.92388))
+        self.assertEqual(b, Quaternion((0.382683, 0.0, 0.0), 0.92388))
 
         c = Quaternion.reflection(Vector3.x_axis())
         self.assertEqual(c, Quaternion((1.0, 0.0, 0.0), 0.0))
