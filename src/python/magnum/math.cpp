@@ -348,6 +348,13 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             }
             return T::rotation(Math::Rad<typename T::Type>(angle), normalizedAxis);
         }, "Rotation quaternion", py::arg("angle"), py::arg("normalized_axis"))
+        .def_static("rotation", [](const Math::Vector3<typename T::Type>& normalizedFrom, const Math::Vector3<typename T::Type>& normalizedTo) {
+            if(!normalizedFrom.isNormalized() || !normalizedTo.isNormalized()) {
+                PyErr_Format(PyExc_ValueError, "vectors %S and %S are not normalized", py::cast(normalizedFrom).ptr(), py::cast(normalizedTo).ptr());
+                throw py::error_already_set{};
+            }
+            return T::rotation(normalizedFrom, normalizedTo);
+        }, "Quaternion rotating from a vector to another", py::arg("normalized_from"), py::arg("normalized_to"))
         .def_static("reflection", [](const Math::Vector3<typename T::Type>& normal) {
             if(!normal.isNormalized()) {
                 PyErr_Format(PyExc_ValueError, "normal %S is not normalized", py::cast(normal).ptr());
