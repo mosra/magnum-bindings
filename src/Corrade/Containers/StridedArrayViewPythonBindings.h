@@ -74,7 +74,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
         /* Null function pointers should be okay as it shouldn't ever get to
            them -- IndexError gets fired first. Not really sure about the
            format, choosing bytes for safety. */
-        /*implicit*/ PyStridedArrayView(): format{"B"}, getitem{} {}
+        /*implicit*/ PyStridedArrayView(): format{"B"}, getitem{}, setitem{} {}
 
         template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view): PyStridedArrayView{view, Implementation::pythonFormatString<typename std::decay<U>::type>(), sizeof(U)} {}
 
