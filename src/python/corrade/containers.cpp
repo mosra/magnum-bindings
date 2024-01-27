@@ -573,8 +573,6 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
                 throw py::error_already_set{};
             }
 
-            Containers::StaticArrayView<dimensions, const std::size_t> sizes{reinterpret_cast<std::size_t*>(buffer.shape)};
-            Containers::StaticArrayView<dimensions, const std::ptrdiff_t> strides{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)};
             /* Calculate total memory size that spans the whole view. Mainly to
                make the constructor assert happy, not used otherwise */
             std::size_t size = 0;
