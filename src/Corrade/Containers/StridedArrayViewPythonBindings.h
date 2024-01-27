@@ -38,9 +38,13 @@ template<class T> constexpr const char* pythonFormatString() {
     static_assert(sizeof(T) == 0, "format string unknown for this type, supply it explicitly");
     return {};
 }
-/* Representing bytes as unsigned. Not using 'c' because then it behaves
-   differently from bytes/bytearray, where you can do `a[0] = ord('A')`. */
-template<> constexpr const char* pythonFormatString<char>() { return "B"; }
+/* Treating bytes as unsigned 8-bit integers and not as chars for consistency
+   with bytes/bytearray, where you have to use ord(a[0]) to get a character
+   value. Same done for PyStridedArrayViewItem and PyStridedArrayViewSetItem
+   below. To further emphasize that this is "general data", a null format
+   string is returned, which should be treated the same as B:
+    https://docs.python.org/3/c-api/buffer.html#c.Py_buffer.format */
+template<> constexpr const char* pythonFormatString<char>() { return nullptr; }
 template<> constexpr const char* pythonFormatString<std::int8_t>() { return "b"; }
 template<> constexpr const char* pythonFormatString<std::uint8_t>() { return "B"; }
 template<> constexpr const char* pythonFormatString<std::int16_t>() { return "h"; }
@@ -54,6 +58,21 @@ template<> constexpr const char* pythonFormatString<std::uint64_t>() { return "Q
 template<> constexpr const char* pythonFormatString<float>() { return "f"; }
 template<> constexpr const char* pythonFormatString<double>() { return "d"; }
 
+template<class U> struct PyStridedArrayViewItem {
+    static pybind11::object get(const char* item) {
+        return pybind11::cast(*reinterpret_cast<const U*>(item));
+    }
+};
+/* Treating bytes as unsigned 8-bit integers and not as chars for consistency
+   with bytes/bytearray, where you have to use ord(a[0]) to get a character
+   value. Same done for pythonFormatString<char>() above and
+   PyStridedArrayViewSetItem below. */
+template<> struct PyStridedArrayViewItem<const char> {
+    static pybind11::object get(const char* item) {
+        return pybind11::cast(*reinterpret_cast<const std::uint8_t*>(item));
+    }
+};
+
 template<class T, class U> struct PyStridedArrayViewSetItem;
 template<class U> struct PyStridedArrayViewSetItem<const char, U> {
     /* __setitem__ is not even exposed for immutable views so this is fine */
@@ -64,17 +83,31 @@ template<class U> struct PyStridedArrayViewSetItem<char, U> {
         *reinterpret_cast<U*>(item) = pybind11::cast<U>(object);
     }
 };
+/* Treating bytes as unsigned 8-bit integers and not as chars for consistency
+   with bytes/bytearray, where you have to use a[0] = ord('A') to set a
+   character value. Same done for pythonFormatString<char>() and
+   PyStridedArrayViewItem above. */
+template<> struct PyStridedArrayViewSetItem<char, char> {
+    static void set(char* item, pybind11::handle object) {
+        *reinterpret_cast<std::uint8_t*>(item) = pybind11::cast<std::uint8_t>(object);
+    }
+};
 
 template<unsigned, class> struct PyStridedElement;
 
 }
 
 template<unsigned dimensions, class T> class PyStridedArrayView: public StridedArrayView<dimensions, T> {
+    /* the type is dynamic; ArrayView has the same check */
+    static_assert(std::is_same<const T, const char>::value, "only the (const) char StridedArrayView is meant to be exposed");
+
     public:
         /* Null function pointers should be okay as it shouldn't ever get to
-           them -- IndexError gets fired first. Not really sure about the
-           format, choosing bytes for safety. */
-        /*implicit*/ PyStridedArrayView(): format{"B"}, getitem{}, setitem{} {}
+           them -- IndexError gets fired first. The format string can be null
+           as well (which nicely implies "general data"), in which case B
+           should be assumed:
+            https://docs.python.org/3/c-api/buffer.html#c.Py_buffer.format */
+        /*implicit*/ PyStridedArrayView(): format{}, getitem{}, setitem{} {}
 
         template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view): PyStridedArrayView{view, Implementation::pythonFormatString<typename std::decay<U>::type>(), sizeof(U)} {}
 
@@ -82,9 +115,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
             arrayCast<T>(view),
             format,
             itemsize,
-            [](const char* item) {
-                return pybind11::cast(*reinterpret_cast<const U*>(item));
-            },
+            Implementation::PyStridedArrayViewItem<const U>::get,
             Implementation::PyStridedArrayViewSetItem<T, U>::set
         } {}
 

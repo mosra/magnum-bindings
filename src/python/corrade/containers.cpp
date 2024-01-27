@@ -109,6 +109,10 @@ template<class T> bool arrayViewBufferProtocol(T& self, Py_buffer& buffer, int f
 }
 
 template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers::PyArrayViewHolder<Containers::ArrayView<T>>>& c) {
+    /* __getitem__ and __setitem__ relies on this, StridedArrayView has the
+       same check */
+    static_assert(std::is_same<const T, const char>::value, "only the (const) char ArrayView is meant to be exposed");
+
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, Containers::ArrayView<T>>();
     /* This is needed for implicit conversion from np.array */
@@ -161,7 +165,11 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};
             }
-            return self[i];
+            /* Treating bytes as unsigned 8-bit integers and not as chars for
+               consistency with bytes/bytearray, where you have to use
+               a[0] = ord('A') to set a character value. Same done for
+               __getitem__ and StridedArrayView. */
+            return std::uint8_t(self[i]);
         }, "Value at given position", py::arg("i"))
 
         /* Slicing */
@@ -934,7 +942,11 @@ void containers(py::module_& m) {
         "MutableArrayView", "Mutable array view", py::buffer_protocol{}};
     arrayView(mutableArrayView_);
     mutableArrayView_
-        .def("__setitem__", [](const Containers::ArrayView<char>& self, std::size_t i, const char& value) {
+        /* Treating bytes as unsigned 8-bit integers and not as chars for
+           consistency with bytes/bytearray, where you have to use
+           a[0] = ord('A') to set a character value. Same done for __getitem__
+           and StridedArrayView. */
+        .def("__setitem__", [](const Containers::ArrayView<char>& self, std::size_t i, std::uint8_t value) {
             if(i >= self.size()) {
                 PyErr_SetNone(PyExc_IndexError);
                 throw py::error_already_set{};

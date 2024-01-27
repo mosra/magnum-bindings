@@ -28,22 +28,25 @@
 
 .. py:class:: corrade.containers.ArrayView
 
-    Provides one-dimensional tightly packed view on a memory range. Convertible
-    both from and to Python objects supporting the Buffer Protocol, with one
-    dimension and stride of :py:`1`. See :ref:`StridedArrayView1D` and others
-    for more generic views. :ref:`ArrayView` is immutable, see
-    :ref:`MutableArrayView` for the mutable alternative. All slicing operations
-    are supported, specifying a non-trivial stride will return
-    :ref:`StridedArrayView1D` instead of :ref:`ArrayView`. Example usage:
+    Provides an untyped one-dimensional read-only view on a contiguous memory
+    range. Convertible both to and from Python objects supporting the Buffer
+    Protocol. The buffer type is lost in the conversion process and the memory
+    is always treated as plain bytes:
 
     .. code:: pycon
 
         >>> a = b'hello'
         >>> b = containers.ArrayView(a)
-        >>> b[2]
+        >>> chr(b[2])
         'l'
         >>> bytes(b[1:4])
         b'ell'
+
+    See the :ref:`StridedArrayView1D` and its multi-dimensional variants for an
+    alternative that can provide typed access. The :ref:`ArrayView` is
+    immutable, see :ref:`MutableArrayView` for the mutable alternative. All
+    slicing operations are supported, specifying a non-trivial stride will
+    return :ref:`StridedArrayView1D` instead of :ref:`ArrayView`.
 
     `Memory ownership and reference counting`_
     ==========================================
@@ -79,8 +82,9 @@
 
 .. py:class:: corrade.containers.StridedArrayView1D
 
-    Provides one-dimensional read-only view on a memory range with custom
-    stride values. See :ref:`StridedArrayView2D`, :ref:`StridedArrayView3D`,
+    Provides an one-dimensional read-only view on a memory range with custom
+    stride values. Convertible both to and from Python objects supporting the
+    Buffer Protocol. See :ref:`StridedArrayView2D`, :ref:`StridedArrayView3D`,
     :ref:`StridedArrayView4D`, :ref:`MutableStridedArrayView1D` and others for
     multi-dimensional and mutable equivalents.
 

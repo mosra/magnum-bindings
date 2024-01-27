@@ -113,7 +113,7 @@ class ImageData(unittest.TestCase):
 
         data = image.data
         self.assertEqual(len(data), 3*3*2)
-        self.assertEqual(ord(data[9 + 6 + 2]), 181) # libPNG has 12 +
+        self.assertEqual(data[9 + 6 + 2], 181) # libPNG has 12 +
         self.assertIs(data.owner, image)
         self.assertEqual(sys.getrefcount(image), image_refcount + 1)
 
@@ -122,7 +122,7 @@ class ImageData(unittest.TestCase):
 
         mutable_data = image.data
         self.assertEqual(len(mutable_data), 3*3*2)
-        self.assertEqual(ord(mutable_data[9 + 6 + 2]), 181) # libPNG has 12 +
+        self.assertEqual(mutable_data[9 + 6 + 2], 181) # libPNG has 12 +
         self.assertIs(mutable_data.owner, image)
         self.assertEqual(sys.getrefcount(image), image_refcount + 1)
 
@@ -139,12 +139,11 @@ class ImageData(unittest.TestCase):
 
         data = image.data
         mutable_data = image.mutable_data
-        # TODO: ugh, report as bytes, not chars
-        self.assertEqual(ord(data[13]), 254)
-        self.assertEqual(ord(mutable_data[13]), 254)
+        self.assertEqual(data[13], 254)
+        self.assertEqual(mutable_data[13], 254)
 
-        mutable_data[13] = chr(76)
-        self.assertEqual(data[13], chr(76))
+        mutable_data[13] = 76
+        self.assertEqual(data[13], 76)
 
     def test_pixels_access(self):
         # The only way to get an image instance is through a manager
@@ -855,12 +854,11 @@ class MeshData(unittest.TestCase):
         index_data = mesh.index_data
         mutable_index_data = mesh.mutable_index_data
         # Second index is 2, it's a 16-bit LE number
-        # TODO: ugh, report as bytes, not chars
-        self.assertEqual(ord(index_data[2]), 2)
-        self.assertEqual(ord(mutable_index_data[2]), 2)
+        self.assertEqual(index_data[2], 2)
+        self.assertEqual(mutable_index_data[2], 2)
 
-        mutable_index_data[2] = chr(76)
-        self.assertEqual(ord(index_data[2]), 76)
+        mutable_index_data[2] = 76
+        self.assertEqual(index_data[2], 76)
 
     def test_mutable_vertex_data_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
@@ -872,12 +870,11 @@ class MeshData(unittest.TestCase):
         vertex_data = mesh.vertex_data
         mutable_vertex_data = mesh.mutable_vertex_data
         # The color attribute is at offset 20, G channel is the next byte
-        # TODO: ugh, report as bytes, not chars
-        self.assertEqual(ord(vertex_data[21]), 51)
-        self.assertEqual(ord(mutable_vertex_data[21]), 51)
+        self.assertEqual(vertex_data[21], 51)
+        self.assertEqual(mutable_vertex_data[21], 51)
 
-        mutable_vertex_data[21] = chr(76)
-        self.assertEqual(vertex_data[21], chr(76))
+        mutable_vertex_data[21] = 76
+        self.assertEqual(vertex_data[21], 76)
 
     def test_mutable_indices_access(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')

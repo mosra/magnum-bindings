@@ -336,8 +336,8 @@ class ImageView(unittest.TestCase):
 
         a_data = a.data
         self.assertEqual(len(a_data), 32)
-        self.assertEqual(a_data[9], 'b')
-        self.assertEqual(a_data[20], 'E')
+        self.assertEqual(a_data[9], ord('b'))
+        self.assertEqual(a_data[20], ord('E'))
         self.assertIs(a_data.owner, data)
         # The data references the original data as an owner, not the view
         self.assertEqual(sys.getrefcount(a), a_refcount)
@@ -360,15 +360,15 @@ class ImageView(unittest.TestCase):
 
         a_data = a.data
         self.assertEqual(len(a_data), 32)
-        self.assertEqual(a_data[9], 'b')
-        self.assertEqual(a_data[20], 'E')
+        self.assertEqual(a_data[9], ord('b'))
+        self.assertEqual(a_data[20], ord('E'))
         self.assertIs(a_data.owner, data)
         # The data references the original data as an owner, not the view
         self.assertEqual(sys.getrefcount(a), a_refcount)
         self.assertEqual(sys.getrefcount(data), data_refcount + 2)
 
-        a_data[9] = '_'
-        a_data[20] = '_'
+        a_data[9] = ord('_')
+        a_data[20] = ord('_')
         self.assertEqual(data, b'rgbRGB  '
                                b'a_cABC  '
                                b'defD_F  '
@@ -615,8 +615,8 @@ class CompressedImageView(unittest.TestCase):
 
         a_data = a.data
         self.assertEqual(len(a_data), 32)
-        self.assertEqual(a_data[9], '9')
-        self.assertEqual(a_data[20], 'B')
+        self.assertEqual(a_data[9], ord('9'))
+        self.assertEqual(a_data[20], ord('B'))
         self.assertIs(a_data.owner, data)
         # The data references the original data as an owner, not the view
         self.assertEqual(sys.getrefcount(a), a_refcount)
@@ -637,15 +637,15 @@ class CompressedImageView(unittest.TestCase):
 
         a_data = a.data
         self.assertEqual(len(a_data), 32)
-        self.assertEqual(a_data[9], '9')
-        self.assertEqual(a_data[20], 'B')
+        self.assertEqual(a_data[9], ord('9'))
+        self.assertEqual(a_data[20], ord('B'))
         self.assertIs(a_data.owner, data)
         # The data references the original data as an owner, not the view
         self.assertEqual(sys.getrefcount(a), a_refcount)
         self.assertEqual(sys.getrefcount(data), data_refcount + 2)
 
-        a_data[9] = '_'
-        a_data[20] = '_'
+        a_data[9] = ord('_')
+        a_data[20] = ord('_')
         self.assertEqual(data, b'012345678_abcdef'
                                b'FEDC_A9876543210')
 

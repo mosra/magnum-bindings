@@ -45,23 +45,26 @@ class ArrayView(unittest.TestCase):
     def test_init_buffer(self):
         a = b'hello'
         a_refcount = sys.getrefcount(a)
+        # Verify that bytes has the same semantics, i.e. not possible to
+        # directly get a character
+        self.assertEqual(a[2], ord('l'))
 
         b = containers.ArrayView(a)
         self.assertIs(b.owner, a)
         self.assertEqual(len(b), 5)
         self.assertEqual(bytes(b), b'hello')
-        self.assertEqual(b[2], 'l')
+        self.assertEqual(b[2], ord('l'))
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # Not mutable
         with self.assertRaisesRegex(TypeError, "object does not support item assignment"):
-            b[4] = '!'
+            b[4] = ord('!')
 
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
         self.assertTrue(sys.getrefcount(b.owner), a_refcount)
-        self.assertEqual(b[2], 'l')
+        self.assertEqual(b[2], ord('l'))
 
         # Now, if we delete b, a should not be referenced by anything anymore
         a = b.owner
@@ -87,9 +90,14 @@ class ArrayView(unittest.TestCase):
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
+        # Verify that the bytearray has the same semantics, i.e. not possible
+        # to directly assign a character
+        a[4] = ord('?')
+        self.assertEqual(a[4], ord('?'))
+
         b = containers.MutableArrayView(a)
-        b[4] = '!'
-        self.assertEqual(b[4], '!')
+        b[4] = ord('!')
+        self.assertEqual(b[4], ord('!'))
         self.assertEqual(bytes(b), b'hell!')
 
     def test_init_array(self):
@@ -249,12 +257,17 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(b.size, (0, ))
         self.assertEqual(a.stride, (0, ))
         self.assertEqual(b.stride, (0, ))
+        # By default the format is unspecified
+        self.assertEqual(b.format, None)
         self.assertEqual(a.dimensions, 1)
         self.assertEqual(b.dimensions, 1)
 
     def test_init_buffer(self):
         a = b'hello'
         a_refcount = sys.getrefcount(a)
+        # Verify that bytes has the same semantics, i.e. not possible to
+        # directly get a character
+        self.assertEqual(a[2], ord('l'))
 
         b = containers.StridedArrayView1D(a)
         self.assertIs(b.owner, a)
@@ -262,18 +275,21 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(bytes(b), b'hello')
         self.assertEqual(b.size, (5, ))
         self.assertEqual(b.stride, (1, ))
-        self.assertEqual(b[2], 'l')
+        # We don't provide typed access for views created from buffers, so the
+        # format is unspecified to convey "generic data"
+        self.assertEqual(b.format, None)
+        self.assertEqual(b[2], ord('l'))
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # Not mutable
         with self.assertRaisesRegex(TypeError, "object does not support item assignment"):
-            b[4] = '!'
+            b[4] = ord('!')
 
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
         self.assertTrue(sys.getrefcount(b.owner), a_refcount)
-        self.assertEqual(b[2], 'l')
+        self.assertEqual(b[2], ord('l'))
 
         # Now, if we delete b, a should not be referenced by anything anymore
         a = b.owner
@@ -287,6 +303,9 @@ class StridedArrayView1D(unittest.TestCase):
         b = containers.StridedArrayView1D(a)
         self.assertIs(b.owner, None)
         self.assertEqual(len(b), 0)
+        self.assertEqual(b.size, (0, ))
+        self.assertEqual(b.stride, (1, ))
+        self.assertEqual(b.format, None)
         self.assertEqual(sys.getrefcount(a), a_refcount)
 
     def test_init_buffer_memoryview_obj(self):
@@ -299,9 +318,20 @@ class StridedArrayView1D(unittest.TestCase):
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'hello')
+        # Verify that the bytearray has the same semantics, i.e. not possible
+        # to directly assign a character
+        a[4] = ord('?')
+        self.assertEqual(a[4], ord('?'))
+
         b = containers.MutableStridedArrayView1D(a)
-        b[4] = '!'
-        self.assertEqual(b[4], '!')
+        self.assertEqual(b.size, (5, ))
+        self.assertEqual(b.stride, (1, ))
+        # We don't provide typed access for views created from buffers, so the
+        # format is unspecified to convey "generic data"
+        self.assertEqual(b.format, None)
+        self.assertEqual(b[4], ord('?'))
+        b[4] = ord('!')
+        self.assertEqual(b[4], ord('!'))
         self.assertEqual(bytes(b), b'hell!')
 
     def test_init_buffer_unexpected_dimensions(self):
@@ -318,7 +348,7 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(bytes(b), b'hlo')
         self.assertEqual(b.size, (3, ))
         self.assertEqual(b.stride, (2, ))
-        self.assertEqual(b[2], 'o')
+        self.assertEqual(b[2], ord('o'))
 
     def test_init_buffer_mutable_from_immutable(self):
         a = b'hello'
@@ -489,6 +519,8 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(b.size, (0, 0))
         self.assertEqual(a.stride, (0, 0))
         self.assertEqual(b.stride, (0, 0))
+        # By default the format is unspecified
+        self.assertEqual(b.format, None)
         self.assertEqual(a.dimensions, 2)
         self.assertEqual(b.dimensions, 2)
 
@@ -508,19 +540,19 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(b.stride, (8, 1))
         self.assertIsInstance(b[1], containers.StridedArrayView1D)
         self.assertEqual(bytes(b[1]), b'456789ab')
-        self.assertEqual(b[1, 2], '6')
-        self.assertEqual(b[1][2], '6')
+        self.assertEqual(b[1, 2], ord('6'))
+        self.assertEqual(b[1][2], ord('6'))
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
         # Not mutable
         with self.assertRaisesRegex(TypeError, "object does not support item assignment"):
-            b[1, 2] = '!'
+            b[1, 2] = ord('!')
 
         # b should keep a reference to a, so deleting the local reference
         # shouldn't affect it
         del a
         self.assertTrue(sys.getrefcount(b.owner), a_refcount)
-        self.assertEqual(b[1][2], '6')
+        self.assertEqual(b[1][2], ord('6'))
 
         # Now, if we delete b, a should not be referenced by anything anymore
         a = b.owner
@@ -532,10 +564,10 @@ class StridedArrayView2D(unittest.TestCase):
                       b'456789ab'
                       b'89abcdef')
         b = containers.MutableStridedArrayView2D(memoryview(a).cast('b', shape=[3, 8]))
-        b[0, 7] = '!'
-        b[1, 7] = '!'
-        b[2, 7] = '!'
-        self.assertEqual(b[0][7], '!')
+        b[0, 7] = ord('!')
+        b[1, 7] = ord('!')
+        b[2, 7] = ord('!')
+        self.assertEqual(b[0][7], ord('!'))
         self.assertEqual(bytes(b), b'0123456!'
                                    b'456789a!'
                                    b'89abcde!')
@@ -556,7 +588,7 @@ class StridedArrayView2D(unittest.TestCase):
         self.assertEqual(b.size, (2, 8))
         self.assertEqual(b.stride, (16, 1))
         self.assertEqual(bytes(b[1]), b'89abcdef')
-        self.assertEqual(b[1][3], 'b')
+        self.assertEqual(b[1][3], ord('b'))
 
     def test_init_buffer_mutable_from_immutable(self):
         a = memoryview(b'01234567'
@@ -814,8 +846,8 @@ class StridedArrayView3D(unittest.TestCase):
         self.assertEqual(bytes(b), b'01234567456789ab89abcdefcdef012301234567456789ab')
         self.assertEqual(b.size, (2, 3, 8))
         self.assertEqual(b.stride, (24, 8, 1))
-        self.assertEqual(b[1, 2, 3], '7')
-        self.assertEqual(b[1][2][3], '7')
+        self.assertEqual(b[1, 2, 3], ord('7'))
+        self.assertEqual(b[1][2][3], ord('7'))
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'01234567'
@@ -826,13 +858,13 @@ class StridedArrayView3D(unittest.TestCase):
                       b'01234567'
                       b'456789ab')
         b = containers.MutableStridedArrayView3D(memoryview(a).cast('b', shape=[2, 3, 8]))
-        b[0, 0, 7] = '!'
-        b[0, 1, 7] = '!'
-        b[0, 2, 7] = '!'
-        b[1, 0, 7] = '!'
-        b[1, 1, 7] = '!'
-        b[1, 2, 7] = '!'
-        self.assertEqual(b[1][1][7], '!')
+        b[0, 0, 7] = ord('!')
+        b[0, 1, 7] = ord('!')
+        b[0, 2, 7] = ord('!')
+        b[1, 0, 7] = ord('!')
+        b[1, 1, 7] = ord('!')
+        b[1, 2, 7] = ord('!')
+        self.assertEqual(b[1][1][7], ord('!'))
         self.assertEqual(bytes(b), b'0123456!'
                                    b'456789a!'
                                    b'89abcde!'
@@ -921,8 +953,8 @@ class StridedArrayView4D(unittest.TestCase):
         self.assertEqual(bytes(b), b'01234567456789ab89abcdefcdef012301234567456789ab')
         self.assertEqual(b.size, (2, 1, 3, 8))
         self.assertEqual(b.stride, (24, 24, 8, 1))
-        self.assertEqual(b[1, 0, 2, 3], '7')
-        self.assertEqual(b[1][0][2][3], '7')
+        self.assertEqual(b[1, 0, 2, 3], ord('7'))
+        self.assertEqual(b[1][0][2][3], ord('7'))
 
     def test_init_buffer_mutable(self):
         a = bytearray(b'01234567'
@@ -933,13 +965,13 @@ class StridedArrayView4D(unittest.TestCase):
                       b'01234567'
                       b'456789ab')
         b = containers.MutableStridedArrayView4D(memoryview(a).cast('b', shape=[2, 1, 3, 8]))
-        b[0, 0, 0, 7] = '!'
-        b[0, 0, 1, 7] = '!'
-        b[0, 0, 2, 7] = '!'
-        b[1, 0, 0, 7] = '!'
-        b[1, 0, 1, 7] = '!'
-        b[1, 0, 2, 7] = '!'
-        self.assertEqual(b[1][0][1][7], '!')
+        b[0, 0, 0, 7] = ord('!')
+        b[0, 0, 1, 7] = ord('!')
+        b[0, 0, 2, 7] = ord('!')
+        b[1, 0, 0, 7] = ord('!')
+        b[1, 0, 1, 7] = ord('!')
+        b[1, 0, 2, 7] = ord('!')
+        self.assertEqual(b[1][0][1][7], ord('!'))
         self.assertEqual(bytes(b), b'0123456!'
                                    b'456789a!'
                                    b'89abcde!'
