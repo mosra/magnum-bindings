@@ -687,25 +687,23 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
     }
 }
 
-template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshIndicesView(Trade::MeshData& mesh, const Containers::StridedArrayView2D<T>& data) {
-    const MeshIndexType type = mesh.indexType();
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshIndicesView(const MeshIndexType type, const Containers::StridedArrayView2D<T>& data, py::object owner) {
     const std::size_t itemsize = meshIndexTypeSize(type);
     const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForMeshIndexType(type);
     /** @todo update this once there are plugins that can give back custom
         index types */
     CORRADE_INTERNAL_ASSERT(formatStringGetitemSetitem.first());
-    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(mesh));
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, std::move(owner));
 }
 
-template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshAttributeView(Trade::MeshData& mesh, const UnsignedInt id, const Containers::StridedArrayView2D<T>& data) {
-    const VertexFormat format = mesh.attributeFormat(id);
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> meshAttributeView(const VertexFormat format, const Containers::StridedArrayView2D<T>& data, py::object owner) {
     const std::size_t itemsize = vertexFormatSize(format);
     const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForVertexFormat(format);
     if(!formatStringGetitemSetitem.first()) {
         PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(format).ptr());
         throw py::error_already_set{};
     }
-    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(mesh));
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, std::move(owner));
 }
 
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForSceneMappingType(const Trade::SceneMappingType type) {
@@ -885,24 +883,22 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneMappingView(Trade::SceneData& scene, const Containers::StridedArrayView2D<T>& data) {
-    const Trade::SceneMappingType type = scene.mappingType();
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneMappingView(const Trade::SceneMappingType type, const Containers::StridedArrayView2D<T>& data, py::object owner) {
     const std::size_t itemsize = Trade::sceneMappingTypeSize(type);
     const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForSceneMappingType(type);
     /* We support all mapping types */
     CORRADE_INTERNAL_ASSERT(formatStringGetitemSetitem.first());
-    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(scene));
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, std::move(owner));
 }
 
-template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneFieldView(Trade::SceneData& scene, const UnsignedInt id, const Containers::StridedArrayView2D<T>& data) {
-    const Trade::SceneFieldType type = scene.fieldType(id);
+template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1, T>> sceneFieldView(const Trade::SceneFieldType type, const Containers::StridedArrayView2D<T>& data, py::object owner) {
     const std::size_t itemsize = Trade::sceneFieldTypeSize(type);
     const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForSceneFieldType(type);
     if(!formatStringGetitemSetitem.first()) {
         PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(type).ptr());
         throw py::error_already_set{};
     }
-    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, py::cast(scene));
+    return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, std::move(owner));
 }
 
 }
@@ -999,7 +995,7 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_AttributeError, "mesh is not indexed");
                 throw py::error_already_set{};
             }
-            return meshIndicesView(self, self.indices());
+            return meshIndicesView(self.indexType(), self.indices(), py::cast(self));
         }, "Indices")
         .def_property_readonly("mutable_indices", [](Trade::MeshData& self) {
             if(!self.isIndexed()) {
@@ -1010,7 +1006,7 @@ void trade(py::module_& m) {
                 PyErr_SetString(PyExc_AttributeError, "mesh index data is not mutable");
                 throw py::error_already_set{};
             }
-            return meshIndicesView(self, self.mutableIndices());
+            return meshIndicesView(self.indexType(), self.mutableIndices(), py::cast(self));
         }, "Mutable indices")
         .def_property_readonly("vertex_count", &Trade::MeshData::vertexCount, "Vertex count")
         /* Has to be a function instead of a property because there's an
@@ -1164,7 +1160,7 @@ void trade(py::module_& m) {
                     PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
                     throw py::error_already_set{};
                 }
-                return meshAttributeView(self, *found, self.attribute(*found));
+                return meshAttributeView(self.attributeFormat(*found), self.attribute(*found), py::cast(self));
             }
 
             const UnsignedInt attributeCount = self.attributeCount(name, morphTargetId);
@@ -1186,7 +1182,7 @@ void trade(py::module_& m) {
                     PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
                     throw py::error_already_set{};
                 }
-                return meshAttributeView(self, id, self.attribute(id));
+                return meshAttributeView(self.attributeFormat(id), self.attribute(id), py::cast(self));
             }
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
@@ -1205,7 +1201,7 @@ void trade(py::module_& m) {
                     PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
                     throw py::error_already_set{};
                 }
-                return meshAttributeView(self, *found, self.mutableAttribute(*found));
+                return meshAttributeView(self.attributeFormat(*found), self.mutableAttribute(*found), py::cast(self));
             }
 
             const UnsignedInt attributeCount = self.attributeCount(name, morphTargetId);
@@ -1232,7 +1228,7 @@ void trade(py::module_& m) {
                     PyErr_SetString(PyExc_NotImplementedError, "array attributes not implemented yet, sorry");
                     throw py::error_already_set{};
                 }
-                return meshAttributeView(self, id, self.mutableAttribute(id));
+                return meshAttributeView(self.attributeFormat(id), self.mutableAttribute(id), py::cast(self));
             }
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u attributes", id, self.attributeCount());
@@ -2599,7 +2595,7 @@ void trade(py::module_& m) {
         }, "Whether a scene field has given object", py::arg("field_id"), py::arg("object"))
         .def("mapping", [](/*const*/ Trade::SceneData& self, Trade::SceneField name) {
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name)) {
-                return sceneMappingView(self, self.mapping(*found));
+                return sceneMappingView(self.mappingType(), self.mapping(*found), py::cast(self));
             }
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
@@ -2607,7 +2603,7 @@ void trade(py::module_& m) {
         }, "Object mapping data for given named field", py::arg("name"))
         .def("mapping", [](/*const*/ Trade::SceneData& self, UnsignedInt id) {
             if(id < self.fieldCount())
-                return sceneMappingView(self, self.mapping(id));
+                return sceneMappingView(self.mappingType(), self.mapping(id), py::cast(self));
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
@@ -2618,7 +2614,7 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name))
-                return sceneMappingView(self, self.mutableMapping(*found));
+                return sceneMappingView(self.mappingType(), self.mutableMapping(*found), py::cast(self));
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
             throw py::error_already_set{};
@@ -2629,7 +2625,7 @@ void trade(py::module_& m) {
                 throw py::error_already_set{};
             }
             if(id < self.fieldCount())
-                return sceneMappingView(self, self.mutableMapping(id));
+                return sceneMappingView(self.mappingType(), self.mutableMapping(id), py::cast(self));
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
@@ -2644,7 +2640,7 @@ void trade(py::module_& m) {
                 /** @todo annotate the return type properly in the docs */
                 if(self.fieldType(*found) == Trade::SceneFieldType::Bit)
                     return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBits(*found), py::cast(self)));
-                return pyCastButNotShitty(sceneFieldView(self, *found, self.field(*found)));
+                return pyCastButNotShitty(sceneFieldView(self.fieldType(*found), self.field(*found), py::cast(self)));
             }
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
@@ -2663,7 +2659,7 @@ void trade(py::module_& m) {
             /** @todo annotate the return type properly in the docs */
             if(self.fieldType(id) == Trade::SceneFieldType::Bit)
                 return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBits(id), py::cast(self)));
-            return pyCastButNotShitty(sceneFieldView(self, id, self.field(id)));
+            return pyCastButNotShitty(sceneFieldView(self.fieldType(id), self.field(id), py::cast(self)));
         }, "Data for given field", py::arg("name"))
         .def("mutable_field", [](Trade::SceneData& self, Trade::SceneField name) {
             if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
@@ -2679,7 +2675,7 @@ void trade(py::module_& m) {
                 /** @todo annotate the return type properly in the docs */
                 if(self.fieldType(*found) == Trade::SceneFieldType::Bit)
                     return pyCastButNotShitty(Containers::pyArrayViewHolder(self.mutableFieldBits(*found), py::cast(self)));
-                return pyCastButNotShitty(sceneFieldView(self, *found, self.mutableField(*found)));
+                return pyCastButNotShitty(sceneFieldView(self.fieldType(*found), self.mutableField(*found), py::cast(self)));
             }
 
             PyErr_Format(PyExc_KeyError, "%S not found among %u fields", py::cast(name).ptr(), self.fieldCount());
@@ -2702,7 +2698,7 @@ void trade(py::module_& m) {
             /** @todo annotate the return type properly in the docs */
             if(self.fieldType(id) == Trade::SceneFieldType::Bit)
                 return pyCastButNotShitty(Containers::pyArrayViewHolder(self.mutableFieldBits(id), py::cast(self)));
-            return pyCastButNotShitty(sceneFieldView(self, id, self.mutableField(id)));
+            return pyCastButNotShitty(sceneFieldView(self.fieldType(id), self.mutableField(id), py::cast(self)));
         }, "Mutable data for given field", py::arg("name"))
 
         .def_property_readonly("owner", [](Trade::SceneData& self) {
