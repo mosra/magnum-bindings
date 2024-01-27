@@ -34,8 +34,11 @@ except ModuleNotFoundError:
     raise unittest.SkipTest("numpy not installed")
 
 class StridedArrayViewCustomType(unittest.TestCase):
-    # short and mutable_int tested in test_containers, as for those memoryview
-    # works well... well, for one dimension it does
+    # This tests exposing statically typed StridedArrayView instances from C++,
+    # see StridedArrayViewCustomDynamicType below for types specified
+    # dynamically and types inherited from the buffer protocol. The short and
+    # mutable_int variants tested in test_containers, as for those memoryview
+    # works well... well, for one dimension it does.
 
     def test_mutable_vector3d(self):
         a = test_stridedarrayview.MutableContainer3d()
@@ -132,7 +135,7 @@ class StridedArrayViewCustomType(unittest.TestCase):
         ])
 
 class StridedArrayViewCustomDynamicType(unittest.TestCase):
-    def test_short_short(self):
+    def test_binding_short_short(self):
         a = test_stridedarrayview.MutableContainerDynamicType('hh')
         self.assertEqual(a.view.size, (2, 3))
         self.assertEqual(a.view.stride, (12, 4))
@@ -155,3 +158,28 @@ class StridedArrayViewCustomDynamicType(unittest.TestCase):
         self.assertEqual(a.view[1][0], (22563, -17665))
         self.assertEqual(a.view[1][1], (-22, 18))
         self.assertEqual(a.view[1][2], (0, 0))
+
+    def test_init_long(self):
+        a = np.array([[1, 2, 3], [-4, 5000000000, 6]], np.dtype('q'))
+        self.assertEqual(a.dtype, 'int64')
+
+        b = containers.MutableStridedArrayView2D(a)
+        self.assertEqual(b.size, (2, 3))
+        self.assertEqual(b.stride, (24, 8))
+        self.assertEqual(b.format, 'q')
+        b[1, 1] *= 2
+        self.assertEqual(b[0, 2], 3)
+        self.assertEqual(b[1, 0], -4)
+        self.assertEqual(b[1, 1], 10000000000)
+
+    def test_init_double(self):
+        a = np.array([[[1.0], [2.0]], [[-4.0], [5.0]]], np.dtype('d'))
+        self.assertEqual(a.dtype, 'float64')
+
+        b = containers.MutableStridedArrayView3D(a)
+        self.assertEqual(b.size, (2, 2, 1))
+        self.assertEqual(b.stride, (16, 8, 8))
+        self.assertEqual(b.format, 'd')
+        b[1, 1, 0] *= -2.0
+        self.assertEqual(b[0, 1, 0], 2.0)
+        self.assertEqual(b[1, 1, 0], -10.0)

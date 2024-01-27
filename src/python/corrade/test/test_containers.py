@@ -275,9 +275,10 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(bytes(b), b'hello')
         self.assertEqual(b.size, (5, ))
         self.assertEqual(b.stride, (1, ))
-        # We don't provide typed access for views created from buffers, so the
-        # format is unspecified to convey "generic data"
-        self.assertEqual(b.format, None)
+        # We get B as "general data", consistently with what memoryview() does
+        # for bytes/bytearray
+        self.assertEqual(memoryview(a).format, 'B')
+        self.assertEqual(b.format, 'B')
         self.assertEqual(b[2], ord('l'))
         self.assertEqual(sys.getrefcount(a), a_refcount + 1)
 
@@ -296,6 +297,19 @@ class StridedArrayView1D(unittest.TestCase):
         del b
         self.assertTrue(sys.getrefcount(a), a_refcount)
 
+    def test_init_buffer_no_format(self):
+        a = b'hello'
+
+        # ArrayView doesn't preserve the format, so this should then get None
+        # for the format, instead of B
+        b = containers.StridedArrayView1D(containers.ArrayView(a))
+        self.assertEqual(len(b), 5)
+        self.assertEqual(bytes(b), b'hello')
+        self.assertEqual(b.size, (5, ))
+        self.assertEqual(b.stride, (1, ))
+        self.assertEqual(b.format, None)
+        self.assertEqual(b[2], ord('l'))
+
     def test_init_buffer_empty(self):
         a = b''
         a_refcount = sys.getrefcount(a)
@@ -305,7 +319,7 @@ class StridedArrayView1D(unittest.TestCase):
         self.assertEqual(len(b), 0)
         self.assertEqual(b.size, (0, ))
         self.assertEqual(b.stride, (1, ))
-        self.assertEqual(b.format, None)
+        self.assertEqual(b.format, 'B')
         self.assertEqual(sys.getrefcount(a), a_refcount)
 
     def test_init_buffer_memoryview_obj(self):
@@ -326,9 +340,10 @@ class StridedArrayView1D(unittest.TestCase):
         b = containers.MutableStridedArrayView1D(a)
         self.assertEqual(b.size, (5, ))
         self.assertEqual(b.stride, (1, ))
-        # We don't provide typed access for views created from buffers, so the
-        # format is unspecified to convey "generic data"
-        self.assertEqual(b.format, None)
+        # We get B as "general data", consistently with what memoryview() does
+        # for bytes/bytearray
+        self.assertEqual(memoryview(a).format, 'B')
+        self.assertEqual(b.format, 'B')
         self.assertEqual(b[4], ord('?'))
         b[4] = ord('!')
         self.assertEqual(b[4], ord('!'))
@@ -1033,6 +1048,10 @@ class StridedArrayView4D(unittest.TestCase):
             containers.StridedArrayView4D().transposed(4, 3)
 
 class StridedArrayViewCustomType(unittest.TestCase):
+    # This tests exposing statically typed StridedArrayView instances from C++,
+    # see StridedArrayViewCustomDynamicType below for types specified
+    # dynamically and types inherited from the buffer protocol
+
     def test_short(self):
         a = test_stridedarrayview.get_containers()
         self.assertEqual(type(a.view), containers.StridedArrayView2D)
@@ -1080,10 +1099,7 @@ class StridedArrayViewCustomType(unittest.TestCase):
     # as memoryview can't handle their types
 
 class StridedArrayViewCustomDynamicType(unittest.TestCase):
-    # TODO test construction from a (typed) array or memory view, should work
-    #   and now it doesn't
-
-    def test_float(self):
+    def test_binding_float(self):
         a = test_stridedarrayview.MutableContainerDynamicType('f')
         self.assertEqual(a.view.size, (2, 3))
         self.assertEqual(a.view.stride, (12, 4))
@@ -1097,7 +1113,7 @@ class StridedArrayViewCustomDynamicType(unittest.TestCase):
         self.assertEqual(a.view[1][1], 0.0)
         self.assertEqual(a.view[1][2], 0.0)
 
-    def test_int(self):
+    def test_binding_int(self):
         a = test_stridedarrayview.MutableContainerDynamicType('i')
         self.assertEqual(a.view.size, (2, 3))
         self.assertEqual(a.view.stride, (12, 4))
@@ -1110,6 +1126,52 @@ class StridedArrayViewCustomDynamicType(unittest.TestCase):
         self.assertEqual(a.view[1][0], 0)
         self.assertEqual(a.view[1][1], -773)
         self.assertEqual(a.view[1][2], 0)
+
+    def test_init_float(self):
+        a = array.array('f', [1.5, 0.75, 103.125])
+        b = containers.MutableStridedArrayView1D(a)
+        self.assertEqual(b.size, (3,))
+        self.assertEqual(b.stride, (4,))
+        self.assertEqual(b.format, 'f')
+        b[1] *= 3.0
+        self.assertEqual(b[0], 1.5)
+        self.assertEqual(b[1], 2.25)
+        self.assertEqual(b[2], 103.125)
+
+    def test_init_short(self):
+        a = array.array('H', [12, 247, 65535, 2206])
+        b = containers.MutableStridedArrayView1D(a)
+        self.assertEqual(b.size, (4,))
+        self.assertEqual(b.stride, (2,))
+        self.assertEqual(b.format, 'H')
+        b[2] -= 12765
+        self.assertEqual(b[0], 12)
+        self.assertEqual(b[1], 247)
+        self.assertEqual(b[2], 52770)
+        self.assertEqual(b[3], 2206)
+
+    def test_init_strided(self):
+        a = array.array('f', [2.5, 3.14, -1.75, 53.2])
+        b = memoryview(a)[::2]
+        c = containers.StridedArrayView1D(b)
+        self.assertIs(c.owner, b)
+        self.assertEqual(c.size, (2,))
+        self.assertEqual(c.stride, (8,))
+        self.assertEqual(c.format, 'f')
+        self.assertEqual(c[0], 2.5)
+        self.assertEqual(c[1], -1.75)
+
+    def test_init_access_not_implemented(self):
+        # TODO numpy np.int64 results in l even though python's struct
+        #   classifies that as a 4-byte type, what the fuck?!
+        a = array.array('L', [1, 2, 3])
+        b = containers.MutableStridedArrayView1D(a)
+        self.assertEqual(b.format, 'L')
+
+        with self.assertRaisesRegex(NotImplementedError, "access to this data format is not implemented, sorry"):
+            b[2]
+        with self.assertRaisesRegex(NotImplementedError, "access to this data format is not implemented, sorry"):
+            b[1] = 5
 
 class BitArray(unittest.TestCase):
     def test_init(self):

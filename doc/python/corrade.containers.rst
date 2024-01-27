@@ -25,6 +25,7 @@
 
 .. doctest setup
     >>> from corrade import containers
+    >>> import array
 
 .. py:class:: corrade.containers.ArrayView
 
@@ -82,9 +83,21 @@
 
 .. py:class:: corrade.containers.StridedArrayView1D
 
-    Provides an one-dimensional read-only view on a memory range with custom
-    stride values. Convertible both to and from Python objects supporting the
-    Buffer Protocol. See :ref:`StridedArrayView2D`, :ref:`StridedArrayView3D`,
+    Provides a typed one-dimensional read-only view on a memory range with
+    custom stride values. Convertible both to and from Python objects
+    supporting the Buffer Protocol, preserving the dimensionality, type and
+    stride information:
+
+    .. code:: pycon
+
+        >>> a = array.array('f', [2.5, 3.14, -1.75, 53.2])
+        >>> b = containers.StridedArrayView1D(memoryview(a)[::2])
+        >>> b[0]
+        2.5
+        >>> b[1]
+        -1.75
+
+    See :ref:`StridedArrayView2D`, :ref:`StridedArrayView3D`,
     :ref:`StridedArrayView4D`, :ref:`MutableStridedArrayView1D` and others for
     multi-dimensional and mutable equivalents.
 
@@ -104,6 +117,12 @@
     multi-dimensional slicing as well (which raises :ref:`NotImplementedError`
     in Py3.7 :ref:`memoryview`).
 
+.. py:function:: corrade.containers.StridedArrayView1D.__getitem__(self, i: int)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <StridedArrayView1D.format>` is not one of :py:`'b'`,
+        :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
+        :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView1D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.StridedArrayView1D.broadcasted
@@ -118,6 +137,18 @@
     Equivalent to :ref:`StridedArrayView1D`, but implementing
     :ref:`__setitem__()` as well.
 
+.. py:function:: corrade.containers.MutableStridedArrayView1D.__getitem__(self, i: int)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView1D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
+.. py:function:: corrade.containers.MutableStridedArrayView1D.__setitem__(self, i: int, value: handle)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView1D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView1D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.MutableStridedArrayView1D.broadcasted
@@ -131,6 +162,12 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
+.. py:function:: corrade.containers.StridedArrayView2D.__getitem__(self, i: typing.Tuple[int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <StridedArrayView2D.format>` is not one of :py:`'b'`,
+        :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
+        :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView2D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.StridedArrayView2D.broadcasted
@@ -148,6 +185,18 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
+.. py:function:: corrade.containers.MutableStridedArrayView2D.__getitem__(self, i: typing.Tuple[int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView2D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
+.. py:function:: corrade.containers.MutableStridedArrayView2D.__setitem__(self, i: typing.Tuple[int, int], value: handle)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView2D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView2D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.MutableStridedArrayView2D.broadcasted
@@ -164,6 +213,12 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
+.. py:function:: corrade.containers.StridedArrayView3D.__getitem__(self, i: typing.Tuple[int, int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <StridedArrayView3D.format>` is not one of :py:`'b'`,
+        :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
+        :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView3D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.StridedArrayView3D.broadcasted
@@ -181,6 +236,18 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
+.. py:function:: corrade.containers.MutableStridedArrayView3D.__getitem__(self, i: typing.Tuple[int, int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView3D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
+.. py:function:: corrade.containers.MutableStridedArrayView3D.__setitem__(self, i: typing.Tuple[int, int, int], value: handle)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView3D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView3D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.MutableStridedArrayView3D.broadcasted
@@ -197,6 +264,12 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
+.. py:function:: corrade.containers.StridedArrayView4D.__getitem__(self, i: typing.Tuple[int, int, int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <StridedArrayView4D.format>` is not one of :py:`'b'`,
+        :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
+        :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView4D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
@@ -212,6 +285,18 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
+.. py:function:: corrade.containers.MutableStridedArrayView4D.__getitem__(self, i: typing.Tuple[int, int, int, int])
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView4D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
+.. py:function:: corrade.containers.MutableStridedArrayView4D.__setitem__(self, i: typing.Tuple[int, int, int, int], value: handle)
+    :raise IndexError: If :p:`i` is out of range
+    :raise NotImplementedError: If the view was created from a buffer and
+        :ref:`format <MutableStridedArrayView4D.format>` is not one of
+        :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
+        :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView4D.flipped
     :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`

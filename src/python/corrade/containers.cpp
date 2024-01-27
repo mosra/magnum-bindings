@@ -28,6 +28,7 @@
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/BitArray.h>
 #include <Corrade/Containers/StridedBitArrayView.h>
+#include <Corrade/Containers/Pair.h>
 #include <Corrade/Containers/ScopeGuard.h>
 
 #include "Corrade/Containers/PythonBindings.h"
@@ -37,6 +38,8 @@
 #include "corrade/PyBuffer.h"
 
 namespace corrade {
+
+using namespace Containers::Literals;
 
 namespace {
 
@@ -350,7 +353,9 @@ template<class T> bool stridedArrayViewBufferProtocol(T& self, Py_buffer& buffer
     buffer.buf = const_cast<typename std::decay<typename T::ErasedType>::type*>(self.data());
     buffer.readonly = std::is_const<typename T::Type>::value;
     if((flags & PyBUF_FORMAT) == PyBUF_FORMAT)
-        buffer.format = const_cast<char*>(self.format);
+        /* A valid format shouldn't be an empty string. If it is, it's because
+           it was null originally. Pass null in that case again. */
+        buffer.format = self.format ? self.format.data() : nullptr;
     /* The view is immutable (can't change its size after it has been
        constructed), so referencing the size/stride directly is okay */
     buffer.shape = const_cast<Py_ssize_t*>(reinterpret_cast<const Py_ssize_t*>(Containers::Implementation::sizeRef(self).begin()));
@@ -557,6 +562,44 @@ template<unsigned dimensions, template<unsigned> class Steps, class T> Container
     return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : std::move(owner));
 }
 
+Containers::Pair<py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForFormat(const char* const format) {
+    /* The format string can be null, in which case B should be assumed:
+       https://docs.python.org/3/c-api/buffer.html#c.Py_buffer.format */
+    const Containers::StringView formatString = format ? format : "B"_s;
+
+    /* Matching the entries (and order) in StridedArrayViewPythonBindings.h */
+    #define _c(string, type)                                                \
+        if(formatString == #string ## _s)  return {                         \
+            [](const char* item) {                                          \
+                return py::cast(*reinterpret_cast<const type*>(item));      \
+            },                                                              \
+            [](char* item, py::handle object) {                             \
+                *reinterpret_cast<type*>(item) = py::cast<type>(object);    \
+            }};
+    _c(b, std::int8_t)
+    _c(B, std::uint8_t)
+    _c(h, std::int16_t)
+    _c(H, std::uint16_t)
+    _c(i, std::int32_t)
+    _c(I, std::uint32_t)
+    /** @todo numpy's np.int64 is a `l` even though struct says it's 4 bytes,
+        what to do?! */
+    _c(q, std::int64_t)
+    _c(Q, std::uint64_t)
+    _c(f, float)
+    _c(d, double)
+
+    return {
+        [](const char*) -> py::object {
+            PyErr_SetString(PyExc_NotImplementedError, "access to this data format is not implemented, sorry");
+            throw py::error_already_set{};
+        },
+        [](char*, py::handle) {
+            PyErr_SetString(PyExc_NotImplementedError, "access to this data format is not implemented, sorry");
+            throw py::error_already_set{};
+        }};
+}
+
 template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containers::PyStridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>>>& c) {
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, Containers::PyStridedArrayView<dimensions, T>>();
@@ -571,7 +614,7 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
         .def(py::init([](const py::buffer& other) {
             /* GCC 4.8 otherwise loudly complains about missing initializers */
             Py_buffer buffer{nullptr, nullptr, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr};
-            if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_STRIDES|(std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
+            if(PyObject_GetBuffer(other.ptr(), &buffer, PyBUF_STRIDES|PyBUF_FORMAT|(std::is_const<T>::value ? 0 : PyBUF_WRITABLE)) != 0)
                 throw py::error_already_set{};
 
             Containers::ScopeGuard e{&buffer, PyBuffer_Release};
@@ -580,6 +623,8 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
                 PyErr_Format(PyExc_BufferError, "expected %u dimensions but got %i", dimensions, buffer.ndim);
                 throw py::error_already_set{};
             }
+
+            const Containers::Pair<py::object(*)(const char*), void(*)(char*, py::handle)> accessors = accessorsForFormat(buffer.format);
 
             /* Calculate total memory size that spans the whole view. Mainly to
                make the constructor assert happy, not used otherwise */
@@ -592,12 +637,15 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
                the buffer because we no longer care about the buffer
                descriptor -- that could allow the GC to haul away a bit more
                garbage */
-            /** @todo this always assumes bytes for now -- remember the format
-                and provide a checked typed conversion API */
-            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<dimensions, T>{Containers::StridedArrayView<dimensions, T>{
-                {static_cast<T*>(buffer.buf), size},
-                Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(buffer.shape)},
-                Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)}}},
+            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<dimensions, T>{
+                Containers::StridedArrayView<dimensions, T>{
+                    {static_cast<T*>(buffer.buf), size},
+                    Containers::StaticArrayView<dimensions, const std::size_t>{reinterpret_cast<std::size_t*>(buffer.shape)},
+                    Containers::StaticArrayView<dimensions, const std::ptrdiff_t>{reinterpret_cast<std::ptrdiff_t*>(buffer.strides)}},
+                buffer.format,
+                std::size_t(buffer.itemsize),
+                accessors.first(),
+                accessors.second()},
                 buffer.len ? py::reinterpret_borrow<py::object>(buffer.obj) : py::none{});
         }), "Construct from a buffer")
 
@@ -613,7 +661,11 @@ template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containe
         }, "View stride in each dimension")
         .def_property_readonly("dimensions", [](const Containers::PyStridedArrayView<dimensions, T>&) { return dimensions; }, "Dimension count")
         .def_property_readonly("format", [](const Containers::PyStridedArrayView<dimensions, T>& self) {
-            return self.format;
+            /* A valid format shouldn't be an empty string. If it is, it's
+               because it was null originally. Return null in that case to
+               turn this into a None, consistently with how Python's
+               memoryview etc expects the format strings to be. */
+            return self.format ? self.format.data() : nullptr;
         }, "Format of each item")
         .def_property_readonly("owner", [](const Containers::PyStridedArrayView<dimensions, T>& self) {
             return pyObjectHolderFor<Containers::PyArrayViewHolder>(self).owner;

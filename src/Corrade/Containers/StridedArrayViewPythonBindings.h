@@ -27,13 +27,16 @@
 
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/StridedArrayView.h>
+#include <Corrade/Containers/String.h>
 
 namespace Corrade { namespace Containers {
 
 namespace Implementation {
 
 /* For maintainability please keep in the same order as
-   https://docs.python.org/3/library/struct.html#format-characters */
+   https://docs.python.org/3/library/struct.html#format-characters. Each of
+   these has also a corresponding entry in accessorsForFormat() in
+   containers.cpp in the same order. */
 template<class T> constexpr const char* pythonFormatString() {
     static_assert(sizeof(T) == 0, "format string unknown for this type, supply it explicitly");
     return {};
@@ -111,7 +114,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
 
         template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view): PyStridedArrayView{view, Implementation::pythonFormatString<typename std::decay<U>::type>(), sizeof(U)} {}
 
-        template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view, const char* format, std::size_t itemsize): PyStridedArrayView<dimensions, T>{
+        template<class U> explicit PyStridedArrayView(const StridedArrayView<dimensions, U>& view, Containers::StringView format, std::size_t itemsize): PyStridedArrayView<dimensions, T>{
             arrayCast<T>(view),
             format,
             itemsize,
@@ -119,7 +122,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
             Implementation::PyStridedArrayViewSetItem<T, U>::set
         } {}
 
-        explicit PyStridedArrayView(const StridedArrayView<dimensions, T>& view, const char* format, std::size_t itemsize, pybind11::object(*getitem)(const char*), void(*setitem)(char*, pybind11::handle)): StridedArrayView<dimensions, T>{view}, format{format}, itemsize{itemsize}, getitem{getitem}, setitem{setitem} {}
+        explicit PyStridedArrayView(const StridedArrayView<dimensions, T>& view, Containers::StringView format, std::size_t itemsize, pybind11::object(*getitem)(const char*), void(*setitem)(char*, pybind11::handle)): StridedArrayView<dimensions, T>{view}, format{format}, itemsize{itemsize}, getitem{getitem}, setitem{setitem} {}
 
         /* All APIs that are exposed by bindings and return a StridedArrayView
            have to return the wrapper now */
@@ -169,7 +172,10 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
         }
 
         /* has to be public as it's accessed by the bindings directly */
-        const char* format;
+        /* The assumption is that >99% of format strings should be just a few
+           characters, stored with a SSO. I.e., not even bothering with
+           String::nullTerminatedGlobalView() anywhere. */
+        Containers::String format;
         std::size_t itemsize;
         pybind11::object(*getitem)(const char*);
         void(*setitem)(char*, pybind11::handle);
@@ -178,13 +184,13 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
 namespace Implementation {
 
 template<unsigned dimensions, class T> struct PyStridedElement {
-    static PyStridedArrayView<dimensions - 1, T> wrap(const StridedArrayView<dimensions - 1, T>& element, const char* format, std::size_t itemsize, pybind11::object(*getitem)(const char*), void(*setitem)(char*, pybind11::handle)) {
+    static PyStridedArrayView<dimensions - 1, T> wrap(const StridedArrayView<dimensions - 1, T>& element, Containers::StringView format, std::size_t itemsize, pybind11::object(*getitem)(const char*), void(*setitem)(char*, pybind11::handle)) {
         return PyStridedArrayView<dimensions - 1, T>{element, format, itemsize, getitem, setitem};
     }
 };
 
 template<class T> struct PyStridedElement<1, T> {
-    static T& wrap(T& element, const char*, std::size_t, pybind11::object(*)(const char*), void(*)(char*, pybind11::handle)) {
+    static T& wrap(T& element, Containers::StringView, std::size_t, pybind11::object(*)(const char*), void(*)(char*, pybind11::handle)) {
         return element;
     }
 };
