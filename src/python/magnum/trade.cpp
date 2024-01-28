@@ -876,8 +876,6 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         #undef _c
         #undef _cc
 
-        /** @todo handle this once StridedBitArrayView is exposed */
-        case Trade::SceneFieldType::Bit:
         /** @todo handle these once there's something to test with */
         case Trade::SceneFieldType::Half:
         case Trade::SceneFieldType::Vector2h:
@@ -911,6 +909,10 @@ Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::h
         case Trade::SceneFieldType::StringRangeNullTerminated32:
         case Trade::SceneFieldType::StringRangeNullTerminated64:
             return {};
+
+        /* Bit fields are handled before reaching this function */
+        case Trade::SceneFieldType::Bit:
+            CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
     }
 
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
