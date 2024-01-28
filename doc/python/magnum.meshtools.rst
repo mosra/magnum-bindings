@@ -47,6 +47,10 @@
         :ref:`MeshPrimitive.LINE_LOOP`, :ref:`MeshPrimitive.TRIANGLE_STRIP` or
         :ref:`MeshPrimitive.TRIANGLE_FAN`
 
+.. py:function:: magnum.meshtools.interleave
+    :raise AssertionError: If any attribute in :p:`extra` has the data size
+        different from :p:`mesh` vertex count
+
 .. py:function:: magnum.meshtools.transform2d
     :raise KeyError: If :p:`mesh` doesn't have
         :ref:`trade.MeshAttribute.POSITION` of index :p:`id` (and in morph

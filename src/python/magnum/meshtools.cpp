@@ -169,12 +169,25 @@ void meshtools(py::module_& m) {
 
             return MeshTools::generateIndices(mesh);
         }, "Convert a mesh to plain indexed lines or triangles", py::arg("mesh"))
-        .def("interleave", [](const Trade::MeshData& mesh, MeshTools::InterleaveFlag flags) {
+        /** @todo eugh, find a way w/o the STL vector */
+        .def("interleave", [](const Trade::MeshData& mesh, const std::vector<Trade::MeshAttributeData>& extra, MeshTools::InterleaveFlag flags) {
+            for(std::size_t i = 0; i != extra.size(); ++i) {
+                const Trade::MeshAttributeData& attribute = extra[i];
+                if(attribute.data().size() != mesh.vertexCount()) {
+                    PyErr_Format(PyExc_AssertionError, "extra attribute %zu expected to have %u items but got %zu", i, mesh.vertexCount(), attribute.data().size());
+                    throw py::error_already_set{};
+                }
+            }
             /** @todo check that the vertices/indices aren't impl-specific if
                 the interleaved preservation is disabled, once it's possible to
                 test */
-            return MeshTools::interleave(mesh, {}, flags);
-        }, "Interleave mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+            return MeshTools::interleave(mesh, extra, flags);
+        }, "Interleave mesh data", py::arg("mesh"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("extra") = std::vector<Trade::MeshAttributeData>{},
+            py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
         .def("copy", static_cast<Trade::MeshData(*)(const Trade::MeshData&)>(MeshTools::copy), "Make an owned copy of the mesh", py::arg("mesh"))
         /** @todo check that the indices/vertices aren't impl-specific once
             it's possible to test */

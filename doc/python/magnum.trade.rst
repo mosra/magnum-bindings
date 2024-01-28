@@ -138,8 +138,9 @@
 .. py:class:: magnum.trade.MeshAttributeData
 
     Associates a typed data view with a name, vertex format and other mesh
-    attribute properties. The data view can be either one-dimensional, for
-    example a NumPy array:
+    attribute properties, which can be subsequently put into a :ref:`MeshData`
+    instance, for example with :ref:`meshtools.interleave()`. The data view can
+    be either one-dimensional, for example a NumPy array:
 
     ..
         Just to verify the snippet below actually works (don't want the arrows

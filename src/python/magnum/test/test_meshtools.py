@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import os
 import sys
 import unittest
@@ -211,10 +212,26 @@ class Interleave(unittest.TestCase):
         # Gap after normals not removed
         self.assertEqual(interleaved.attribute_stride(trade.MeshAttribute.POSITION), 12 + 12 + 8)
 
-        interleaved_packed = meshtools.interleave(mesh, meshtools.InterleaveFlags.NONE)
+        interleaved_packed = meshtools.interleave(mesh, flags=meshtools.InterleaveFlags.NONE)
         self.assertEqual(interleaved_packed.attribute_count(), 2)
         # Gap after normals removed
         self.assertEqual(interleaved_packed.attribute_stride(trade.MeshAttribute.POSITION), 12 + 8)
+
+    def test_extra(self):
+        interleaved = meshtools.interleave(primitives.plane_solid(), extra=[
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_SHORT, array.array('H', [3, 176, 2, 14]))
+        ])
+        self.assertEqual(interleaved.attribute_count(), 3)
+        self.assertTrue(interleaved.has_attribute(trade.MeshAttribute.OBJECT_ID))
+        self.assertEqual(interleaved.attribute_format(trade.MeshAttribute.OBJECT_ID), VertexFormat.UNSIGNED_SHORT)
+        self.assertEqual(list(interleaved.attribute(trade.MeshAttribute.OBJECT_ID)), [3, 176, 2, 14])
+
+    def test_extra_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "extra attribute 1 expected to have 4 items but got 5"):
+            meshtools.interleave(primitives.plane_solid(), extra=[
+                trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(33), VertexFormat.UNSIGNED_BYTE, array.array('B', [3, 176, 2, 12])),
+                trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_SHORT, array.array('H', [3, 176, 2, 12, 6]))
+            ])
 
 class Copy(unittest.TestCase):
     def test(self):
