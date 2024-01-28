@@ -823,6 +823,14 @@ class MeshData(unittest.TestCase):
         self.assertEqual(str(b), "MeshAttribute.BITANGENT")
         self.assertEqual(repr(b), "<MeshAttribute.BITANGENT: 3>")
 
+    def test_init_empty(self):
+        mesh = trade.MeshData(MeshPrimitive.TRIANGLES, 21)
+        self.assertIs(mesh.owner, None)
+        self.assertFalse(mesh.is_indexed)
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLES)
+        self.assertEqual(mesh.vertex_count, 21)
+        self.assertEqual(mesh.attribute_count(), 0)
+
     def test(self):
         importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
         # This adds extra attributes for joints and weights, don't want

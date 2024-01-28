@@ -1072,6 +1072,9 @@ void trade(py::module_& m) {
         }, "Memory owner");
 
     py::class_<Trade::MeshData, Trade::PyDataHolder<Trade::MeshData>>{m, "MeshData", "Mesh data"}
+        .def(py::init([](MeshPrimitive primitive, UnsignedInt vertexCount) {
+            return Trade::MeshData{primitive, vertexCount};
+        }), "Construct an index-less attribute-less mesh data", py::arg("primitive"), py::arg("vertex_count"))
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
         .def_property_readonly("index_data_flags", [](const Trade::MeshData& self) {
             return Trade::DataFlag(Containers::enumCastUnderlyingType(self.indexDataFlags()));
