@@ -705,8 +705,10 @@
 .. py:class:: magnum.trade.SceneFieldData
 
     Associates a pair of typed data views with a name, type and other scene
-    field properties. The mapping data view is always one-dimensional. The
-    field data view can be either one-dimensional, for example a NumPy array:
+    field properties, which can be subsequently put into a :ref:`SceneData`
+    instance, for example with :ref:`scenetools.combine_fields()`. The mapping
+    data view is always one-dimensional. The field data view can be either
+    one-dimensional, for example a NumPy array:
 
     ..
         Just to verify the snippet below actually works (don't want the arrows

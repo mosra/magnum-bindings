@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import os
 import sys
 import unittest
@@ -31,6 +32,36 @@ from corrade import containers
 from magnum import *
 from magnum import scenetools, trade
 import magnum
+
+class Combine(unittest.TestCase):
+    def test(self):
+        mapping = array.array('I', [0, 176, 35])
+        meshes = array.array('H', [26, 17, 2])
+        materials = array.array('b', [-1, 104, 8])
+
+        scene = scenetools.combine_fields(trade.SceneMappingType.UNSIGNED_LONG, 180, [
+            trade.SceneFieldData(trade.SceneField.MESH,
+                trade.SceneMappingType.UNSIGNED_INT, mapping,
+                trade.SceneFieldType.UNSIGNED_SHORT, meshes),
+            trade.SceneFieldData(trade.SceneField.MESH_MATERIAL,
+                trade.SceneMappingType.UNSIGNED_INT, mapping,
+                trade.SceneFieldType.BYTE, materials),
+        ])
+        self.assertEqual(scene.mapping_type, trade.SceneMappingType.UNSIGNED_LONG)
+        self.assertEqual(scene.mapping_bound, 180)
+        self.assertEqual(scene.field_count, 2)
+
+        self.assertEqual(scene.field_size(0), 3)
+        self.assertEqual(scene.field_name(0), trade.SceneField.MESH)
+        self.assertEqual(scene.field_type(0), trade.SceneFieldType.UNSIGNED_SHORT)
+        self.assertEqual(list(scene.mapping(0)), [0, 176, 35])
+        self.assertEqual(list(scene.field(0)), [26, 17, 2])
+
+        self.assertEqual(scene.field_size(1), 3)
+        self.assertEqual(scene.field_name(1), trade.SceneField.MESH_MATERIAL)
+        self.assertEqual(scene.field_type(1), trade.SceneFieldType.BYTE)
+        self.assertEqual(list(scene.mapping(1)), [0, 176, 35])
+        self.assertEqual(list(scene.field(1)), [-1, 104, 8])
 
 class Filter(unittest.TestCase):
     def test_fields(self):

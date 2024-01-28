@@ -32,6 +32,7 @@
 #include <Corrade/Containers/Pair.h>
 #include <Magnum/Math/Matrix3.h>
 #include <Magnum/Math/Matrix4.h>
+#include <Magnum/SceneTools/Combine.h>
 #include <Magnum/SceneTools/Filter.h>
 #include <Magnum/SceneTools/Hierarchy.h>
 #include <Magnum/Trade/SceneData.h>
@@ -53,6 +54,9 @@ void scenetools(py::module_& m) {
     #endif
 
     m
+        .def("combine_fields", [](const Trade::SceneMappingType mappingType, UnsignedLong mappingBound, const std::vector<Trade::SceneFieldData>& fields) {
+            return SceneTools::combineFields(mappingType, mappingBound, fields);
+        }, "Combine scene fields together", py::arg("mapping_type"), py::arg("mapping_bound"), py::arg("fields"))
         .def("filter_fields", [](const Trade::SceneData& scene, const Containers::BitArrayView fieldsToKeep) {
             if(fieldsToKeep.size() != scene.fieldCount()) {
                 PyErr_Format(PyExc_AssertionError, "expected %u bits but got %zu", scene.fieldCount(), fieldsToKeep.size());
