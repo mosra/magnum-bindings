@@ -40,12 +40,12 @@ namespace Implementation {
 template<class T> inline bool pyDataFlagsNeedOwner(const T& data) {
     return !(data.dataFlags() & (DataFlag::Owned|DataFlag::Global));
 }
-inline bool pyDataFlagsNeedOwner(const Trade::MaterialData& data) {
+inline bool pyDataFlagsNeedOwner(const MaterialData& data) {
     return
         !(data.attributeDataFlags() & (DataFlag::Owned|DataFlag::Global)) ||
         !(data.layerDataFlags() & (DataFlag::Owned|DataFlag::Global));
 }
-inline bool pyDataFlagsNeedOwner(const Trade::MeshData& data) {
+inline bool pyDataFlagsNeedOwner(const MeshData& data) {
     return
         !(data.indexDataFlags() & (DataFlag::Owned|DataFlag::Global)) ||
         !(data.vertexDataFlags() & (DataFlag::Owned|DataFlag::Global));
