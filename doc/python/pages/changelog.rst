@@ -146,10 +146,11 @@ Changelog
     :ref:`trade.AbstractImporter.flags` and corresponding enums
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
     :ref:`trade.AbstractSceneConverter`
--   Exposed the whole interface of :ref:`trade.MeshData` including typed access
-    to index and attribute data, together with :ref:`VertexFormat`,
-    :ref:`trade.DataFlags`, :ref:`trade.AbstractImporter.mesh_attribute_name()`
-    and :ref:`trade.AbstractImporter.mesh_attribute_for_name()`
+-   Exposed the whole interface of :ref:`trade.MeshData` and
+    :ref:`trade.MeshAttributeData` including typed access to index and
+    attribute data, together with :ref:`VertexFormat`, :ref:`trade.DataFlags`,
+    :ref:`trade.AbstractImporter.mesh_attribute_name()` and
+    :ref:`trade.AbstractImporter.mesh_attribute_for_name()`
 -   Exposed the whole interface of :ref:`trade.MaterialData` including typed
     access to attribute data, together with
     :ref:`trade.AbstractImporter.material()` and related importer APIs

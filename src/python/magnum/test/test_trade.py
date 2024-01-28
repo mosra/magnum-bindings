@@ -23,6 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
+import array
 import os
 import platform
 import sys
@@ -602,6 +603,180 @@ class MaterialData(unittest.TestCase):
             material.attribute("DiffuseTexure")
         with self.assertRaisesRegex(KeyError, "MaterialAttribute.DIFFUSE_TEXTURE not found in the base material"):
             material.attribute(trade.MaterialAttribute.DIFFUSE_TEXTURE)
+
+class MeshAttributeData(unittest.TestCase):
+    def test_init_1d(self):
+        a = array.array('H', [3, 7, 16, 29998])
+        a_refcount = sys.getrefcount(a)
+
+        b = trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_SHORT, a)
+        b_refcount = sys.getrefcount(b)
+        self.assertEqual(b.name, trade.MeshAttribute.OBJECT_ID)
+        self.assertEqual(b.format, VertexFormat.UNSIGNED_SHORT)
+        self.assertEqual(b.array_size, 0)
+        self.assertEqual(b.morph_target_id, -1)
+        self.assertIs(b.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        data = b.data
+        self.assertEqual(data.size, (4, 1))
+        self.assertEqual(data.stride, (2, 2))
+        self.assertEqual(data.format, 'H')
+        self.assertIs(data.owner, a)
+        # Returns a 2D view always, transpose and take the first element to
+        # "flatten" it.
+        self.assertEqual(list(data.transposed(0, 1)[0]), [3, 7, 16, 29998])
+        # The data reference the original array, not the MeshAttributeData
+        # instance
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+
+        del b
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+    def test_init_2d(self):
+        a = array.array('f', [1.0, 0.0, 0.0,
+                              0.0, -1.0, 0.0])
+        a_refcount = sys.getrefcount(a)
+
+        b = trade.MeshAttributeData(trade.MeshAttribute.NORMAL, VertexFormat.VECTOR3, containers.StridedArrayView1D(a).expanded(0, (2, 3)), morph_target_id=37)
+        b_refcount = sys.getrefcount(b)
+        self.assertEqual(b.name, trade.MeshAttribute.NORMAL)
+        self.assertEqual(b.format, VertexFormat.VECTOR3)
+        self.assertEqual(b.array_size, 0)
+        self.assertEqual(b.morph_target_id, 37)
+        self.assertIs(b.owner, a)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        data = b.data
+        self.assertEqual(data.size, (2, 1))
+        self.assertEqual(data.stride, (12, 12))
+        self.assertEqual(data.format, '3f')
+        self.assertIs(data.owner, a)
+        # Returns a 2D view always, transpose and take the first element to
+        # "flatten" it.
+        self.assertEqual(list(data.transposed(0, 1)[0]), [(1.0, 0.0, 0.0), (0.0, -1.0, 0.0)])
+        # The data reference the original array, not the MeshAttributeData
+        # instance
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+
+        del b
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+
+        del data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+
+    def test_init_1d_array(self):
+        data = array.array('Q', [0x0000ffff66663333, 0x00009999aaaacccc, 0x0000bbbb22227777, 0x00001111eeee8888])
+        a = trade.MeshAttributeData(trade.MeshAttribute.JOINT_IDS, VertexFormat.UNSIGNED_SHORT, data, array_size=3)
+        self.assertEqual(a.name, trade.MeshAttribute.JOINT_IDS)
+        self.assertEqual(a.format, VertexFormat.UNSIGNED_SHORT)
+        self.assertEqual(a.array_size, 3)
+        self.assertEqual(a.morph_target_id, -1)
+
+        data = a.data
+        self.assertEqual(data.size, (4, 3))
+        self.assertEqual(data.stride, (8, 2))
+        self.assertEqual(data.format, 'H')
+        # Getting all first, second and third array elements. Assumes Little
+        # Endian.
+        self.assertEqual(list(data.transposed(0, 1)[0]), [0x3333, 0xcccc, 0x7777, 0x8888])
+        self.assertEqual(list(data.transposed(0, 1)[1]), [0x6666, 0xaaaa, 0x2222, 0xeeee])
+        self.assertEqual(list(data.transposed(0, 1)[2]), [0xffff, 0x9999, 0xbbbb, 0x1111])
+
+    def test_init_2d_array(self):
+        data = array.array('H', [0x3333, 0x6666, 0xffff, 0xcccc, 0xaaaa, 0x9999, 0x7777, 0x2222, 0xbbbb, 0x8888, 0xeeee, 0x1111])
+        a = trade.MeshAttributeData(trade.MeshAttribute.JOINT_IDS, VertexFormat.UNSIGNED_SHORT, containers.StridedArrayView1D(data).expanded(0, (4, 3)), array_size=3)
+        self.assertEqual(a.name, trade.MeshAttribute.JOINT_IDS)
+        self.assertEqual(a.format, VertexFormat.UNSIGNED_SHORT)
+        self.assertEqual(a.array_size, 3)
+        self.assertEqual(a.morph_target_id, -1)
+
+        data = a.data
+        self.assertEqual(data.size, (4, 3))
+        self.assertEqual(data.stride, (6, 2))
+        self.assertEqual(data.format, 'H')
+        # Getting all first, second and third array elements
+        self.assertEqual(list(data.transposed(0, 1)[0]), [0x3333, 0xcccc, 0x7777, 0x8888])
+        self.assertEqual(list(data.transposed(0, 1)[1]), [0x6666, 0xaaaa, 0x2222, 0xeeee])
+        self.assertEqual(list(data.transposed(0, 1)[2]), [0xffff, 0x9999, 0xbbbb, 0x1111])
+
+    def test_init_1d_invalid(self):
+        data = array.array('Q', [0, 0, 0])
+        data_byte = array.array('B', [0, 0, 0])
+        # To check that messages properly handle the case of no format string
+        data_byte_no_format = containers.ArrayView(data_byte)
+        self.assertEqual(containers.StridedArrayView1D(data_byte_no_format).format, None)
+
+        with self.assertRaisesRegex(AssertionError, "VertexFormat.UNSIGNED_INT is not a valid format for MeshAttribute.POSITION"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.UNSIGNED_INT, data)
+        with self.assertRaisesRegex(AssertionError, "data type Q has 8 bytes but VertexFormat.MATRIX3X3B_NORMALIZED expects at least 9"):
+            trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(57), VertexFormat.MATRIX3X3B_NORMALIZED, data)
+        with self.assertRaisesRegex(AssertionError, "data type Q has 8 bytes but array of 3 VertexFormat.VECTOR3UB expects at least 9"):
+            trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(57), VertexFormat.VECTOR3UB, data, array_size=3)
+        with self.assertRaisesRegex(AssertionError, "data type B has 1 bytes but VertexFormat.UNSIGNED_SHORT expects at least 2"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_SHORT, data_byte_no_format)
+        with self.assertRaisesRegex(AssertionError, "expected vertex count to fit into 32 bits but got 4294967296"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, containers.StridedArrayView1D(data)[:1].broadcasted(0, 0x100000000))
+        with self.assertRaisesRegex(AssertionError, "expected stride to fit into 16 bits but got 32768"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, containers.StridedArrayView1D(data)[::4096])
+        with self.assertRaisesRegex(AssertionError, "expected stride to fit into 16 bits but got -32769"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_BYTE, containers.StridedArrayView1D(data_byte)[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "MeshAttribute.POSITION can't be an array attribute"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, array_size=2)
+        with self.assertRaisesRegex(AssertionError, "MeshAttribute.JOINT_IDS has to be an array attribute"):
+            trade.MeshAttributeData(trade.MeshAttribute.JOINT_IDS, VertexFormat.UNSIGNED_INT, data)
+        with self.assertRaisesRegex(AssertionError, "expected morph target ID to be either -1 or less than 128 but got -2"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, morph_target_id=-2)
+        with self.assertRaisesRegex(AssertionError, "expected morph target ID to be either -1 or less than 128 but got 128"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, morph_target_id=128)
+        with self.assertRaisesRegex(AssertionError, "morph target not allowed for MeshAttribute.OBJECT_ID"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_INT, data, morph_target_id=3)
+
+    def test_init_2d_invalid(self):
+        data = containers.StridedArrayView1D(array.array('I', [0, 0, 0, 0, 0, 0])).expanded(0, (3, 2))
+        data_byte = containers.StridedArrayView1D(array.array('B', [0, 0, 0])).expanded(0, (3, 1))
+        # To check that messages properly handle the case of no format string
+        data_byte_no_format = containers.StridedArrayView1D(containers.ArrayView(array.array('B', [0, 0, 0]))).expanded(0, (3, 1))
+        self.assertEqual(data_byte_no_format.format, None)
+
+        with self.assertRaisesRegex(AssertionError, "VertexFormat.UNSIGNED_INT is not a valid format for MeshAttribute.POSITION"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.UNSIGNED_INT, data)
+        with self.assertRaisesRegex(AssertionError, "2-item second dimension of data type I has 8 bytes but VertexFormat.MATRIX3X3B_NORMALIZED expects at least 9"):
+            trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(57), VertexFormat.MATRIX3X3B_NORMALIZED, data)
+        with self.assertRaisesRegex(AssertionError, "2-item second dimension of data type I has 8 bytes but array of 3 VertexFormat.VECTOR3UB expects at least 9"):
+            trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(57), VertexFormat.VECTOR3UB, data, array_size=3)
+        with self.assertRaisesRegex(AssertionError, "1-item second dimension of data type B has 1 bytes but VertexFormat.UNSIGNED_SHORT expects at least 2"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_SHORT, data_byte_no_format)
+        with self.assertRaisesRegex(AssertionError, "second view dimension is not contiguous"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3UB, data[::1,::2])
+        with self.assertRaisesRegex(AssertionError, "expected vertex count to fit into 32 bits but got 4294967296"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data[:1].broadcasted(0, 0x100000000))
+        with self.assertRaisesRegex(AssertionError, "expected stride to fit into 16 bits but got 32768"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data[::4096])
+        with self.assertRaisesRegex(AssertionError, "expected stride to fit into 16 bits but got -32769"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_BYTE, data_byte[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "MeshAttribute.POSITION can't be an array attribute"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, array_size=2)
+        with self.assertRaisesRegex(AssertionError, "MeshAttribute.JOINT_IDS has to be an array attribute"):
+            trade.MeshAttributeData(trade.MeshAttribute.JOINT_IDS, VertexFormat.UNSIGNED_INT, data)
+        with self.assertRaisesRegex(AssertionError, "expected morph target ID to be either -1 or less than 128 but got -2"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, morph_target_id=-2)
+        with self.assertRaisesRegex(AssertionError, "expected morph target ID to be either -1 or less than 128 but got 128"):
+            trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR3B, data, morph_target_id=128)
+        with self.assertRaisesRegex(AssertionError, "morph target not allowed for MeshAttribute.OBJECT_ID"):
+            trade.MeshAttributeData(trade.MeshAttribute.OBJECT_ID, VertexFormat.UNSIGNED_INT, data, morph_target_id=3)
+
+    def test_data_access_unsupported_format(self):
+        data = array.array('Q', [0, 0, 0])
+        a = trade.MeshAttributeData(trade.MeshAttribute.CUSTOM(57), VertexFormat.MATRIX3X2B_NORMALIZED, data)
+
+        with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX3X2B_NORMALIZED is not implemented yet, sorry"):
+            a.data
 
 class MeshData(unittest.TestCase):
     def test_custom_attribute(self):

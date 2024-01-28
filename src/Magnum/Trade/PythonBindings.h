@@ -50,6 +50,9 @@ inline bool pyDataFlagsNeedOwner(const MeshData& data) {
         !(data.indexDataFlags() & (DataFlag::Owned|DataFlag::Global)) ||
         !(data.vertexDataFlags() & (DataFlag::Owned|DataFlag::Global));
 }
+inline bool pyDataFlagsNeedOwner(const MeshAttributeData& data) {
+    return data.data().data();
+}
 
 }
 
@@ -59,7 +62,7 @@ inline bool pyDataFlagsNeedOwner(const MeshData& data) {
    unnecessarily complex */
 template<class T> struct PyDataHolder: std::unique_ptr<T> {
     explicit PyDataHolder(T* object): PyDataHolder{object, pybind11::none{}} {
-        /* Data without an owner can only be self-owned or global */
+        /* Data without an owner can only be self-owned, global or empty */
         CORRADE_INTERNAL_ASSERT(!Implementation::pyDataFlagsNeedOwner(*object));
     }
 

@@ -135,6 +135,117 @@
         >>> attribute.custom_value
         17
 
+.. py:class:: magnum.trade.MeshAttributeData
+
+    Associates a typed data view with a name, vertex format and other mesh
+    attribute properties. The data view can be either one-dimensional, for
+    example a NumPy array:
+
+    ..
+        Just to verify the snippet below actually works (don't want the arrows
+        shown in the docs, want to have it nicely wrapped)
+    ..
+        >>> from magnum import *
+        >>> import numpy as np
+        >>> data = np.array([(-0.5, 0.0), (+0.5, 0.0), ( 0.0, 0.5)], dtype='2f')
+        >>> positions = trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR2, data)
+
+    .. code:: py
+
+        data = np.array([(-0.5, 0.0),
+                         (+0.5, 0.0),
+                         ( 0.0, 0.5)], dtype='2f')
+        positions = trade.MeshAttributeData(
+            trade.MeshAttribute.POSITION,
+            VertexFormat.VECTOR2,
+            data)
+
+    Or it can be two-dimensional, for example by expanding a flat array into a
+    list of two-component vectors:
+
+    ..
+        Again to verify the snippet below actually works
+    ..
+        >>> from corrade import containers
+        >>> import array
+        >>> data = array.array('f', [-0.5, 0.0, +0.5, 0.0, 0.0, 0.5])
+        >>> positions = trade.MeshAttributeData(trade.MeshAttribute.POSITION, VertexFormat.VECTOR2, containers.StridedArrayView1D(data).expanded(0, (3, 2)))
+
+    .. code:: py
+
+        data = array.array('f', [-0.5, 0.0,
+                                 +0.5, 0.0,
+                                  0.0, 0.5])
+        positions = trade.MeshAttributeData(
+            trade.MeshAttribute.POSITION,
+            VertexFormat.VECTOR2,
+            containers.StridedArrayView1D(data).expanded(0, (3, 2)))
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    On initialization, the instance inherits the
+    :ref:`containers.StridedArrayView1D.owner <corrade.containers.StridedArrayView1D.owner>`
+    object, storing it in the :ref:`owner` field, meaning that calling
+    :py:`del` on the original data will *not* invalidate the instance.
+
+    `Data access`_
+    ==============
+
+    Similarly to :ref:`MeshData`, the class makes use of Python's dynamic
+    nature and provides direct access to attribute data in their concrete type
+    via :ref:`data`. However, the :ref:`MeshAttributeData` is considered a low
+    level API and thus a :ref:`containers.StridedArrayView2D <corrade.containers.StridedArrayView2D>`
+    is returned always, even for non-array attributes. The returned view
+    inherits the :ref:`owner` and element access coverts to a type
+    corresponding to a particular :ref:`VertexFormat`. For example, extracting
+    the data from the :py:`positions` attribute created above:
+
+    .. code:: pycon
+
+        >>> view = positions.data
+        >>> view.owner is data
+        True
+        >>> view[1][0]
+        Vector(0.5, 0)
+
+.. py:function:: magnum.trade.MeshAttributeData.__init__(self, name: magnum.trade.MeshAttribute, format: magnum.VertexFormat, data: corrade.containers.StridedArrayView1D, array_size: int, morph_target_id: int)
+    :raise AssertionError: If :p:`format` is not valid for :p:`name`
+    :raise AssertionError: If :p:`data` size doesn't fit into 32 bits
+    :raise AssertionError: If :p:`data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`data` format size is smaller than size of
+        :p:`format` at given :p:`array_size`
+    :raise AssertionError: If :p:`morph_target_id` is less than :py:`-1` or
+        greater than :py:`127`
+    :raise AssertionError: If :p:`morph_target_id` is not allowed for :p:`name`
+    :raise AssertionError: If :p:`array_size` is zero and :p:`name` is an array
+        attribute
+    :raise AssertionError: If :p:`array_size` is non-zero and :p:`name` can't
+        be an array attribute
+.. py:function:: magnum.trade.MeshAttributeData.__init__(self, name: magnum.trade.MeshAttribute, format: magnum.VertexFormat, data: corrade.containers.StridedArrayView2D, array_size: int, morph_target_id: int)
+    :raise AssertionError: If :p:`format` is not valid for :p:`name`
+    :raise AssertionError: If :p:`data` first dimension size doesn't fit into
+        32 bits
+    :raise AssertionError: If :p:`data` first dimension stride doesn't fit into
+        16 bits
+    :raise AssertionError: If :p:`data` second dimension isn't contiguous
+    :raise AssertionError: If :p:`data` format size times second dimension size
+        is smaller than size of :p:`format` at given :p:`array_size`
+    :raise AssertionError: If :p:`morph_target_id` is less than :py:`-1` or
+        greater than :py:`127`
+    :raise AssertionError: If :p:`morph_target_id` is not allowed for :p:`name`
+    :raise AssertionError: If :p:`array_size` is zero and :p:`name` is an array
+        attribute
+    :raise AssertionError: If :p:`array_size` is non-zero and :p:`name` can't
+        be an array attribute
+
+.. py:property:: magnum.trade.MeshAttributeData.data
+    :raise NotImplementedError: If :ref:`format <MeshAttributeData.format>` is
+        a half-float or matrix type
+
+    A 2D view is returned always, non-array attributes have the second
+    dimension size :py:`1`.
+
 .. py:class:: magnum.trade.MeshData
 
     :TODO: remove this line once m.css stops ignoring first caption on a page

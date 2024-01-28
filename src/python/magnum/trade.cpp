@@ -569,6 +569,39 @@ py::object materialAttribute(const Trade::MaterialData& material, const Unsigned
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
+void meshAttributeDataConstructorChecks(const Trade::MeshAttribute name, const VertexFormat format, const Containers::StridedArrayView1D<const void>& data, const UnsignedShort arraySize, const Int morphTargetId) {
+    if(!Trade::Implementation::isVertexFormatCompatibleWithAttribute(name, format)) {
+        PyErr_Format(PyExc_AssertionError, "%S is not a valid format for %S", py::cast(format).ptr(), py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+    #ifndef CORRADE_TARGET_32BIT
+    if(data.size() > 0xffffffffull) {
+        PyErr_Format(PyExc_AssertionError, "expected vertex count to fit into 32 bits but got %zu", data.size());
+        throw py::error_already_set{};
+    }
+    #endif
+    if(data.stride() < -32768 || data.stride() > 32767) {
+        PyErr_Format(PyExc_AssertionError, "expected stride to fit into 16 bits but got %zi", data.stride());
+        throw py::error_already_set{};
+    }
+    if(morphTargetId < -1 || morphTargetId >= 128) {
+        PyErr_Format(PyExc_AssertionError, "expected morph target ID to be either -1 or less than 128 but got %i", morphTargetId);
+        throw py::error_already_set{};
+    }
+    if(morphTargetId != -1 && !Trade::Implementation::isMorphTargetAllowed(name)) {
+        PyErr_Format(PyExc_AssertionError, "morph target not allowed for %S", py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+    if(arraySize != 0 && !Trade::Implementation::isAttributeArrayAllowed(name)) {
+        PyErr_Format(PyExc_AssertionError, "%S can't be an array attribute", py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+    if(arraySize == 0 && Trade::Implementation::isAttributeArrayExpected(name)) {
+        PyErr_Format(PyExc_AssertionError, "%S has to be an array attribute", py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+}
+
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
     switch(type) {
         #define _c(type)                                                    \
@@ -930,6 +963,66 @@ void trade(py::module_& m) {
         .value("WEIGHTS", Trade::MeshAttribute::Weights)
         .value("OBJECT_ID", Trade::MeshAttribute::ObjectId);
     enumWithCustomValues<Trade::MeshAttribute, Trade::Implementation::MeshAttributeCustom>(meshAttribute);
+
+    py::class_<Trade::MeshAttributeData, Trade::PyDataHolder<Trade::MeshAttributeData>>{m, "MeshAttributeData", "Mesh attribute data"}
+        .def(py::init([](Trade::MeshAttribute name, VertexFormat format, const Containers::PyStridedArrayView<1, const char>& data, UnsignedShort arraySize, Int morphTargetId) {
+            const UnsignedInt formatSize = vertexFormatSize(format)*(arraySize ? arraySize : 1);
+            if(data.itemsize < formatSize) {
+                const char* const dataFormat = data.format ? data.format.data() : "B";
+                if(arraySize)
+                    PyErr_Format(PyExc_AssertionError, "data type %s has %zu bytes but array of %u %S expects at least %u", dataFormat, data.itemsize, UnsignedInt(arraySize), py::cast(format).ptr(), formatSize);
+                else
+                    PyErr_Format(PyExc_AssertionError, "data type %s has %zu bytes but %S expects at least %u", dataFormat, data.itemsize, py::cast(format).ptr(), formatSize);
+                throw py::error_already_set{};
+            }
+            meshAttributeDataConstructorChecks(name, format, data, arraySize, morphTargetId);
+            return Trade::pyDataHolder(Trade::MeshAttributeData{name, format, Containers::StridedArrayView1D<const void>{data}, arraySize, morphTargetId}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
+        }), "Construct from a 1D view", py::arg("name"), py::arg("format"), py::arg("data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("array_size") = 0, py::arg("morph_target_id") = -1)
+        .def(py::init([](Trade::MeshAttribute name, VertexFormat format, const Containers::PyStridedArrayView<2, const char>& data, UnsignedShort arraySize, Int morphTargetId) {
+            if(data.itemsize != std::size_t(data.stride()[1])) {
+                PyErr_SetString(PyExc_AssertionError, "second view dimension is not contiguous");
+                throw py::error_already_set{};
+            }
+            const std::size_t secondDimensionSize = data.itemsize*data.size()[1];
+            const UnsignedInt formatSize = vertexFormatSize(format)*(arraySize ? arraySize : 1);
+            if(secondDimensionSize < formatSize) {
+                const char* const dataFormat = data.format ? data.format.data() : "B";
+                if(arraySize)
+                    PyErr_Format(PyExc_AssertionError, "%zu-item second dimension of data type %s has %zu bytes but array of %u %S expects at least %u", data.size()[1], dataFormat, secondDimensionSize, UnsignedInt(arraySize), py::cast(format).ptr(), formatSize);
+                else
+                    PyErr_Format(PyExc_AssertionError, "%zu-item second dimension of data type %s has %zu bytes but %S expects at least %u", data.size()[1], dataFormat, secondDimensionSize, py::cast(format).ptr(), formatSize);
+                throw py::error_already_set{};
+            }
+            /* All checks on the second dimension are done now, drop it */
+            const Containers::StridedArrayView1D<const void> data1D = data.transposed<0, 1>()[0];
+            meshAttributeDataConstructorChecks(name, format, data1D, arraySize, morphTargetId);
+            return Trade::pyDataHolder(Trade::MeshAttributeData{name, format, data1D, arraySize, morphTargetId}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
+        }), "Construct from a 2D view", py::arg("name"), py::arg("format"), py::arg("data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("array_size") = 0, py::arg("morph_target_id") = -1)
+        .def_property_readonly("name", &Trade::MeshAttributeData::name, "Attribute name")
+        .def_property_readonly("format", &Trade::MeshAttributeData::format, "Attribute format")
+        .def_property_readonly("array_size", &Trade::MeshAttributeData::arraySize, "Attribute array size")
+        .def_property_readonly("morph_target_id", &Trade::MeshAttributeData::morphTargetId, "Morph target ID")
+        .def_property_readonly("data", [](const Trade::MeshAttributeData& self) {
+            const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForVertexFormat(self.format());
+            if(!formatStringGetitemSetitem.first()) {
+                PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(self.format()).ptr());
+                throw py::error_already_set{};
+            }
+
+            const std::size_t formatSize = vertexFormatSize(self.format());
+            return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<2, const char>{Containers::arrayCast<2, const char>(self.data(), formatSize*(self.arraySize() ? self.arraySize() : 1)).every({1, formatSize}), formatStringGetitemSetitem.first(), formatSize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, pyObjectHolderFor<Trade::PyDataHolder>(self).owner);
+        }, "Attribute data")
+        .def_property_readonly("owner", [](Trade::MeshAttributeData& self) {
+            return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;
+        }, "Memory owner");
 
     py::class_<Trade::MeshData, Trade::PyDataHolder<Trade::MeshData>>{m, "MeshData", "Mesh data"}
         .def_property_readonly("primitive", &Trade::MeshData::primitive, "Primitive")
