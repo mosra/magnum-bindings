@@ -124,12 +124,12 @@
         :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
         :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView1D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.StridedArrayView1D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.StridedArrayView1D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedArrayView1D
@@ -150,12 +150,12 @@
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView1D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.MutableStridedArrayView1D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.MutableStridedArrayView1D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedArrayView2D
@@ -169,15 +169,15 @@
         :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
         :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView2D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.StridedArrayView2D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.StridedArrayView2D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
         they're the same
 .. py:function:: corrade.containers.StridedArrayView2D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedArrayView2D
@@ -198,15 +198,15 @@
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView2D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.MutableStridedArrayView2D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.MutableStridedArrayView2D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
         they're the same
 .. py:function:: corrade.containers.MutableStridedArrayView2D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedArrayView3D
@@ -220,15 +220,15 @@
         :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
         :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView3D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.StridedArrayView3D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.StridedArrayView3D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
         or if  they're the same
 .. py:function:: corrade.containers.StridedArrayView3D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedArrayView3D
@@ -249,15 +249,15 @@
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView3D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.MutableStridedArrayView3D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.MutableStridedArrayView3D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
         or if  they're the same
 .. py:function:: corrade.containers.MutableStridedArrayView3D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedArrayView4D
@@ -271,13 +271,13 @@
         :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`, :py:`'q'`,
         :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.StridedArrayView4D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.StridedArrayView4D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.StridedArrayView4D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3` or if  they're the same
 
 .. py:class:: corrade.containers.MutableStridedArrayView4D
@@ -298,13 +298,13 @@
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
 .. py:function:: corrade.containers.MutableStridedArrayView4D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.MutableStridedArrayView4D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.MutableStridedArrayView4D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3` or if  they're the same
 
 .. py:class:: corrade.containers.BitArray
@@ -355,12 +355,12 @@
     is empty.
 
 .. py:function:: corrade.containers.StridedBitArrayView1D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.StridedBitArrayView1D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.StridedBitArrayView1D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedBitArrayView1D
@@ -369,12 +369,12 @@
     :ref:`__setitem__()` as well.
 
 .. py:function:: corrade.containers.MutableStridedBitArrayView1D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.MutableStridedBitArrayView1D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`
+    :raise IndexError: If :p:`dimension` is not :py:`0`
 .. py:function:: corrade.containers.MutableStridedBitArrayView1D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedBitArrayView2D
@@ -382,15 +382,15 @@
     See :ref:`StridedBitArrayView1D` for more information.
 
 .. py:function:: corrade.containers.StridedBitArrayView2D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.StridedBitArrayView2D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.StridedBitArrayView2D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
         they're the same
 .. py:function:: corrade.containers.StridedBitArrayView2D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedBitArrayView2D
@@ -399,15 +399,15 @@
     for more information.
 
 .. py:function:: corrade.containers.MutableStridedBitArrayView2D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.MutableStridedBitArrayView2D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
 .. py:function:: corrade.containers.MutableStridedBitArrayView2D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0` or :py:`1` or if
         they're the same
 .. py:function:: corrade.containers.MutableStridedBitArrayView2D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0` or :py:`1`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0` or :py:`1`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedBitArrayView3D
@@ -415,15 +415,15 @@
     See :ref:`StridedBitArrayView1D` for more information.
 
 .. py:function:: corrade.containers.StridedBitArrayView3D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.StridedBitArrayView3D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.StridedBitArrayView3D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
         or if  they're the same
 .. py:function:: corrade.containers.StridedBitArrayView3D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.MutableStridedBitArrayView3D
@@ -432,15 +432,15 @@
     for more information.
 
 .. py:function:: corrade.containers.MutableStridedBitArrayView3D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.MutableStridedBitArrayView3D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
 .. py:function:: corrade.containers.MutableStridedBitArrayView3D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` or :py:`2`
         or if  they're the same
 .. py:function:: corrade.containers.MutableStridedBitArrayView3D.expanded
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
-    :raise ValueError: if product of :p:`size` is not equal to size in
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` or :py:`2`
+    :raise ValueError: If product of :p:`size` is not equal to size in
         :p:`dimension`
 
 .. py:class:: corrade.containers.StridedBitArrayView4D
@@ -448,13 +448,13 @@
     See :ref:`StridedBitArrayView1D` for more information.
 
 .. py:function:: corrade.containers.StridedBitArrayView4D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.StridedBitArrayView4D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.StridedBitArrayView4D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3` or if  they're the same
 
 .. py:class:: corrade.containers.MutableStridedBitArrayView4D
@@ -463,11 +463,11 @@
     for more information.
 
 .. py:function:: corrade.containers.MutableStridedBitArrayView4D.flipped
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.MutableStridedBitArrayView4D.broadcasted
-    :raise IndexError: if :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`dimension` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3`
 .. py:function:: corrade.containers.MutableStridedBitArrayView4D.transposed
-    :raise IndexError: if :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
+    :raise IndexError: If :p:`a` or :p:`b` is not :py:`0`, :py:`1` :py:`2` or
         :py:`3` or if  they're the same

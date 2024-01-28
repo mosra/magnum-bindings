@@ -2607,7 +2607,7 @@ void trade(py::module_& m) {
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
-        }, "Object mapping data for given field", py::arg("name"))
+        }, "Object mapping data for given field", py::arg("id"))
         .def("mutable_mapping", [](Trade::SceneData& self, Trade::SceneField name) {
             if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
@@ -2629,7 +2629,7 @@ void trade(py::module_& m) {
 
             PyErr_Format(PyExc_IndexError, "index %u out of range for %u fields", id, self.fieldCount());
             throw py::error_already_set{};
-        }, "Mutable object mapping data for given field", py::arg("name"))
+        }, "Mutable object mapping data for given field", py::arg("id"))
         .def("field", [](/*const*/ Trade::SceneData& self, Trade::SceneField name) {
             if(const Containers::Optional<UnsignedInt> found = self.findFieldId(name)) {
                 /** @todo handle arrays (return a 2D (bit) view) */
@@ -2660,7 +2660,7 @@ void trade(py::module_& m) {
             if(self.fieldType(id) == Trade::SceneFieldType::Bit)
                 return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBits(id), py::cast(self)));
             return pyCastButNotShitty(sceneFieldView(self.fieldType(id), self.field(id), py::cast(self)));
-        }, "Data for given field", py::arg("name"))
+        }, "Data for given field", py::arg("id"))
         .def("mutable_field", [](Trade::SceneData& self, Trade::SceneField name) {
             if(!(self.dataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AttributeError, "scene data is not mutable");
@@ -2699,7 +2699,7 @@ void trade(py::module_& m) {
             if(self.fieldType(id) == Trade::SceneFieldType::Bit)
                 return pyCastButNotShitty(Containers::pyArrayViewHolder(self.mutableFieldBits(id), py::cast(self)));
             return pyCastButNotShitty(sceneFieldView(self.fieldType(id), self.mutableField(id), py::cast(self)));
-        }, "Mutable data for given field", py::arg("name"))
+        }, "Mutable data for given field", py::arg("id"))
 
         .def_property_readonly("owner", [](Trade::SceneData& self) {
             return pyObjectHolderFor<Trade::PyDataHolder>(self).owner;

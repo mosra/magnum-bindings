@@ -244,19 +244,27 @@
 .. py:function:: magnum.trade.MeshData.attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
+    :raise NotImplementedError: if :ref:`attribute_array_size()` for given
+        attribute isn't :py:`0`
 .. py:function:: magnum.trade.MeshData.attribute(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
+    :raise NotImplementedError: if :ref:`attribute_array_size()` for given
+        attribute isn't :py:`0`
 .. py:function:: magnum.trade.MeshData.mutable_attribute(self, id: int)
     :raise IndexError: If :p:`id` is negative or not less than
         :ref:`attribute_count()`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlags.MUTABLE`
+    :raise NotImplementedError: if :ref:`attribute_array_size()` for given
+        attribute isn't :py:`0`
 .. py:function:: magnum.trade.MeshData.mutable_attribute(self, name: magnum.trade.MeshAttribute, id: int, morph_target_id: int)
     :raise KeyError: If :p:`id` is negative or not less than
         :ref:`attribute_count()` for :p:`name` and :p:`morph_target_id`
     :raise AttributeError: If :ref:`vertex_data_flags` doesn't contain
         :ref:`DataFlags.MUTABLE`
+    :raise NotImplementedError: if :ref:`attribute_array_size()` for given
+        attribute isn't :py:`0`
 
 .. py:enum:: magnum.trade.MaterialLayer
 
@@ -674,6 +682,50 @@
     :raise KeyError: If :p:`field_name` does not exist
     :raise IndexError: If :p:`object` is negative or not less than
         :ref:`mapping_bound`
+.. py:function:: magnum.trade.SceneData.mapping(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+.. py:function:: magnum.trade.SceneData.mapping(self, name: magnum.trade.SceneField)
+    :raise KeyError: If :p:`name` does not exist
+.. py:function:: magnum.trade.SceneData.mutable_mapping(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:function:: magnum.trade.SceneData.mutable_mapping(self, name: magnum.trade.SceneField)
+    :raise KeyError: If :p:`name` does not exist
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+.. py:function:: magnum.trade.SceneData.field(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise NotImplementedError: If :ref:`field_array_size()` for given field is
+        not :py:`0`
+    :raise NotImplementedError: If :ref:`field_type()` for given field is a
+        string type
+.. py:function:: magnum.trade.SceneData.field(self, name: magnum.trade.SceneField)
+    :raise KeyError: If :p:`name` does not exist
+    :raise NotImplementedError: If :ref:`field_array_size()` for given field is
+        not :py:`0`
+    :raise NotImplementedError: If :ref:`field_type()` for given field is a
+        string type
+.. py:function:: magnum.trade.SceneData.mutable_field(self, id: int)
+    :raise IndexError: If :p:`id` is negative or not less than
+        :ref:`field_count`
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+    :raise NotImplementedError: If :ref:`field_array_size()` for given field is
+        not :py:`0`
+    :raise NotImplementedError: If :ref:`field_type()` for given field is a
+        string type
+.. py:function:: magnum.trade.SceneData.mutable_field(self, name: magnum.trade.SceneField)
+    :raise KeyError: If :p:`name` does not exist
+    :raise AttributeError: If :ref:`data_flags` doesn't contain
+        :ref:`DataFlags.MUTABLE`
+    :raise NotImplementedError: If :ref:`field_array_size()` for given field is
+        not :py:`0`
+    :raise NotImplementedError: If :ref:`field_type()` for given field is a
+        string type
 
 .. py:class:: magnum.trade.ImporterManager
     :summary: Manager for :ref:`AbstractImporter` plugin instances
