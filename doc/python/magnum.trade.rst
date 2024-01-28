@@ -702,6 +702,163 @@
         >>> attribute.custom_value
         17
 
+.. py:class:: magnum.trade.SceneFieldData
+
+    Associates a pair of typed data views with a name, type and other scene
+    field properties. The mapping data view is always one-dimensional. The
+    field data view can be either one-dimensional, for example a NumPy array:
+
+    ..
+        Just to verify the snippet below actually works (don't want the arrows
+        shown in the docs, want to have it nicely wrapped)
+    ..
+        >>> mapping_data = array.array('I', [0, 2, 7])
+        >>> field_data = np.array([(-0.5, 0.0), (+0.5, 0.0), ( 0.0, 0.5)], dtype='2f')
+        >>> translations = trade.SceneFieldData(trade.SceneField.TRANSLATION, trade.SceneMappingType.UNSIGNED_INT, mapping_data, trade.SceneFieldType.VECTOR2, field_data)
+
+    .. code:: py
+
+        mapping_data = array.array('I', [0, 2, 7])
+        field_data = np.array([(-0.5, 0.0),
+                               (+0.5, 0.0),
+                               ( 0.0, 0.5)], dtype='2f')
+        translations = trade.SceneFieldData(trade.SceneField.TRANSLATION,
+            trade.SceneMappingType.UNSIGNED_INT, mapping_data,
+            trade.SceneFieldType.VECTOR2, field_data)
+
+    Or it can be two-dimensional, for example by expanding a flat array into a
+    list of two-component vectors:
+
+    ..
+        Again to verify the snippet below actually works
+    ..
+        >>> field_data = array.array('f', [-0.5, 0.0, +0.5, 0.0, 0.0, 0.5])
+        >>> translations = trade.SceneFieldData(trade.SceneField.TRANSLATION, trade.SceneMappingType.UNSIGNED_INT, mapping_data, trade.SceneFieldType.VECTOR2, containers.StridedArrayView1D(field_data).expanded(0, (3, 2)))
+
+    .. code:: py
+
+        field_data = array.array('f', [-0.5, 0.0,
+                                       +0.5, 0.0,
+                                        0.0, 0.5])
+        translations = trade.SceneFieldData(trade.SceneField.TRANSLATION,
+            trade.SceneMappingType.UNSIGNED_INT, mapping_data,
+            trade.SceneFieldType.VECTOR2,
+            containers.StridedArrayView1D(field_data).expanded(0, (3, 2)))
+
+    `Memory ownership and reference counting`_
+    ==========================================
+
+    On initialization, the instance inherits the
+    :ref:`containers.StridedArrayView1D.owner <corrade.containers.StridedArrayView1D.owner>`
+    objects of both views, storing it in the :ref:`mapping_owner` and
+    :ref:`field_owner` fields, meaning that calling :py:`del` on the original
+    data will *not* invalidate the instance.
+
+    `Data access`_
+    ==============
+
+    Similarly to :ref:`SceneData`, the class makes use of Python's dynamic
+    nature and provides direct access to attribute data in their concrete type
+    via :ref:`mapping_data` and :ref:`field_data`. However, the
+    :ref:`SceneFieldData` is considered a low level API and thus a
+    :ref:`containers.StridedArrayView2D <corrade.containers.StridedArrayView2D>`
+    / :ref:`containers.StridedBitArrayView2D <corrade.containers.StridedBitArrayView2D>`
+    is returned always for field data, even for non-array attributes. The
+    returned views inherit the :ref:`mapping_owner` or :ref:`field_owner` and
+    element access coverts to a type corresponding to a particular
+    :ref:`SceneMappingType` or :ref:`SceneFieldType`. For example, extracting
+    the data from the :py:`translations` field created above:
+
+    .. code:: pycon
+
+        >>> mapping = translations.mapping_data
+        >>> field = translations.field_data
+        >>> mapping.owner is mapping_data
+        True
+        >>> field.owner is field_data
+        True
+        >>> mapping[2]
+        7
+        >>> field[2][0]
+        Vector(0, 0.5)
+
+.. py:function:: magnum.trade.SceneFieldData.__init__(self, name: magnum.trade.SceneField, mapping_type: magnum.trade.SceneMappingType, mapping_data: corrade.containers.StridedArrayView1D, field_type: magnum.trade.SceneFieldType, field_data: corrade.containers.StridedArrayView1D, field_array_size: int, flags: magnum.trade.SceneFieldFlags)
+    :raise AssertionError: If :p:`mapping_data` and :p:`field_data` don't have
+        the same size
+    :raise AssertionError: If :p:`field_type` is not valid for :p:`name`
+    :raise AssertionError: If :p:`field_type` is a string type or
+        :ref:`SceneFieldType.BIT`
+    :raise AssertionError: If :p:`mapping_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`mapping_data` format size is smaller than
+        size of :p:`mapping_type`
+    :raise AssertionError: If :p:`field_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`field_data` format size is smaller than size
+        of :p:`field_type` at given :p:`field_array_size`
+    :raise AssertionError: If :p:`field_array_size` is non-zero and :p:`name`
+        can't be an array field
+    :raise AssertionError: If :p:`flags` contain
+        :ref:`SceneFieldFlags.OFFSET_ONLY`,
+        :ref:`SceneFieldFlags.NULL_TERMINATED_STRING` or values disallowed for
+        a particular :p:`name`
+.. py:function:: magnum.trade.SceneFieldData.__init__(self, name: magnum.trade.SceneField, mapping_type: magnum.trade.SceneMappingType, mapping_data: corrade.containers.StridedArrayView1D, field_type: magnum.trade.SceneFieldType, field_data: corrade.containers.StridedArrayView2D, field_array_size: int, flags: magnum.trade.SceneFieldFlags)
+    :raise AssertionError: If :p:`mapping_data` and first dimension of
+        :p:`field_data` don't have the same size
+    :raise AssertionError: If :p:`field_type` is not valid for :p:`name`
+    :raise AssertionError: If :p:`field_type` is a string type or
+        :ref:`SceneFieldType.BIT`
+    :raise AssertionError: If :p:`mapping_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`mapping_data` format size is smaller than
+        size of :p:`mapping_type`
+    :raise AssertionError: If :p:`field_data` first dimension stride doesn't
+        fit into 16 bits
+    :raise AssertionError: If :p:`field_data` second dimension isn't contiguous
+    :raise AssertionError: If :p:`field_data` format size times second
+        dimension size is smaller than size of :p:`field_type` at given :p:`field_array_size`
+    :raise AssertionError: If :p:`field_array_size` is non-zero and :p:`name`
+        can't be an array field
+    :raise AssertionError: If :p:`flags` contain
+        :ref:`SceneFieldFlags.OFFSET_ONLY`,
+        :ref:`SceneFieldFlags.NULL_TERMINATED_STRING` or values disallowed for
+        a particular :p:`name`
+
+.. py:function:: magnum.trade.SceneFieldData.__init__(self, name: magnum.trade.SceneField, mapping_type: magnum.trade.SceneMappingType, mapping_data: corrade.containers.StridedArrayView1D, field_data: corrade.containers.StridedBitArrayView1D, flags: magnum.trade.SceneFieldFlags)
+    :raise AssertionError: If :p:`mapping_data` and :p:`field_data` don't have
+        the same size
+    :raise AssertionError: If :ref:`SceneFieldType.BIT` is not valid for
+        :p:`name`
+    :raise AssertionError: If :p:`mapping_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`mapping_data` format size is smaller than
+        size of :p:`mapping_type`
+    :raise AssertionError: If :p:`field_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`flags` contain
+        :ref:`SceneFieldFlags.OFFSET_ONLY`,
+        :ref:`SceneFieldFlags.NULL_TERMINATED_STRING` or values disallowed for
+        a particular :p:`name`
+.. py:function:: magnum.trade.SceneFieldData.__init__(self, name: magnum.trade.SceneField, mapping_type: magnum.trade.SceneMappingType, mapping_data: corrade.containers.StridedArrayView1D, field_data: corrade.containers.StridedBitArrayView2D, flags: magnum.trade.SceneFieldFlags)
+    :raise AssertionError: If :p:`mapping_data` and first dimension of
+        :p:`field_data` don't have the same size
+    :raise AssertionError: If :ref:`SceneFieldType.BIT` is not valid for
+        :p:`name`
+    :raise AssertionError: If :p:`mapping_data` stride doesn't fit into 16 bits
+    :raise AssertionError: If :p:`mapping_data` format size is smaller than
+        size of :p:`mapping_type`
+    :raise AssertionError: If :p:`field_data` first dimension stride doesn't
+        fit into 16 bits
+    :raise AssertionError: If :p:`field_data` second dimension isn't contiguous
+    :raise AssertionError: If :p:`flags` contain
+        :ref:`SceneFieldFlags.OFFSET_ONLY`,
+        :ref:`SceneFieldFlags.NULL_TERMINATED_STRING` or values disallowed for
+        a particular :p:`name`
+
+.. py:property:: magnum.trade.SceneFieldData.field_data
+    :raise NotImplementedError: If :ref:`field_type` is a half-float or string
+        type
+
+    A :ref:`containers.StridedArrayView2D <corrade.containers.StridedArrayView2D>`
+    or :ref:`containers.StridedBitArrayView2D <corrade.containers.StridedBitArrayView2D>`
+    is returned always, non-array attributes have the second dimension size
+    :py:`1`.
+
 .. py:class:: magnum.trade.SceneData
 
     :TODO: remove this line once m.css stops ignoring first caption on a page

@@ -154,9 +154,10 @@ Changelog
 -   Exposed the whole interface of :ref:`trade.MaterialData` including typed
     access to attribute data, together with
     :ref:`trade.AbstractImporter.material()` and related importer APIs
--   Exposed the whole interface of :ref:`trade.SceneData` including typed
-    access to mapping and field data, together with
-    :ref:`trade.AbstractImporter.scene()` and related importer APIs
+-   Exposed the whole interface of :ref:`trade.SceneData` and
+    :ref:`trade.SceneFieldData` including typed access to mapping and field
+    data, together with :ref:`trade.AbstractImporter.scene()` and related
+    importer APIs
 -   Exposed :ref:`Color3.red()` and other convenience constructors (see
     :gh:`mosra/magnum-bindings#12`)
 -   Exposed the :ref:`materialtools`, :ref:`scenetools` and :ref:`text`

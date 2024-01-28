@@ -739,6 +739,51 @@ template<class T> Containers::PyArrayViewHolder<Containers::PyStridedArrayView<1
     return Containers::pyArrayViewHolder(Containers::PyStridedArrayView<1, T>{data.template transposed<0, 1>()[0], formatStringGetitemSetitem.first(), itemsize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, std::move(owner));
 }
 
+void sceneFieldDataConstructorChecks(const Trade::SceneField name, const Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, const Trade::SceneFieldType fieldType, const std::size_t fieldDataSize, const std::ptrdiff_t fieldDataStride, const UnsignedShort fieldArraySize, const Trade::SceneFieldFlag flags) {
+    if(mappingData.size() != fieldDataSize) {
+        PyErr_Format(PyExc_AssertionError, "expected %S mapping and field view to have the same size but got %zu and %zu", py::cast(name).ptr(), mappingData.size(), fieldDataSize);
+        throw py::error_already_set{};
+    }
+    const UnsignedInt mappingTypeSize = Trade::sceneMappingTypeSize(mappingType);
+    if(mappingData.itemsize < mappingTypeSize) {
+        const char* const dataFormat = mappingData.format ? mappingData.format.data() : "B";
+        PyErr_Format(PyExc_AssertionError, "data type %s has %zu bytes but %S expects at least %u", dataFormat, mappingData.itemsize, py::cast(mappingType).ptr(), mappingTypeSize);
+        throw py::error_already_set{};
+    }
+    if(!Trade::Implementation::isSceneFieldTypeCompatibleWithField(name, fieldType)) {
+        PyErr_Format(PyExc_AssertionError, "%S is not a valid type for %S", py::cast(fieldType).ptr(), py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+    if(mappingData.stride() < -32768 || mappingData.stride() > 32767) {
+        PyErr_Format(PyExc_AssertionError, "expected mapping view stride to fit into 16 bits but got %zi", mappingData.stride());
+        throw py::error_already_set{};
+    }
+    if(fieldDataStride < -32768 || fieldDataStride > 32767) {
+        PyErr_Format(PyExc_AssertionError, "expected field view stride to fit into 16 bits but got %zi", fieldDataStride);
+        throw py::error_already_set{};
+    }
+    if(fieldArraySize && !Trade::Implementation::isSceneFieldArrayAllowed(name)) {
+        PyErr_Format(PyExc_AssertionError, "%S can't be an array field", py::cast(name).ptr());
+        throw py::error_already_set{};
+    }
+    if(const Trade::SceneFieldFlags disallowedFlags = flags & (Trade::SceneFieldFlag::OffsetOnly|Trade::SceneFieldFlag::NullTerminatedString|Trade::Implementation::disallowedSceneFieldFlagsFor(name))) {
+        PyErr_Format(PyExc_AssertionError, "can't pass %S for a %S view of %S", py::cast(Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(disallowedFlags))).ptr(), py::cast(name).ptr(), py::cast(fieldType).ptr());
+        throw py::error_already_set{};
+    }
+}
+
+void sceneFieldDataConstructorChecks(const Trade::SceneField name, const Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, const Trade::SceneFieldType fieldType, const Containers::StridedArrayView1D<const void>& fieldData, const UnsignedShort fieldArraySize, const Trade::SceneFieldFlag flags) {
+    sceneFieldDataConstructorChecks(name, mappingType, mappingData, fieldType, fieldData.size(), fieldData.stride(), fieldArraySize, flags);
+    if(Trade::Implementation::isSceneFieldTypeString(fieldType)) {
+        PyErr_Format(PyExc_AssertionError, "use a string constructor for %S", py::cast(fieldType).ptr());
+        throw py::error_already_set{};
+    }
+    if(fieldType == Trade::SceneFieldType::Bit) {
+        PyErr_Format(PyExc_AssertionError, "use a bit constructor for %S", py::cast(fieldType).ptr());
+        throw py::error_already_set{};
+    }
+}
+
 Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForSceneMappingType(const Trade::SceneMappingType type) {
     switch(type) {
         #define _c(type)                                                    \
@@ -2537,6 +2582,106 @@ void trade(py::module_& m) {
         .value("NULL_TERMINATED_STRING", Trade::SceneFieldFlag::NullTerminatedString)
         .value("NONE", Trade::SceneFieldFlag{});
     corrade::enumOperators(sceneFieldFlag);
+
+    py::class_<Trade::SceneFieldData, Trade::PySceneFieldDataHolder<Trade::SceneFieldData>>{m, "SceneFieldData", "Scene field data"}
+        .def(py::init([](Trade::SceneField name, Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, Trade::SceneFieldType fieldType, const Containers::PyStridedArrayView<1, const char>& fieldData, UnsignedShort fieldArraySize, Trade::SceneFieldFlag flags) {
+            sceneFieldDataConstructorChecks(name, mappingType, mappingData, fieldType, fieldData, fieldArraySize, flags);
+            const UnsignedInt fieldTypeSize = Trade::sceneFieldTypeSize(fieldType)*(fieldArraySize ? fieldArraySize : 1);
+            if(fieldData.itemsize < fieldTypeSize) {
+                const char* const dataFormat = fieldData.format ? fieldData.format.data() : "B";
+                if(fieldArraySize)
+                    PyErr_Format(PyExc_AssertionError, "data type %s has %zu bytes but array of %u %S expects at least %u", dataFormat, fieldData.itemsize, UnsignedInt(fieldArraySize), py::cast(fieldType).ptr(), fieldTypeSize);
+                else
+                    PyErr_Format(PyExc_AssertionError, "data type %s has %zu bytes but %S expects at least %u", dataFormat, fieldData.itemsize, py::cast(fieldType).ptr(), fieldTypeSize);
+                throw py::error_already_set{};
+            }
+            return Trade::pySceneFieldDataHolder(Trade::SceneFieldData{name, mappingType, Containers::StridedArrayView1D<const void>{mappingData}, fieldType, Containers::StridedArrayView1D<const void>{fieldData}, fieldArraySize, flags}, pyObjectHolderFor<Containers::PyArrayViewHolder>(mappingData).owner, pyObjectHolderFor<Containers::PyArrayViewHolder>(fieldData).owner);
+        }), "Construct from a 1D field view", py::arg("name"), py::arg("mapping_type"), py::arg("mapping_data"), py::arg("field_type"), py::arg("field_data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("field_array_size") = 0, py::arg("flags") = Trade::SceneFieldFlag{})
+        .def(py::init([](Trade::SceneField name, Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, Trade::SceneFieldType fieldType, const Containers::PyStridedArrayView<2, const char>& fieldData, UnsignedShort fieldArraySize, Trade::SceneFieldFlag flags) {
+            if(fieldData.itemsize != std::size_t(fieldData.stride()[1])) {
+                PyErr_SetString(PyExc_AssertionError, "second field view dimension is not contiguous");
+                throw py::error_already_set{};
+            }
+            const Containers::StridedArrayView1D<const void> fieldData1D = fieldData.transposed<0, 1>()[0];
+            sceneFieldDataConstructorChecks(name, mappingType, mappingData, fieldType, fieldData1D, fieldArraySize, flags);
+            const std::size_t secondDimensionSize = fieldData.itemsize*fieldData.size()[1];
+            const UnsignedInt fieldTypeSize = Trade::sceneFieldTypeSize(fieldType)*(fieldArraySize ? fieldArraySize : 1);
+            if(secondDimensionSize < fieldTypeSize) {
+                const char* const dataFormat = fieldData.format ? fieldData.format.data() : "B";
+                if(fieldArraySize)
+                    PyErr_Format(PyExc_AssertionError, "%zu-item second dimension of data type %s has %zu bytes but array of %u %S expects at least %u", fieldData.size()[1], dataFormat, secondDimensionSize, UnsignedInt(fieldArraySize), py::cast(fieldType).ptr(), fieldTypeSize);
+                else
+                    PyErr_Format(PyExc_AssertionError, "%zu-item second dimension of data type %s has %zu bytes but %S expects at least %u", fieldData.size()[1], dataFormat, secondDimensionSize, py::cast(fieldType).ptr(), fieldTypeSize);
+                throw py::error_already_set{};
+            }
+            return Trade::pySceneFieldDataHolder(Trade::SceneFieldData{name, mappingType, Containers::StridedArrayView1D<const void>{mappingData}, fieldType, fieldData1D, fieldArraySize, flags}, pyObjectHolderFor<Containers::PyArrayViewHolder>(mappingData).owner, pyObjectHolderFor<Containers::PyArrayViewHolder>(fieldData).owner);
+        }), "Construct from a 2D field view", py::arg("name"), py::arg("mapping_type"), py::arg("mapping_data"), py::arg("field_type"), py::arg("field_data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("field_array_size") = 0, py::arg("flags") = Trade::SceneFieldFlag{})
+        .def(py::init([](Trade::SceneField name, Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, const Containers::StridedBitArrayView1D& fieldData, Trade::SceneFieldFlag flags) {
+            sceneFieldDataConstructorChecks(name, mappingType, mappingData, Trade::SceneFieldType::Bit, fieldData.size(), fieldData.stride(), 0, flags);
+            return Trade::pySceneFieldDataHolder(Trade::SceneFieldData{name, mappingType, Containers::StridedArrayView1D<const void>{mappingData}, fieldData, flags}, pyObjectHolderFor<Containers::PyArrayViewHolder>(mappingData).owner, pyObjectHolderFor<Containers::PyArrayViewHolder>(fieldData).owner);
+        }), "Construct a bit field", py::arg("name"), py::arg("mapping_type"), py::arg("mapping_data"), py::arg("field_data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("flags") = Trade::SceneFieldFlag{})
+        .def(py::init([](Trade::SceneField name, Trade::SceneMappingType mappingType, const Containers::PyStridedArrayView<1, const char>& mappingData, const Containers::StridedBitArrayView2D& fieldData, Trade::SceneFieldFlag flags) {
+            if(fieldData.stride()[1] != 1) {
+                PyErr_SetString(PyExc_AssertionError, "second field view dimension is not contiguous");
+                throw py::error_already_set{};
+            }
+            sceneFieldDataConstructorChecks(name, mappingType, mappingData, Trade::SceneFieldType::Bit, fieldData.size()[0], fieldData.stride()[0], fieldData.size()[1], flags);
+            return Trade::pySceneFieldDataHolder(Trade::SceneFieldData{name, mappingType, Containers::StridedArrayView1D<const void>{mappingData}, fieldData, flags}, pyObjectHolderFor<Containers::PyArrayViewHolder>(mappingData).owner, pyObjectHolderFor<Containers::PyArrayViewHolder>(fieldData).owner);
+        }), "Construct an array bit field", py::arg("name"), py::arg("mapping_type"), py::arg("mapping_data"), py::arg("field_data"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("flags") = Trade::SceneFieldFlag{})
+        .def_property_readonly("flags", [](const Trade::SceneFieldData& self) {
+            return Trade::SceneFieldFlag(Containers::enumCastUnderlyingType(self.flags()));
+        }, "Field flags")
+        .def_property_readonly("name", &Trade::SceneFieldData::name, "Field name")
+        .def_property_readonly("size", &Trade::SceneFieldData::size, "Number of entries")
+        .def_property_readonly("mapping_type", &Trade::SceneFieldData::mappingType, "Object mapping type")
+        .def_property_readonly("mapping_data", [](const Trade::SceneFieldData& self) {
+            return sceneMappingView(self.mappingType(),
+                /* The sceneMappingView() helper needs a 2D array with the
+                   second dimension being element bytes, but information about
+                   the type and its size is subsequently discarded so we don't
+                   need any extra logic here. */
+                Containers::arrayCast<2, const char>(self.mappingData(), 1),
+                pyObjectHolderFor<Trade::PySceneFieldDataHolder>(self).mappingOwner);
+        }, "Object mapping data")
+        .def_property_readonly("field_type", &Trade::SceneFieldData::fieldType, "Field type")
+        .def_property_readonly("field_array_size", &Trade::SceneFieldData::fieldArraySize, "Field array size")
+        .def_property_readonly("field_data", [](const Trade::SceneFieldData& self) {
+            /** @todo annotate the return type properly in the docs */
+            if(self.fieldType() == Trade::SceneFieldType::Bit)
+                return pyCastButNotShitty(Containers::pyArrayViewHolder(self.fieldBitData(), pyObjectHolderFor<Trade::PySceneFieldDataHolder>(self).fieldOwner));
+            /** @todo handle strings, so far they can't even be constructed so
+                this isn't needed */
+
+            const Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> formatStringGetitemSetitem = accessorsForSceneFieldType(self.fieldType());
+            if(!formatStringGetitemSetitem.first()) {
+                PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(self.fieldType()).ptr());
+                throw py::error_already_set{};
+            }
+            const std::size_t fieldTypeSize = Trade::sceneFieldTypeSize(self.fieldType());
+            return pyCastButNotShitty(Containers::pyArrayViewHolder(Containers::PyStridedArrayView<2, const char>{Containers::arrayCast<2, const char>(self.fieldData(), fieldTypeSize*(self.fieldArraySize() ? self.fieldArraySize() : 1)).every({1, fieldTypeSize}), formatStringGetitemSetitem.first(), fieldTypeSize, formatStringGetitemSetitem.second(), formatStringGetitemSetitem.third()}, pyObjectHolderFor<Trade::PySceneFieldDataHolder>(self).fieldOwner));
+        }, "Field data")
+        .def_property_readonly("mapping_owner", [](const Trade::SceneFieldData& self) {
+            return pyObjectHolderFor<Trade::PySceneFieldDataHolder>(self).mappingOwner;
+        }, "Mapping memory owner")
+        .def_property_readonly("field_owner", [](const Trade::SceneFieldData& self) {
+            return pyObjectHolderFor<Trade::PySceneFieldDataHolder>(self).fieldOwner;
+        }, "Field memory owner");
 
     py::class_<Trade::SceneData, Trade::PyDataHolder<Trade::SceneData>>{m, "SceneData", "Scene data"}
         .def_property_readonly("data_flags", [](const Trade::SceneData& self) {

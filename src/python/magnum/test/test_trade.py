@@ -1277,6 +1277,493 @@ class MeshData(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, "access to VertexFormat.MATRIX2X2 is not implemented yet, sorry"):
             mesh.mutable_attribute(custom_attribute)
 
+class SceneFieldData(unittest.TestCase):
+    def test_init_1d(self):
+        a = array.array('Q', [3, 7, 166, 2872])
+        b = array.array('h', [2, -1, 37, -1])
+        a_refcount = sys.getrefcount(a)
+        b_refcount = sys.getrefcount(b)
+
+        c = trade.SceneFieldData(trade.SceneField.MESH_MATERIAL,
+            trade.SceneMappingType.UNSIGNED_LONG, a,
+            trade.SceneFieldType.SHORT, b,
+            flags=trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        c_refcount = sys.getrefcount(c)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        self.assertEqual(c.name, trade.SceneField.MESH_MATERIAL)
+        self.assertEqual(c.size, 4)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_LONG)
+        self.assertEqual(c.field_type, trade.SceneFieldType.SHORT)
+        self.assertEqual(c.field_array_size, 0)
+        self.assertIs(c.mapping_owner, a)
+        self.assertIs(c.field_owner, b)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (4,))
+        self.assertEqual(mapping_data.stride, (8,))
+        self.assertEqual(mapping_data.format, 'Q')
+        self.assertIs(mapping_data.owner, a)
+        self.assertEqual(list(mapping_data), [3, 7, 166, 2872])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (4, 1))
+        self.assertEqual(field_data.stride, (2, 2))
+        self.assertEqual(field_data.format, 'h')
+        self.assertIs(field_data.owner, b)
+        # Returns a 2D view always, transpose and take the first element to
+        # "flatten" it.
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [2, -1, 37, -1])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 2)
+
+        del c
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        del mapping_data
+        del field_data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+
+    def test_init_2d(self):
+        a = array.array('I', [0, 1])
+        b = array.array('f', [1.0, 0.0, 0.0,
+                              0.0, -1.0, 0.0])
+        a_refcount = sys.getrefcount(a)
+        b_refcount = sys.getrefcount(b)
+
+        c = trade.SceneFieldData(trade.SceneField.TRANSLATION,
+            trade.SceneMappingType.UNSIGNED_INT, a,
+            trade.SceneFieldType.VECTOR3, containers.StridedArrayView1D(b).expanded(0, (2, 3)),
+            flags=trade.SceneFieldFlags.IMPLICIT_MAPPING)
+        c_refcount = sys.getrefcount(c)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.IMPLICIT_MAPPING)
+        self.assertEqual(c.name, trade.SceneField.TRANSLATION)
+        self.assertEqual(c.size, 2)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_INT)
+        self.assertEqual(c.field_type, trade.SceneFieldType.VECTOR3)
+        self.assertEqual(c.field_array_size, 0)
+        self.assertIs(c.mapping_owner, a)
+        self.assertIs(c.field_owner, b)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (2,))
+        self.assertEqual(mapping_data.stride, (4,))
+        self.assertEqual(mapping_data.format, 'I')
+        self.assertIs(mapping_data.owner, a)
+        self.assertEqual(list(mapping_data), [0, 1])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (2, 1))
+        self.assertEqual(field_data.stride, (12, 12))
+        self.assertEqual(field_data.format, '3f')
+        self.assertIs(field_data.owner, b)
+        # Returns a 2D view always, transpose and take the first element to
+        # "flatten" it.
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [(1.0, 0.0, 0.0), (0.0, -1.0, 0.0)])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 2)
+
+        del c
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        del mapping_data
+        del field_data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+
+    def test_init_1d_array(self):
+        a = array.array('B', [3, 7, 166, 72])
+        b = array.array('Q', [0x0000ffff66663333, 0x00009999aaaacccc, 0x0000bbbb22227777, 0x00001111eeee8888])
+        c = trade.SceneFieldData(trade.SceneField.CUSTOM(666),
+            trade.SceneMappingType.UNSIGNED_BYTE, a,
+            trade.SceneFieldType.UNSIGNED_SHORT, b,
+            field_array_size=3)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.NONE)
+        self.assertEqual(c.name, trade.SceneField.CUSTOM(666))
+        self.assertEqual(c.size, 4)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_BYTE)
+        self.assertEqual(c.field_type, trade.SceneFieldType.UNSIGNED_SHORT)
+        self.assertEqual(c.field_array_size, 3)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (4,))
+        self.assertEqual(mapping_data.stride, (1,))
+        self.assertEqual(mapping_data.format, 'B')
+        self.assertEqual(list(mapping_data), [3, 7, 166, 72])
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (4, 3))
+        self.assertEqual(field_data.stride, (8, 2))
+        self.assertEqual(field_data.format, 'H')
+        # Getting all first, second and third array elements. Assumes Little
+        # Endian.
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [0x3333, 0xcccc, 0x7777, 0x8888])
+        self.assertEqual(list(field_data.transposed(0, 1)[1]), [0x6666, 0xaaaa, 0x2222, 0xeeee])
+        self.assertEqual(list(field_data.transposed(0, 1)[2]), [0xffff, 0x9999, 0xbbbb, 0x1111])
+
+    def test_init_2d_array(self):
+        a = array.array('B', [3, 7, 166, 72])
+        b = array.array('H', [0x3333, 0x6666, 0xffff, 0xcccc, 0xaaaa, 0x9999, 0x7777, 0x2222, 0xbbbb, 0x8888, 0xeeee, 0x1111])
+        c = trade.SceneFieldData(trade.SceneField.CUSTOM(666),
+            trade.SceneMappingType.UNSIGNED_BYTE, a,
+            trade.SceneFieldType.UNSIGNED_SHORT, containers.StridedArrayView1D(b).expanded(0, (4, 3)),
+            field_array_size=3)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.NONE)
+        self.assertEqual(c.name, trade.SceneField.CUSTOM(666))
+        self.assertEqual(c.size, 4)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_BYTE)
+        self.assertEqual(c.field_type, trade.SceneFieldType.UNSIGNED_SHORT)
+        self.assertEqual(c.field_array_size, 3)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (4,))
+        self.assertEqual(mapping_data.stride, (1,))
+        self.assertEqual(mapping_data.format, 'B')
+        self.assertEqual(list(mapping_data), [3, 7, 166, 72])
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (4, 3))
+        self.assertEqual(field_data.stride, (6, 2))
+        self.assertEqual(field_data.format, 'H')
+        # Getting all first, second and third array elements. Assumes Little
+        # Endian.
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [0x3333, 0xcccc, 0x7777, 0x8888])
+        self.assertEqual(list(field_data.transposed(0, 1)[1]), [0x6666, 0xaaaa, 0x2222, 0xeeee])
+        self.assertEqual(list(field_data.transposed(0, 1)[2]), [0xffff, 0x9999, 0xbbbb, 0x1111])
+
+    def test_init_bit_1d(self):
+        a = array.array('H', [3, 7, 166, 2872])
+        b = array.array('b', [1, 0, 1, 0])
+        a_refcount = sys.getrefcount(a)
+        b_refcount = sys.getrefcount(b)
+
+        c = trade.SceneFieldData(trade.SceneField.CUSTOM(1337),
+            trade.SceneMappingType.UNSIGNED_SHORT, a,
+            containers.StridedArrayView1D(b).slice_bit(0),
+            flags=trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        c_refcount = sys.getrefcount(c)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        self.assertEqual(c.name, trade.SceneField.CUSTOM(1337))
+        self.assertEqual(c.size, 4)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_SHORT)
+        self.assertEqual(c.field_type, trade.SceneFieldType.BIT)
+        self.assertEqual(c.field_array_size, 0)
+        self.assertIs(c.mapping_owner, a)
+        self.assertIs(c.field_owner, b)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (4,))
+        self.assertEqual(mapping_data.stride, (2,))
+        self.assertEqual(mapping_data.format, 'H')
+        self.assertIs(mapping_data.owner, a)
+        self.assertEqual(list(mapping_data), [3, 7, 166, 2872])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (4, 1))
+        self.assertEqual(field_data.offset, 0)
+        self.assertEqual(field_data.stride, (8, 1))
+        self.assertIs(field_data.owner, b)
+        # Returns a 2D view always, transpose and take the first element to
+        # "flatten" it.
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [True, False, True, False])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 2)
+
+        del c
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        del mapping_data
+        del field_data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+
+    def test_init_bit_2d(self):
+        a = array.array('H', [3, 7, 166, 2872])
+        b = containers.BitArray.value_init(4*2)
+        b[0] = True
+        b[1] = True
+        b[4] = True
+        b[7] = True
+        a_refcount = sys.getrefcount(a)
+        b_refcount = sys.getrefcount(b)
+
+        c = trade.SceneFieldData(trade.SceneField.CUSTOM(1337),
+            trade.SceneMappingType.UNSIGNED_SHORT, a,
+            containers.StridedBitArrayView1D(b).expanded(0, (4, 2)),
+            flags=trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        c_refcount = sys.getrefcount(c)
+        self.assertEqual(c.flags, trade.SceneFieldFlags.MULTI_ENTRY|trade.SceneFieldFlags.ORDERED_MAPPING)
+        self.assertEqual(c.name, trade.SceneField.CUSTOM(1337))
+        self.assertEqual(c.size, 4)
+        self.assertEqual(c.mapping_type, trade.SceneMappingType.UNSIGNED_SHORT)
+        self.assertEqual(c.field_type, trade.SceneFieldType.BIT)
+        self.assertEqual(c.field_array_size, 2)
+        self.assertIs(c.mapping_owner, a)
+        self.assertIs(c.field_owner, b)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        mapping_data = c.mapping_data
+        self.assertEqual(mapping_data.size, (4,))
+        self.assertEqual(mapping_data.stride, (2,))
+        self.assertEqual(mapping_data.format, 'H')
+        self.assertIs(mapping_data.owner, a)
+        self.assertEqual(list(mapping_data), [3, 7, 166, 2872])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        field_data = c.field_data
+        self.assertEqual(field_data.size, (4, 2))
+        self.assertEqual(field_data.offset, 0)
+        self.assertEqual(field_data.stride, (2, 1))
+        self.assertIs(field_data.owner, b)
+        # Getting all first and second array elements
+        self.assertEqual(list(field_data.transposed(0, 1)[0]), [True, False, True, False])
+        self.assertEqual(list(field_data.transposed(0, 1)[1]), [True, False, False, True])
+
+        # The data reference the original array, not the SceneFieldData
+        # instance
+        self.assertEqual(sys.getrefcount(c), c_refcount)
+        self.assertEqual(sys.getrefcount(a), a_refcount + 2)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 2)
+
+        del c
+        self.assertEqual(sys.getrefcount(a), a_refcount + 1)
+        self.assertEqual(sys.getrefcount(b), b_refcount + 1)
+
+        del mapping_data
+        del field_data
+        self.assertEqual(sys.getrefcount(a), a_refcount)
+        self.assertEqual(sys.getrefcount(b), b_refcount)
+
+    def test_init_1d_invalid(self):
+        data = array.array('Q', [0, 0, 0])
+        data_byte = array.array('B', [0, 0, 0])
+        # To check that messages properly handle the case of no format string
+        data_byte_no_format = containers.ArrayView(data_byte)
+        self.assertEqual(containers.StridedArrayView1D(data_byte_no_format).format, None)
+
+        with self.assertRaisesRegex(AssertionError, "expected SceneField.TRANSLATION mapping and field view to have the same size but got 2 and 3"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:2],
+                trade.SceneFieldType.VECTOR2, data)
+        with self.assertRaisesRegex(AssertionError, "SceneFieldType.UNSIGNED_SHORT is not a valid type for SceneField.TRANSLATION"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                trade.SceneFieldType.UNSIGNED_SHORT, data)
+        with self.assertRaisesRegex(AssertionError, "data type B has 1 bytes but SceneMappingType.UNSIGNED_SHORT expects at least 2"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_byte,
+                trade.SceneFieldType.VECTOR2, data)
+        with self.assertRaisesRegex(AssertionError, "data type B has 1 bytes but SceneMappingType.UNSIGNED_SHORT expects at least 2"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_byte_no_format,
+                trade.SceneFieldType.VECTOR2, data)
+        with self.assertRaisesRegex(AssertionError, "data type Q has 8 bytes but SceneFieldType.VECTOR3 expects at least 12"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data,
+                trade.SceneFieldType.VECTOR3, data)
+        with self.assertRaisesRegex(AssertionError, "data type Q has 8 bytes but array of 3 SceneFieldType.FLOAT expects at least 12"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(76),
+                trade.SceneMappingType.UNSIGNED_SHORT, data,
+                trade.SceneFieldType.FLOAT, data, field_array_size=3)
+        with self.assertRaisesRegex(AssertionError, "data type B has 1 bytes but SceneFieldType.SHORT expects at least 2"):
+            trade.SceneFieldData(trade.SceneField.MESH_MATERIAL,
+                trade.SceneMappingType.UNSIGNED_INT, data,
+                trade.SceneFieldType.SHORT, data_byte_no_format)
+        with self.assertRaisesRegex(AssertionError, "expected mapping view stride to fit into 16 bits but got 32768"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, containers.StridedArrayView1D(data)[::4096],
+                trade.SceneFieldType.VECTOR2, data[:1])
+        with self.assertRaisesRegex(AssertionError, "expected mapping view stride to fit into 16 bits but got -32769"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_BYTE, containers.StridedArrayView1D(data_byte)[::32769].flipped(0),
+                trade.SceneFieldType.VECTOR2, data[:1])
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got 32768"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                trade.SceneFieldType.VECTOR2, containers.StridedArrayView1D(data)[::4096])
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got -32769"):
+            trade.SceneFieldData(trade.SceneField.CAMERA,
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                trade.SceneFieldType.UNSIGNED_BYTE, containers.StridedArrayView1D(data_byte)[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "SceneField.MESH can't be an array field"):
+            trade.SceneFieldData(trade.SceneField.MESH,
+                trade.SceneMappingType.UNSIGNED_SHORT, data,
+                trade.SceneFieldType.UNSIGNED_SHORT, data, field_array_size=3)
+        with self.assertRaisesRegex(AssertionError, "can't pass SceneFieldFlags.MULTI_ENTRY for a SceneField.TRANSLATION view of SceneFieldType.VECTOR2"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                trade.SceneFieldType.VECTOR2, data, flags=trade.SceneFieldFlags.MULTI_ENTRY)
+        with self.assertRaisesRegex(AssertionError, "use a string constructor for SceneFieldType.STRING_OFFSET16"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(333),
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                trade.SceneFieldType.STRING_OFFSET16, data)
+        with self.assertRaisesRegex(AssertionError, "use a bit constructor for SceneFieldType.BIT"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(333),
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                trade.SceneFieldType.BIT, data)
+
+    def test_init_2d_invalid(self):
+        data_1d = array.array('Q', [0, 0, 0])
+        data = containers.StridedArrayView1D(array.array('I', [0, 0, 0, 0, 0, 0])).expanded(0, (3, 2))
+        data_byte = containers.StridedArrayView1D(array.array('B', [0, 0, 0])).expanded(0, (3, 1))
+        # To check that messages properly handle the case of no format string
+        data_byte_no_format = containers.StridedArrayView1D(containers.ArrayView(array.array('B', [0, 0, 0]))).expanded(0, (3, 1))
+        self.assertEqual(data_byte_no_format.format, None)
+
+        with self.assertRaisesRegex(AssertionError, "expected SceneField.TRANSLATION mapping and field view to have the same size but got 2 and 3"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d[:2],
+                trade.SceneFieldType.VECTOR2, data)
+        with self.assertRaisesRegex(AssertionError, "SceneFieldType.UNSIGNED_SHORT is not a valid type for SceneField.TRANSLATION"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data_1d,
+                trade.SceneFieldType.UNSIGNED_SHORT, data)
+        # SceneMappingType size checks are shared with the 1D variant, not
+        # testing here again
+        with self.assertRaisesRegex(AssertionError, "2-item second dimension of data type I has 8 bytes but SceneFieldType.VECTOR3 expects at least 12"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d,
+                trade.SceneFieldType.VECTOR3, data)
+        with self.assertRaisesRegex(AssertionError, "2-item second dimension of data type I has 8 bytes but array of 3 SceneFieldType.FLOAT expects at least 12"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(76),
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d,
+                trade.SceneFieldType.FLOAT, data, field_array_size=3)
+        with self.assertRaisesRegex(AssertionError, "1-item second dimension of data type B has 1 bytes but SceneFieldType.SHORT expects at least 2"):
+            trade.SceneFieldData(trade.SceneField.MESH_MATERIAL,
+                trade.SceneMappingType.UNSIGNED_INT, data_1d,
+                trade.SceneFieldType.SHORT, data_byte_no_format)
+        with self.assertRaisesRegex(AssertionError, "second field view dimension is not contiguous"):
+            trade.SceneFieldData(trade.SceneField.MESH,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d,
+                trade.SceneFieldType.UNSIGNED_SHORT, data[::1,::2])
+        # SceneMappingType stride checks are shared with the 1D variant, not
+        # testing here again
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got 32768"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d[:1],
+                trade.SceneFieldType.VECTOR2, data[::4096])
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got -32769"):
+            trade.SceneFieldData(trade.SceneField.CAMERA,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d[:1],
+                trade.SceneFieldType.UNSIGNED_BYTE, data_byte[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "SceneField.MESH can't be an array field"):
+            trade.SceneFieldData(trade.SceneField.MESH,
+                trade.SceneMappingType.UNSIGNED_SHORT, data_1d,
+                trade.SceneFieldType.UNSIGNED_SHORT, data, field_array_size=3)
+        with self.assertRaisesRegex(AssertionError, "can't pass SceneFieldFlags.MULTI_ENTRY for a SceneField.TRANSLATION view of SceneFieldType.VECTOR2"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data_1d,
+                trade.SceneFieldType.VECTOR2, data, flags=trade.SceneFieldFlags.MULTI_ENTRY)
+        with self.assertRaisesRegex(AssertionError, "use a string constructor for SceneFieldType.STRING_OFFSET16"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(333),
+                trade.SceneMappingType.UNSIGNED_LONG, data_1d,
+                trade.SceneFieldType.STRING_OFFSET16, data)
+        with self.assertRaisesRegex(AssertionError, "use a bit constructor for SceneFieldType.BIT"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(333),
+                trade.SceneMappingType.UNSIGNED_LONG, data_1d,
+                trade.SceneFieldType.BIT, data)
+
+    def test_init_bit_1d_invalid(self):
+        data = array.array('Q', [0, 0, 0])
+        data_bits = containers.BitArray.value_init(3)
+
+        with self.assertRaisesRegex(AssertionError, "expected SceneField.CUSTOM\\(33\\) mapping and field view to have the same size but got 2 and 3"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:2],
+                data_bits)
+        with self.assertRaisesRegex(AssertionError, "SceneFieldType.BIT is not a valid type for SceneField.TRANSLATION"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                data_bits)
+        # SceneMappingType size and stride checks are shared with the non-bit
+        # variant, not testing here again
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got 32768"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                containers.StridedBitArrayView1D(data_bits)[::32768])
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got -32769"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                containers.StridedBitArrayView1D(data_bits)[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "can't pass SceneFieldFlags.OFFSET_ONLY for a SceneField.CUSTOM\\(33\\) view of SceneFieldType.BIT"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                data_bits, flags=trade.SceneFieldFlags.OFFSET_ONLY)
+
+    def test_init_bit_2d_invalid(self):
+        data = array.array('Q', [0, 0, 0])
+        data_bits = containers.StridedBitArrayView1D(containers.BitArray.value_init(3*2)).expanded(0, (3, 2))
+        data_bits_one_element = containers.StridedBitArrayView1D(containers.BitArray.value_init(3)).expanded(0, (3, 1))
+
+        with self.assertRaisesRegex(AssertionError, "expected SceneField.CUSTOM\\(33\\) mapping and field view to have the same size but got 2 and 3"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:2],
+                data_bits)
+        with self.assertRaisesRegex(AssertionError, "SceneFieldType.BIT is not a valid type for SceneField.TRANSLATION"):
+            trade.SceneFieldData(trade.SceneField.TRANSLATION,
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                data_bits)
+        # SceneMappingType size and stride checks are shared with the non-bit
+        # variant, not testing here again
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got 32768"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                data_bits[::16384])
+        with self.assertRaisesRegex(AssertionError, "expected field view stride to fit into 16 bits but got -32769"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_SHORT, data[:1],
+                data_bits_one_element[::32769].flipped(0))
+        with self.assertRaisesRegex(AssertionError, "can't pass SceneFieldFlags.OFFSET_ONLY for a SceneField.CUSTOM\\(33\\) view of SceneFieldType.BIT"):
+            trade.SceneFieldData(trade.SceneField.CUSTOM(33),
+                trade.SceneMappingType.UNSIGNED_LONG, data,
+                data_bits,
+                flags=trade.SceneFieldFlags.OFFSET_ONLY)
+
 class SceneData(unittest.TestCase):
     def test_custom_field(self):
         # Creating a custom attribute

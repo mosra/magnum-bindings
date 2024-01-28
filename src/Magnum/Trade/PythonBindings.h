@@ -31,6 +31,7 @@
 #include "Magnum/Trade/Data.h"
 #include "Magnum/Trade/MaterialData.h" /* :( */
 #include "Magnum/Trade/MeshData.h" /* :( */
+#include "Magnum/Trade/SceneData.h"
 
 namespace Magnum { namespace Trade {
 
@@ -75,8 +76,27 @@ template<class T> PyDataHolder<T> pyDataHolder(T&& data, pybind11::object owner)
     return PyDataHolder<T>{new T{std::move(data)}, std::move(owner)};
 }
 
+/* Compared to PyDataHolder this stores two owner objects. Has to be a template
+   even though it's only ever used for a single type because
+   PYBIND11_DECLARE_HOLDER_TYPE() wants it to be so. */
+template<class T> struct PySceneFieldDataHolder: std::unique_ptr<SceneFieldData> {
+    explicit PySceneFieldDataHolder(SceneFieldData* object): PySceneFieldDataHolder{object, pybind11::none{}, pybind11::none{}} {
+        /* Data without owners can only be empty */
+        CORRADE_INTERNAL_ASSERT(!object->mappingData().data() && !object->fieldData().data());
+    }
+
+    explicit PySceneFieldDataHolder(SceneFieldData* object, pybind11::object mappingOwner, pybind11::object fieldOwner): std::unique_ptr<T>{object}, mappingOwner{std::move(mappingOwner)}, fieldOwner{std::move(fieldOwner)} {}
+
+    pybind11::object mappingOwner, fieldOwner;
+};
+
+inline PySceneFieldDataHolder<SceneFieldData> pySceneFieldDataHolder(SceneFieldData&& data, pybind11::object mappingOwner, pybind11::object fieldOwner) {
+    return PySceneFieldDataHolder<SceneFieldData>{new SceneFieldData{std::move(data)}, std::move(mappingOwner), std::move(fieldOwner)};
+}
+
 }}
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::Trade::PyDataHolder<T>)
+PYBIND11_DECLARE_HOLDER_TYPE(T, Magnum::Trade::PySceneFieldDataHolder<T>)
 
 #endif
