@@ -833,6 +833,9 @@ template<unsigned dimensions, class T> void stridedBitArrayView(py::class_<Conta
 }
 
 template<class T> void stridedBitArrayView1D(py::class_<Containers::BasicStridedBitArrayView<1, T>, Containers::PyArrayViewHolder<Containers::BasicStridedBitArrayView<1, T>>>& c) {
+    /* Implicitly convertible from a BitArray */
+    py::implicitly_convertible<Containers::BitArray, Containers::BasicStridedBitArrayView<1, T>>();
+
     c
         .def(py::init([](Containers::BasicBitArrayView<T>& other) {
             return pyArrayViewHolder(Containers::BasicStridedBitArrayView<1, T>{other}, pyObjectHolderFor<Containers::PyArrayViewHolder>(other).owner);
