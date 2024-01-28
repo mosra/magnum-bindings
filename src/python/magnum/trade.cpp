@@ -2531,6 +2531,7 @@ void trade(py::module_& m) {
         .value("OFFSET_ONLY", Trade::SceneFieldFlag::OffsetOnly)
         .value("ORDERED_MAPPING", Trade::SceneFieldFlag::OrderedMapping)
         .value("IMPLICIT_MAPPING", Trade::SceneFieldFlag::ImplicitMapping)
+        .value("MULTI_ENTRY", Trade::SceneFieldFlag::MultiEntry)
         .value("NULL_TERMINATED_STRING", Trade::SceneFieldFlag::NullTerminatedString)
         .value("NONE", Trade::SceneFieldFlag{});
     corrade::enumOperators(sceneFieldFlag);
