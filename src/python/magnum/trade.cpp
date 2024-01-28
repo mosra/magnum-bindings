@@ -517,28 +517,6 @@ template<class T, bool(Trade::AbstractImageConverter::*f)(const T&, Containers::
     }
 }
 
-Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
-    switch(type) {
-        #define _c(type)                                                    \
-            case MeshIndexType::type: return {                              \
-                Containers::Implementation::pythonFormatString<type>(),     \
-                [](const char* item) {                                      \
-                    return py::cast(*reinterpret_cast<const type*>(item));  \
-                },                                                          \
-                [](char* item, py::handle object) {                         \
-                    *reinterpret_cast<type*>(item) = py::cast<type>(object); \
-                }};
-        /* LCOV_EXCL_START */
-        _c(UnsignedByte)
-        _c(UnsignedShort)
-        _c(UnsignedInt)
-        /* LCOV_EXCL_STOP */
-        #undef _c
-    }
-
-    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
-}
-
 py::object materialAttribute(const Trade::MaterialData& material, const UnsignedInt layer, const UnsignedInt id) {
     const Trade::MaterialAttributeType type = material.attributeType(layer, id);
     switch(type) {
@@ -586,6 +564,28 @@ py::object materialAttribute(const Trade::MaterialData& material, const Unsigned
         case Trade::MaterialAttributeType::Buffer:
             PyErr_Format(PyExc_NotImplementedError, "access to %S is not implemented yet, sorry", py::cast(type).ptr());
             throw py::error_already_set{};
+    }
+
+    CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+Containers::Triple<const char*, py::object(*)(const char*), void(*)(char*, py::handle)> accessorsForMeshIndexType(const MeshIndexType type) {
+    switch(type) {
+        #define _c(type)                                                    \
+            case MeshIndexType::type: return {                              \
+                Containers::Implementation::pythonFormatString<type>(),     \
+                [](const char* item) {                                      \
+                    return py::cast(*reinterpret_cast<const type*>(item));  \
+                },                                                          \
+                [](char* item, py::handle object) {                         \
+                    *reinterpret_cast<type*>(item) = py::cast<type>(object); \
+                }};
+        /* LCOV_EXCL_START */
+        _c(UnsignedByte)
+        _c(UnsignedShort)
+        _c(UnsignedInt)
+        /* LCOV_EXCL_STOP */
+        #undef _c
     }
 
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
