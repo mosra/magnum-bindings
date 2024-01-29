@@ -24,7 +24,6 @@
 */
 
 #include <pybind11/pybind11.h>
-#include <pybind11/numpy.h> /* so ArrayView is convertible from python array */
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/BitArray.h>
 #include <Corrade/Containers/StridedBitArrayView.h>
@@ -118,8 +117,6 @@ template<class T> void arrayView(py::class_<Containers::ArrayView<T>, Containers
 
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, Containers::ArrayView<T>>();
-    /* This is needed for implicit conversion from np.array */
-    py::implicitly_convertible<py::array, Containers::ArrayView<T>>();
 
     c
         /* Constructor */
@@ -603,8 +600,6 @@ Containers::Pair<py::object(*)(const char*), void(*)(char*, py::handle)> accesso
 template<unsigned dimensions, class T> void stridedArrayView(py::class_<Containers::PyStridedArrayView<dimensions, T>, Containers::PyArrayViewHolder<Containers::PyStridedArrayView<dimensions, T>>>& c) {
     /* Implicitly convertible from a buffer */
     py::implicitly_convertible<py::buffer, Containers::PyStridedArrayView<dimensions, T>>();
-    /* This is needed for implicit conversion from np.array */
-    py::implicitly_convertible<py::array, Containers::PyStridedArrayView<dimensions, T>>();
 
     c
         /* Constructor */
