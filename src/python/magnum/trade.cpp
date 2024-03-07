@@ -96,8 +96,17 @@ template<class T, typename std::underlying_type<T>::type baseCustomValue> inline
    to pass them all, and I'd need to make my own handling of the OOB cases
    anyway */
 template<class T, typename std::underlying_type<T>::type baseCustomValue> void enumWithCustomValues(py::enum_<T>& enum_) {
+    /* "warning C4310: cast truncates constant value". No shit?! That's
+       precisely what is this testing for. */
+    #ifdef CORRADE_TARGET_MSVC
+    #pragma warning(push)
+    #pragma warning(disable: 4310)
+    #endif
     static_assert(!typename std::underlying_type<T>::type(baseCustomValue << 1),
         "base custom value expected to be a single highest bit");
+    #ifdef CORRADE_TARGET_MSVC
+    #pragma warning(pop)
+    #endif
 
     enum_
         .def("CUSTOM", [](typename std::underlying_type<T>::type value) {
