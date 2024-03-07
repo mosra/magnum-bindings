@@ -187,7 +187,7 @@ class Functions(unittest.TestCase):
         self.assertEqual(math.minmax(Deg(15.0), Deg(3.0)), (Deg(3.0), Deg(15.0)))
         self.assertEqual(math.clamp(Rad(0.5), Rad(-1.0), Rad(5.0)), Rad(0.5))
 
-        self.assertEqual(math.sign(Deg(-15.0)), Deg(-1.0))
+        self.assertEqual(math.sign(Deg(-15.0)), -1.0)
         self.assertEqual(math.abs(Rad(-15.0)), Rad(15.0))
 
         self.assertEqual(math.floor(Deg(15.3)), Deg(15.0))
