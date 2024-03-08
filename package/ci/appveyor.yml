@@ -131,8 +131,8 @@ install:
 # meshoptimizer for MSVC 2022, 2019 and clang-cl; MinGW. MSVC 2017 doesn't work
 # with the 2019 build unfortunately, and can't build it because of
 # https://github.com/actions/runner-images/issues/3294
-- IF "%COMPILER:~0,4%" == "msvc" appveyor DownloadFile https://ci.magnum.graphics/meshoptimizer-0.18-windows-2019-debug.zip && 7z x meshoptimizer-0.18-windows-2019-debug.zip -o%APPVEYOR_BUILD_FOLDER%\deps
-- IF "%COMPILER%" == "mingw" appveyor DownloadFile https://ci.magnum.graphics/meshoptimizer-0.18-windows-mingw.zip && 7z x meshoptimizer-0.18-windows-mingw.zip -o%APPVEYOR_BUILD_FOLDER%\deps
+- IF "%COMPILER:~0,4%" == "msvc" appveyor DownloadFile https://ci.magnum.graphics/meshoptimizer-0.20-windows-2019-debug.zip && 7z x meshoptimizer-0.20-windows-2019-debug.zip -o%APPVEYOR_BUILD_FOLDER%\deps
+- IF "%COMPILER%" == "mingw" appveyor DownloadFile https://ci.magnum.graphics/meshoptimizer-0.20-windows-mingw.zip && 7z x meshoptimizer-0.20-windows-mingw.zip -o%APPVEYOR_BUILD_FOLDER%\deps
 
 build_script:
 - IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" call package\ci\appveyor-desktop.bat
