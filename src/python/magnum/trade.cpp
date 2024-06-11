@@ -3275,6 +3275,10 @@ void trade(py::module_& m) {
         .value("NONE", Trade::SceneConverterFlag{});
     corrade::enumOperators(sceneConverterFlags);
 
+    /* Has to be created before SceneContents as SceneContents.FOR() depends on
+       it */
+    py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
+
     py::enum_<Trade::SceneContent> sceneContents{m, "SceneContents", "Scene contents"};
     sceneContents
         .value("SCENES", Trade::SceneContent::Scenes)
@@ -3305,7 +3309,6 @@ void trade(py::module_& m) {
         });
     corrade::enumOperators(sceneContents);
 
-    py::class_<Trade::AbstractSceneConverter, PluginManager::PyPluginHolder<Trade::AbstractSceneConverter>, PluginManager::AbstractPlugin> abstractSceneConverter{m, "AbstractSceneConverter", "Interface for scene converter plugins"};
     abstractSceneConverter
         .def_property_readonly("features", [](Trade::AbstractSceneConverter& self) {
             return Trade::SceneConverterFeature(Containers::enumCastUnderlyingType(self.features()));
