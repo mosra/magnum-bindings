@@ -50,7 +50,7 @@ check() {
     python -m unittest -v
 
     cd "$_rootdir/doc/python"
-    PYTHONPATH="$_rootdir/build/src/python" python -m doctest -v *.rst
+    PYTHONPATH="$_rootdir/build/src/python/$_buildtype" python -m doctest -v *.rst
 }
 
 package() {
