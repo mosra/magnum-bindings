@@ -58,14 +58,6 @@ magnum.TARGET_WEBGL = DoNotPrintValue()
 magnum.TARGET_EGL = DoNotPrintValue()
 magnum.TARGET_VK = DoNotPrintValue()
 
-# Otherwise it blows during doc generation up because there's no content
-# TODO is there a way to make Python not execute the property when inspecting
-#   it?!
-# TODO also, it's a static property together with has_current, and as such it
-#   has no docstring -- fix
-delattr(magnum.gl.Context, 'current')
-setattr(magnum.gl.Context, 'current', DoNotPrintValue())
-
 # TODO ugh... can this be expressed directly in pybind? and the docs parsed
 #   from it so i don't need to repeat them in docs/*.rst files?
 for i in [magnum.text.AbstractFont,

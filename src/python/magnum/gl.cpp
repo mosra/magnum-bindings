@@ -373,21 +373,27 @@ void gl(py::module_& m) {
             .def_property_readonly_static("has_current", [](const py::object&) {
                 return GL::Context::hasCurrent();
             }, "Whether there is any current context")
-            .def_property_readonly_static("current", [](const py::object&) {
-                if(!GL::Context::hasCurrent()) {
-                    PyErr_SetString(PyExc_RuntimeError, "no current context");
-                    throw py::error_already_set{};
-                }
+            .def_property_readonly_static("current",
+                std::getenv("MCSS_GENERATING_OUTPUT") ?
+                    [](const py::object&) {
+                        return ContextHolder<GL::Context>{nullptr};
+                        } :
+                    [](const py::object&) {
+                        if(!GL::Context::hasCurrent()) {
+                            PyErr_SetString(PyExc_RuntimeError, "no current context");
+                            throw py::error_already_set{};
+                        }
 
-                py::object owner = py::none{};
-                auto* glContextOwner = reinterpret_cast<std::pair<const void*, const std::type_info*>*>(py::get_shared_data("magnumGLContextOwner"));
-                if(glContextOwner && glContextOwner->first) {
-                    CORRADE_INTERNAL_ASSERT(glContextOwner->second);
-                    owner = Corrade::pyObjectFromInstance(glContextOwner->first, *glContextOwner->second);
-                }
+                        py::object owner = py::none{};
+                        auto* glContextOwner = reinterpret_cast<std::pair<const void*, const std::type_info*>*>(py::get_shared_data("magnumGLContextOwner"));
+                        if(glContextOwner && glContextOwner->first) {
+                            CORRADE_INTERNAL_ASSERT(glContextOwner->second);
+                            owner = Corrade::pyObjectFromInstance(glContextOwner->first, *glContextOwner->second);
+                        }
 
-                return ContextHolder<GL::Context>{&GL::Context::current(), std::move(owner)};
-            }, "Current context")
+                        return ContextHolder<GL::Context>{&GL::Context::current(), std::move(owner)};
+                    }
+            , "Current context")
             /** @todo context switching (needs additions to the "who owns
                 current context instance" variable -- a map?) */
             .def_property_readonly("version", &GL::Context::version, "OpenGL version")
