@@ -58,6 +58,13 @@ template<unsigned dimensions> void algorithmsCopy(py::module_& m) {
 void utility(py::module_& m) {
     m.doc() = "Utilities";
 
+    #ifndef CORRADE_BUILD_STATIC
+    /* Need array views for copy() and others. These are a part of the same
+       module in the static build, no need to import (also can't import because
+       there it's _corrade.*) */
+    py::module_::import("corrade.containers");
+    #endif
+
     algorithmsCopy<1>(m);
     algorithmsCopy<2>(m);
     algorithmsCopy<3>(m);
