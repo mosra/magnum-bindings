@@ -84,7 +84,7 @@ template<class T> void manager(py::class_<PluginManager::Manager<T>, PluginManag
             }
 
             return PluginManager::pyPluginHolder(std::move(loaded), py::cast(self));
-        })
+        }, "Instantiate a plugin")
         .def("load_and_instantiate", [](PluginManager::Manager<T>& self, const std::string& plugin) {
             auto loaded = self.loadAndInstantiate(plugin);
             if(!loaded) {
@@ -93,7 +93,7 @@ template<class T> void manager(py::class_<PluginManager::Manager<T>, PluginManag
             }
 
             return PluginManager::pyPluginHolder(std::move(loaded), py::cast(self));
-        });
+        }, "Load and instantiate plugin");
 }
 
 }
