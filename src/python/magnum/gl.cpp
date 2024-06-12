@@ -375,10 +375,16 @@ void gl(py::module_& m) {
             }, "Whether there is any current context")
             .def_property_readonly_static("current",
                 std::getenv("MCSS_GENERATING_OUTPUT") ?
-                    [](const py::object&) {
+                    /* Without the `+` converting the lambda to a func pointer,
+                       MSVC dies with "error C2446: ':': no conversion from
+                       'magnum::gl::<lambda_77bb3e7795c6a5d3c24295f5094682bb>' to
+                       'magnum::gl::<lambda_8aa45d30b7cae5763e9e81fb46e3b37b>'".
+                       All versions including 2022 are affected, works only
+                       with the /permissive- flag. LOL. */
+                    +[](const py::object&) {
                         return ContextHolder<GL::Context>{nullptr};
-                        } :
-                    [](const py::object&) {
+                    } :
+                    +[](const py::object&) {
                         if(!GL::Context::hasCurrent()) {
                             PyErr_SetString(PyExc_RuntimeError, "no current context");
                             throw py::error_already_set{};
