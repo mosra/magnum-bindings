@@ -28,6 +28,7 @@
 #include <memory> /* :( */
 #include <pybind11/pybind11.h>
 #include <Corrade/Utility/Assert.h>
+#include <Magnum/SceneGraph/AbstractFeature.h>
 
 namespace Magnum { namespace SceneGraph {
 
