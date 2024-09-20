@@ -8,6 +8,7 @@ class MagnumBindings < Formula
 
   depends_on "cmake"
   depends_on "python"
+  depends_on "python-setuptools" => :build
   depends_on "magnum"
   depends_on "pybind11" => :build
 
