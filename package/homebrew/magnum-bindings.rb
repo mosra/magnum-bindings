@@ -6,7 +6,7 @@ class MagnumBindings < Formula
   sha256 "959c703e6409ba0c2cd6c0da3a2b6190f6fac837ff69f64cbdc372e11359e7d8"
   head "https://github.com/mosra/magnum-bindings.git"
 
-  depends_on "cmake"
+  depends_on "cmake" => :build
   depends_on "python"
   depends_on "python-setuptools" => :build
   depends_on "magnum"
