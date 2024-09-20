@@ -67,10 +67,31 @@ void pluginmanager(py::module_& m) {
     corrade::enumOperators(loadState);
 
     py::class_<PluginManager::PluginMetadata>{m, "PluginMetadata", "Plugin metadata"}
-        .def_property_readonly("name", &PluginManager::PluginMetadata::name, "Plugin name")
-        .def_property_readonly("depends", &PluginManager::PluginMetadata::depends, "Plugins on which this plugin depends")
-        .def_property_readonly("used_by", &PluginManager::PluginMetadata::usedBy, "Plugins which depend on this plugin")
-        .def_property_readonly("provides", &PluginManager::PluginMetadata::provides, "Plugins which are provided by this plugin")
+        .def_property_readonly("name", [](PluginManager::PluginMetadata& self) {
+            /** @todo drop std::string in favor of our own string caster */
+            return std::string{self.name()};
+        }, "Plugin name")
+        .def_property_readonly("depends", [](PluginManager::PluginMetadata& self) {
+            /** @todo make a generic caster for arbitrary arrays and strings */
+            std::vector<std::string> out;
+            for(Containers::StringView i: self.depends())
+                out.push_back(i);
+            return out;
+        }, "Plugins on which this plugin depends")
+        .def_property_readonly("used_by", [](PluginManager::PluginMetadata& self) {
+            /** @todo make a generic caster for arbitrary arrays and strings */
+            std::vector<std::string> out;
+            for(Containers::StringView i: self.usedBy())
+                out.push_back(i);
+            return out;
+        }, "Plugins which depend on this plugin")
+        .def_property_readonly("provides", [](PluginManager::PluginMetadata& self) {
+            /** @todo make a generic caster for arbitrary arrays and strings */
+            std::vector<std::string> out;
+            for(Containers::StringView i: self.provides())
+                out.push_back(i);
+            return out;
+        }, "Plugins which are provided by this plugin")
         /** @todo data? no plugin uses this at the moment */
         .def_property_readonly("configuration", static_cast<Utility::ConfigurationGroup&(PluginManager::PluginMetadata::*)()>(&PluginManager::PluginMetadata::configuration), "Initial plugin-specific configuration", py::return_value_policy::reference_internal);
 
