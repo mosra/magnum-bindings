@@ -162,7 +162,7 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
-.. py:function:: corrade.containers.StridedArrayView2D.__getitem__(self, i: typing.Tuple[int, int])
+.. py:function:: corrade.containers.StridedArrayView2D.__getitem__(self, i: tuple[int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <StridedArrayView2D.format>` is not one of :py:`'b'`,
@@ -185,13 +185,13 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
-.. py:function:: corrade.containers.MutableStridedArrayView2D.__getitem__(self, i: typing.Tuple[int, int])
+.. py:function:: corrade.containers.MutableStridedArrayView2D.__getitem__(self, i: tuple[int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView2D.format>` is not one of
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
-.. py:function:: corrade.containers.MutableStridedArrayView2D.__setitem__(self, i: typing.Tuple[int, int], value: handle)
+.. py:function:: corrade.containers.MutableStridedArrayView2D.__setitem__(self, i: tuple[int, int], value: handle)
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView2D.format>` is not one of
@@ -213,7 +213,7 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
-.. py:function:: corrade.containers.StridedArrayView3D.__getitem__(self, i: typing.Tuple[int, int, int])
+.. py:function:: corrade.containers.StridedArrayView3D.__getitem__(self, i: tuple[int, int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <StridedArrayView3D.format>` is not one of :py:`'b'`,
@@ -236,13 +236,13 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
-.. py:function:: corrade.containers.MutableStridedArrayView3D.__getitem__(self, i: typing.Tuple[int, int, int])
+.. py:function:: corrade.containers.MutableStridedArrayView3D.__getitem__(self, i: tuple[int, int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView3D.format>` is not one of
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
-.. py:function:: corrade.containers.MutableStridedArrayView3D.__setitem__(self, i: typing.Tuple[int, int, int], value: handle)
+.. py:function:: corrade.containers.MutableStridedArrayView3D.__setitem__(self, i: tuple[int, int, int], value: handle)
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView3D.format>` is not one of
@@ -264,7 +264,7 @@
 
     See :ref:`StridedArrayView1D` for more information.
 
-.. py:function:: corrade.containers.StridedArrayView4D.__getitem__(self, i: typing.Tuple[int, int, int, int])
+.. py:function:: corrade.containers.StridedArrayView4D.__getitem__(self, i: tuple[int, int, int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <StridedArrayView4D.format>` is not one of :py:`'b'`,
@@ -285,13 +285,13 @@
     See :ref:`StridedArrayView1D` and :ref:`MutableStridedArrayView1D` for more
     information.
 
-.. py:function:: corrade.containers.MutableStridedArrayView4D.__getitem__(self, i: typing.Tuple[int, int, int, int])
+.. py:function:: corrade.containers.MutableStridedArrayView4D.__getitem__(self, i: tuple[int, int, int, int])
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView4D.format>` is not one of
         :py:`'b'`, :py:`'B'`, :py:`'h'`, :py:`'H'`, :py:`'i'`, :py:`'I'`,
         :py:`'q'`, :py:`'Q'`, :py:`'f'` or :py:`'d'`
-.. py:function:: corrade.containers.MutableStridedArrayView4D.__setitem__(self, i: typing.Tuple[int, int, int, int], value: handle)
+.. py:function:: corrade.containers.MutableStridedArrayView4D.__setitem__(self, i: tuple[int, int, int, int], value: handle)
     :raise IndexError: If :p:`i` is out of range
     :raise NotImplementedError: If the view was created from a buffer and
         :ref:`format <MutableStridedArrayView4D.format>` is not one of
