@@ -33,6 +33,7 @@ build() {
         -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O2 -g -DNDEBUG -fno-omit-frame-pointer" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DPYTHON_EXECUTABLE=$(which python) \
         -DMAGNUM_WITH_PYTHON=ON \
         -DMAGNUM_BUILD_TESTS=ON \
         -G "Ninja Multi-Config"
