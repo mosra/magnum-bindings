@@ -158,8 +158,8 @@ commands:
         # you could just download the artifacts directly, right? RIGHT?
         command: |
           mkdir -p $HOME/swiftshader && cd $HOME/swiftshader
-          wget https://ci.magnum.graphics/swiftshader-gles-r5464.a6940c8e6e-<< parameters.build >>.zip
-          unzip swiftshader-gles-r5464.a6940c8e6e-<< parameters.build >>.zip
+          wget https://ci.magnum.graphics/swiftshader-gles-r5904.14dcbed947-<< parameters.build >>.zip
+          unzip swiftshader-gles-r5904.14dcbed947-<< parameters.build >>.zip
 
   install-meshoptimizer:
     steps:
@@ -275,7 +275,7 @@ jobs:
     - install-pybind11
     - install-meshoptimizer
     - install-swiftshader-gles:
-        build: ubuntu-16.04
+        build: ubuntu-18.04
     - build:
         script: unix-desktop-gles.sh
     - lcov
@@ -300,7 +300,7 @@ jobs:
     - install-pybind11
     - install-meshoptimizer
     - install-swiftshader-gles:
-        build: ubuntu-16.04
+        build: ubuntu-18.04
     - build:
         script: unix-desktop-gles.sh
     - lcov
@@ -353,7 +353,7 @@ jobs:
     - install-base-macos:
         extra: sdl2 glfw wget numpy pybind11
     - install-swiftshader-gles:
-        build: macos-10.15
+        build: macos12-arm64
     - install-meshoptimizer
     - build:
         script: unix-desktop-gles.sh
