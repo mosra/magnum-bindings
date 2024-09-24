@@ -51,6 +51,18 @@ commands:
         command: |
           if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov"; fi
           HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake ninja $LCOV_PACKAGES << parameters.extra >>
+    - run:
+        name: Uninstall the pyenv crap and install plain python instead
+        # Otherwise the numpy installed by homebrew is unreachable by actual
+        # user-side python. THIS ALL USED TO WORK BUT NOT ANYMORE. They
+        # subsequently added `brew pyenv-sync` in an attempt to fix this trash
+        # fire, but that damn thing doesn't work at all either. Fuck it, then.
+        # https://github.com/orgs/Homebrew/discussions/4664
+        # https://github.com/Homebrew/brew/issues/17563
+        command: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew remove pyenv
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install python
+          rm -r ~/.pyenv
 
   install-gcc-4_8:
     steps:
