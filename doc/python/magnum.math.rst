@@ -170,13 +170,22 @@
         >>> a[0] # first column
         Vector(1, 4, 7)
 
+    ..
+        In order to minimize floating-point printing differences across
+        architectures (ARM Mac has a different output below otherwise)
+        >>> np.set_printoptions(precision=5)
+
     .. code:: pycon
 
         >>> b = np.array(Matrix3.rotation(Deg(45.0)))
         >>> b.strides[0] # column-major storage
         4
         >>> b[0] # first column, 32-bit floats
-        array([ 0.70710677, -0.70710677,  0.        ], dtype=float32)
+        array([ 0.70711, -0.70711,  0.     ], dtype=float32)
+
+    ..
+        A bit longer for doubles
+        >>> np.set_printoptions(precision=7)
 
     .. code:: pycon
 
@@ -184,7 +193,11 @@
         >>> c.strides[0] # row-major storage (overridden)
         24
         >>> c[0] # first column, 64-bit floats (overridden)
-        array([ 0.70710677, -0.70710677,  0.        ])
+        array([ 0.7071068, -0.7071068,  0.       ])
+
+    ..
+        Reset back
+        >>> np.set_printoptions()
 
     `Major differences to the C++ API`_
     ===================================
