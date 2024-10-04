@@ -28,4 +28,17 @@ set(MagnumBindings_MODULES
     FindMagnumBindings.cmake
     MagnumBindingsConfig.cmake)
 
+# IMPORTANT: When adding a new module here, be sure to update the
+# find_path(_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR ...) list in
+# FindMagnumBindings.cmake to avoid breakages when the directory contains only
+# that new module.
+set(MagnumBindings_DEPENDENCY_MODULES )
+# No dependency Find modules so far
+
 install(FILES ${MagnumBindings_MODULES} DESTINATION ${MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR})
+if(MagnumBindings_DEPENDENCY_MODULES)
+    install(FILES ${MagnumBindings_DEPENDENCY_MODULES} DESTINATION ${MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR}/dependencies)
+endif()
+
+# Magnum Bindings dependency module dir for superprojects
+set(_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "")

@@ -70,6 +70,32 @@ find_path(MAGNUMBINDINGS_INCLUDE_DIR Magnum/versionBindings.h
     HINTS ${MAGNUM_INCLUDE_DIR})
 mark_as_advanced(MAGNUMBINDINGS_INCLUDE_DIR)
 
+# CMake module dir for dependencies. It might not be present at all if no
+# feature that needs them is enabled, in which case it'll be left at NOTFOUND.
+# But in that case it should also not be subsequently needed for any
+# find_package(). If this is called from a superproject, the
+# _MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR is already set by
+# modules/CMakeLists.txt.
+#
+# There's no dependency Find modules so far. Once there are, uncomment this and
+# list the modules in NAMES.
+#find_path(_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR
+#    NAMES
+#    PATH_SUFFIXES share/cmake/MagnumBindings/dependencies)
+#mark_as_advanced(_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR)
+
+# If the module dir is found and is not present in CMAKE_MODULE_PATH already
+# (such as when someone explicitly added it, or if it's the Magnum's modules/
+# dir in case of a superproject), add it as the first before all other. Set a
+# flag to remove it again at the end, so the modules don't clash with Find
+# modules of the same name from other projects.
+if(_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR AND NOT _MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR IN_LIST CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH ${_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR} ${CMAKE_MODULE_PATH})
+    set(_MAGNUMBINDINGS_REMOVE_DEPENDENCY_MODULE_DIR_FROM_CMAKE_PATH ON)
+else()
+    unset(_MAGNUMBINDINGS_REMOVE_DEPENDENCY_MODULE_DIR_FROM_CMAKE_PATH)
+endif()
+
 # Component distinction (listing them explicitly to avoid mistakes with finding
 # components from other repositories)
 set(_MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS Python)
@@ -186,6 +212,13 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.16)
 
     string(REPLACE ";" " " _MAGNUMBINDINGS_REASON_FAILURE_MESSAGE "${_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE}")
     set(_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE REASON_FAILURE_MESSAGE "${_MAGNUMBINDINGS_REASON_FAILURE_MESSAGE}")
+endif()
+
+# Remove Magnum Extras dependency module dir from CMAKE_MODULE_PATH again. Do
+# it before the FPHSA call which may exit early in case of a failure.
+if(_MAGNUMBINDINGS_REMOVE_DEPENDENCY_MODULE_DIR_FROM_CMAKE_PATH)
+    list(REMOVE_ITEM CMAKE_MODULE_PATH ${_MAGNUMBINDINGS_DEPENDENCY_MODULE_DIR})
+    unset(_MAGNUMBINDINGS_REMOVE_DEPENDENCY_MODULE_DIR_FROM_CMAKE_PATH)
 endif()
 
 include(FindPackageHandleStandardArgs)
