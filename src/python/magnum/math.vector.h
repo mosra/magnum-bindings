@@ -432,11 +432,11 @@ template<class T> void vector2(py::class_<Math::Vector2<T>>& c) {
 
         /* Properties */
         .def_property("x",
-            static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::x),
+            static_cast<const T&(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::x),
             [](Math::Vector2<T>& self, T value) { self.x() = value; },
             "X component")
         .def_property("y",
-            static_cast<T(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::y),
+            static_cast<const T&(Math::Vector2<T>::*)() const>(&Math::Vector2<T>::y),
             [](Math::Vector2<T>& self, T value) { self.y() = value; },
             "Y component");
 }
@@ -473,28 +473,28 @@ template<class T> void vector3(py::class_<Math::Vector3<T>>& c) {
 
         /* Properties */
         .def_property("x",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::x),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::x),
             [](Math::Vector3<T>& self, T value) { self.x() = value; },
             "X component")
         .def_property("y",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::y),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::y),
             [](Math::Vector3<T>& self, T value) { self.y() = value; },
             "Y component")
         .def_property("z",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::z),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::z),
             [](Math::Vector3<T>& self, T value) { self.z() = value; },
             "Z component")
 
         .def_property("r",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::r),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::r),
             [](Math::Vector3<T>& self, T value) { self.r() = value; },
             "R component")
         .def_property("g",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::g),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::g),
             [](Math::Vector3<T>& self, T value) { self.g() = value; },
             "G component")
         .def_property("b",
-            static_cast<T(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::b),
+            static_cast<const T&(Math::Vector3<T>::*)() const>(&Math::Vector3<T>::b),
             [](Math::Vector3<T>& self, T value) { self.b() = value; },
             "B component")
 
@@ -517,36 +517,36 @@ template<class T> void vector4(py::class_<Math::Vector4<T>>& c) {
 
         /* Properties */
         .def_property("x",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::x),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::x),
             [](Math::Vector4<T>& self, T value) { self.x() = value; },
             "X component")
         .def_property("y",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::y),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::y),
             [](Math::Vector4<T>& self, T value) { self.y() = value; },
             "Y component")
         .def_property("z",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::z),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::z),
             [](Math::Vector4<T>& self, T value) { self.z() = value; },
             "Z component")
         .def_property("w",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::w),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::w),
             [](Math::Vector4<T>& self, T value) { self.w() = value; },
             "W component")
 
         .def_property("r",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::r),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::r),
             [](Math::Vector4<T>& self, T value) { self.r() = value; },
             "R component")
         .def_property("g",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::g),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::g),
             [](Math::Vector4<T>& self, T value) { self.g() = value; },
             "G component")
         .def_property("b",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::b),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::b),
             [](Math::Vector4<T>& self, T value) { self.b() = value; },
             "B component")
         .def_property("a",
-            static_cast<T(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::a),
+            static_cast<const T&(Math::Vector4<T>::*)() const>(&Math::Vector4<T>::a),
             [](Math::Vector4<T>& self, T value) { self.a() = value; },
             "A component")
 
