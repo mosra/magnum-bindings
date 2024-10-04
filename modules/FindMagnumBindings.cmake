@@ -100,6 +100,10 @@ if(MagnumBindings_FIND_COMPONENTS)
     list(REMOVE_DUPLICATES MagnumBindings_FIND_COMPONENTS)
 endif()
 
+# Special cases of include paths. Libraries not listed here have a path suffix
+# and include name derived from the library name in the loop below. (So far no
+# special cases.)
+
 # Find all components
 foreach(_component ${MagnumBindings_FIND_COMPONENTS})
     string(TOUPPER ${_component} _COMPONENT)
@@ -112,12 +116,12 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
     else()
         # Header-only components
         if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
-          add_library(MagnumBindings::${_component} INTERFACE IMPORTED)
-        endif()
+            add_library(MagnumBindings::${_component} INTERFACE IMPORTED)
 
-        # Python bindings
-        if(_component STREQUAL Python)
-            set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES Magnum/SceneGraph/PythonBindings.h)
+            # Include path names to find, unless specified above
+            if(NOT _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES)
+                set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES ${_component}Bindings.h)
+            endif()
         endif()
 
         if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
@@ -126,7 +130,20 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
                 NAMES ${_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES}
                 HINTS ${MAGNUMBINDINGS_INCLUDE_DIR})
             mark_as_advanced(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
+        endif()
 
+        # Decide if the component was found. If not, skip the rest, which
+        # populates the target properties and finds additional dependencies.
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS AND _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
+            set(MagnumBindings_${_component}_FOUND TRUE)
+        else()
+            set(MagnumBindings_${_component}_FOUND FALSE)
+            continue()
+        endif()
+
+        # No special setup for Python bindings
+
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
             # Link to core Magnum library
             set_property(TARGET MagnumBindings::${_component} APPEND PROPERTY
                 INTERFACE_LINK_LIBRARIES Magnum::Magnum)
@@ -134,13 +151,6 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
             # Add bindings include dir
             set_property(TARGET MagnumBindings::${_component} APPEND PROPERTY
                 INTERFACE_INCLUDE_DIRECTORIES ${MAGNUMBINDINGS_INCLUDE_DIR})
-        endif()
-
-        # Decide if the component was found
-        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS AND _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR)
-            set(MagnumBindings_${_component}_FOUND TRUE)
-        else()
-            set(MagnumBindings_${_component}_FOUND FALSE)
         endif()
     endif()
 endforeach()
