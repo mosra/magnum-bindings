@@ -37,11 +37,14 @@ import magnum
 from magnum import *
 from magnum import gl, text
 
-class GlyphCache(GLTestCase):
+class GlyphCacheGL(GLTestCase):
     def test(self):
-        cache = text.GlyphCache((128, 128), (2, 2))
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128), (2, 2))
 
+        self.assertEqual(cache.format, PixelFormat.R8_UNORM)
+        self.assertEqual(cache.processed_format, PixelFormat.R8_UNORM)
         self.assertEqual(cache.size, (128, 128, 1))
+        self.assertEqual(cache.processed_size, (128, 128, 1))
         self.assertEqual(cache.padding, (2, 2))
 
         cache_refcount = sys.getrefcount(cache)
@@ -55,10 +58,16 @@ class GlyphCache(GLTestCase):
         del texture
         self.assertEqual(sys.getrefcount(cache), cache_refcount)
 
+    def test_implicit_padding(self):
+        # Ensure the default is correct to avoid artifacts
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        self.assertEqual(cache.padding, (1, 1))
+
 class DistanceFieldGlyphCache(GLTestCase):
     def test(self):
-        cache = text.DistanceFieldGlyphCache((1024, 1024), (128, 128), 2)
+        cache = text.DistanceFieldGlyphCacheGL((1024, 1024), (128, 128), 2)
 
+        self.assertEqual(cache.size, (1024, 1024, 1))
         self.assertEqual(cache.size, (1024, 1024, 1))
         self.assertEqual(cache.padding, (2, 2))
 
@@ -68,7 +77,7 @@ class Renderer2D(GLTestCase):
         font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
         font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
 
-        cache = text.GlyphCache((128, 128))
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
         font.fill_glyph_cache(cache, "hello")
 
         renderer = text.Renderer2D(font, cache, 1.0)

@@ -28,7 +28,7 @@
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Magnum/ImageView.h>
 #include <Magnum/Text/AbstractFont.h>
-#include <Magnum/Text/DistanceFieldGlyphCache.h>
+#include <Magnum/Text/DistanceFieldGlyphCacheGL.h>
 #include <Magnum/Text/Renderer.h>
 
 #include "corrade/pluginmanager.h"
@@ -91,26 +91,26 @@ void text(py::module_& m) {
     py::class_<Text::AbstractGlyphCache> abstractGlyphCache{m, "AbstractGlyphCache", "Base for glyph caches"};
     abstractGlyphCache
         /** @todo features */
+        .def_property_readonly("format", &Text::AbstractGlyphCache::format, "Glyph cache format")
+        .def_property_readonly("processed_format", &Text::AbstractGlyphCache::processedFormat, "Processed glyph cache format")
         .def_property_readonly("size", &Text::AbstractGlyphCache::size, "Glyph cache texture size")
+        .def_property_readonly("processed_size", &Text::AbstractGlyphCache::processedSize, "Processed glyph cache texture size")
         .def_property_readonly("padding", &Text::AbstractGlyphCache::padding, "Glyph padding")
-        /** @todo glyph iteration and population */
+        /** @todo font / glyph iteration and population */
+        /** @todo image, processedImage, setProcessedImage, once needed for
+            anything */
         ;
-    py::class_<Text::GlyphCache, Text::AbstractGlyphCache> glyphCache{m, "GlyphCache", "Glyph cache"};
+    py::class_<Text::GlyphCacheGL, Text::AbstractGlyphCache> glyphCache{m, "GlyphCacheGL", "OpenGL glyph cache"};
     glyphCache
-        .def(py::init<GL::TextureFormat, const Vector2i&, const Vector2i&, const Vector2i&>(), "Constructor", py::arg("internal_format"), py::arg("original_size"), py::arg("size"), py::arg("padding"))
-        .def(py::init<GL::TextureFormat, const Vector2i&, const Vector2i&>(), "Constructor", py::arg("internal_format"), py::arg("size"), py::arg("padding") = Vector2i{})
-        .def(py::init<const Vector2i&, const Vector2i&, const Vector2i&>(), "Constructor", py::arg("original_size"), py::arg("size"), py::arg("padding"))
-        .def(py::init<const Vector2i&, const Vector2i&>(), "Constructor", py::arg("size"), py::arg("padding") = Vector2i{})
+        .def(py::init<PixelFormat, const Vector2i&, const Vector2i&>(), "Constructor", py::arg("format"), py::arg("size"), py::arg("padding") = Vector2i{1})
         /* The default behavior when returning a reference seems to be that it
            increfs the originating instance and decrefs it again after the
            variable gets deleted. This is verified in test_text_gl.py to be
            extra sure. */
-        .def_property_readonly("texture", &Text::GlyphCache::texture, "Cache texture");
-    py::class_<Text::DistanceFieldGlyphCache, Text::GlyphCache> distanceFieldGlyphCache{m, "DistanceFieldGlyphCache", "Glyph cache with distance field rendering"};
+        .def_property_readonly("texture", &Text::GlyphCacheGL::texture, "Cache texture");
+    py::class_<Text::DistanceFieldGlyphCacheGL, Text::GlyphCacheGL> distanceFieldGlyphCache{m, "DistanceFieldGlyphCacheGL", "OpenGL glyph cache with distance field rendering"};
     distanceFieldGlyphCache
-        .def(py::init<const Vector2i&, const Vector2i&, UnsignedInt>(), "Constructor", py::arg("original_size"), py::arg("size"), py::arg("radius"))
-        /** @todo setDistanceFieldImage, once needed for anything */
-        ;
+        .def(py::init<const Vector2i&, const Vector2i&, UnsignedInt>(), "Constructor", py::arg("size"), py::arg("processed_size"), py::arg("radius"));
 
     /* Font */
     py::class_<Text::AbstractFont, PluginManager::PyPluginHolder<Text::AbstractFont>, PluginManager::AbstractPlugin> abstractFont{m, "AbstractFont", "Interface for font plugins"};
@@ -186,7 +186,7 @@ void text(py::module_& m) {
         currently */
     py::class_<Text::Renderer2D> renderer2D{m, "Renderer2D", "2D text renderer"};
     renderer2D
-        .def(py::init<Text::AbstractFont&, const Text::GlyphCache&, Float, Text::Alignment>(), "Constructor", py::arg("font"), py::arg("cache"), py::arg("size"), py::arg("alignment") = Text::Alignment::LineLeft)
+        .def(py::init<Text::AbstractFont&, const Text::GlyphCacheGL&, Float, Text::Alignment>(), "Constructor", py::arg("font"), py::arg("cache"), py::arg("size"), py::arg("alignment") = Text::Alignment::LineLeft)
         .def_property_readonly("capacity", &Text::Renderer2D::capacity, "Capacity for rendered glyphs")
         .def_property_readonly("rectangle", &Text::Renderer2D::rectangle, "Rectangle spanning the rendered text")
         /** @todo are the buffers useful for anything? */
