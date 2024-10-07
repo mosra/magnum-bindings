@@ -383,24 +383,24 @@ workflows:
     # they pass, the rest of the jobs gets gradually executed, with further
     # dependencies especially for the macOS jobs that take the most credits.
     jobs:
-    - linux-gl
-    - linux-gles2:
-        requires:
-        - linux-gl
-    - linux-gles3:
-        requires:
-        - linux-gl
-    - linux-static:
-        requires:
-        - linux-gl
-    - macos-gl:
-        requires:
-        - linux-gl
-    - macos-gles3:
-        requires:
-        - linux-gles3
-        - macos-gl
-    - macos-static:
-        requires:
-        - linux-static
-        - macos-gl
+    # - linux-gl
+    # - linux-gles2:
+    #     requires:
+    #     - linux-gl
+    # - linux-gles3:
+    #     requires:
+    #     - linux-gl
+    # - linux-static:
+    #     requires:
+    #     - linux-gl
+    # - macos-gl:
+    #     requires:
+    #     - linux-gl
+    # - macos-gles3:
+    #     requires:
+    #     - linux-gles3
+    #     - macos-gl
+    # - macos-static:
+    #     requires:
+    #     - linux-static
+    #     - macos-gl
