@@ -112,8 +112,16 @@ if(MAGNUM_BUILD_STATIC AND UNIX AND MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL)
 else()
     set(_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "## ")
 endif()
+# ${output_dir} contains $<CONFIG> on multi-config builds, and configure_file()
+# cannot expand that during the configure step so it has to put the result into
+# a temporary location and then file(GENERATE) does the rest. It's important to
+# ensure that the file put in ${CMAKE_CURRENT_BINARY_DIR} isn't named
+# __init__.py as that may cause Python to wrongly treat the directory as a
+# package, which it isn't.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/__init__.py.in
-               ${output_dir}/corrade/__init__.py)
+               ${CMAKE_CURRENT_BINARY_DIR}/__init__.py.in)
+file(GENERATE OUTPUT ${output_dir}/corrade/__init__.py
+    INPUT ${CMAKE_CURRENT_BINARY_DIR}/__init__.py.in)
 
 pybind11_add_module(corrade ${pybind11_add_module_SYSTEM} ${corrade_SRCS})
 target_include_directories(corrade PRIVATE
