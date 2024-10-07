@@ -133,14 +133,14 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
         ElementType operator[](std::size_t i) const {
             return Implementation::PyStridedElement<dimensions, T>::wrap(StridedArrayView<dimensions, T>::operator[](i), format, itemsize, getitem, setitem);
         }
-        T& operator[](const Size<dimensions>& i) const {
+        T& operator[](const Containers::Size<dimensions>& i) const {
             return StridedArrayView<dimensions, T>::operator[](i);
         }
 
         PyStridedArrayView<dimensions, T> slice(std::size_t begin, std::size_t end) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::slice(begin, end), format, itemsize, getitem, setitem};
         }
-        PyStridedArrayView<dimensions, T> slice(const Size<dimensions>& begin, const Size<dimensions>& end) const {
+        PyStridedArrayView<dimensions, T> slice(const Containers::Size<dimensions>& begin, const Containers::Size<dimensions>& end) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::slice(begin, end), format, itemsize, getitem, setitem};
         }
 
@@ -152,7 +152,7 @@ template<unsigned dimensions, class T> class PyStridedArrayView: public StridedA
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::every(skip), format, itemsize, getitem, setitem};
         }
 
-        PyStridedArrayView<dimensions, T> every(const Stride<dimensions>& skip) const {
+        PyStridedArrayView<dimensions, T> every(const Containers::Stride<dimensions>& skip) const {
             return PyStridedArrayView<dimensions, T>{StridedArrayView<dimensions, T>::every(skip), format, itemsize, getitem, setitem};
         }
 
