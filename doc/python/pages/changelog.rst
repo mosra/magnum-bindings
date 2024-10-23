@@ -115,10 +115,10 @@ Changelog
     :ref:`Range2D.center_y()`, :ref:`Range3D.z()`, :ref:`Range3D.center_x()` /
     :ref:`Range3D.center_y()` / :ref:`Range3D.center_z()`
 -   Fixed a copypaste error in
-    :ref:`platform.sdl2.Application.MouseMoveEvent.relative_position` and
-    :ref:`platform.glfw.Application.MouseMoveEvent.relative_position`
--   Fixed :ref:`platform.sdl2.Application.InputEvent.Modifier` and
-    :ref:`platform.glfw.Application.InputEvent.Modifier` to behave properly
+    :ref:`platform.sdl2.Application.PointerMoveEvent.relative_position` and
+    :ref:`platform.glfw.Application.PointerMoveEvent.relative_position`
+-   Fixed :ref:`platform.sdl2.Application.Modifier` and
+    :ref:`platform.glfw.Application.Modifier` to behave properly
     as flags and not just as an enum
 -   Exposed :ref:`meshtools.compress_indices()`, :ref:`meshtools.concatenate()`,
     :ref:`meshtools.copy()`, :ref:`meshtools.duplicate()`,

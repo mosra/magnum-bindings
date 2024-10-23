@@ -58,10 +58,10 @@ void sdl2(py::module_& m) {
         void viewportEvent(ViewportEvent&) override {}
         void keyPressEvent(KeyEvent&) override {}
         void keyReleaseEvent(KeyEvent&) override {}
-        void mousePressEvent(MouseEvent&) override {}
-        void mouseReleaseEvent(MouseEvent&) override {}
-        void mouseMoveEvent(MouseMoveEvent&) override {}
-        void mouseScrollEvent(MouseScrollEvent&) override {}
+        void pointerPressEvent(PointerEvent&) override {}
+        void pointerReleaseEvent(PointerEvent&) override {}
+        void pointerMoveEvent(PointerMoveEvent&) override {}
+        void scrollEvent(ScrollEvent&) override {}
 
         /* The base doesn't have a virtual destructor because in C++ it's never
            deleted through a pointer to the base. Here we need it, though. */
@@ -142,45 +142,45 @@ void sdl2(py::module_& m) {
             );
         }
 
-        void mousePressEvent(MouseEvent& event) override {
+        void pointerPressEvent(PointerEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
-                "mouse_press_event",
-                mousePressEvent,
+                "pointer_press_event",
+                pointerPressEvent,
                 /* Have to use std::ref() otherwise pybind tries to copy
                    it and fails */
                 std::ref(event)
             );
         }
-        void mouseReleaseEvent(MouseEvent& event) override {
+        void pointerReleaseEvent(PointerEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
-                "mouse_release_event",
-                mouseReleaseEvent,
+                "pointer_release_event",
+                pointerReleaseEvent,
                 /* Have to use std::ref() otherwise pybind tries to copy
                    it and fails */
                 std::ref(event)
             );
         }
-        void mouseMoveEvent(MouseMoveEvent& event) override {
+        void pointerMoveEvent(PointerMoveEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
-                "mouse_move_event",
-                mouseMoveEvent,
+                "pointer_move_event",
+                pointerMoveEvent,
                 /* Have to use std::ref() otherwise pybind tries to copy
                    it and fails */
                 std::ref(event)
             );
         }
-        void mouseScrollEvent(MouseScrollEvent& event) override {
+        void scrollEvent(ScrollEvent& event) override {
             PYBIND11_OVERLOAD_NAME(
                 void,
                 PublicizedApplication,
-                "mouse_scroll_event",
-                mouseScrollEvent,
+                "scroll_event",
+                scrollEvent,
                 /* Have to use std::ref() otherwise pybind tries to copy
                    it and fails */
                 std::ref(event)
@@ -200,9 +200,23 @@ void sdl2(py::module_& m) {
     PyNonDestructibleClass<PublicizedApplication::ViewportEvent> viewportEvent_{sdl2application, "ViewportEvent", "Viewport event"};
     PyNonDestructibleClass<PublicizedApplication::InputEvent> inputEvent_{sdl2application, "InputEvent", "Base for input events"};
     py::class_<PublicizedApplication::KeyEvent, PublicizedApplication::InputEvent> keyEvent_{sdl2application, "KeyEvent", "Key event"};
-    py::class_<PublicizedApplication::MouseEvent, PublicizedApplication::InputEvent> mouseEvent_{sdl2application, "MouseEvent", "Mouse event"};
-    py::class_<PublicizedApplication::MouseMoveEvent, PublicizedApplication::InputEvent> mouseMoveEvent_{sdl2application, "MouseMoveEvent", "Mouse move event"};
-    py::class_<PublicizedApplication::MouseScrollEvent, PublicizedApplication::InputEvent> mouseScrollEvent_{sdl2application, "MouseScrollEvent", "Mouse scroll event"};
+    py::class_<PublicizedApplication::PointerEvent, PublicizedApplication::InputEvent> pointerEvent_{sdl2application, "PointerEvent", "Pointer event"};
+    py::class_<PublicizedApplication::PointerMoveEvent, PublicizedApplication::InputEvent> pointerMoveEvent_{sdl2application, "PointerMoveEvent", "Pointer move event"};
+    py::class_<PublicizedApplication::ScrollEvent, PublicizedApplication::InputEvent> scrollEvent_{sdl2application, "ScrollEvent", "Scroll event"};
+
+    py::enum_<Platform::Application::PointerEventSource>{sdl2application, "PointerEventSource", "Pointer event source"}
+        .value("MOUSE", Platform::Application::PointerEventSource::Mouse)
+        .value("TOUCH", Platform::Application::PointerEventSource::Touch);
+
+    py::enum_<Platform::Application::Pointer> pointer{sdl2application, "Pointer", "Pointer"};
+    pointer
+        .value("MOUSE_LEFT", Platform::Application::Pointer::MouseLeft)
+        .value("MOUSE_MIDDLE", Platform::Application::Pointer::MouseMiddle)
+        .value("MOUSE_RIGHT", Platform::Application::Pointer::MouseRight)
+        .value("MOUSE_BUTTON4", Platform::Application::Pointer::MouseButton4)
+        .value("MOUSE_BUTTON5", Platform::Application::Pointer::MouseButton5)
+        .value("FINGER", Platform::Application::Pointer::Finger);
+    corrade::enumOperators(pointer);
 
     py::enum_<Platform::Application::Cursor>{sdl2application, "Cursor", "Cursor type"}
         .value("ARROW", Platform::Application::Cursor::Arrow)
@@ -224,9 +238,9 @@ void sdl2(py::module_& m) {
     viewportEvent(viewportEvent_);
     inputEvent(inputEvent_);
     keyEvent(keyEvent_);
-    mouseEvent(mouseEvent_);
-    mouseMoveEvent(mouseMoveEvent_);
-    mouseScrollEvent(mouseScrollEvent_);
+    pointerEvent(pointerEvent_);
+    pointerMoveEvent(pointerMoveEvent_);
+    scrollEvent(scrollEvent_);
 }
 
 }}

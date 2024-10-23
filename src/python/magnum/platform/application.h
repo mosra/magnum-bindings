@@ -29,6 +29,8 @@
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 
+#include "Corrade/Containers/OptionalPythonBindings.h" /* for pointers() */
+
 #include "corrade/EnumOperators.h"
 #include "magnum/bootstrap.h"
 
@@ -98,28 +100,14 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def("draw_event", &T::drawEvent, "Draw event")
         .def("key_press_event", &T::keyPressEvent, "Key press event")
         .def("key_release_event", &T::keyReleaseEvent, "Key release event")
-        .def("mouse_press_event", &T::mousePressEvent, "Mouse press event")
-        .def("mouse_release_event", &T::mouseReleaseEvent, "Mouse release event")
-        .def("mouse_move_event", &T::mouseMoveEvent, "Mouse move event")
-        .def("mouse_scroll_event", &T::mouseScrollEvent, "Mouse scroll event")
-        /** @todo mouse gesture, text input/editing event */
+        .def("pointer_press_event", &T::pointerPressEvent, "Pointer press event")
+        .def("pointer_release_event", &T::pointerReleaseEvent, "Pointer release event")
+        .def("pointer_move_event", &T::pointerMoveEvent, "Pointer move event")
+        .def("scroll_event", &T::scrollEvent, "Scroll event")
+        /** @todo text input/editing event */
         ;
-}
 
-template<class T, class ...Args> void exitEvent(py::class_<T, Args...>& c) {
-    c
-        .def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
-}
-
-template<class T, class ...Args> void viewportEvent(py::class_<T, Args...>& c) {
-    c
-        .def_property_readonly("window_size", &T::windowSize, "Window size")
-        .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
-        .def_property_readonly("dpi_scaling", &T::dpiScaling, "DPI scaling");
-}
-
-template<class T, class ...Args> void inputEvent(py::class_<T, Args...>& c) {
-    py::enum_<typename T::Modifier> modifiers{c, "Modifier", "Modifier"};
+    py::enum_<typename T::Modifier> modifiers{c, "Modifier", "Keyboard modifier"};
     modifiers
         .value("SHIFT", T::Modifier::Shift)
         .value("CTRL", T::Modifier::Ctrl)
@@ -127,10 +115,6 @@ template<class T, class ...Args> void inputEvent(py::class_<T, Args...>& c) {
         .value("SUPER", T::Modifier::Super);
     corrade::enumOperators(modifiers);
 
-    c.def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
-}
-
-template<class T, class ...Args> void keyEvent(py::class_<T, Args...>& c) {
     py::enum_<typename T::Key>{c, "Key", "Key"}
         .value("UNKNOWN", T::Key::Unknown)
         .value("LEFT_SHIFT", T::Key::LeftShift)
@@ -244,55 +228,71 @@ template<class T, class ...Args> void keyEvent(py::class_<T, Args...>& c) {
         .value("NUM_ENTER", T::Key::NumEnter)
         .value("NUM_EQUAL", T::Key::NumEqual);
 
+    /* The PointerEventSource and Pointer enums are defined for each
+       application separately, as each has a different set of values */
+}
+
+template<class T, class ...Args> void exitEvent(py::class_<T, Args...>& c) {
+    c
+        .def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
+}
+
+template<class T, class ...Args> void viewportEvent(py::class_<T, Args...>& c) {
+    c
+        .def_property_readonly("window_size", &T::windowSize, "Window size")
+        .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
+        .def_property_readonly("dpi_scaling", &T::dpiScaling, "DPI scaling");
+}
+
+template<class T, class ...Args> void inputEvent(py::class_<T, Args...>& c) {
+    c.def_property("accepted", &T::isAccepted, &T::setAccepted, "Accepted status of the event");
+}
+
+template<class T, class ...Args> void keyEvent(py::class_<T, Args...>& c) {
     c
         .def_property_readonly("key", &T::key, "Key")
         /** @todo key name? useful? useles?? */
         .def_property_readonly("modifiers", [](T& self) {
-            return typename T::Modifier(typename std::underlying_type<typename T::Modifier>::type(self.modifiers()));
+            return typename decltype(self.modifiers())::Type(enumCastUnderlyingType(self.modifiers()));
         }, "Modifiers")
         .def_property_readonly("is_repeated", &T::isRepeated, "Whether the key press is repeated");
 }
 
-template<class T, class ...Args> void mouseEvent(py::class_<T, Args...>& c) {
-    py::enum_<typename T::Button>{c, "Button", "Mouse button"}
-        .value("LEFT", T::Button::Left)
-        .value("MIDDLE", T::Button::Middle)
-        .value("RIGHT", T::Button::Right);
-
+template<class T, class ...Args> void pointerEvent(py::class_<T, Args...>& c) {
     c
-        .def_property_readonly("button", &T::button, "Button")
+        .def_property_readonly("source", &T::source, "Pointer event source")
+        .def_property_readonly("pointer", &T::pointer, "Pointer type that was pressed or released")
+        .def_property_readonly("is_primary", &T::isPrimary, "Whether the pointer is primary")
+        .def_property_readonly("id", &T::id, "Pointer ID")
         .def_property_readonly("position", &T::position, "Position")
         .def_property_readonly("modifiers", [](T& self) {
-            return typename T::Modifier(typename std::underlying_type<typename T::Modifier>::type(self.modifiers()));
-        }, "Modifiers");
+            return typename decltype(self.modifiers())::Type(enumCastUnderlyingType(self.modifiers()));
+        }, "Keyboard modifiers");
 }
 
-template<class T, class ...Args> void mouseMoveEvent(py::class_<T, Args...>& c) {
-    py::enum_<typename T::Button> buttons{c, "Buttons", "Set of mouse buttons"};
-    buttons
-        .value("LEFT", T::Button::Left)
-        .value("MIDDLE", T::Button::Middle)
-        .value("RIGHT", T::Button::Right);
-    corrade::enumOperators(buttons);
-
+template<class T, class ...Args> void pointerMoveEvent(py::class_<T, Args...>& c) {
     c
+        .def_property_readonly("source", &T::source, "Pointer event source")
+        .def_property_readonly("pointer", &T::pointer, "Pointer type that was added or removed from the set of pressed pointers")
+        .def_property_readonly("pointers", [](T& self) {
+            return typename decltype(self.pointers())::Type(enumCastUnderlyingType(self.pointers()));
+        }, "Pointer types pressed in this event")
+        .def_property_readonly("is_primary", &T::isPrimary, "Whether the pointer is primary")
+        .def_property_readonly("id", &T::id, "Pointer ID")
         .def_property_readonly("position", &T::position, "Position")
         .def_property_readonly("relative_position", &T::relativePosition, "Relative position")
-        .def_property_readonly("buttons", [](T& self) {
-            return typename T::Button(typename std::underlying_type<typename T::Button>::type(self.buttons()));
-        }, "Mouse buttons")
         .def_property_readonly("modifiers", [](T& self) {
-            return typename T::Modifier(typename std::underlying_type<typename T::Modifier>::type(self.modifiers()));
-        }, "Modifiers");
+            return typename decltype(self.modifiers())::Type(enumCastUnderlyingType(self.modifiers()));
+        }, "Keyboard modifiers");
 }
 
-template<class T, class ...Args> void mouseScrollEvent(py::class_<T, Args...>& c) {
+template<class T, class ...Args> void scrollEvent(py::class_<T, Args...>& c) {
     c
         .def_property_readonly("offset", &T::offset, "Offset")
         .def_property_readonly("position", &T::position, "Position")
         .def_property_readonly("modifiers", [](T& self) {
-            return typename T::Modifier(typename std::underlying_type<typename T::Modifier>::type(self.modifiers()));
-        }, "Modifiers");
+            return typename decltype(self.modifiers())::Type(enumCastUnderlyingType(self.modifiers()));
+        }, "Keyboard modifiers");
 }
 
 }}
