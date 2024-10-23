@@ -329,6 +329,29 @@ jobs:
         script: unix-desktop.sh
     - lcov
 
+  linux-nondeprecated:
+    executor: ubuntu-18_04
+    environment:
+      # STUPID yml interprets unquoted OFF as a boolean
+      BUILD_DEPRECATED: "OFF"
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    - install-base-linux:
+        extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
   macos-gl:
     executor: xcode-13_4
     environment:
@@ -384,18 +407,23 @@ workflows:
     # dependencies especially for the macOS jobs that take the most credits.
     jobs:
     - linux-gl
+    - linux-nondeprecated
     - linux-gles2:
         requires:
         - linux-gl
+        - linux-nondeprecated
     - linux-gles3:
         requires:
         - linux-gl
+        - linux-nondeprecated
     - linux-static:
         requires:
         - linux-gl
+        - linux-nondeprecated
     - macos-gl:
         requires:
         - linux-gl
+        - linux-nondeprecated
     - macos-gles3:
         requires:
         - linux-gles3
