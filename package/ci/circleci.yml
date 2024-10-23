@@ -21,6 +21,10 @@ executors:
     macos:
       xcode: 13.4.1
     resource_class: macos.m1.medium.gen1
+  arm64:
+    machine:
+      image: ubuntu-2004:2023.07.1
+    resource_class: arm.medium
 
 commands:
   install-base-linux:
@@ -37,6 +41,20 @@ commands:
           if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
           # libidn11 needed by CMake
           apt install -y git ninja-build libidn11 $LCOV_PACKAGES << parameters.extra >>
+
+  install-base-linux-arm64:
+    parameters:
+      extra:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Update apt and install base packages
+        # Compared to Docker images this needs sudo
+        command: |
+          sudo apt update
+          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
+          sudo apt install -y ninja-build gcc cmake $LCOV_PACKAGES << parameters.extra >>
 
   install-base-macos:
     parameters:
@@ -129,15 +147,18 @@ commands:
           pip3 install numpy
 
   install-pybind11:
+    parameters:
+      version:
+        type: string
+        default: "2.3.0"
     steps:
     - run:
-        name: Install Pybind11
+        name: Install Pybind11 << parameters.version >>
         command: |
           cd $HOME
-          export PYBIND_VERSION=2.3.0
-          wget --no-clobber https://github.com/pybind/pybind11/archive/v$PYBIND_VERSION.tar.gz
-          tar -xzf v$PYBIND_VERSION.tar.gz
-          cd pybind11-$PYBIND_VERSION
+          wget --no-clobber https://github.com/pybind/pybind11/archive/v<< parameters.version >>.tar.gz
+          tar -xzf v<< parameters.version >>.tar.gz
+          cd pybind11-<< parameters.version >>
           mkdir -p build && cd build
           cmake .. \
             -DCMAKE_INSTALL_PREFIX=$HOME/pybind11 \
@@ -250,6 +271,27 @@ jobs:
         version: "3.5.2"
     - install-python-3_6
     - install-pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-arm64:
+    executor: arm64
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: GLX
+    steps:
+    # Not installing the old GCC 4.8 and CMake 3.5 to speed up. These are
+    # tested more than enough on other jobs.
+    - install-base-linux-arm64:
+        extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev libpython3-dev
+    # 2.3.0 doesn't work with Python 3.11, this one should
+    - install-pybind11:
+        version: "2.11.1"
+    - run:
+        name: Install numpy
+        command: pip3 install numpy
     - install-meshoptimizer
     - build:
         script: unix-desktop.sh
@@ -408,6 +450,10 @@ workflows:
     jobs:
     - linux-gl
     - linux-nondeprecated
+    - linux-arm64:
+        requires:
+        - linux-gl
+        - linux-nondeprecated
     - linux-gles2:
         requires:
         - linux-gl
@@ -422,6 +468,7 @@ workflows:
         - linux-nondeprecated
     - macos-gl:
         requires:
+        - linux-arm64
         - linux-gl
         - linux-nondeprecated
     - macos-gles3:
