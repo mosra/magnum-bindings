@@ -27,8 +27,6 @@
 # Matches Corrade requirement, see its root CMakeLists for more information.
 cmake_minimum_required(VERSION 3.5)
 
-project(MagnumBindings CXX)
-
 # Don't restrict INTERPROCEDURAL_OPTIMIZATION only for icc on Linux
 if(POLICY CMP0069)
     cmake_policy(SET CMP0069 NEW)
@@ -52,6 +50,8 @@ endif()
 if(POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
+
+project(MagnumBindings CXX)
 
 # Use folders for nice tree in Visual Studio and XCode
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
