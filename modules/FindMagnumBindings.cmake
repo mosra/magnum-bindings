@@ -137,7 +137,7 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
     # Create imported target in case the library is found. If the project is
     # added as subproject to CMake, the target already exists and all the
     # required setup is already done from the build tree.
-    if(TARGET MagnumBindings::${_component})
+    if(TARGET "MagnumBindings::${_component}") # Quotes to fix KDE's higlighter
         set(MagnumBindings_${_component}_FOUND TRUE)
     else()
         # Header-only components
