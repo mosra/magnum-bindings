@@ -142,16 +142,14 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
     else()
         # Header-only components
         if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
-            add_library(MagnumBindings::${_component} INTERFACE IMPORTED)
-
             # Include path names to find, unless specified above
             if(NOT _MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES)
                 set(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES ${_component}Bindings.h)
             endif()
         endif()
 
+        # Find library includes
         if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
-            # Find includes
             find_path(_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_DIR
                 NAMES ${_MAGNUMBINDINGS_${_COMPONENT}_INCLUDE_PATH_NAMES}
                 HINTS ${MAGNUMBINDINGS_INCLUDE_DIR})
@@ -165,6 +163,11 @@ foreach(_component ${MagnumBindings_FIND_COMPONENTS})
         else()
             set(MagnumBindings_${_component}_FOUND FALSE)
             continue()
+        endif()
+
+        # Target for header-only library components
+        if(_component IN_LIST _MAGNUMBINDINGS_HEADER_ONLY_COMPONENTS)
+            add_library(MagnumBindings::${_component} INTERFACE IMPORTED)
         endif()
 
         # No special setup for Python bindings
