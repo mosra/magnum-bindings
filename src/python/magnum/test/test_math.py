@@ -1558,6 +1558,8 @@ Matrix\\(2, 0, 0,
         a.scalar = 4.0
         self.assertEqual(a.vector, Vector3(1.0, 2.0, 3.0))
         self.assertEqual(a.scalar, 4.0)
+        self.assertEqual(a.xyzw, Vector4(1.0, 2.0, 3.0, 4.0))
+        self.assertEqual(a.wxyz, Vector4(4.0, 1.0, 2.0, 3.0))
         self.assertEqual(a, Quaternion((1.0, 2.0, 3.0), 4.0))
 
     def test_repr(self):

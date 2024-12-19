@@ -69,8 +69,9 @@ Changelog
 -   Exposed :ref:`Color3.from_xyz()`, :ref:`Color3.from_linear_rgb_int()`,
     :ref:`Color3.to_xyz()`, :ref:`Color3.to_linear_rgb_int()` and equivalent
     APIs on :ref:`Color4`
--   Exposed new :ref:`Quaternion.rotation()`, :ref:`Quaternion.reflection()`
-    and :ref:`Quaternion.reflect_vector()` APIs
+-   Exposed new :ref:`Quaternion.rotation()`, :ref:`Quaternion.reflection()`,
+    :ref:`Quaternion.reflect_vector()`, :ref:`Quaternion.xyzw` and
+    :ref:`Quaternion.wxyz` APIs
 -   Exposed :ref:`gl.Context` and its platform-specific subclasses for EGL, WGL
     and GLX
 -   Exposed :ref:`gl.Framebuffer.attach_texture()` and missing sRGB, depth

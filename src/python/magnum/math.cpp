@@ -33,6 +33,7 @@
 #include <Magnum/Math/BitVector.h>
 #include <Magnum/Math/Functions.h>
 #include <Magnum/Math/Quaternion.h>
+#include <Magnum/Math/Vector4.h>
 
 #include "magnum/bootstrap.h"
 #include "magnum/math.h"
@@ -486,6 +487,8 @@ template<class T> void quaternion(py::module_& m, py::class_<T>& c) {
             static_cast<typename T::Type(T::*)() const>(&T::scalar),
             [](T& self, typename T::Type value) { self.scalar() = value; },
             "Scalar part")
+        .def_property_readonly("xyzw", &T::xyzw, "Quaternion components in a XYZW order")
+        .def_property_readonly("wxyz", &T::wxyz, "Quaternion components in a WXYZ order")
 
         .def("__repr__", repr<T>, "Object representation");
 }
