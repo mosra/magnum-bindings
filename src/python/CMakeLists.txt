@@ -86,3 +86,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)
 file(GENERATE OUTPUT ${output_dir}/setup.py
     INPUT ${CMAKE_CURRENT_BINARY_DIR}/setup.py.in)
+
+# MagnumPythonBindings library and alias, just for superprojects to have
+# something to link to get to the headers
+add_library(MagnumPythonBindings INTERFACE)
+set_target_properties(MagnumPythonBindings PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/src)
+add_library(MagnumBindings::Python ALIAS MagnumPythonBindings)
