@@ -32,29 +32,17 @@ commands:
       extra:
         type: string
         default: ""
-    steps:
-    - run:
-        name: Update apt and install base packages
-        # Git is needed always for cloning Corrade etc
-        command: |
-          apt update
-          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
-          # libidn11 needed by CMake
-          apt install -y git ninja-build libidn11 $LCOV_PACKAGES << parameters.extra >>
-
-  install-base-linux-arm64:
-    parameters:
-      extra:
+      sudo:
         type: string
         default: ""
     steps:
     - run:
         name: Update apt and install base packages
-        # Compared to Docker images this needs sudo
+        # Git is needed always for cloning Corrade etc
         command: |
-          sudo apt update
+          << parameters.sudo >> apt update
           if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
-          sudo apt install -y ninja-build gcc cmake $LCOV_PACKAGES << parameters.extra >>
+          << parameters.sudo >> apt install -y git ninja-build $LCOV_PACKAGES << parameters.extra >>
 
   install-base-macos:
     parameters:
@@ -264,8 +252,9 @@ jobs:
       # It crashes (OOM, probably) with the default setting
       NINJA_JOBS: -j2
     steps:
+    # libidn11 needed by CMake
     - install-base-linux:
-        extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev
+        extra: libidn11 libgl1-mesa-dev libsdl2-dev libglfw3-dev
     - install-gcc-4_8
     - install-cmake:
         version: "3.5.2"
@@ -283,9 +272,10 @@ jobs:
       PLATFORM_GL_API: GLX
     steps:
     # Not installing the old GCC 4.8 and CMake 3.5 to speed up. These are
-    # tested more than enough on other jobs.
-    - install-base-linux-arm64:
-        extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev libpython3-dev
+    # tested more than enough on other jobs. Machine executors need sudo.
+    - install-base-linux:
+        extra: gcc cmake libgl1-mesa-dev libsdl2-dev libglfw3-dev libpython3-dev
+        sudo: sudo
     # 2.3.0 doesn't work with Python 3.11, this one should
     - install-pybind11:
         version: "2.11.1"
@@ -308,8 +298,9 @@ jobs:
       # It crashes (OOM, probably) with the default setting
       NINJA_JOBS: -j2
     steps:
+    # libidn11 needed by CMake
     - install-base-linux:
-        extra: libsdl2-dev libglfw3-dev wget unzip
+        extra: libidn11 libsdl2-dev libglfw3-dev wget unzip
     - install-gcc-4_8
     - install-cmake:
         version: "3.5.2"
@@ -333,8 +324,9 @@ jobs:
       # It crashes (OOM, probably) with the default setting
       NINJA_JOBS: -j2
     steps:
+    # libidn11 needed by CMake
     - install-base-linux:
-        extra: libsdl2-dev libglfw3-dev wget unzip
+        extra: libidn11 libsdl2-dev libglfw3-dev wget unzip
     - install-gcc-4_8
     - install-cmake:
         version: "3.5.2"
@@ -359,8 +351,9 @@ jobs:
       # It crashes (OOM, probably) with the default setting
       NINJA_JOBS: -j2
     steps:
+    # libidn11 needed by CMake
     - install-base-linux:
-        extra: libsdl2-dev libglfw3-dev
+        extra: libidn11 libsdl2-dev libglfw3-dev
     - install-gcc-4_8
     - install-cmake:
         version: "3.5.2"
@@ -382,8 +375,9 @@ jobs:
       # It crashes (OOM, probably) with the default setting
       NINJA_JOBS: -j2
     steps:
+    # libidn11 needed by CMake
     - install-base-linux:
-        extra: libgl1-mesa-dev libsdl2-dev libglfw3-dev
+        extra: libidn11 libgl1-mesa-dev libsdl2-dev libglfw3-dev
     - install-gcc-4_8
     - install-cmake:
         version: "3.5.2"
