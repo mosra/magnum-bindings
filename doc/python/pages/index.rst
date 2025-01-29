@@ -65,8 +65,7 @@ right away!
 -   E-mail --- info@magnum.graphics
 -   Google Groups mailing list --- magnum-engine@googlegroups.com
     (`archive <https://groups.google.com/forum/#!forum/magnum-engine>`_)
--   Twitter --- https://twitter.com/czmosra and the
-    `#MagnumEngine <https://twitter.com/hashtag/MagnumEngine>`_ hashtag
+-   Bluesky --- https://bsky.app/profile/mosra.cz
 
 See also the `Contact & Support page <https://magnum.graphics/contact/>`_ on
 the project website for further information.
