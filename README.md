@@ -1,5 +1,5 @@
-This repository contains bindings of the Magnum C++11/C++14 graphics engine
-into other languages such as Python.
+This repository contains bindings of the Magnum C++11 graphics engine into
+other languages such as Python.
 
 [![Join the chat at https://gitter.im/mosra/magnum](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mosra/magnum?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://circleci.com/gh/mosra/magnum-bindings.svg?style=shield)](https://circleci.com/gh/mosra/magnum-bindings)
