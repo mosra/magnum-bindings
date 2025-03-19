@@ -1096,6 +1096,15 @@ class StridedArrayViewCustomType(unittest.TestCase):
         av[1] = 11111
         self.assertEqual(a.list, [0, -7656581, 0, -333, 11111, 4666])
 
+        # It should also be possible to take a custom-typed view as an argument
+        b = test_stridedarrayview.MutableContaineri()
+        b.copy_from(memoryview(a.view))
+        self.assertEqual(b.list, [0, -7656581, 0, -333, 11111, 4666])
+
+        # But only if the type actually matches
+        with self.assertRaisesRegex(BufferError, "expected a view of format i but got Qf"):
+            b.copy_from(memoryview(test_stridedarrayview.MutableContainerlf().view))
+
     # mutable_vector3d and mutable_long_float tested in test_containers_numpy
     # as memoryview can't handle their types
 

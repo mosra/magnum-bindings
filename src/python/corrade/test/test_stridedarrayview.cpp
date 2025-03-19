@@ -51,6 +51,14 @@ template<class T> struct Container {
         return {Containers::arrayView(data), {2, 3}};
     }
 
+    void copyFrom(const Containers::StridedArrayView2D<const T>& view) {
+        for(std::size_t i = 0, iMax = Utility::min(view.size()[0], std::size_t{2}); i != iMax; ++i) {
+            for(std::size_t j = 0, jMax = Utility::min(view.size()[1], std::size_t{3}); j != jMax; ++j) {
+                data[i*3 + j] = view[i][j];
+            }
+        }
+    }
+
     std::vector<typename std::remove_const<T>::type> list() const {
         return {data, data + 6};
     }
@@ -77,6 +85,16 @@ template<class T> void container(py::class_<Container<T>>& c) {
         })
         .def_property_readonly("list", &Container<T>::list);
 }
+template<class T> void mutableContainer(py::class_<Container<T>>& c) {
+    c
+        .def("copy_from", [](Container<T>& self, const Containers::PyStridedArrayView<2, const char>& view) {
+            if(view.format != Corrade::Containers::Implementation::pythonFormatString<T>()) {
+                PyErr_Format(PyExc_BufferError, "expected a view of format %s but got %s", Corrade::Containers::Implementation::pythonFormatString<T>(), view.format.data());
+                throw py::error_already_set{};
+            }
+            self.copyFrom(Containers::arrayCast<const T>(view));
+        });
+}
 
 /* TODO: remove declaration when https://github.com/pybind/pybind11/pull/1863
    is released */
@@ -90,8 +108,11 @@ PYBIND11_MODULE(test_stridedarrayview, m) {
     py::class_<Container<std::pair<std::uint64_t, float>>> mutableContainerlf{m, "MutableContainerlf"};
     container(containers);
     container(mutableContaineri);
+    mutableContainer(mutableContaineri);
     container(mutableContainer3d);
+    mutableContainer(mutableContainer3d);
     container(mutableContainerlf);
+    mutableContainer(mutableContainerlf);
 
     py::class_<MutableContainerDynamicType>{m, "MutableContainerDynamicType"}
         .def(py::init<const std::string&>())
