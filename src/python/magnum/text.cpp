@@ -27,6 +27,9 @@
 #include <pybind11/pybind11.h>
 #include <Corrade/Containers/StringStl.h> /** @todo drop once we have our string casters */
 #include <Magnum/ImageView.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Texture.h>
 #include <Magnum/Text/AbstractFont.h>
 #include <Magnum/Text/DistanceFieldGlyphCacheGL.h>
 #include <Magnum/Text/Renderer.h>
