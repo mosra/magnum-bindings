@@ -91,8 +91,7 @@ void text(py::module_& m) {
     #endif
 
     /* Glyph caches */
-    py::class_<Text::AbstractGlyphCache> abstractGlyphCache{m, "AbstractGlyphCache", "Base for glyph caches"};
-    abstractGlyphCache
+    py::class_<Text::AbstractGlyphCache>{m, "AbstractGlyphCache", "Base for glyph caches"}
         /** @todo features */
         .def_property_readonly("format", &Text::AbstractGlyphCache::format, "Glyph cache format")
         .def_property_readonly("processed_format", &Text::AbstractGlyphCache::processedFormat, "Processed glyph cache format")
@@ -103,16 +102,14 @@ void text(py::module_& m) {
         /** @todo image, processedImage, setProcessedImage, once needed for
             anything */
         ;
-    py::class_<Text::GlyphCacheGL, Text::AbstractGlyphCache> glyphCache{m, "GlyphCacheGL", "OpenGL glyph cache"};
-    glyphCache
+    py::class_<Text::GlyphCacheGL, Text::AbstractGlyphCache>{m, "GlyphCacheGL", "OpenGL implementation of a glyph cache"}
         .def(py::init<PixelFormat, const Vector2i&, const Vector2i&>(), "Constructor", py::arg("format"), py::arg("size"), py::arg("padding") = Vector2i{1})
         /* The default behavior when returning a reference seems to be that it
            increfs the originating instance and decrefs it again after the
            variable gets deleted. This is verified in test_text_gl.py to be
            extra sure. */
         .def_property_readonly("texture", &Text::GlyphCacheGL::texture, "Cache texture");
-    py::class_<Text::DistanceFieldGlyphCacheGL, Text::GlyphCacheGL> distanceFieldGlyphCache{m, "DistanceFieldGlyphCacheGL", "OpenGL glyph cache with distance field rendering"};
-    distanceFieldGlyphCache
+    py::class_<Text::DistanceFieldGlyphCacheGL, Text::GlyphCacheGL>{m, "DistanceFieldGlyphCacheGL", "OpenGL glyph cache with distance field rendering"}
         .def(py::init<const Vector2i&, const Vector2i&, UnsignedInt>(), "Constructor", py::arg("size"), py::arg("processed_size"), py::arg("radius"));
 
     /* Font */

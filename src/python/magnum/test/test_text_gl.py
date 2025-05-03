@@ -63,7 +63,7 @@ class GlyphCacheGL(GLTestCase):
         cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
         self.assertEqual(cache.padding, (1, 1))
 
-class DistanceFieldGlyphCache(GLTestCase):
+class DistanceFieldGlyphCacheGL(GLTestCase):
     def test(self):
         cache = text.DistanceFieldGlyphCacheGL((1024, 1024), (128, 128), 2)
 
