@@ -68,6 +68,8 @@ class Font(unittest.TestCase):
             font.glyph_advance(0)
         # fill_glyph_cache() not tested as it needs a GL context; verified in
         # test_text_gl instead
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            font.create_shaper()
 
     def test_open_failed(self):
         font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
@@ -120,3 +122,64 @@ class Font(unittest.TestCase):
             font.glyph_size(671)
         with self.assertRaises(IndexError):
             font.glyph_advance(671)
+
+    # Creating a shaper and accessing its properties is tested in Shaper below
+
+class Feature(unittest.TestCase):
+    def test_custom(self):
+        feature = text.Feature('kern')
+        self.assertEqual(feature, text.Feature.KERNING)
+
+    def test_custom_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "expected a four-character code, got ss999"):
+            text.Feature('ss999')
+
+class FeatureRange(unittest.TestCase):
+    def test(self):
+        a = text.FeatureRange(text.Feature.SMALL_CAPITALS)
+        self.assertEqual(a.feature, text.Feature.SMALL_CAPITALS)
+        self.assertTrue(a.is_enabled)
+        self.assertEqual(a.value, 1)
+
+        b = text.FeatureRange(text.Feature.KERNING, 0)
+        self.assertEqual(b.feature, text.Feature.KERNING)
+        self.assertFalse(b.is_enabled)
+        self.assertEqual(b.value, 0)
+
+        # It should be possible to create it from a tuple also, to support
+        # implicit conversion when passed to renderer add() or render()
+        c1 = text.FeatureRange((text.Feature.KERNING, 1))
+        c2 = text.FeatureRange((text.Feature.KERNING, True))
+        self.assertEqual(c1.feature, text.Feature.KERNING)
+        self.assertEqual(c2.feature, text.Feature.KERNING)
+        self.assertTrue(c1.is_enabled)
+        self.assertTrue(c2.is_enabled)
+        self.assertEqual(c1.value, 1)
+        self.assertEqual(c2.value, 1)
+
+class Script(unittest.TestCase):
+    def test_custom(self):
+        han = text.Script('Hani')
+        self.assertEqual(han, text.Script.HAN)
+
+    def test_custom_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "expected a four-character code, got Hello"):
+            text.Script('Hello')
+
+class Shaper(unittest.TestCase):
+    def test(self):
+        font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+        font_refcount = sys.getrefcount(font)
+
+        shaper = font.create_shaper()
+        self.assertIs(shaper.font, font)
+        self.assertEqual(sys.getrefcount(font), font_refcount + 1)
+        # StbTrueTypeFont doesn't support setting any of these so it should
+        # return false
+        self.assertFalse(shaper.set_script(text.Script.LATIN))
+        self.assertFalse(shaper.set_language("en"))
+        self.assertFalse(shaper.set_direction(text.ShapeDirection.LEFT_TO_RIGHT))
+
+        del shaper
+        self.assertEqual(sys.getrefcount(font), font_refcount)

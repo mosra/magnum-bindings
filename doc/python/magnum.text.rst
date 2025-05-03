@@ -88,3 +88,82 @@
         :ref:`glyph_count`
 .. py:function:: magnum.text.AbstractFont.fill_glyph_cache
     :raise AssertionError: If no file is opened
+.. py:function:: magnum.text.AbstractFont.create_shaper
+    :raise AssertionError: If no file is opened
+
+.. TODO remove the copies once the base class methods don't leak to subclasses
+.. py:property:: magnum.text.RendererCore.cursor
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.Renderer.cursor
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.RendererGL.cursor
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+
+.. py:property:: magnum.text.RendererCore.alignment
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.Renderer.alignment
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.RendererGL.alignment
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+
+.. py:property:: magnum.text.RendererCore.line_advance
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.Renderer.line_advance
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+.. py:property:: magnum.text.RendererGL.line_advance
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+
+.. py:property:: magnum.text.RendererGL.index_type
+    :raise AssertionError: If setting this property while rendering is in
+        progress
+
+.. py:function:: magnum.text.RendererCore.add
+    :raise AssertionError: If :p:`shaper` font isn't present in
+        :ref:`glyph_cache`
+.. py:function:: magnum.text.Renderer.add
+    :raise AssertionError: If :p:`shaper` font isn't present in
+        :ref:`glyph_cache`
+.. py:function:: magnum.text.RendererGL.add
+    :raise AssertionError: If :p:`shaper` font isn't present in
+        :ref:`glyph_cache`
+
+.. py:function:: magnum.text.RendererGL.render(self, shaper: magnum.text.AbstractShaper, size: float, text: str, features: list[magnum.text.FeatureRange])
+    :raise AssertionError: If :p:`shaper` font isn't present in
+        :ref:`glyph_cache`
+
+.. py:enum:: magnum.text.Feature
+
+    The equivalent to C++ :dox:`Text::feature()` is passing the four-character
+    code to the constructor:
+
+    ..
+        >>> from magnum import text
+
+    .. code:: pycon
+
+        >>> feature = text.Feature('kern')
+        >>> feature.name
+        'KERNING'
+
+.. py:enum:: magnum.text.Script
+
+    The equivalent to C++ :dox:`Text::script()` is passing the four-character
+    code to the constructor:
+
+    ..
+        >>> from magnum import text
+
+    .. code:: pycon
+
+        >>> script = text.Script('Latn')
+        >>> script.name
+        'LATIN'

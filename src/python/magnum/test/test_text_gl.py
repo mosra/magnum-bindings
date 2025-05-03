@@ -91,17 +91,171 @@ class DistanceFieldGlyphCacheGL(GLTestCase):
         self.assertEqual(cache.size, (1024, 1024, 1))
         self.assertEqual(cache.padding, (2, 2))
 
-class Renderer2D(GLTestCase):
-    @unittest.skipIf(magnum.TARGET_GLES2, "Needs OES_mapbuffer on ES2 and extension queries are not exposed to Python yet")
+class RendererGL(GLTestCase):
     def test(self):
         font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
         font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
 
         cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        cache_refcount = sys.getrefcount(cache)
         font.fill_glyph_cache(cache, "hello")
 
-        renderer = text.Renderer2D(font, cache, 1.0)
-        renderer.reserve(16)
-        renderer.render("hello")
+        shaper = font.create_shaper()
+        shaper_refcount = sys.getrefcount(cache)
 
-        self.assertEqual(renderer.rectangle, Range2D((0.0, -0.270134), (2.50727, 1.0632)))
+        # Passing the cache to the renderer should increase its refcount
+        renderer = text.RendererGL(cache)
+        renderer_refcount = sys.getrefcount(renderer)
+        self.assertEqual(sys.getrefcount(cache), cache_refcount + 1)
+
+        # OTOH the cache isn't owned by the renderer so the returned value
+        # doesn't increase the renderer refcount
+        cache_from_renderer = renderer.glyph_cache
+        self.assertIs(cache_from_renderer, cache)
+        self.assertEqual(sys.getrefcount(cache), cache_refcount + 2)
+        self.assertEqual(sys.getrefcount(renderer), renderer_refcount)
+        del cache_from_renderer
+        self.assertEqual(sys.getrefcount(cache), cache_refcount + 1)
+        self.assertEqual(sys.getrefcount(renderer), renderer_refcount)
+
+        self.assertEqual(renderer.glyph_count, 0)
+        self.assertEqual(renderer.glyph_capacity, 0)
+        self.assertEqual(renderer.glyph_index_capacity, 0)
+        self.assertEqual(renderer.glyph_vertex_capacity, 0)
+        self.assertEqual(renderer.run_count, 0)
+        self.assertEqual(renderer.run_capacity, 0)
+        self.assertFalse(renderer.is_rendering)
+        self.assertEqual(renderer.rendering_glyph_count, 0)
+        self.assertEqual(renderer.rendering_run_count, 0)
+        self.assertEqual(renderer.cursor, Vector2())
+        self.assertEqual(renderer.alignment, text.Alignment.MIDDLE_CENTER)
+        self.assertEqual(renderer.line_advance, 0.0)
+        self.assertEqual(renderer.index_type, MeshIndexType.UNSIGNED_SHORT)
+
+        renderer.reserve(16, 3)
+        self.assertEqual(renderer.glyph_capacity, 16)
+        self.assertEqual(renderer.glyph_index_capacity, 16)
+        self.assertEqual(renderer.glyph_vertex_capacity, 16)
+        self.assertEqual(renderer.run_capacity, 3)
+
+        # Passing a shaper to add() should not increase its refcount
+        renderer.add(shaper, 1.0, "he")
+        self.assertEqual(sys.getrefcount(shaper), shaper_refcount)
+        self.assertEqual(renderer.glyph_count, 0)
+        self.assertEqual(renderer.run_count, 0)
+        self.assertTrue(renderer.is_rendering)
+        self.assertEqual(renderer.rendering_glyph_count, 2)
+        self.assertEqual(renderer.rendering_run_count, 1)
+
+        # Verifying the overload with a feature list. All variants should
+        # implicitly convert to text.FeatureRange, the StbTrueTypeFont doesn't
+        # make use of either.
+        renderer.add(shaper, 1.0, "ll", [
+            text.Feature.KERNING,
+            (text.Feature.SMALL_CAPITALS, False),
+            (text.Feature.ACCESS_ALL_ALTERNATES, 33),
+        ])
+
+        # Neither to render() it should
+        rectangle, runs = renderer.render(shaper, 1.0, "o")
+        self.assertEqual(sys.getrefcount(shaper), shaper_refcount)
+        self.assertEqual(rectangle, Range2D((-1.25364, -0.666667), (1.25364, 0.666667)))
+        self.assertEqual(runs, Range1Dui(0, 3))
+        self.assertEqual(renderer.glyph_count, 5)
+        self.assertEqual(renderer.run_count, 3)
+        self.assertFalse(renderer.is_rendering)
+        self.assertEqual(renderer.rendering_glyph_count, 5)
+        self.assertEqual(renderer.rendering_run_count, 3)
+
+        # Returned mesh references the renderer to ensure it doesn't get GC'd
+        # before the mesh instances
+        mesh = renderer.mesh
+        self.assertEqual(sys.getrefcount(renderer), renderer_refcount + 1)
+        self.assertEqual(mesh.count, 5*6)
+
+        # Deleting the mesh should decrease renderer refcount again
+        del mesh
+        self.assertEqual(sys.getrefcount(renderer), renderer_refcount)
+
+        renderer.cursor = (-15.0, 37.0)
+        renderer.alignment = text.Alignment.LINE_LEFT
+        renderer.line_advance = -7.0
+        renderer.index_type = MeshIndexType.UNSIGNED_BYTE
+        self.assertEqual(renderer.cursor, Vector2(-15.0, 37.0))
+        self.assertEqual(renderer.alignment, text.Alignment.LINE_LEFT)
+        self.assertEqual(renderer.line_advance, -7.0)
+        self.assertEqual(renderer.index_type, MeshIndexType.UNSIGNED_BYTE)
+
+        # Clear keeps the cursor, alignment etc properties
+        renderer.clear()
+        self.assertEqual(renderer.glyph_count, 0)
+        self.assertEqual(renderer.run_count, 0)
+        self.assertEqual(renderer.cursor, Vector2(-15.0, 37.0))
+        self.assertEqual(renderer.alignment, text.Alignment.LINE_LEFT)
+        self.assertEqual(renderer.line_advance, -7.0)
+        self.assertEqual(renderer.index_type, MeshIndexType.UNSIGNED_BYTE)
+
+        # Testing the argument-less render() also
+        renderer.add(shaper, 1.0, "hello")
+        rectangle2, runs2 = renderer.render()
+        # The rectangle is different due to the different cursor & alignment
+        self.assertEqual(rectangle2, Range2D((-15.0, 36.7299), (-12.4927, 38.0632)))
+        self.assertEqual(runs2, Range1Dui(0, 1))
+        self.assertEqual(renderer.glyph_count, 5)
+        self.assertEqual(renderer.run_count, 1)
+        self.assertFalse(renderer.is_rendering)
+
+        # Only the index type stays after reset
+        renderer.reset()
+        self.assertEqual(renderer.glyph_count, 0)
+        self.assertEqual(renderer.run_count, 0)
+        self.assertEqual(renderer.cursor, Vector2())
+        self.assertEqual(renderer.alignment, text.Alignment.MIDDLE_CENTER)
+        self.assertEqual(renderer.line_advance, 0.0)
+        self.assertEqual(renderer.index_type, MeshIndexType.UNSIGNED_BYTE)
+
+        # Deleting the renderer should decrease cache refcount again
+        del renderer
+        self.assertEqual(sys.getrefcount(cache), cache_refcount)
+
+    def test_setters_rendering_in_progress(self):
+        font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        font.fill_glyph_cache(cache, "abcd")
+
+        shaper = font.create_shaper()
+
+        renderer = text.RendererGL(cache)
+        renderer.add(shaper, 1.0, "a")
+        self.assertTrue(renderer.is_rendering)
+
+        with self.assertRaisesRegex(AssertionError, "rendering in progress"):
+            renderer.cursor = Vector2()
+        with self.assertRaisesRegex(AssertionError, "rendering in progress"):
+            renderer.alignment = text.Alignment.LINE_RIGHT
+        with self.assertRaisesRegex(AssertionError, "rendering in progress"):
+            renderer.line_advance = 0.0
+        with self.assertRaisesRegex(AssertionError, "rendering in progress"):
+            renderer.index_type = MeshIndexType.UNSIGNED_INT
+
+    def test_add_render_font_not_in_cache(self):
+        font1 = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        font2 = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        font3 = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        font1.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+        font2.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+        font3.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        font1.fill_glyph_cache(cache, "abcd")
+        font3.fill_glyph_cache(cache, "abcd")
+
+        shaper = font2.create_shaper()
+        renderer = text.RendererGL(cache)
+
+        with self.assertRaisesRegex(AssertionError, "shaper font not found among 2 fonts in associated glyph cache"):
+            renderer.add(shaper, 1.0, "a")
+        with self.assertRaisesRegex(AssertionError, "shaper font not found among 2 fonts in associated glyph cache"):
+            renderer.render(shaper, 1.0, "a")
