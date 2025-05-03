@@ -149,7 +149,7 @@ Changelog
 -   Exposed the new :ref:`text.AbstractShaper`, :ref:`text.RendererCore`,
     :ref:`text.Renderer`, :ref:`text.RendererGL` classes as well as the new
     :ref:`text.Feature`, :ref:`text.Script` enums and the
-    :ref:`text.FeatureRange` helper
+    :ref:`text.FeatureRange` helper, plus more :ref:`text.Alignment` options
 -   Exposed :ref:`trade.AbstractImporter.features` and
     :ref:`trade.AbstractImporter.flags` and corresponding enums
 -   Exposed a basic interface of :ref:`trade.AbstractImageConverter` and
