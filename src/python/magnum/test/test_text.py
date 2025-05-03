@@ -66,8 +66,8 @@ class Font(unittest.TestCase):
             font.glyph_size(0)
         with self.assertRaisesRegex(AssertionError, "no file opened"):
             font.glyph_advance(0)
-        # fill_glyph_cache() not tested as it needs a GL context; assuming it's
-        # correct
+        # fill_glyph_cache() not tested as it needs a GL context; verified in
+        # test_text_gl instead
 
     def test_open_failed(self):
         font = text.FontManager().load_and_instantiate('StbTrueTypeFont')

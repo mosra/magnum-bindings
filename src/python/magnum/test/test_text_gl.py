@@ -63,6 +63,26 @@ class GlyphCacheGL(GLTestCase):
         cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
         self.assertEqual(cache.padding, (1, 1))
 
+    def test_fill(self):
+        # Tested here and not in test_text.Font as the AbstractGlyphCache base
+        # isn't instantiable
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+
+        font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
+        self.assertTrue(font.is_opened)
+        self.assertTrue(font.fill_glyph_cache(cache, "abcd"))
+
+    def test_fill_no_file_opened(self):
+        # Tested here and not in test_text.Font as the AbstractGlyphCache base
+        # isn't instantiable
+        cache = text.GlyphCacheGL(PixelFormat.R8_UNORM, (128, 128))
+        font = text.FontManager().load_and_instantiate('StbTrueTypeFont')
+        self.assertFalse(font.is_opened)
+
+        with self.assertRaisesRegex(AssertionError, "no file opened"):
+            font.fill_glyph_cache(cache, "abcd")
+
 class DistanceFieldGlyphCacheGL(GLTestCase):
     def test(self):
         cache = text.DistanceFieldGlyphCacheGL((1024, 1024), (128, 128), 2)
