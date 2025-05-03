@@ -48,7 +48,7 @@ template<class T> struct PyPluginHolder: std::unique_ptr<T> {
     PyPluginHolder(PyPluginHolder<T>&&) noexcept = default;
     PyPluginHolder(const PyPluginHolder<T>&) = delete;
     PyPluginHolder<T>& operator=(PyPluginHolder<T>&&) noexcept = default;
-    PyPluginHolder<T>& operator=(const PyPluginHolder<T>&) = default;
+    PyPluginHolder<T>& operator=(const PyPluginHolder<T>&) = delete;
 
     ~PyPluginHolder() {
         /* On destruction, first `manager` and then the plugin would be
