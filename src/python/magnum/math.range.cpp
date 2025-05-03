@@ -352,9 +352,9 @@ void mathRange(py::module_& root, py::module_& m) {
     py::class_<Range2D> range2D_{root, "Range2D", "Two-dimensional float range"};
     py::class_<Range3D> range3D_{root, "Range3D", "Three-dimensional float range"};
 
-    py::class_<Range1Di> range1Di{root, "Range1Di", "One-dimensional float range"};
-    py::class_<Range2Di> range2Di{root, "Range2Di", "Two-dimensional float range"};
-    py::class_<Range3Di> range3Di{root, "Range3Di", "Three-dimensional float range"};
+    py::class_<Range1Di> range1Di{root, "Range1Di", "One-dimensional signed integral range"};
+    py::class_<Range2Di> range2Di{root, "Range2Di", "Two-dimensional signed integral range"};
+    py::class_<Range3Di> range3Di{root, "Range3Di", "Three-dimensional signed integral range"};
 
     py::class_<Range1Dd> range1Dd{root, "Range1Dd", "One-dimensional double range"};
     py::class_<Range2Dd> range2Dd{root, "Range2Dd", "Two-dimensional double range"};
