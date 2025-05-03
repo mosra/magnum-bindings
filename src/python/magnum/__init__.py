@@ -76,9 +76,9 @@ __all__ = [
     'Matrix3', 'Matrix4', 'Matrix3d', 'Matrix4d',
 
     'Quaternion', 'Quaterniond',
-    'Range1D', 'Range1Di', 'Range1Dd',
-    'Range2D', 'Range2Di', 'Range2Dd',
-    'Range3D', 'Range3Di', 'Range3Dd',
+    'Range1D', 'Range1Di', 'Range1Dui', 'Range1Dd',
+    'Range2D', 'Range2Di', 'Range2Dui', 'Range2Dd',
+    'Range3D', 'Range3Di', 'Range3Dui', 'Range3Dd',
 
     'MeshPrimitive', 'MeshIndexType',
 

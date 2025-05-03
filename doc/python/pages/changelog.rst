@@ -69,6 +69,8 @@ Changelog
 -   Exposed :ref:`Color3.from_xyz()`, :ref:`Color3.from_linear_rgb_int()`,
     :ref:`Color3.to_xyz()`, :ref:`Color3.to_linear_rgb_int()` and equivalent
     APIs on :ref:`Color4`
+-   Exposed unsigned :ref:`Range1Dui`, :ref:`Range2Dui` and :ref:`Range3Dui`
+    types in addition to the signed variants
 -   Exposed new :ref:`Quaternion.rotation()`, :ref:`Quaternion.reflection()`,
     :ref:`Quaternion.reflect_vector()`, :ref:`Quaternion.xyzw` and
     :ref:`Quaternion.wxyz` APIs

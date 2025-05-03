@@ -335,12 +335,14 @@ template<class U, template<class> class Type, class T, class ...Args> void conve
 
 template<template<UnsignedInt, class> class Type, UnsignedInt dimensions, class T, class ...Args> void convertible(py::class_<Type<dimensions, T>, Args...>& c) {
     convertibleImplementation<Int>(c, std::is_same<T, Int>{});
+    convertibleImplementation<UnsignedInt>(c, std::is_same<T, UnsignedInt>{});
     convertibleImplementation<Float>(c, std::is_same<T, Float>{});
     convertibleImplementation<Double>(c, std::is_same<T, Double>{});
 }
 
 template<template<class> class Type, class T, class ...Args> void convertible(py::class_<Type<T>, Args...>& c) {
     convertibleImplementation<Int>(c, std::is_same<T, Int>{});
+    convertibleImplementation<UnsignedInt>(c, std::is_same<T, UnsignedInt>{});
     convertibleImplementation<Float>(c, std::is_same<T, Float>{});
     convertibleImplementation<Double>(c, std::is_same<T, Double>{});
 }
@@ -356,6 +358,10 @@ void mathRange(py::module_& root, py::module_& m) {
     py::class_<Range2Di> range2Di{root, "Range2Di", "Two-dimensional signed integral range"};
     py::class_<Range3Di> range3Di{root, "Range3Di", "Three-dimensional signed integral range"};
 
+    py::class_<Range1Dui> range1Dui{root, "Range1Dui", "One-dimensional unsigned integral range"};
+    py::class_<Range2Dui> range2Dui{root, "Range2Dui", "Two-dimensional unsigned integral range"};
+    py::class_<Range3Dui> range3Dui{root, "Range3Dui", "Three-dimensional unsigned integral range"};
+
     py::class_<Range1Dd> range1Dd{root, "Range1Dd", "One-dimensional double range"};
     py::class_<Range2Dd> range2Dd{root, "Range2Dd", "Two-dimensional double range"};
     py::class_<Range3Dd> range3Dd{root, "Range3Dd", "Three-dimensional double range"};
@@ -366,6 +372,9 @@ void mathRange(py::module_& root, py::module_& m) {
     convertible(range1Di);
     convertible(range2Di);
     convertible(range3Di);
+    convertible(range1Dui);
+    convertible(range2Dui);
+    convertible(range3Dui);
     convertible(range1Dd);
     convertible(range2Dd);
     convertible(range3Dd);
@@ -376,23 +385,30 @@ void mathRange(py::module_& root, py::module_& m) {
     range(m, range1Di);
     range(m, range2Di);
     range(m, range3Di);
+    range(m, range1Dui);
+    range(m, range2Dui);
+    range(m, range3Dui);
     range(m, range1Dd);
     range(m, range2Dd);
     range(m, range3Dd);
 
     rangeND(range2D_);
     rangeND(range2Di);
+    rangeND(range2Dui);
     rangeND(range2Dd);
     rangeND(range3D_);
     rangeND(range3Di);
+    rangeND(range3Dui);
     rangeND(range3Dd);
 
     range2D(range2D_);
     range2D(range2Di);
+    range2D(range2Dui);
     range2D(range2Dd);
 
     range3D(range3D_);
     range3D(range3Di);
+    range3D(range3Dui);
     range3D(range3Dd);
 }
 
