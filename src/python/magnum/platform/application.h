@@ -79,6 +79,9 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def(py::init(), "Constructor");
         /** @todo others */
 
+    /* Is needed for is_key_pressed(), so has to be declared before */
+    py::enum_<typename T::Key> key{c, "Key", "Key"};
+
     c
         /* Constructor */
         .def(py::init<const typename T::Configuration&, const typename T::GLConfiguration&>(), py::arg("configuration") = typename T::Configuration{}, py::arg("gl_configuration") = typename T::GLConfiguration{},
@@ -96,6 +99,8 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .def_property_readonly("window_size", &T::windowSize, "Window size")
         .def_property_readonly("framebuffer_size", &T::framebufferSize, "Framebuffer size")
         .def_property_readonly("dpi_scaling", static_cast<Vector2(T::*)() const>(&T::dpiScaling), "DPI scaling")
+        /* Keyboard handling */
+        .def("is_key_pressed", &T::isKeyPressed, "Whether a key is pressed", py::arg("key"))
         /* Mouse handling */
         .def_property("cursor", &T::cursor, &T::setCursor, "Cursor type")
         .def("warp_cursor", &T::warpCursor, "Warp mouse cursor to given coordinates")
@@ -120,7 +125,7 @@ template<class T, class Trampoline, class Holder> void application(py::class_<T,
         .value("SUPER", T::Modifier::Super);
     corrade::enumOperators(modifiers);
 
-    py::enum_<typename T::Key>{c, "Key", "Key"}
+    key
         .value("UNKNOWN", T::Key::Unknown)
         .value("LEFT_SHIFT", T::Key::LeftShift)
         .value("RIGHT_SHIFT", T::Key::RightShift)
