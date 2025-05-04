@@ -39,7 +39,7 @@ namespace magnum { namespace platform {
 template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
     py::class_<typename T::Configuration> configuration{c, "Configuration", "Configuration"};
 
-    py::enum_<typename T::Configuration::WindowFlag> configurationWindowFlags{configuration, "WindowFlag", "WindowFlag"};
+    py::enum_<typename T::Configuration::WindowFlag> configurationWindowFlags{configuration, "WindowFlags", "Window flags"};
     configurationWindowFlags
         .value("RESIZABLE", T::Configuration::WindowFlag::Resizable);
     corrade::enumOperators(configurationWindowFlags);
