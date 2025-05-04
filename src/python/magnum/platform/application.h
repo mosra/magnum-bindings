@@ -38,7 +38,19 @@ namespace magnum { namespace platform {
 
 template<class T> void configuration(py::class_<T>& c) {
     c
-        .def(py::init())
+        .def(py::init([](const std::string& title, const Vector2i& size, typename T::WindowFlag windowFlags) {
+            return T{}
+                .setTitle(title)
+                .setSize(size)
+                .setWindowFlags(windowFlags);
+        }), "Constructor",
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            /** @todo drop std::string in favor of our own string caster */
+            py::arg("title") = std::string{T{}.title()},
+            py::arg("size") = T{}.size(),
+            py::arg("window_flags") = typename T::WindowFlag(typename std::underlying_type<typename T::Configuration::WindowFlag>::type(T{}.windowFlags())))
         .def_property("title",
             /** @todo drop std::string in favor of our own string caster */
             [](T& self) -> std::string {
@@ -64,7 +76,7 @@ template<class T> void configuration(py::class_<T>& c) {
 template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
     py::class_<typename T::GLConfiguration> glConfiguration{c, "GLConfiguration", "OpenGL context configuration"};
     glConfiguration
-        .def(py::init());
+        .def(py::init(), "Constructor");
         /** @todo others */
 
     c
