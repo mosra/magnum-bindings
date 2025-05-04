@@ -36,39 +36,32 @@
 
 namespace magnum { namespace platform {
 
-template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
-    py::class_<typename T::Configuration> configuration{c, "Configuration", "Configuration"};
-
-    py::enum_<typename T::Configuration::WindowFlag> configurationWindowFlags{configuration, "WindowFlags", "Window flags"};
-    configurationWindowFlags
-        .value("RESIZABLE", T::Configuration::WindowFlag::Resizable);
-    corrade::enumOperators(configurationWindowFlags);
-
-    /** @todo drop this in favor of named constructor arguments, that's what
-        the Configuration tries to emulate after all */
-    configuration
+template<class T> void configuration(py::class_<T>& c) {
+    c
         .def(py::init())
         .def_property("title",
             /** @todo drop std::string in favor of our own string caster */
-            [](typename T::Configuration& self) -> std::string {
+            [](T& self) -> std::string {
                 return self.title();
             },
-            [](typename T::Configuration& self, const std::string& title) {
+            [](T& self, const std::string& title) {
                 self.setTitle(title);
             }, "Window title")
-        .def_property("size", &T::Configuration::size,
-            [](typename T::Configuration& self, const Vector2i& size) {
+        .def_property("size", &T::size,
+            [](T& self, const Vector2i& size) {
                 self.setSize(size);
             }, "Window size")
         .def_property("window_flags",
-            [](typename T::Configuration& self) {
-                return typename T::Configuration::WindowFlag(typename std::underlying_type<typename T::Configuration::WindowFlag>::type(self.windowFlags()));
+            [](T& self) {
+                return typename T::WindowFlag(typename std::underlying_type<typename T::WindowFlag>::type(self.windowFlags()));
             },
-            [](typename T::Configuration& self, typename T::Configuration::WindowFlag flags) {
+            [](T& self, typename T::WindowFlag flags) {
                 self.setWindowFlags(flags);
             }, "Window flags");
         /** @todo others */
+}
 
+template<class T, class Trampoline, class Holder> void application(py::class_<T, Trampoline, Holder>& c) {
     py::class_<typename T::GLConfiguration> glConfiguration{c, "GLConfiguration", "OpenGL context configuration"};
     glConfiguration
         .def(py::init());

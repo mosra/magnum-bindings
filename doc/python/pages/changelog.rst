@@ -146,6 +146,8 @@ Changelog
     :ref:`platform.glfw.Application.main_loop_iteration`
 -   Exposed :ref:`platform.sdl2.Application.cursor` and
     :ref:`platform.sdl2.Application.warp_cursor`, same for GLFW
+-   Exposed all :ref:`platform.sdl2.Application.Configuration.WindowFlags` and
+    :ref:`platform.glfw.Application.Configuration.WindowFlags`
 -   Exposed the new :ref:`text.AbstractShaper`, :ref:`text.RendererCore`,
     :ref:`text.Renderer`, :ref:`text.RendererGL` classes as well as the new
     :ref:`text.Feature`, :ref:`text.Script` enums and the
