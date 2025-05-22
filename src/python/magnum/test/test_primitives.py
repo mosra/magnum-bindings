@@ -208,9 +208,21 @@ class Crosshair(unittest.TestCase):
 
 class Cube(unittest.TestCase):
     def test_solid(self):
-        a = primitives.cube_solid()
+        a = primitives.cube_solid(primitives.CubeFlags.TEXTURE_COORDINATES_POSITIVE_Z_UP_POSITIVE_Z_DOWN|primitives.CubeFlags.TANGENTS)
         self.assertEqual(a.primitive, MeshPrimitive.TRIANGLES)
         self.assertTrue(a.is_indexed)
+        self.assertEqual(a.attribute_count(), 4)
+
+        b = primitives.cube_solid()
+        self.assertEqual(b.primitive, MeshPrimitive.TRIANGLES)
+        self.assertTrue(b.is_indexed)
+        self.assertEqual(b.attribute_count(), 2)
+
+    def test_solid_invalid(self):
+        with self.assertRaisesRegex(AssertionError, "a texture coordinate option has to be picked if tangents are enabled"):
+            primitives.cube_solid(primitives.CubeFlags.TANGENTS)
+        with self.assertRaisesRegex(AssertionError, "unrecognized texture coordinate option 0x12"):
+            primitives.cube_solid(primitives.CubeFlags(int(primitives.CubeFlags.TEXTURE_COORDINATES_POSITIVE_Z_UP_POSITIVE_X_DOWN) + 2))
 
     def test_solid_strip(self):
         a = primitives.cube_solid_strip()

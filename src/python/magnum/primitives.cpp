@@ -80,6 +80,19 @@ void primitives(py::module_& m) {
         .value("NONE", Primitives::ConeFlag{});
     corrade::enumOperators(coneFlags);
 
+    py::enum_<Primitives::CubeFlag> cubeFlags{m, "CubeFlags", "Cube flags"};
+    cubeFlags.value("TEXTURE_COORDINATES_ALL_SAME", Primitives::CubeFlag::TextureCoordinatesAllSame)
+        .value("TEXTURE_COORDINATES_POSITIVE_UP_NEGATIVE_DOWN", Primitives::CubeFlag::TextureCoordinatesPositiveUpNegativeDown)
+        .value("TEXTURE_COORDINATES_NEGATIVE_X_UP_NEGATIVE_X_DOWN", Primitives::CubeFlag::TextureCoordinatesNegativeXUpNegativeXDown)
+        .value("TEXTURE_COORDINATES_NEGATIVE_X_UP_POSITIVE_Z_DOWN", Primitives::CubeFlag::TextureCoordinatesNegativeXUpPositiveZDown)
+        .value("TEXTURE_COORDINATES_NEGATIVE_X_UP_POSITIVE_X_DOWN", Primitives::CubeFlag::TextureCoordinatesNegativeXUpPositiveXDown)
+        .value("TEXTURE_COORDINATES_NEGATIVE_X_UP_NEGATIVE_Z_DOWN", Primitives::CubeFlag::TextureCoordinatesNegativeXUpNegativeZDown)
+        .value("TEXTURE_COORDINATES_POSITIVE_Z_UP_POSITIVE_Z_DOWN", Primitives::CubeFlag::TextureCoordinatesPositiveZUpPositiveZDown)
+        .value("TEXTURE_COORDINATES_POSITIVE_Z_UP_POSITIVE_X_DOWN", Primitives::CubeFlag::TextureCoordinatesPositiveZUpPositiveXDown)
+        .value("TANGENTS", Primitives::CubeFlag::Tangents)
+        .value("NONE", Primitives::CubeFlag{});
+    corrade::enumOperators(cubeFlags);
+
     py::enum_<Primitives::CylinderFlag> cylinderFlags{m, "CylinderFlags", "Cylinder flags"};
     cylinderFlags.value("TEXTURE_COORDINATES", Primitives::CylinderFlag::TextureCoordinates)
         .value("CAP_ENDS", Primitives::CylinderFlag::CapEnds)
@@ -192,7 +205,20 @@ void primitives(py::module_& m) {
         .def("crosshair2d", Primitives::crosshair2D, "2D crosshair")
         .def("crosshair3d", Primitives::crosshair3D, "3D crosshair")
 
-        .def("cube_solid", Primitives::cubeSolid, "Solid 3D cube")
+        .def("cube_solid", [](Primitives::CubeFlag flags) {
+            const UnsignedInt textureCoordinateVariant = UnsignedByte(flags) >> 1;
+            /** @todo don't hardcode this, how? */
+            if(textureCoordinateVariant > 8) {
+                PyErr_Format(PyExc_AssertionError, "unrecognized texture coordinate option 0x%x", UnsignedInt(UnsignedByte(flags & ~Primitives::CubeFlag::Tangents)));
+                throw py::error_already_set{};
+            }
+            if((flags & Primitives::CubeFlag::Tangents) && !textureCoordinateVariant) {
+                PyErr_SetString(PyExc_AssertionError, "a texture coordinate option has to be picked if tangents are enabled");
+                throw py::error_already_set{};
+            }
+
+            return Primitives::cubeSolid(flags);
+        }, "Solid 3D cube", py::arg("flags") = Primitives::CubeFlag{})
         .def("cube_solid_strip", Primitives::cubeSolidStrip, "Solid 3D cube as a single strip")
         .def("cube_wireframe", Primitives::cubeWireframe, "Wireframe 3D cube")
 
