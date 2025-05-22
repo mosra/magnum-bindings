@@ -114,25 +114,80 @@ void primitives(py::module_& m) {
         .def("axis2d", Primitives::axis2D, "2D axis")
         .def("axis3d", Primitives::axis3D, "3D axis")
 
-        .def("capsule2d_wireframe", Primitives::capsule2DWireframe, "Wireframe 2D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("half_length"))
+        .def("capsule2d_wireframe", [](UnsignedInt hemisphereRings, UnsignedInt cylinderRings, Float halfLength) {
+            if(hemisphereRings < 1 || cylinderRings < 1) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one hemisphere ring and one cylinder ring but got %u and %u", hemisphereRings, cylinderRings);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::capsule2DWireframe(hemisphereRings, cylinderRings, halfLength);
+        }, "Wireframe 2D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("half_length"))
         .def("capsule3d_solid", [](UnsignedInt hemisphereRings, UnsignedInt cylinderRings, UnsignedInt segments, Float halfLength, Primitives::CapsuleFlag flags) {
+            if(hemisphereRings < 1 || cylinderRings < 1 || segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one hemisphere ring, one cylinder ring and three segments but got %u, %u and %u", hemisphereRings, cylinderRings, segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::capsule3DSolid(hemisphereRings, cylinderRings, segments, halfLength, flags);
         }, "Solid 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"), py::arg("flags") = Primitives::CapsuleFlag{})
-        .def("capsule3d_wireframe", Primitives::capsule3DWireframe, "Wireframe 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"))
+        .def("capsule3d_wireframe", [](UnsignedInt hemisphereRings, UnsignedInt cylinderRings, UnsignedInt segments, Float halfLength) {
+            if(hemisphereRings < 1 || cylinderRings < 1 || segments % 4 != 0 || !segments) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one hemisphere ring, one cylinder ring and multiples of 4 segments but got %u, %u and %u", hemisphereRings, cylinderRings, segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::capsule3DWireframe(hemisphereRings, cylinderRings, segments, halfLength);
+        }, "Wireframe 3D capsule", py::arg("hemisphere_rings"), py::arg("cylinder_rings"), py::arg("segments"), py::arg("half_length"))
 
         .def("circle2d_solid", [](UnsignedInt segments, Primitives::Circle2DFlag flags) {
+            if(segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least three segments but got %u", segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::circle2DSolid(segments, flags);
         }, "Solid 2D circle", py::arg("segments"), py::arg("flags") = Primitives::Circle2DFlag{})
-        .def("circle2d_wireframe", Primitives::circle2DWireframe, "Wireframe 2D circle", py::arg("segments"))
+        .def("circle2d_wireframe", [](UnsignedInt segments) {
+            if(segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least three segments but got %u", segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::circle2DWireframe(segments);
+        }, "Wireframe 2D circle", py::arg("segments"))
         .def("circle3d_solid", [](UnsignedInt segments, Primitives::Circle3DFlag flags) {
+            if(segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least three segments but got %u", segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::circle3DSolid(segments, flags);
         }, "Solid 3D circle", py::arg("segments"), py::arg("flags") = Primitives::Circle3DFlag{})
-        .def("circle3d_wireframe", Primitives::circle3DWireframe, "Wireframe 3D circle", py::arg("segments"))
+        .def("circle3d_wireframe", [](UnsignedInt segments) {
+            if(segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least three segments but got %u", segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::circle3DWireframe(segments);
+        }, "Wireframe 3D circle", py::arg("segments"))
 
         .def("cone_solid", [](UnsignedInt rings, UnsignedInt segments, Float halfLength, Primitives::ConeFlag flags) {
+            if(rings < 1 || segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one ring and three segments but got %u and %u", rings, segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::coneSolid(rings, segments, halfLength, flags);
         }, "Solid 3D cone", py::arg("rings"), py::arg("segments"), py::arg("half_length"), py::arg("flags") = Primitives::ConeFlag{})
-        .def("cone_wireframe", Primitives::coneWireframe, "Wireframe 3D cone", py::arg("segments"), py::arg("half_length"))
+        .def("cone_wireframe", [](UnsignedInt segments, Float halfLength) {
+            if(segments % 4 != 0 || !segments) {
+                PyErr_Format(PyExc_AssertionError, "expected multiples of 4 segments but got %u", segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::coneWireframe(segments, halfLength);
+        }, "Wireframe 3D cone", py::arg("segments"), py::arg("half_length"))
 
         .def("crosshair2d", Primitives::crosshair2D, "2D crosshair")
         .def("crosshair3d", Primitives::crosshair3D, "3D crosshair")
@@ -142,9 +197,21 @@ void primitives(py::module_& m) {
         .def("cube_wireframe", Primitives::cubeWireframe, "Wireframe 3D cube")
 
         .def("cylinder_solid", [](UnsignedInt rings, UnsignedInt segments, Float halfLength, Primitives::CylinderFlag flags) {
+            if(rings < 1 || segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one ring and three segments but got %u and %u", rings, segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::cylinderSolid(rings, segments, halfLength, flags);
         }, "Solid 3D cylinder", py::arg("rings"), py::arg("segments"), py::arg("half_length"), py::arg("flags") = Primitives::CylinderFlag{})
-        .def("cylinder_wireframe", Primitives::cylinderWireframe, "Wireframe 3D cylinder", py::arg("rings"), py::arg("segments"), py::arg("half_length"))
+        .def("cylinder_wireframe", [](UnsignedInt rings, UnsignedInt segments, Float halfLength) {
+            if(rings < 1 || segments % 4 != 0 || !segments) {
+                PyErr_Format(PyExc_AssertionError, "expected at least one ring and multiples of 4 segments but got %u and %u", rings, segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::cylinderWireframe(rings, segments, halfLength);
+        }, "Wireframe 3D cylinder", py::arg("rings"), py::arg("segments"), py::arg("half_length"))
 
         .def("gradient2d", Primitives::gradient2D, "2D square with a gradient", py::arg("a"), py::arg("color_a"), py::arg("b"), py::arg("color_b"))
         .def("gradient2d_horizontal", Primitives::gradient2DHorizontal, "2D square with a horizontal gradient", py::arg("color_left"), py::arg("color_right"))
@@ -176,9 +243,21 @@ void primitives(py::module_& m) {
         .def("square_wireframe", Primitives::squareWireframe, "Wireframe 2D square")
 
         .def("uv_sphere_solid", [](UnsignedInt rings, UnsignedInt segments, Primitives::UVSphereFlag flags) {
+            if(rings < 2 || segments < 3) {
+                PyErr_Format(PyExc_AssertionError, "expected at least two rings and three segments but got %u and %u", rings, segments);
+                throw py::error_already_set{};
+            }
+
             return Primitives::uvSphereSolid(rings, segments, flags);
         }, "Solid 3D UV sphere", py::arg("rings"), py::arg("segments"), py::arg("flags") = Primitives::UVSphereFlag{})
-        .def("uv_sphere_wireframe", Primitives::uvSphereWireframe, "Wireframe 3D UV sphere", py::arg("rings"), py::arg("segments"));
+        .def("uv_sphere_wireframe", [](UnsignedInt rings, UnsignedInt segments) {
+            if(rings % 2 != 0 || !rings || segments % 4 != 0 || !segments) {
+                PyErr_Format(PyExc_AssertionError, "expected multiples of 2 rings and multiples of 4 segments but got %u and %u", rings, segments);
+                throw py::error_already_set{};
+            }
+
+            return Primitives::uvSphereWireframe(rings, segments);
+        }, "Wireframe 3D UV sphere", py::arg("rings"), py::arg("segments"));
 }
 
 }

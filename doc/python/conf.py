@@ -210,6 +210,7 @@ INPUT_DOCS = [
     'magnum.materialtools.rst',
     'magnum.meshtools.rst',
     'magnum.platform.rst',
+    'magnum.primitives.rst',
     'magnum.scenegraph.rst',
     'magnum.scenetools.rst',
     'magnum.shaders.rst',
