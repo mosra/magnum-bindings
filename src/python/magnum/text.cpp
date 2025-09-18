@@ -390,6 +390,7 @@ void text(py::module_& m) {
     py::implicitly_convertible<Text::Feature, Text::FeatureRange>();
     py::implicitly_convertible<std::pair<Text::Feature, UnsignedInt>, Text::FeatureRange>();
 
+    /* Last updated for Unicode 17.0 */
     py::enum_<Text::Script>{m, "Script", "Script a text is written in"}
         .value("UNSPECIFIED", Text::Script::Unspecified)
         .value("INHERITED", Text::Script::Inherited)
@@ -408,6 +409,7 @@ void text(py::module_& m) {
         .value("BASSA_VAH", Text::Script::BassaVah)
         .value("BATAK", Text::Script::Batak)
         .value("BENGALI", Text::Script::Bengali)
+        .value("BERIA_ERFE", Text::Script::BeriaErfe)
         .value("BHAIKSUKI", Text::Script::Bhaiksuki)
         .value("BOPOMOFO", Text::Script::Bopomofo)
         .value("BRAHMI", Text::Script::Brahmi)
@@ -526,6 +528,7 @@ void text(py::module_& m) {
         .value("SHAVIAN", Text::Script::Shavian)
         .value("SHARADA", Text::Script::Sharada)
         .value("SIDDHAM", Text::Script::Siddham)
+        .value("SIDETIC", Text::Script::Sidetic)
         .value("KHUDAWADI", Text::Script::Khudawadi)
         .value("SINHALA", Text::Script::Sinhala)
         .value("SOGDIAN", Text::Script::Sogdian)
@@ -543,6 +546,7 @@ void text(py::module_& m) {
         .value("TAMIL", Text::Script::Tamil)
         .value("TANGUT", Text::Script::Tangut)
         .value("TAI_VIET", Text::Script::TaiViet)
+        .value("TAI_YO", Text::Script::TaiYo)
         .value("TELUGU", Text::Script::Telugu)
         .value("TIFINAGH", Text::Script::Tifinagh)
         .value("TAGALOG", Text::Script::Tagalog)
@@ -552,6 +556,7 @@ void text(py::module_& m) {
         .value("TIRHUTA", Text::Script::Tirhuta)
         .value("TANGSA", Text::Script::Tangsa)
         .value("TODHRI", Text::Script::Todhri)
+        .value("TOLONG_SIKI", Text::Script::TolongSiki)
         .value("TOTO", Text::Script::Toto)
         .value("TULU_TIGALARI", Text::Script::TuluTigalari)
         .value("UGARITIC", Text::Script::Ugaritic)
