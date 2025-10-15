@@ -120,7 +120,7 @@ install:
 - 7z x v%PYBIND%.zip
 
 # SDL2
-- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-2.0.9-VC.zip appveyor DownloadFile http://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+- IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-2.0.9-VC.zip appveyor DownloadFile https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
 - IF "%TARGET%" == "desktop" IF "%COMPILER:~0,4%" == "msvc" 7z x SDL2-devel-2.0.9-VC.zip && ren SDL2-2.0.9 SDL
 
 # GLFW
