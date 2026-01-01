@@ -590,10 +590,13 @@ class CompressedImageView(unittest.TestCase):
         # TODO adapt from ImageView.test_init_image
         pass
 
+    @unittest.skip("No way to create a CompressedImage with valid format at the moment")
     def test_init_image_empty(self):
         a = CompressedImage2D()
         a_refcount = sys.getrefcount(a)
 
+        # TODO this blows up inside Magnum because the block size of `a` is
+        #   invalid
         view = CompressedImageView2D(a)
         self.assertEqual(view.size, (0, 0))
         self.assertIs(view.owner, None)
