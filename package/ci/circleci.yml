@@ -15,12 +15,11 @@ executors:
   ubuntu-18_04:
     docker:
     - image: ubuntu:bionic-20220427
-  # Anything below 13.4.1 (and all x86 variants) are deprecated as of June 28th
-  # 2024
-  xcode-13_4:
+  # As of November 7, 2025, M4 is the default, and the oldest version there is
+  # 14.3.1.
+  xcode-14_3:
     macos:
-      xcode: 13.4.1
-    resource_class: macos.m1.medium.gen1
+      xcode: 14.3.1
   arm64:
     machine:
       image: ubuntu-2004:2023.07.1
@@ -389,7 +388,7 @@ jobs:
     - lcov
 
   macos-gl:
-    executor: xcode-13_4
+    executor: xcode-14_3
     environment:
       CMAKE_CXX_FLAGS: --coverage
       PLATFORM_GL_API: CGL
@@ -402,7 +401,7 @@ jobs:
     - lcov
 
   macos-gles3:
-    executor: xcode-13_4
+    executor: xcode-14_3
     environment:
       CMAKE_CXX_FLAGS: --coverage
       PLATFORM_GL_API: EGL
@@ -419,7 +418,7 @@ jobs:
     - lcov
 
   macos-static:
-    executor: xcode-13_4
+    executor: xcode-14_3
     environment:
       # STUPID yml interprets unquoted ON as a boolean
       BUILD_STATIC: "ON"
