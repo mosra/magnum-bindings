@@ -15,11 +15,15 @@ if "%COMPILER%" == "msvc-clang" if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual St
 set EXCEPT_MSVC2017=ON
 IF "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" set EXCEPT_MSVC2017=OFF
 
-rem Build pybind11. Downloaded in the appveyor.yml script.
+rem Build pybind11. Downloaded in the appveyor.yml script. Forcing
+rem -DCMAKE_POLICY_VERSION_MINIMUM=3.5 because it's bumped from 3.4 to 3.5 only
+rem in version 2.11, which got released in 2023, years after the MSVC versions
+rem we test for.
 cd pybind11-%PYBIND% || exit /b
 mkdir -p build && cd build || exit /b
 cmake .. ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ^
     -DPYBIND11_PYTHON_VERSION=3.%PYTHON% ^
     -DPYBIND11_TEST=OFF ^
     -G Ninja || exit /b
@@ -104,12 +108,14 @@ cmake --build . || exit /b
 cmake --build . --target install || exit /b
 cd .. && cd ..
 
-rem Build
+rem Build. Again forcing -DCMAKE_POLICY_VERSION_MINIMUM=3.5 because the
+rem pybind11 CMake config files also require just 3.4 now.
 mkdir build && cd build || exit /b
 cmake .. ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/SDL ^
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ^
     -DPYBIND11_PYTHON_VERSION=3.%PYTHON% ^
     -DMAGNUM_WITH_PYTHON=ON ^
     -DMAGNUM_BUILD_TESTS=ON ^
