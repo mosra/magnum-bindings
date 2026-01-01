@@ -93,9 +93,13 @@ template<class T> void imageView(py::class_<T, PyImageViewHolder<T>>& c) {
     c
         /* Constructors */
         .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            /** @todo check and fire an exception for too small data array,
+                once that's available in a non-internal API */
             return pyImageViewHolder(T{storage, format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
         .def(py::init([](PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            /** @todo check and fire an exception for too small data array,
+                once that's available in a non-internal API */
             return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
         .def(py::init([](const PixelStorage& storage, PixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size) {
@@ -183,6 +187,8 @@ template<class T> void compressedImageView(py::class_<T, PyImageViewHolder<T>>& 
             return T{format, size};
         }), "Construct an empty view")
         .def(py::init([](CompressedPixelFormat format, const typename PyDimensionTraits<T::Dimensions, Int>::VectorType& size, const Containers::ArrayView<typename T::Type>& data) {
+            /** @todo check and fire an exception for too small data array,
+                once that's available in a non-internal API */
             return pyImageViewHolder(T{format, size, data}, pyObjectHolderFor<Containers::PyArrayViewHolder>(data).owner);
         }), "Constructor")
         .def(py::init([](CompressedImage<T::Dimensions>& image) {
