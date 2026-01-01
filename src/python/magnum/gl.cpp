@@ -151,7 +151,14 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                     else if(py::isinstance<GL::SamplerFilter>(tuple[0]))
                         filter = py::cast<GL::SamplerFilter>(tuple[0]);
                     else {
-                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerFilter or gl.SamplerFilter as the first element, got %A", value.get_type().ptr());
+                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerFilter or gl.SamplerFilter as the first element, got %A",
+                            /* get_type() deprecated in 2.6, warning in 3.0+ */
+                            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                            py::type::handle_of(value).ptr()
+                            #else
+                            value.get_type().ptr()
+                            #endif
+                        );
                         throw py::error_already_set{};
                     }
 
@@ -161,13 +168,27 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                     else if(py::isinstance<GL::SamplerMipmap>(tuple[1]))
                         mipmap = py::cast<GL::SamplerMipmap>(tuple[1]);
                     else {
-                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerMipmap or gl.SamplerMipmap as the second element, got %A", value.get_type().ptr());
+                        PyErr_Format(PyExc_TypeError, "expected a tuple with SamplerMipmap or gl.SamplerMipmap as the second element, got %A",
+                            /* get_type() deprecated in 2.6, warning in 3.0+ */
+                            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                            py::type::handle_of(value).ptr()
+                            #else
+                            value.get_type().ptr()
+                            #endif
+                        );
                         throw py::error_already_set{};
                     }
 
                     self.setMinificationFilter(filter, mipmap);
                 } else {
-                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter, gl.SamplerFilter or a two-element tuple, got %A", value.get_type().ptr());
+                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter, gl.SamplerFilter or a two-element tuple, got %A",
+                        /* get_type() deprecated since 2.6, warning in 3.0+ */
+                        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                        py::type::handle_of(value).ptr()
+                        #else
+                        value.get_type().ptr()
+                        #endif
+                    );
                     throw py::error_already_set{};
                 }
             }, "Minification filter")
@@ -178,7 +199,14 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                 else if(py::isinstance<GL::SamplerFilter>(filter))
                     self.setMagnificationFilter(py::cast<GL::SamplerFilter>(filter));
                 else {
-                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter or gl.SamplerFilter, got %A", filter.get_type().ptr());
+                    PyErr_Format(PyExc_TypeError, "expected SamplerFilter or gl.SamplerFilter, got %A",
+                        /* get_type() deprecated since 2.6, warning in 3.0+ */
+                        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                        py::type::handle_of(filter).ptr()
+                        #else
+                        filter.get_type().ptr()
+                        #endif
+                    );
                     throw py::error_already_set{};
                 }
             }, "Magnification filter")
@@ -197,7 +225,14 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                 else if(py::isinstance<GL::SamplerWrapping>(wrapping))
                     self.setWrapping(py::cast<GL::SamplerWrapping>(wrapping));
                 else {
-                    PyErr_Format(PyExc_TypeError, "expected SamplerWrapping or gl.SamplerWrapping, got %A", wrapping.get_type().ptr());
+                    PyErr_Format(PyExc_TypeError, "expected SamplerWrapping or gl.SamplerWrapping, got %A",
+                        /* get_type() deprecated since 2.6, warning in 3.0+ */
+                        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                        py::type::handle_of(wrapping).ptr()
+                        #else
+                        wrapping.get_type().ptr()
+                        #endif
+                    );
                     throw py::error_already_set{};
                 }
             }, "Wrapping")
@@ -216,7 +251,14 @@ template<UnsignedInt dimensions> void texture(py::class_<GL::Texture<dimensions>
                 else if(py::isinstance<Vector4i>(color))
                     self.setBorderColor(py::cast<Vector4i>(color));
                 else {
-                    PyErr_Format(PyExc_TypeError, "expected Color3, Color4, Vector4ui or Vector4i, got %A", color.get_type().ptr());
+                    PyErr_Format(PyExc_TypeError, "expected Color3, Color4, Vector4ui or Vector4i, got %A",
+                        /* get_type() deprecated since 2.6, warning in 3.0+ */
+                        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                        py::type::handle_of(color).ptr()
+                        #else
+                        color.get_type().ptr()
+                        #endif
+                    );
                     throw py::error_already_set{};
                 }
             },
@@ -936,7 +978,14 @@ void gl(py::module_& m) {
                 else if(py::isinstance<GL::MeshPrimitive>(primitive))
                     self.setPrimitive(py::cast<GL::MeshPrimitive>(primitive));
                 else {
-                    PyErr_Format(PyExc_TypeError, "expected MeshPrimitive or gl.MeshPrimitive, got %A", primitive.get_type().ptr());
+                    PyErr_Format(PyExc_TypeError, "expected MeshPrimitive or gl.MeshPrimitive, got %A",
+                        /* get_type() deprecated since 2.6, warning in 3.0+ */
+                        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                        py::type::handle_of(primitive).ptr()
+                        #else
+                        primitive.get_type().ptr()
+                        #endif
+                    );
                     throw py::error_already_set{};
                 }
             }, "Primitive type")

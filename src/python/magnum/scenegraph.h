@@ -62,7 +62,14 @@ template<UnsignedInt dimensions, class T, class Transformation> void object(py::
             else if(py::isinstance<py::none>(parentobj))
                 parent = nullptr;
             else {
-                PyErr_Format(PyExc_TypeError, "expected Scene, Object or None, got %A", parentobj.get_type().ptr());
+                PyErr_Format(PyExc_TypeError, "expected Scene, Object or None, got %A",
+                    /* get_type() deprecated since 2.6, is a warning in 3.0+ */
+                    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+                    py::type::handle_of(parentobj).ptr()
+                    #else
+                    parentobj.get_type().ptr()
+                    #endif
+                );
                 throw py::error_already_set{};
             }
 
