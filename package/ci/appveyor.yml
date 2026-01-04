@@ -28,6 +28,9 @@ environment:
     BUILD_STATIC: ON
     PYTHON: 8
     PYBIND: 2.3.0
+    # The static build puts everything including Sdl2Application together so it
+    # needs the SDL DLL directory as well
+    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=C:/projects/magnum-bindings/deps/bin;C:/projects/magnum-bindings/SDL/lib/x64"
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
@@ -35,6 +38,9 @@ environment:
     BUILD_STATIC: ON
     PYTHON: 8
     PYBIND: 2.9.0 # first supporting MSVC 2022
+    # The static build puts everything including Sdl2Application together so it
+    # needs the SDL DLL directory as well
+    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=C:/projects/magnum-bindings/deps/bin;C:/projects/magnum-bindings/SDL/lib/x64"
   # clang-cl crashes with pybind11, "Illegal instruction" and
   #   lld-link: warning: ignoring unknown argument '-flto'
   #   LLVM ERROR: Associative COMDAT symbol '??0type_error@pybind11@@QEAA@PEBD@Z' does not exist.

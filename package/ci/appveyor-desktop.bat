@@ -119,7 +119,7 @@ cmake .. ^
     -DPYBIND11_PYTHON_VERSION=3.%PYTHON% ^
     -DMAGNUM_WITH_PYTHON=ON ^
     -DMAGNUM_BUILD_TESTS=ON ^
-    %COMPILER_EXTRA% -G Ninja || exit /b
+    %COMPILER_EXTRA% %BINDINGS_EXTRA% -G Ninja || exit /b
 cmake --build . || exit /b
 cmake --build . --target install || exit /b
 
