@@ -105,6 +105,39 @@ if(MAGNUM_WITH_PYTHON AND MAGNUM_BUILD_STATIC AND UNIX)
     option(MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "Build Python bindings linking to static libraries with RTLD_GLOBAL enabled for loading" ON)
 endif()
 
+# Python since version 3.8 doesn't take dependency DLLs implicitly from PATH
+# anymore, and one has to either place them right next to the Python modules,
+# into system locations, or add extra paths via os.add_dll_directory().
+#
+# Be nice to the user and implicitly populate that with Corrade and Magnum DLL
+# directories, if found, on the first run. Anything else (such as SDL or GLFW
+# DLL path) has to be specified by the user.
+if(MAGNUM_WITH_PYTHON AND WIN32)
+    # Do this lookup only on the first ever run. But add the option always, so
+    # in case it's passed via command line in the initial CMake run, it
+    # actually becomes a cached option with a help text and not just a loose
+    # variable.
+    if(NOT MAGNUM_PYTHON_BINDINGS_DLL_PATH)
+        set(dll_path )
+        foreach(dll_variable CORRADE_UTILITY_DLL_DEBUG CORRADE_UTILITY_DLL_RELEASE MAGNUM_DLL_DEBUG MAGNUM_DLL_RELEASE)
+            if(${dll_variable})
+                get_filename_component(dll_directory ${${dll_variable}} DIRECTORY)
+                list(APPEND dll_path ${dll_directory})
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES dll_path)
+
+        # If no DLLs were found, it means Corrade and Magnum is static and thus no
+        # DLL directories may need to be passed
+        if(dll_path)
+            message(STATUS "Autodetected ${dll_path} as directories to pass to Python for finding Corrade, Magnum and other dependency DLLs. Update the MAGNUM_PYTHON_BINDINGS_DLL_PATH variable if needed.")
+        endif()
+    endif()
+
+    # This variable is then used in src/python/corrade/__init__.py.in
+    set(MAGNUM_PYTHON_BINDINGS_DLL_PATH "${dll_path}" CACHE STRING "Semicolon-separated directories where to look for Corrade, Magnum and other dependency DLLs")
+endif()
+
 # Backwards compatibility for unprefixed CMake options. If the user isn't
 # explicitly using prefixed options in the first run already, accept the
 # unprefixed options, and remember this decision for subsequent runs

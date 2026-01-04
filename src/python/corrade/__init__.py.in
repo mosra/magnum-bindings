@@ -39,16 +39,22 @@ ${_MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL}sys.setdlopenflags(sys.getdlopenflag
 import platform
 if platform.system() == 'Windows':
     import os
+    # os.add_dll_directory() is only since Python 3.8, in earlier versions
+    # PATH is used and that alone may be sufficient
+    if hasattr(os, 'add_dll_directory'):
+        # The variable might be empty, or might contain empty parts, so skip
+        # all empty items. There's no splitWithoutEmptyParts() like in Corrade,
+        # sigh. Using """ to prevent accidental syntax errors if the path
+        # itself would contain quotes.
+        for directory in """${MAGNUM_PYTHON_BINDINGS_DLL_PATH}""".split(';'):
+            if not directory:
+                continue
 
-    for directory in [
-        # Prebuilt binaries from the magnum-ci repo have this file in
-        # python/corrade/ and DLLs in bin/
-        '../../bin'
-    ]:
-        bin_path = os.path.join(os.path.dirname(__file__), directory)
-        if os.path.exists(bin_path):
-            os.add_dll_directory(bin_path)
-            break
+            # If the directory is relative, interpret is as relative to parent
+            # dir. Also add it only if it exists.
+            bin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), directory)
+            if os.path.exists(bin_path):
+                os.add_dll_directory(bin_path)
 
 from _corrade import *
 

@@ -29,6 +29,8 @@ Downloading and building
 
 .. role:: sh(code)
     :language: sh
+.. role:: bat(code)
+    :language: bat
 
 :summary: Installation guide for the Python bindings.
 :ref-prefix:
@@ -175,6 +177,16 @@ depending on Magnum loaded later. See also
 :dox:`CORRADE_BUILD_STATIC_UNIQUE_GLOBALS` and
 :dox:`MAGNUM_BUILD_STATIC_UNIQUE_GLOBALS` in Corrade and Magnum for more
 information.
+
+On Windows, Python since version 3.8 no longer loads dependency DLLs from
+:bat:`%PATH%`. Instead, it requires relevant DLL directories to be explicitly
+passed to :ref:`os.add_dll_directory()`. CMake by default adds the (absolute)
+path to Corrade and Magnum DLLs there, you can edit the path or add additional
+directories for other dependencies (such as SDL or GLFW) using the
+``MAGNUM_PYTHON_BINDINGS_DLL_PATH`` CMake option. Non-absolute paths are
+interpreted as relative to the package root --- for example, if the Corrade
+module is in ``tools/python/corrade/``, specifying ``bin/`` as the DLL path
+will resolve to ``tools/bin/``.
 
 `Running unit tests`_
 ---------------------
