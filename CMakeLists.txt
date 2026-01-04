@@ -99,7 +99,7 @@ endif()
 
 option(MAGNUM_BUILD_TESTS "Build unit tests" OFF)
 
-if(MAGNUM_BUILD_STATIC AND UNIX)
+if(MAGNUM_WITH_PYTHON AND MAGNUM_BUILD_STATIC AND UNIX)
     # See src/python/corrade/__init__.py.in and the corresponding CMakeLists
     # for details
     option(MAGNUM_BUILD_PYTHON_BINDINGS_RTLD_GLOBAL "Build Python bindings linking to static libraries with RTLD_GLOBAL enabled for loading" ON)
