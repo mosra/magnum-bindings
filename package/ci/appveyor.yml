@@ -29,8 +29,11 @@ environment:
     PYTHON: 8
     PYBIND: 2.3.0
     # The static build puts everything including Sdl2Application together so it
-    # needs the SDL DLL directory as well
-    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=C:/projects/magnum-bindings/deps/bin;C:/projects/magnum-bindings/SDL/lib/x64"
+    # needs the SDL DLL directory as well. Here also making one relative to
+    # verify it gets correctly turned into absolute -- the built modules are in
+    # C:/projects/magnum-bindings/build/src/python, and the DLLs in
+    # C:/projects/magnum-bindings/SDL/lib/x64
+    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=C:/projects/magnum-bindings/deps/bin;../../../SDL/lib/x64"
   - TARGET: desktop
     COMPILER: msvc
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
@@ -39,8 +42,11 @@ environment:
     PYTHON: 8
     PYBIND: 2.9.0 # first supporting MSVC 2022
     # The static build puts everything including Sdl2Application together so it
-    # needs the SDL DLL directory as well
-    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=C:/projects/magnum-bindings/deps/bin;C:/projects/magnum-bindings/SDL/lib/x64"
+    # needs the SDL DLL directory as well. Here making the other one relative
+    # to verify both get correctly turned into absolute -- the built modules
+    # are in C:/projects/magnum-bindings/build/src/python, and the DLLs in
+    # C:/projects/magnum-bindings/deps/bin
+    BINDINGS_EXTRA: "-DMAGNUM_PYTHON_BINDINGS_DLL_PATH=../../../deps/bin;C:/projects/magnum-bindings/SDL/lib/x64"
   # clang-cl crashes with pybind11, "Illegal instruction" and
   #   lld-link: warning: ignoring unknown argument '-flto'
   #   LLVM ERROR: Associative COMDAT symbol '??0type_error@pybind11@@QEAA@PEBD@Z' does not exist.
