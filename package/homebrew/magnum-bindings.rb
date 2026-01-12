@@ -2,7 +2,7 @@ class MagnumBindings < Formula
   desc "`Bindings for the Magnum C++11 graphics engine"
   homepage "https://magnum.graphics"
   # git describe origin/master, except the `v` prefix
-  version "2020.06-421-g439945c"
+  version "2020.06-444-gca5328a"
   # Clone instead of getting an archive to have tags for version.h generation
   url "https://github.com/mosra/magnum-bindings.git", revision: version.to_str().rpartition('g')[2]
   head "https://github.com/mosra/magnum-bindings.git"
