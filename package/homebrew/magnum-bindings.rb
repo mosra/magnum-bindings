@@ -28,7 +28,7 @@ class MagnumBindings < Formula
       system "cmake", "--build", "."
       system "cmake", "--build", ".", "--target", "install"
       cd "src/python" do
-        system "python3", *Language::Python.setup_install_args(prefix)
+        system "python3", "-m", "pip", "install", *std_pip_args, "."
       end
     end
   end
