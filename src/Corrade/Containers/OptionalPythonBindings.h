@@ -38,18 +38,22 @@ template<class T> struct type_caster<Corrade::Containers::Optional<T>> {
     using value_conv = make_caster<T>;
 
     template<class T_> static handle cast(T_&& src, const return_value_policy policy, const handle parent) {
-        if(!src) return none{}.release();
+        if(!src)
+            return none{}.release();
         return value_conv::cast(*std::forward<T_>(src), return_value_policy_override<T>::policy(policy), parent);
     }
 
     bool load(const handle src, bool convert) {
-        if(!src) return false;
+        if(!src)
+            return false;
 
         /* default-constructed value is already empty */
-        if(src.is_none()) return true;
+        if(src.is_none())
+            return true;
 
         value_conv inner_caster;
-        if(!inner_caster.load(src, convert)) return false;
+        if(!inner_caster.load(src, convert))
+            return false;
 
         value.emplace(cast_op<T&&>(std::move(inner_caster)));
         return true;

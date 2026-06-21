@@ -75,8 +75,10 @@ template<UnsignedInt dimensions, class T, class Transformation> void object(py::
 
             /* Decrease refcount if a parent is removed, increase it if a
                parent gets added */
-            if(self.parent() && !parent) py::cast(&self).dec_ref();
-            else if(!self.parent() && parent) py::cast(&self).inc_ref();
+            if(self.parent() && !parent)
+                py::cast(&self).dec_ref();
+            else if(!self.parent() && parent)
+                py::cast(&self).inc_ref();
 
             self.setParent(parent);
         }, "Parent object or None if this is the root object")

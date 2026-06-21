@@ -59,22 +59,28 @@ template<class U, class T> void initFromBuffer(T& out, const Py_buffer& buffer) 
 
 /* Floating-point init */
 template<class T> void initFromBuffer(typename std::enable_if<std::is_floating_point<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
-    if(buffer.format[0] == 'f') initFromBuffer<Float>(out, buffer);
-    else if(buffer.format[0] == 'd') initFromBuffer<Double>(out, buffer);
+    if(buffer.format[0] == 'f')
+        initFromBuffer<Float>(out, buffer);
+    else if(buffer.format[0] == 'd')
+        initFromBuffer<Double>(out, buffer);
     else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 /* Signed integral init */
 template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_signed<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
-    if(buffer.format[0] == 'i') initFromBuffer<Int>(out, buffer);
-    else if(buffer.format[0] == 'l') initFromBuffer<Long>(out, buffer);
+    if(buffer.format[0] == 'i')
+        initFromBuffer<Int>(out, buffer);
+    else if(buffer.format[0] == 'l')
+        initFromBuffer<Long>(out, buffer);
     else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 /* Unsigned integral init */
 template<class T> void initFromBuffer(typename std::enable_if<std::is_integral<typename T::Type>::value && std::is_unsigned<typename T::Type>::value, T>::type& out, const Py_buffer& buffer) {
-    if(buffer.format[0] == 'I') initFromBuffer<UnsignedInt>(out, buffer);
-    else if(buffer.format[0] == 'L') initFromBuffer<UnsignedLong>(out, buffer);
+    if(buffer.format[0] == 'I')
+        initFromBuffer<UnsignedInt>(out, buffer);
+    else if(buffer.format[0] == 'L')
+        initFromBuffer<UnsignedLong>(out, buffer);
     else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -303,19 +309,26 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
 
             Math::Vector4<typename T::Type> out;
             for(std::size_t i = 0; i != name.size(); ++i) {
-                if(name[i] == 'x' || name[i] == 'r') out[i] = self[0];
-                else if(name[i] == 'y' || name[i] == 'g') out[i] = self[1];
-                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b')) out[i] = self[2];
-                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) out[i] = self[3];
+                if(name[i] == 'x' || name[i] == 'r')
+                    out[i] = self[0];
+                else if(name[i] == 'y' || name[i] == 'g')
+                    out[i] = self[1];
+                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b'))
+                    out[i] = self[2];
+                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a'))
+                    out[i] = self[3];
                 else {
                     PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
                     throw py::error_already_set{};
                 }
             }
 
-            if(name.size() == 4) return py::cast(out);
-            else if(name.size() == 3) return py::cast(out.xyz());
-            else if(name.size() == 2) return py::cast(out.xy());
+            if(name.size() == 4)
+                return py::cast(out);
+            else if(name.size() == 3)
+                return py::cast(out.xyz());
+            else if(name.size() == 2)
+                return py::cast(out.xy());
             /* this should be handled by the x/y/z/w/r/g/b/a properties instead */
             else CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
         }, "Vector swizzle")
@@ -358,10 +371,14 @@ template<class T> void vector(py::module_& m, py::class_<T>& c) {
                 throw py::error_already_set{};
             }
             for(std::size_t i = 0; i != name.size(); ++i) {
-                if(name[i] == 'x' || name[i] == 'r') self[0] = data[i];
-                else if(name[i] == 'y' || name[i] == 'g') self[1] = data[i];
-                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b')) self[2] = data[i];
-                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a')) self[3] = data[i];
+                if(name[i] == 'x' || name[i] == 'r')
+                    self[0] = data[i];
+                else if(name[i] == 'y' || name[i] == 'g')
+                    self[1] = data[i];
+                else if(T::Size > 2 && (name[i] == 'z' || name[i] == 'b'))
+                    self[2] = data[i];
+                else if(T::Size > 3 && (name[i] == 'w' || name[i] == 'a'))
+                    self[3] = data[i];
                 else {
                     PyErr_SetString(PyExc_AttributeError, "invalid swizzle");
                     throw py::error_already_set{};

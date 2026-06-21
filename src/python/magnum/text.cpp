@@ -612,7 +612,8 @@ void text(py::module_& m) {
         .def("open_data", [](Text::AbstractFont& self, Containers::ArrayView<const char> data, Float size) {
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
-            if(self.openData(data, size)) return;
+            if(self.openData(data, size))
+                return;
 
             PyErr_SetString(PyExc_RuntimeError, "opening data failed");
             throw py::error_already_set{};
@@ -629,7 +630,9 @@ void text(py::module_& m) {
                 #else
                 filename
                 #endif
-                , size)) return;
+                , size)
+            )
+                return;
 
             PyErr_Format(PyExc_RuntimeError, "opening %s failed", filename.data());
             throw py::error_already_set{};

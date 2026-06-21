@@ -3021,7 +3021,8 @@ void trade(py::module_& m) {
 
             /** @todo log redirection -- but we'd need assertions to not be
                 part of that so when it dies, the user can still see why */
-            if(self.openData(data)) return;
+            if(self.openData(data))
+                return;
 
             PyErr_SetString(PyExc_RuntimeError, "opening data failed");
             throw py::error_already_set{};

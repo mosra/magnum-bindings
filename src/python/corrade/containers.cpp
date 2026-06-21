@@ -277,14 +277,16 @@ template<unsigned dimensions> Containers::Array<char> bytes(Containers::StridedA
 template<> Containers::Array<char> bytes(Containers::StridedArrayView1D<const char> view) {
     Containers::Array<char> out{view.size()};
     std::size_t pos = 0;
-    for(const char i: view) out[pos++] = i;
+    for(const char i: view)
+        out[pos++] = i;
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView2D<const char> view) {
     Containers::Array<char> out{view.size()[0]*view.size()[1]};
     std::size_t pos = 0;
     for(Containers::StridedArrayView1D<const char> i: view)
-        for(const char j: i) out[pos++] = j;
+        for(const char j: i)
+            out[pos++] = j;
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView3D<const char> view) {
@@ -292,7 +294,8 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView3D<const ch
     std::size_t pos = 0;
     for(Containers::StridedArrayView2D<const char> i: view)
         for(Containers::StridedArrayView1D<const char> j: i)
-            for(const char k: j) out[pos++] = k;
+            for(const char k: j)
+                out[pos++] = k;
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView<4, const char> view) {
@@ -301,31 +304,42 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView<4, const c
     for(Containers::StridedArrayView3D<const char> i: view)
         for(Containers::StridedArrayView2D<const char> j: i)
             for(Containers::StridedArrayView1D<const char> k: j)
-                for(const char l: k) out[pos++] = l;
+                for(const char l: k)
+                    out[pos++] = l;
     return out;
 }
 
 /* Getting a runtime tuple index. Ugh. */
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<1, T>::Type& tuple, std::size_t i) {
-    if(i == 0) return std::get<0>(tuple);
+    if(i == 0)
+        return std::get<0>(tuple);
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<2, T>::Type& tuple, std::size_t i) {
-    if(i == 0) return std::get<0>(tuple);
-    if(i == 1) return std::get<1>(tuple);
+    if(i == 0)
+        return std::get<0>(tuple);
+    if(i == 1)
+        return std::get<1>(tuple);
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<3, T>::Type& tuple, std::size_t i) {
-    if(i == 0) return std::get<0>(tuple);
-    if(i == 1) return std::get<1>(tuple);
-    if(i == 2) return std::get<2>(tuple);
+    if(i == 0)
+        return std::get<0>(tuple);
+    if(i == 1)
+        return std::get<1>(tuple);
+    if(i == 2)
+        return std::get<2>(tuple);
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 template<class T> const T& dimensionsTupleGet(const typename DimensionsTuple<4, T>::Type& tuple, std::size_t i) {
-    if(i == 0) return std::get<0>(tuple);
-    if(i == 1) return std::get<1>(tuple);
-    if(i == 2) return std::get<2>(tuple);
-    if(i == 3) return std::get<3>(tuple);
+    if(i == 0)
+        return std::get<0>(tuple);
+    if(i == 1)
+        return std::get<1>(tuple);
+    if(i == 2)
+        return std::get<2>(tuple);
+    if(i == 3)
+        return std::get<3>(tuple);
     CORRADE_INTERNAL_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -554,8 +568,8 @@ template<unsigned dimensions, template<unsigned> class Steps, class T> Container
     /* every() currently accepts negative numbers in StridedArrayView, but in
        the future it will not, flipped() is the better API. StridedBitArrayView
        accepts just an unsigned type. */
-    for(std::size_t i = 0; i != dimensions; ++i)
-        if(flips[i]) sliced = StridedOperation<dimensions>::flipped(sliced, i);
+    for(std::size_t i = 0; i != dimensions; ++i) if(flips[i])
+        sliced = StridedOperation<dimensions>::flipped(sliced, i);
     sliced = sliced.every(steps);
     return Containers::pyArrayViewHolder(sliced, empty ? py::none{} : std::move(owner));
 }

@@ -41,7 +41,8 @@ namespace Magnum { namespace SceneGraph {
 
     .def(py::init([](SceneGraph::Scene<Transformation>* parent) {
         auto self = new PyObject<Transformation>{parent};
-        if(parent) py::cast(self).inc_ref();
+        if(parent)
+            py::cast(self).inc_ref();
         return self;
     }))
 
@@ -51,7 +52,8 @@ namespace Magnum { namespace SceneGraph {
 template<class T> struct PyObjectHolder: std::unique_ptr<T> {
     explicit PyObjectHolder(T* object): std::unique_ptr<T>{object} {
         CORRADE_INTERNAL_ASSERT(object);
-        if(object->parent()) pybind11::cast(object).inc_ref();
+        if(object->parent())
+            pybind11::cast(object).inc_ref();
     }
 };
 
