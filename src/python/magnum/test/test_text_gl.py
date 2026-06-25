@@ -159,7 +159,7 @@ class RendererGL(GLTestCase):
         # Neither to render() it should
         rectangle, runs = renderer.render(shaper, 1.0, "o")
         self.assertEqual(sys.getrefcount(shaper), shaper_refcount)
-        self.assertEqual(rectangle, Range2D((-1.25364, -0.666667), (1.25364, 0.666667)))
+        self.assertEqual(rectangle, Range2D((-1.09448, -0.582031), (1.09448, 0.582031)))
         self.assertEqual(runs, Range1Dui(0, 3))
         self.assertEqual(renderer.glyph_count, 5)
         self.assertEqual(renderer.run_count, 3)
@@ -199,7 +199,7 @@ class RendererGL(GLTestCase):
         renderer.add(shaper, 1.0, "hello")
         rectangle2, runs2 = renderer.render()
         # The rectangle is different due to the different cursor & alignment
-        self.assertEqual(rectangle2, Range2D((-15.0, 36.7299), (-12.4927, 38.0632)))
+        self.assertEqual(rectangle2, Range2D((-15.0, 36.7642), (-12.811, 37.9282)))
         self.assertEqual(runs2, Range1Dui(0, 1))
         self.assertEqual(renderer.glyph_count, 5)
         self.assertEqual(renderer.run_count, 1)

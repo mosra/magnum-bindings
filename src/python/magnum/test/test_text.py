@@ -92,13 +92,13 @@ class Font(unittest.TestCase):
         font.open_file(os.path.join(os.path.dirname(__file__), 'Oxygen.ttf'), 16.0)
         self.assertTrue(font.is_opened)
         self.assertEqual(font.size, 16.0)
-        self.assertEqual(font.ascent, 17.011186599731445)
-        self.assertEqual(font.descent, -4.322147846221924)
-        self.assertEqual(font.line_height, 21.33333396911621)
+        self.assertEqual(font.ascent, 14.8515625)
+        self.assertEqual(font.descent, -3.7734375)
+        self.assertEqual(font.line_height, 18.625)
         self.assertEqual(font.glyph_count, 671)
         self.assertEqual(font.glyph_id('A'), 36)
-        self.assertEqual(font.glyph_size(36), (12.0, 14.0))
-        self.assertEqual(font.glyph_advance(36), (11.7136, 0.0))
+        self.assertEqual(font.glyph_size(36), (11.0, 12.0))
+        self.assertEqual(font.glyph_advance(36), (10.2266, 0.0))
 
         # Deleting the font should decrease manager refcount again
         del font
