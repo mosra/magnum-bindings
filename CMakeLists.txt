@@ -197,7 +197,8 @@ if(MAGNUM_BUILD_TESTS)
     endif()
 endif()
 
-set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR share/cmake/MagnumBindings)
+# Assumes GNUInstallDirs was included by FindMagnum above
+set(MAGNUMBINDINGS_CMAKE_MODULE_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/cmake/MagnumBindings)
 
 # Library version. MAGNUMBINDINGS_VERSION_YEAR/MONTH is used in
 # src/Magnum/CMakeLists.txt to generate the versionBindings.h header.
