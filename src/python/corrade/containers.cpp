@@ -275,14 +275,14 @@ template<> std::tuple<std::ptrdiff_t, std::ptrdiff_t, std::ptrdiff_t, std::ptrdi
 /* Byte conversion for given dimension */
 template<unsigned dimensions> Containers::Array<char> bytes(Containers::StridedArrayView<dimensions, const char>);
 template<> Containers::Array<char> bytes(Containers::StridedArrayView1D<const char> view) {
-    Containers::Array<char> out{view.size()};
+    Containers::Array<char> out{NoInit, view.size()};
     std::size_t pos = 0;
     for(const char i: view)
         out[pos++] = i;
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView2D<const char> view) {
-    Containers::Array<char> out{view.size()[0]*view.size()[1]};
+    Containers::Array<char> out{NoInit, view.size()[0]*view.size()[1]};
     std::size_t pos = 0;
     for(Containers::StridedArrayView1D<const char> i: view)
         for(const char j: i)
@@ -290,7 +290,7 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView2D<const ch
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView3D<const char> view) {
-    Containers::Array<char> out{view.size()[0]*view.size()[1]*view.size()[2]};
+    Containers::Array<char> out{NoInit, view.size()[0]*view.size()[1]*view.size()[2]};
     std::size_t pos = 0;
     for(Containers::StridedArrayView2D<const char> i: view)
         for(Containers::StridedArrayView1D<const char> j: i)
@@ -299,7 +299,7 @@ template<> Containers::Array<char> bytes(Containers::StridedArrayView3D<const ch
     return out;
 }
 template<> Containers::Array<char> bytes(Containers::StridedArrayView<4, const char> view) {
-    Containers::Array<char> out{view.size()[0]*view.size()[1]*view.size()[2]*view.size()[3]};
+    Containers::Array<char> out{NoInit, view.size()[0]*view.size()[1]*view.size()[2]*view.size()[3]};
     std::size_t pos = 0;
     for(Containers::StridedArrayView3D<const char> i: view)
         for(Containers::StridedArrayView2D<const char> j: i)
