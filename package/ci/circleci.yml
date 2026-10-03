@@ -15,11 +15,10 @@ executors:
   ubuntu-18_04:
     docker:
     - image: ubuntu:bionic-20220427
-  # As of November 7, 2025, M4 is the default, and the oldest version there is
-  # 14.3.1.
-  xcode-14_3:
+  # As of October 2026 the oldest version there is 15.4.0
+  xcode-15_4:
     macos:
-      xcode: 14.3.1
+      xcode: 15.4.0
   arm64:
     machine:
       image: ubuntu-2004:2023.07.1
@@ -190,10 +189,13 @@ commands:
     parameters:
       script:
         type: string
+      pip-extra:
+        type: string
+        default: ""
     steps:
     - run:
         name: Install coverage
-        command: pip3 install coverage
+        command: pip3 install << parameters.pip-extra >> coverage
     - checkout
     - run:
         name: Build & test
@@ -392,12 +394,11 @@ jobs:
         extra: --gcov-tool /usr/bin/gcov-4.8
 
   macos-gl:
-    executor: xcode-14_3
+    executor: xcode-15_4
     environment:
       # Make libc++ remove transitive includes, both for faster build times and
       # to detect if we're missing a transitive include. Works with libc++ 16+,
-      # which is used by Xcode 15 (i.e., will get used on the next CircleCI
-      # executor update).
+      # which is used by Xcode 15.
       CMAKE_CXX_FLAGS: --coverage -D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES
       PLATFORM_GL_API: CGL
     steps:
@@ -406,18 +407,24 @@ jobs:
     - install-meshoptimizer
     - build:
         script: unix-desktop.sh
+        # With the Xcode 15 image, `pip install coverage` fails with
+        #   error: externally-managed-environment
+        # I don't care, this is a throwaway VM, could the people responsible
+        # for the python packaging mess just stop breaking things already?!
+        # Also, setuptools now has to be installed too Because Of Reasons
+        pip-extra: --break-system-packages setuptools
     # The 14.3 image seems to have the new lcov, which is very picky and throws
-    # errors about a ton of little things, 14.0.1 and older didn't
+    # errors about a ton of little things, 14.0.1 and older didn't, 15+ even
+    # more
     - lcov:
-        extra: --ignore-errors inconsistent
+        extra: --ignore-errors inconsistent,range
 
   macos-gles3:
-    executor: xcode-14_3
+    executor: xcode-15_4
     environment:
       # Make libc++ remove transitive includes, both for faster build times and
       # to detect if we're missing a transitive include. Works with libc++ 16+,
-      # which is used by Xcode 15 (i.e., will get used on the next CircleCI
-      # executor update).
+      # which is used by Xcode 15.
       CMAKE_CXX_FLAGS: --coverage -D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES
       PLATFORM_GL_API: EGL
       # STUPID yml interprets unquoted OFF as a boolean
@@ -430,20 +437,26 @@ jobs:
     - install-meshoptimizer
     - build:
         script: unix-desktop-gles.sh
+        # With the Xcode 15 image, `pip install coverage` fails with
+        #   error: externally-managed-environment
+        # I don't care, this is a throwaway VM, could the people responsible
+        # for the python packaging mess just stop breaking things already?!
+        # Also, setuptools now has to be installed too Because Of Reasons
+        pip-extra: --break-system-packages setuptools
     # The 14.3 image seems to have the new lcov, which is very picky and throws
-    # errors about a ton of little things, 14.0.1 and older didn't
+    # errors about a ton of little things, 14.0.1 and older didn't, 15+ even
+    # more
     - lcov:
-        extra: --ignore-errors inconsistent
+        extra: --ignore-errors inconsistent,range
 
   macos-static:
-    executor: xcode-14_3
+    executor: xcode-15_4
     environment:
       # STUPID yml interprets unquoted ON as a boolean
       BUILD_STATIC: "ON"
       # Make libc++ remove transitive includes, both for faster build times and
       # to detect if we're missing a transitive include. Works with libc++ 16+,
-      # which is used by Xcode 15 (i.e., will get used on the next CircleCI
-      # executor update).
+      # which is used by Xcode 15.
       CMAKE_CXX_FLAGS: --coverage -D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES
       PLATFORM_GL_API: CGL
     steps:
@@ -452,10 +465,17 @@ jobs:
     - install-meshoptimizer
     - build:
         script: unix-desktop.sh
+        # With the Xcode 15 image, `pip install coverage` fails with
+        #   error: externally-managed-environment
+        # I don't care, this is a throwaway VM, could the people responsible
+        # for the python packaging mess just stop breaking things already?!
+        # Also, setuptools now has to be installed too Because Of Reasons
+        pip-extra: --break-system-packages setuptools
     # The 14.3 image seems to have the new lcov, which is very picky and throws
-    # errors about a ton of little things, 14.0.1 and older didn't
+    # errors about a ton of little things, 14.0.1 and older didn't, 15+ even
+    # more
     - lcov:
-        extra: --ignore-errors inconsistent
+        extra: --ignore-errors inconsistent,range
 
 workflows:
   version: 2
