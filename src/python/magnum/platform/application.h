@@ -36,38 +36,41 @@
 
 namespace magnum { namespace platform {
 
-template<class T> void configuration(py::class_<T>& c) {
+template<class T> void configuration(py::class_<typename T::Configuration>& c) {
     c
         .def(py::init([](const std::string& title, const Vector2i& size, typename T::WindowFlag windowFlags) {
-            return T{}
+            return typename T::Configuration{}
                 .setTitle(title)
                 .setSize(size)
+                /* Not using addWindowFlags() as the default is present in the
+                   named argument default and the users whould have no way to
+                   remove it otherwise */
                 .setWindowFlags(windowFlags);
         }), "Constructor",
             #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
             /** @todo drop std::string in favor of our own string caster */
-            py::arg("title") = std::string{T{}.title()},
-            py::arg("size") = T{}.size(),
-            py::arg("window_flags") = typename T::WindowFlag(typename std::underlying_type<typename T::Configuration::WindowFlag>::type(T{}.windowFlags())))
+            py::arg("title") = std::string{typename T::Configuration{}.title()},
+            py::arg("size") = typename T::Configuration{}.size(),
+            py::arg("window_flags") = typename T::WindowFlag(typename std::underlying_type<typename T::WindowFlag>::type(typename T::Configuration{}.windowFlags())))
         .def_property("title",
             /** @todo drop std::string in favor of our own string caster */
-            [](T& self) -> std::string {
+            [](typename T::Configuration& self) -> std::string {
                 return self.title();
             },
-            [](T& self, const std::string& title) {
+            [](typename T::Configuration& self, const std::string& title) {
                 self.setTitle(title);
             }, "Window title")
-        .def_property("size", &T::size,
-            [](T& self, const Vector2i& size) {
+        .def_property("size", &T::Configuration::size,
+            [](typename T::Configuration& self, const Vector2i& size) {
                 self.setSize(size);
             }, "Window size")
         .def_property("window_flags",
-            [](T& self) {
+            [](typename T::Configuration& self) {
                 return typename T::WindowFlag(typename std::underlying_type<typename T::WindowFlag>::type(self.windowFlags()));
             },
-            [](T& self, typename T::WindowFlag flags) {
+            [](typename T::Configuration& self, typename T::WindowFlag flags) {
                 self.setWindowFlags(flags);
             }, "Window flags");
         /** @todo others */

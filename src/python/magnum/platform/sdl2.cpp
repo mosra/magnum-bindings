@@ -196,27 +196,27 @@ void sdl2(py::module_& m) {
             }, "Swap interval")
         .def("main_loop_iteration", &PyApplication::mainLoopIteration, "Run one iteration of application main loop");
 
-    py::class_<Platform::Application::Configuration> configuration_{sdl2application, "Configuration", "Configuration"};
+    py::enum_<Platform::Application::WindowFlag> windowFlags{sdl2application, "WindowFlags", "Window flags"};
+    windowFlags
+        .value("RESIZABLE", Platform::Application::WindowFlag::Resizable)
+        .value("FULLSCREEN", Platform::Application::WindowFlag::Fullscreen)
+        .value("FULLSCREEN_DESKTOP", Platform::Application::WindowFlag::FullscreenDesktop)
+        .value("BORDERLESS", Platform::Application::WindowFlag::Borderless)
+        .value("HIDDEN", Platform::Application::WindowFlag::Hidden)
+        .value("MAXIMIZED", Platform::Application::WindowFlag::Maximized)
+        .value("MINIMIZED", Platform::Application::WindowFlag::Minimized)
+        .value("MOUSE_LOCKED", Platform::Application::WindowFlag::MouseLocked)
+        .value("ALWAYS_ON_TOP", Platform::Application::WindowFlag::AlwaysOnTop)
+        .value("SKIP_TASKBAR", Platform::Application::WindowFlag::SkipTaskbar)
+        .value("UTILITY", Platform::Application::WindowFlag::Utility)
+        .value("TOOLTIP", Platform::Application::WindowFlag::Tooltip)
+        .value("POPUP_MENU", Platform::Application::WindowFlag::PopupMenu)
+        .value("NONE", Platform::Application::WindowFlag{});
+    corrade::enumOperators(windowFlags);
 
-    py::enum_<Platform::Application::Configuration::WindowFlag> configurationWindowFlags{configuration_, "WindowFlags", "Window flags"};
-    configurationWindowFlags
-        .value("RESIZABLE", Platform::Application::Configuration::WindowFlag::Resizable)
-        .value("FULLSCREEN", Platform::Application::Configuration::WindowFlag::Fullscreen)
-        .value("FULLSCREEN_DESKTOP", Platform::Application::Configuration::WindowFlag::FullscreenDesktop)
-        .value("BORDERLESS", Platform::Application::Configuration::WindowFlag::Borderless)
-        .value("HIDDEN", Platform::Application::Configuration::WindowFlag::Hidden)
-        .value("MAXIMIZED", Platform::Application::Configuration::WindowFlag::Maximized)
-        .value("MINIMIZED", Platform::Application::Configuration::WindowFlag::Minimized)
-        .value("MOUSE_LOCKED", Platform::Application::Configuration::WindowFlag::MouseLocked)
-        .value("ALWAYS_ON_TOP", Platform::Application::Configuration::WindowFlag::AlwaysOnTop)
-        .value("SKIP_TASKBAR", Platform::Application::Configuration::WindowFlag::SkipTaskbar)
-        .value("UTILITY", Platform::Application::Configuration::WindowFlag::Utility)
-        .value("TOOLTIP", Platform::Application::Configuration::WindowFlag::Tooltip)
-        .value("POPUP_MENU", Platform::Application::Configuration::WindowFlag::PopupMenu)
-        /** @todo Contextless, OpenGL, Vulkan, once anything else than GL is
-            exposed to Python */
-        .value("NONE", Platform::Application::Configuration::WindowFlag{});
-    corrade::enumOperators(configurationWindowFlags);
+    py::class_<Platform::Application::Configuration> configuration_{sdl2application, "Configuration", "Configuration"};
+    /** @todo Configuration::Flags with Contextless, OpenGL, Vulkan, once
+        anything else than GL is exposed to Python */
 
     PyNonDestructibleClass<PublicizedApplication::ExitEvent> exitEvent_{sdl2application, "ExitEvent", "Exit event"};
     PyNonDestructibleClass<PublicizedApplication::ViewportEvent> viewportEvent_{sdl2application, "ViewportEvent", "Viewport event"};
@@ -255,7 +255,7 @@ void sdl2(py::module_& m) {
         .value("HIDDEN", Platform::Application::Cursor::Hidden)
         .value("HIDDEN_LOCKED", Platform::Application::Cursor::HiddenLocked);
 
-    configuration(configuration_);
+    configuration<Platform::Application>(configuration_);
     application(sdl2application);
     exitEvent(exitEvent_);
     viewportEvent(viewportEvent_);

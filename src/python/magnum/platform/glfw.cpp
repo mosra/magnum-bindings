@@ -196,23 +196,22 @@ void glfw(py::module_& m) {
             }, "Swap interval")
         .def("main_loop_iteration", &PyApplication::mainLoopIteration, "Run one iteration of application main loop");
 
-    py::class_<Platform::Application::Configuration> configuration_{glfwApplication, "Configuration", "Configuration"};
+    py::enum_<Platform::Application::WindowFlag> windowFlags{glfwApplication, "WindowFlags", "Window flags"};
+    windowFlags
+        .value("FULLSCREEN", Platform::Application::WindowFlag::Fullscreen)
+        .value("FULLSCREEN_DESKTOP", Platform::Application::WindowFlag::FullscreenDesktop)
+        .value("BORDERLESS", Platform::Application::WindowFlag::Borderless)
+        .value("RESIZABLE", Platform::Application::WindowFlag::Resizable)
+        .value("HIDDEN", Platform::Application::WindowFlag::Hidden)
+        .value("MAXIMIZED", Platform::Application::WindowFlag::Maximized)
+        .value("MINIMIZED", Platform::Application::WindowFlag::Minimized)
+        .value("ALWAYS_ON_TOP", Platform::Application::WindowFlag::AlwaysOnTop)
+        .value("NONE", Platform::Application::WindowFlag{});
+    corrade::enumOperators(windowFlags);
 
-    py::enum_<Platform::Application::Configuration::WindowFlag> configurationWindowFlags{configuration_, "WindowFlags", "Window flags"};
-    configurationWindowFlags
-        .value("FULLSCREEN", Platform::Application::Configuration::WindowFlag::Fullscreen)
-        .value("BORDERLESS", Platform::Application::Configuration::WindowFlag::Borderless)
-        .value("RESIZABLE", Platform::Application::Configuration::WindowFlag::Resizable)
-        .value("HIDDEN", Platform::Application::Configuration::WindowFlag::Hidden)
-        .value("MAXIMIZED", Platform::Application::Configuration::WindowFlag::Maximized)
-        .value("MINIMIZED", Platform::Application::Configuration::WindowFlag::Minimized)
-        .value("ALWAYS_ON_TOP", Platform::Application::Configuration::WindowFlag::AlwaysOnTop)
-        .value("AUTO_ICONIFY", Platform::Application::Configuration::WindowFlag::AutoIconify)
-        .value("FOCUSED", Platform::Application::Configuration::WindowFlag::Focused)
-        /** @todo Contextless, once anything else than GL is exposed to
-            Python */
-        .value("NONE", Platform::Application::Configuration::WindowFlag{});
-    corrade::enumOperators(configurationWindowFlags);
+    py::class_<Platform::Application::Configuration> configuration_{glfwApplication, "Configuration", "Configuration"};
+    /** @todo Configuration::Flags with Contextless, once anything else than GL
+        is exposed to Python */
 
     PyNonDestructibleClass<PublicizedApplication::ExitEvent> exitEvent_{glfwApplication, "ExitEvent", "Exit event"};
     PyNonDestructibleClass<PublicizedApplication::ViewportEvent> viewportEvent_{glfwApplication, "ViewportEvent", "Viewport event"};
@@ -252,7 +251,7 @@ void glfw(py::module_& m) {
         .value("HIDDEN", Platform::Application::Cursor::Hidden)
         .value("HIDDEN_LOCKED", Platform::Application::Cursor::HiddenLocked);
 
-    configuration(configuration_);
+    configuration<Platform::Application>(configuration_);
     application(glfwApplication);
     exitEvent(exitEvent_);
     viewportEvent(viewportEvent_);

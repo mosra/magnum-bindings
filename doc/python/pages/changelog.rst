@@ -148,8 +148,8 @@ Changelog
     :ref:`platform.sdl2.Application.warp_cursor`, same for GLFW
 -   Exposed :ref:`platform.sdl2.Application.is_key_pressed()` and
     :ref:`platform.glfw.Application.is_key_pressed()`
--   Exposed all :ref:`platform.sdl2.Application.Configuration.WindowFlags` and
-    :ref:`platform.glfw.Application.Configuration.WindowFlags`
+-   Exposed all :ref:`platform.sdl2.Application.WindowFlags` and
+    :ref:`platform.glfw.Application.WindowFlags`
 -   Exposed the new :ref:`primitives.CubeFlags`
 -   Exposed the new :ref:`text.AbstractShaper`, :ref:`text.RendererCore`,
     :ref:`text.Renderer`, :ref:`text.RendererGL` classes as well as the new
