@@ -30,7 +30,10 @@ build() {
         -DCMAKE_BUILD_TYPE=Debug \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_COLOR_DIAGNOSTICS=ON \
-        -DPYTHON_EXECUTABLE=$(which python) \
+        `# pybind11 3.0+ supports FindPython, use that. Cannot enable that` \
+        `# via a CMake policy in the project because it would break builds` \
+        `# with older pybind11 that relies on FindPythonInterp.` \
+        -DPYBIND11_FINDPYTHON=ON \
         -DMAGNUM_WITH_PYTHON=ON \
         -DMAGNUM_BUILD_TESTS=ON \
         -G Ninja

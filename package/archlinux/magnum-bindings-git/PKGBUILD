@@ -25,6 +25,10 @@ build() {
     cmake "$srcdir/${pkgname%-git}" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
+        `# pybind11 3.0+ supports FindPython, use that. Cannot enable that` \
+        `# via a CMake policy in the project because it would break builds` \
+        `# with older pybind11 that relies on FindPythonInterp.` \
+        -DPYBIND11_FINDPYTHON=ON \
         -DMAGNUM_WITH_PYTHON=ON \
         -G Ninja
     ninja
