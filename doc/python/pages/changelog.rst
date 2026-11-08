@@ -135,6 +135,7 @@ Changelog
     :ref:`meshtools.transform3d_in_place()`,
     :ref:`meshtools.transform_texture_coordinates2d()` and
     :ref:`meshtools.transform_texture_coordinates2d_in_place()`
+-   Exposed :ref:`meshtools.CompileFlags.NO_WARN_ON_CUSTOM_ATTRIBUTES`
 -   Exposed :ref:`platform.sdl2.Application.viewport_event` and
     :ref:`platform.glfw.Application.viewport_event` and a possibility
     to make the window resizable on startup
