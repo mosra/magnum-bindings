@@ -81,7 +81,7 @@ void meshtools(py::module_& m) {
         }, "Compile 3D mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::CompileFlag{})
         .def("compress_indices", [](const Trade::MeshData& mesh, MeshIndexType atLeast) {
             if(!mesh.isIndexed()) {
-                PyErr_SetString(PyExc_AssertionError, "the mesh is not indexed");
+                PyErr_SetString(PyExc_AssertionError, "expected an indexed mesh");
                 throw py::error_already_set{};
             }
             /** @todo check that the indices aren't impl-specific once it's
@@ -126,7 +126,7 @@ void meshtools(py::module_& m) {
         }, "Concatenate meshes together", py::arg("meshes"), py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
         .def("duplicate", [](const Trade::MeshData& mesh) {
             if(!mesh.isIndexed()) {
-                PyErr_SetString(PyExc_AssertionError, "the mesh is not indexed");
+                PyErr_SetString(PyExc_AssertionError, "expected an indexed mesh");
                 throw py::error_already_set{};
             }
             /** @todo check that the indices aren't impl-specific once it's

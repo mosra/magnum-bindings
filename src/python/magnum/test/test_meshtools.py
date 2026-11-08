@@ -46,7 +46,7 @@ class CompressIndices(unittest.TestCase):
         mesh = primitives.line2d()
         self.assertFalse(mesh.is_indexed)
 
-        with self.assertRaisesRegex(AssertionError, "the mesh is not indexed"):
+        with self.assertRaisesRegex(AssertionError, "expected an indexed mesh"):
             meshtools.compress_indices(mesh)
 
 class Concatenate(unittest.TestCase):
@@ -87,7 +87,7 @@ class Duplicate(unittest.TestCase):
         mesh = primitives.line2d()
         self.assertFalse(mesh.is_indexed)
 
-        with self.assertRaisesRegex(AssertionError, "the mesh is not indexed"):
+        with self.assertRaisesRegex(AssertionError, "expected an indexed mesh"):
             meshtools.duplicate(mesh)
 
 class GenerateIndices(unittest.TestCase):
