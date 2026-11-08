@@ -222,7 +222,7 @@ void meshtools(py::module_& m) {
             #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
-            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag{})
         .def("transform2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
@@ -269,7 +269,7 @@ void meshtools(py::module_& m) {
             #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
-            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag{})
         .def("transform3d_in_place", [](Trade::MeshData& mesh, const Matrix4& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
@@ -331,7 +331,7 @@ void meshtools(py::module_& m) {
             #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
             py::kw_only{}, /* new in pybind11 2.6 */
             #endif
-            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag::PreserveInterleavedAttributes)
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag{})
         .def("transform_texture_coordinates2d_in_place", [](Trade::MeshData& mesh, const Matrix3& transformation, UnsignedInt id, Int morphTargetId) {
             if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
                 PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
