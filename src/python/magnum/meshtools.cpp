@@ -65,8 +65,6 @@ void meshtools(py::module_& m) {
     py::enum_<MeshTools::CompileFlag> compileFlags{m, "CompileFlags", "Mesh compilation flags"};
     compileFlags
         .value("NONE", MeshTools::CompileFlag{})
-        .value("GENERATE_FLAT_NORMALS", MeshTools::CompileFlag::GenerateFlatNormals)
-        .value("GENERATE_SMOOTH_NORMALS", MeshTools::CompileFlag::GenerateSmoothNormals)
         .value("NO_WARN_ON_CUSTOM_ATTRIBUTES", MeshTools::CompileFlag::NoWarnOnCustomAttributes);
     corrade::enumOperators(compileFlags);
 
