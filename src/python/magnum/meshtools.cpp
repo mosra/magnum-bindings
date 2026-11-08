@@ -36,7 +36,9 @@
 #include <Magnum/MeshTools/Concatenate.h>
 #include <Magnum/MeshTools/Duplicate.h>
 #include <Magnum/MeshTools/Filter.h>
+#include <Magnum/MeshTools/FlipNormals.h>
 #include <Magnum/MeshTools/GenerateIndices.h>
+#include <Magnum/MeshTools/GenerateNormals.h>
 #include <Magnum/MeshTools/Interleave.h>
 #include <Magnum/MeshTools/RemoveDuplicates.h>
 #include <Magnum/MeshTools/Transform.h>
@@ -171,6 +173,174 @@ void meshtools(py::module_& m) {
 
             return MeshTools::generateIndices(mesh);
         }, "Convert a mesh to plain indexed lines or triangles", py::arg("mesh"))
+        .def("flip_face_winding", [](const Trade::MeshData& mesh) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(mesh.isIndexed() && mesh.indexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected index count divisible by 3 but got %u", mesh.indexCount());
+                throw py::error_already_set{};
+            } else if(!mesh.isIndexed() && mesh.vertexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected vertex count divisible by 3 but got %u", mesh.vertexCount());
+                throw py::error_already_set{};
+            }
+            /** @todo check that the indices / attributes aren't impl-specific
+                once it's possible to test */
+
+            return MeshTools::flipFaceWinding(mesh);
+        }, "Flip face winding in a mesh data", py::arg("mesh"))
+        .def("flip_face_winding_in_place", [](Trade::MeshData& mesh) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(mesh.isIndexed()) {
+                if(!(mesh.indexDataFlags() & Trade::DataFlag::Mutable)) {
+                    PyErr_SetString(PyExc_AssertionError, "index data not mutable");
+                    throw py::error_already_set{};
+                }
+                if(mesh.indexCount() % 3 != 0) {
+                    PyErr_Format(PyExc_AssertionError, "expected index count divisible by 3 but got %u", mesh.indexCount());
+                    throw py::error_already_set{};
+                }
+            } else {
+                if(!(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
+                    PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
+                    throw py::error_already_set{};
+                }
+                if(mesh.vertexCount() % 3 != 0) {
+                    PyErr_Format(PyExc_AssertionError, "expected vertex count divisible by 3 but got %u", mesh.vertexCount());
+                    throw py::error_already_set{};
+                }
+            }
+            /** @todo check that the indices / attributes aren't impl-specific
+                once it's possible to test */
+
+            MeshTools::flipFaceWindingInPlace(mesh);
+        }, "Flip face winding in a mesh data in-place", py::arg("mesh"))
+        .def("flip_normals", [](const Trade::MeshData& mesh, MeshTools::InterleaveFlag flags) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(mesh.isIndexed() && mesh.indexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected index count divisible by 3 but got %u", mesh.indexCount());
+                throw py::error_already_set{};
+            } else if(!mesh.isIndexed() && mesh.vertexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected vertex count divisible by 3 but got %u", mesh.vertexCount());
+                throw py::error_already_set{};
+            }
+            /** @todo check that the indices / attributes and the normal
+                attribute aren't impl-specific once it's possible to test */
+
+            return MeshTools::flipNormals(mesh, flags);
+        }, "Flip normals and face winding in a mesh data", py::arg("mesh"), py::arg("flags") = MeshTools::InterleaveFlag{})
+        .def("flip_normals_in_place", [](Trade::MeshData& mesh) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(mesh.isIndexed()) {
+                if(!(mesh.indexDataFlags() & Trade::DataFlag::Mutable)) {
+                    PyErr_SetString(PyExc_AssertionError, "index data not mutable");
+                    throw py::error_already_set{};
+                }
+                if(mesh.indexCount() % 3 != 0) {
+                    PyErr_Format(PyExc_AssertionError, "expected index count divisible by 3 but got %u", mesh.indexCount());
+                    throw py::error_already_set{};
+                }
+            } else {
+                if(mesh.vertexCount() % 3 != 0) {
+                    PyErr_Format(PyExc_AssertionError, "expected vertex count divisible by 3 but got %u", mesh.vertexCount());
+                    throw py::error_already_set{};
+                }
+            }
+            /* Vertex data have to be mutable both if the mesh is non-indexed
+               and if there are normal attributes that need flipping */
+            if((!mesh.isIndexed() || mesh.hasAttribute(Trade::MeshAttribute::Normal)) && !(mesh.vertexDataFlags() & Trade::DataFlag::Mutable)) {
+                PyErr_SetString(PyExc_AssertionError, "vertex data not mutable");
+                throw py::error_already_set{};
+            }
+            for(UnsignedInt i = 0; i != mesh.attributeCount(); ++i) {
+                if(mesh.attributeName(i) == Trade::MeshAttribute::Normal && mesh.attributeFormat(i) != VertexFormat::Vector3) {
+                    PyErr_Format(PyExc_AssertionError, "expected %S normals but got %S", py::cast(VertexFormat::Vector3).ptr(), py::cast(mesh.attributeFormat(i)).ptr());
+                    throw py::error_already_set{};
+                }
+            }
+            /** @todo check that the indices / attributes and the normal
+                attribute aren't impl-specific once it's possible to test */
+
+            MeshTools::flipNormalsInPlace(mesh);
+        }, "Flip normals and face winding in a mesh data in-place", py::arg("mesh"))
+        .def("generate_flat_normals", [](const Trade::MeshData& mesh, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(mesh.isIndexed()) {
+                PyErr_SetString(PyExc_AssertionError, "expected a non-indexed mesh");
+                throw py::error_already_set{};
+            }
+            if(mesh.vertexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected vertex count divisible by 3 but got %u", mesh.vertexCount());
+                throw py::error_already_set{};
+            }
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
+            if(!positionAttributeId) {
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
+                throw py::error_already_set{};
+            }
+            if(vertexFormatComponentCount(mesh.attributeFormat(*positionAttributeId)) != 3) {
+                PyErr_Format(PyExc_AssertionError, "expected 3D positions but got %S", py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
+                throw py::error_already_set{};
+            }
+            /** @todo check that the positions, normals, ... aren't
+                impl-specific once it's possible to test */
+
+            return MeshTools::generateFlatNormals(mesh, id, morphTargetId, flags);
+        }, "Generate flat normals in a mesh data", py::arg("mesh"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag{})
+        .def("generate_smooth_normals", [](const Trade::MeshData& mesh, UnsignedInt id, Int morphTargetId, MeshTools::InterleaveFlag flags) {
+            if(mesh.primitive() != MeshPrimitive::Triangles) {
+                PyErr_Format(PyExc_AssertionError, "invalid primitive %S", py::cast(mesh.primitive()).ptr());
+                throw py::error_already_set{};
+            }
+            if(!mesh.isIndexed()) {
+                PyErr_SetString(PyExc_AssertionError, "expected an indexed mesh");
+                throw py::error_already_set{};
+            }
+            if(mesh.indexCount() % 3 != 0) {
+                PyErr_Format(PyExc_AssertionError, "expected index count divisible by 3 but got %u", mesh.indexCount());
+                throw py::error_already_set{};
+            }
+            const Containers::Optional<UnsignedInt> positionAttributeId = mesh.findAttributeId(Trade::MeshAttribute::Position, id, morphTargetId);
+            if(!positionAttributeId) {
+                if(morphTargetId == -1)
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u", id);
+                else
+                    PyErr_Format(PyExc_KeyError, "the mesh has no positions with index %u in morph target %i", id, morphTargetId);
+                throw py::error_already_set{};
+            }
+            if(vertexFormatComponentCount(mesh.attributeFormat(*positionAttributeId)) != 3) {
+                PyErr_Format(PyExc_AssertionError, "expected 3D positions but got %S", py::cast(mesh.attributeFormat(*positionAttributeId)).ptr());
+                throw py::error_already_set{};
+            }
+            /** @todo check that the positions, normals, ... aren't
+                impl-specific once it's possible to test */
+
+            return MeshTools::generateSmoothNormals(mesh, id, morphTargetId, flags);
+        }, "Generate flat normals in a mesh data", py::arg("mesh"),
+            #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
+            py::kw_only{}, /* new in pybind11 2.6 */
+            #endif
+            py::arg("id") = 0, py::arg("morph_target_id") = -1, py::arg("flags") = MeshTools::InterleaveFlag{})
         /** @todo eugh, find a way w/o the STL vector */
         .def("interleave", [](const Trade::MeshData& mesh, const std::vector<Trade::MeshAttributeData>& extra, MeshTools::InterleaveFlag flags) {
             for(std::size_t i = 0; i != extra.size(); ++i) {

@@ -201,6 +201,243 @@ class Filter(unittest.TestCase):
         del filtered2
         self.assertEqual(sys.getrefcount(mesh), mesh_refcount)
 
+class FlipFaceWinding(unittest.TestCase):
+    def test(self):
+        mesh = primitives.cube_solid()
+        self.assertEqual
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 1)
+        self.assertEqual(mesh.indices[2], 2)
+
+        flipped = meshtools.flip_face_winding(mesh)
+        # Normals should stay untouched
+        self.assertEqual(flipped.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(flipped.indices[0], 0)
+        self.assertEqual(flipped.indices[1], 2)
+        self.assertEqual(flipped.indices[2], 1)
+
+    def test_in_place(self):
+        mesh = meshtools.copy(primitives.cube_solid())
+        self.assertEqual
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 1)
+        self.assertEqual(mesh.indices[2], 2)
+
+        meshtools.flip_face_winding_in_place(mesh)
+        # Normals should stay untouched
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 2)
+        self.assertEqual(mesh.indices[2], 1)
+
+    def test_invalid_primitive(self):
+        mesh = primitives.cube_solid_strip()
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLE_STRIP)
+
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLE_STRIP"):
+            meshtools.flip_face_winding(mesh)
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLE_STRIP"):
+            meshtools.flip_face_winding_in_place(mesh)
+
+    def test_invalid_count(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh-invalid-count.gltf'))
+
+        non_indexed = importer.mesh("non-indexed")
+        indexed = importer.mesh("indexed")
+        self.assertEqual(non_indexed.vertex_count, 2)
+        self.assertEqual(indexed.index_count, 4)
+
+        with self.assertRaisesRegex(AssertionError, "expected vertex count divisible by 3 but got 2"):
+            meshtools.flip_face_winding(non_indexed)
+        with self.assertRaisesRegex(AssertionError, "expected vertex count divisible by 3 but got 2"):
+            meshtools.flip_face_winding_in_place(non_indexed)
+        with self.assertRaisesRegex(AssertionError, "expected index count divisible by 3 but got 4"):
+            meshtools.flip_face_winding(indexed)
+        with self.assertRaisesRegex(AssertionError, "expected index count divisible by 3 but got 4"):
+            meshtools.flip_face_winding_in_place(indexed)
+
+    def test_in_place_not_mutable(self):
+        indexed = primitives.cube_solid()
+        # TODO there's currently no primitive that would have non-indexed
+        #   immutable triangles so can't test for the "vertex data not mutable"
+        #   error
+
+        with self.assertRaisesRegex(AssertionError, "index data not mutable"):
+            meshtools.flip_face_winding_in_place(indexed)
+
+class FlipNormals(unittest.TestCase):
+    def test(self):
+        mesh = primitives.cube_solid()
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 1)
+        self.assertEqual(mesh.indices[2], 2)
+
+        flipped = meshtools.flip_normals(mesh)
+        self.assertEqual(flipped.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, -1.0))
+        self.assertEqual(flipped.indices[0], 0)
+        self.assertEqual(flipped.indices[1], 2)
+        self.assertEqual(flipped.indices[2], 1)
+
+    def test_in_place(self):
+        mesh = meshtools.copy(primitives.cube_solid())
+        self.assertEqual
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 1)
+        self.assertEqual(mesh.indices[2], 2)
+
+        meshtools.flip_normals_in_place(mesh)
+        self.assertEqual(mesh.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, -1.0))
+        self.assertEqual(mesh.indices[0], 0)
+        self.assertEqual(mesh.indices[1], 2)
+        self.assertEqual(mesh.indices[2], 1)
+
+    def test_invalid_primitive(self):
+        mesh = primitives.cube_solid_strip()
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLE_STRIP)
+
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLE_STRIP"):
+            meshtools.flip_normals(mesh)
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLE_STRIP"):
+            meshtools.flip_normals_in_place(mesh)
+
+    def test_invalid_count(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh-invalid-count.gltf'))
+
+        non_indexed = importer.mesh("non-indexed")
+        indexed = importer.mesh("indexed")
+        self.assertEqual(non_indexed.vertex_count, 2)
+        self.assertEqual(indexed.index_count, 4)
+
+        with self.assertRaisesRegex(AssertionError, "expected vertex count divisible by 3 but got 2"):
+            meshtools.flip_normals(non_indexed)
+        with self.assertRaisesRegex(AssertionError, "expected vertex count divisible by 3 but got 2"):
+            meshtools.flip_normals_in_place(non_indexed)
+        with self.assertRaisesRegex(AssertionError, "expected index count divisible by 3 but got 4"):
+            meshtools.flip_normals(indexed)
+        with self.assertRaisesRegex(AssertionError, "expected index count divisible by 3 but got 4"):
+            meshtools.flip_normals_in_place(indexed)
+
+    def test_in_place_not_mutable(self):
+        indexed = primitives.cube_solid()
+        # TODO there's currently no primitive that would have non-indexed
+        #   immutable triangles so can't test for the "vertex data not mutable"
+        #   error
+
+        with self.assertRaisesRegex(AssertionError, "index data not mutable"):
+            meshtools.flip_normals_in_place(indexed)
+
+    def test_in_place_not_float(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh-packed.gltf'))
+
+        mesh = importer.mesh("packed normals")
+
+        with self.assertRaisesRegex(AssertionError, "expected VertexFormat.VECTOR3 normals but got VertexFormat.VECTOR3S_NORMALIZED"):
+            meshtools.flip_normals_in_place(mesh)
+
+class GenerateFlatNormals(unittest.TestCase):
+    def test(self):
+        mesh = meshtools.duplicate(meshtools.filter_except_attributes(primitives.cube_solid(), [trade.MeshAttribute.NORMAL]))
+        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.NORMAL))
+
+        generated = meshtools.generate_flat_normals(mesh)
+        self.assertTrue(generated.has_attribute(trade.MeshAttribute.NORMAL))
+        self.assertEqual(generated.attribute(trade.MeshAttribute.NORMAL)[0], (0.0, 0.0, 1.0))
+
+    def test_invalid_primitive(self):
+        mesh = primitives.cube_solid_strip()
+        self.assertEqual(mesh.primitive, MeshPrimitive.TRIANGLE_STRIP)
+
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.TRIANGLE_STRIP"):
+            meshtools.generate_flat_normals(mesh)
+
+    def test_indexed(self):
+        mesh = primitives.cube_solid()
+
+        with self.assertRaisesRegex(AssertionError, "expected a non-indexed mesh"):
+            meshtools.generate_flat_normals(mesh)
+
+    def test_invalid_count(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh-invalid-count.gltf'))
+
+        mesh = importer.mesh("non-indexed")
+        self.assertEqual(mesh.vertex_count, 2)
+
+        with self.assertRaisesRegex(AssertionError, "expected vertex count divisible by 3 but got 2"):
+            meshtools.generate_flat_normals(mesh)
+
+    def test_no_attribute(self):
+        mesh = meshtools.duplicate(primitives.cube_solid())
+
+        # ID not found
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
+            meshtools.generate_flat_normals(mesh, id=1)
+        # Morph target not found
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
+            meshtools.generate_flat_normals(mesh, morph_target_id=37)
+
+    def test_not_3d(self):
+        mesh = meshtools.duplicate(meshtools.generate_indices(primitives.square_solid()))
+
+        with self.assertRaisesRegex(AssertionError, "expected 3D positions but got VertexFormat.VECTOR2"):
+            meshtools.generate_flat_normals(mesh)
+
+class GenerateSmoothNormals(unittest.TestCase):
+    def test(self):
+        mesh = meshtools.remove_duplicates(meshtools.filter_except_attributes(primitives.cube_solid(), [trade.MeshAttribute.NORMAL]))
+        self.assertFalse(mesh.has_attribute(trade.MeshAttribute.NORMAL))
+
+        generated = meshtools.generate_smooth_normals(mesh)
+        self.assertTrue(generated.has_attribute(trade.MeshAttribute.NORMAL))
+        # Average of the three sides
+        self.assertEqual(generated.attribute(trade.MeshAttribute.NORMAL)[0], (-0.57735, -0.57735, 0.57735))
+
+    def test_invalid_primitive(self):
+        mesh = primitives.crosshair3d()
+        self.assertEqual(mesh.primitive, MeshPrimitive.LINES)
+
+        with self.assertRaisesRegex(AssertionError, "invalid primitive MeshPrimitive.LINES"):
+            meshtools.generate_smooth_normals(mesh)
+
+    def test_non_indexed(self):
+        mesh = meshtools.duplicate(primitives.cube_solid())
+
+        with self.assertRaisesRegex(AssertionError, "expected an indexed mesh"):
+            meshtools.generate_smooth_normals(mesh)
+
+    def test_invalid_count(self):
+        importer = trade.ImporterManager().load_and_instantiate('GltfImporter')
+        importer.open_file(os.path.join(os.path.dirname(__file__), 'mesh-invalid-count.gltf'))
+
+        mesh = importer.mesh("indexed")
+        self.assertEqual(mesh.index_count, 4)
+
+        with self.assertRaisesRegex(AssertionError, "expected index count divisible by 3 but got 4"):
+            meshtools.generate_smooth_normals(mesh)
+
+    def test_no_attribute(self):
+        mesh = primitives.cube_solid()
+
+        # ID not found
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 1"):
+            meshtools.generate_smooth_normals(mesh, id=1)
+        # Morph target not found
+        with self.assertRaisesRegex(KeyError, "the mesh has no positions with index 0 in morph target 37"):
+            meshtools.generate_smooth_normals(mesh, morph_target_id=37)
+
+    def test_not_3d(self):
+        mesh = meshtools.generate_indices(primitives.square_solid())
+
+        with self.assertRaisesRegex(AssertionError, "expected 3D positions but got VertexFormat.VECTOR2"):
+            meshtools.generate_smooth_normals(mesh)
+
 class Interleave(unittest.TestCase):
     def test(self):
         mesh = meshtools.filter_except_attributes(primitives.circle3d_solid(3, primitives.Circle3DFlags.TEXTURE_COORDINATES), [trade.MeshAttribute.NORMAL])
