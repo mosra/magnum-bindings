@@ -707,8 +707,10 @@ void gl(py::module_& m) {
         .value("BYTE", GL::DynamicAttribute::DataType::Byte)
         .value("UNSIGNED_SHORT", GL::DynamicAttribute::DataType::UnsignedShort)
         .value("SHORT", GL::DynamicAttribute::DataType::Short)
+        #ifndef MAGNUM_TARGET_GLES2
         .value("UNSIGNED_INT", GL::DynamicAttribute::DataType::UnsignedInt)
         .value("INT", GL::DynamicAttribute::DataType::Int)
+        #endif
         #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
         .value("HALF_FLOAT", GL::DynamicAttribute::DataType::Half)
         #endif
